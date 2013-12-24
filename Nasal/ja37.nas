@@ -10,10 +10,11 @@ var g_curr 	= props.globals.getNode("accelerations/pilot-gdamped", 1);
 var cnt = 0;
 
 var update_loop = func {
-	# Sets fuel gauge needles rotation
-    setprop("/instrumentation/fuel/needleF_rot", getprop("/consumables/fuel/total-fuel-norm")*230);
+	 ## Sets fuel gauge needles rotation ##
+	 
+   setprop("/instrumentation/fuel/needleF_rot", getprop("/consumables/fuel/total-fuel-norm")*230);
    
-   # control augmented thrust
+   ## control augmented thrust ##
      
    var n1 = getprop("/engines/engine/n1");
    var n2 = getprop("/engines/engine/n2");
@@ -28,7 +29,7 @@ var update_loop = func {
     setprop("/controls/engines/engine[0]/augmentation", 0);
    }
    
-   ############# control flaps #################
+   ## control flaps ##
 
    var flapsCommand = 0;
    var gear = getprop("/fdm/jsbsim/gear/gear-cmd-norm");
@@ -44,8 +45,18 @@ var update_loop = func {
   }
   setprop("/fdm/jsbsim/fcs/flap-pos-cmd", flapsCommand);
    
-    
+  ## set groundspeed property used for crashcode ##
+  
+  var horz_speed = getprop("/fdm/jsbsim/velocities/vg-fps");
+  var vert_speed = getprop("/velocities/down-relground-fps");
+     
+  var real_speed = math.sqrt((horz_speed * horz_speed) + (vert_speed * vert_speed));
+  
+  real_speed = real_speed * 0.5924838;
+  
+  setprop("/velocities/groundspeed-3D-kt", real_speed); 
    
+  
 	settimer(update_loop, UPDATE_PERIOD);
 }
 
@@ -146,9 +157,11 @@ setlistener("/sim/current-view/view-number", func(n) {
 		gui.popupTip("Stopping engine. Turning off battery.");
 		setprop("/systems/electrical/battery", 0);
     } else {
-    	settimer(autostart, 3);
-    	setprop("/systems/electrical/battery", 1);
-    	setprop("/systems/electrical/batterysignal", 1);
-    	gui.popupTip("Battery turned on. Beginning startup procedure..");
+      if (getprop("fdm/jsbsim/simulation/crashed") < 1) {
+      	settimer(autostart, 3);
+      	setprop("/systems/electrical/battery", 1);
+      	setprop("/systems/electrical/batterysignal", 1);
+      	gui.popupTip("Battery turned on. Beginning startup procedure..");
+      }
     }
  }

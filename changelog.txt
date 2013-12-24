@@ -1,3 +1,7 @@
+======================================
+Flightgear Saab JA-37 Viggen Changelog
+======================================
+
 1.0
 ---
 Got the idea to work on this plane.
@@ -199,7 +203,7 @@ Sim: Added structural G limits.
 Aero: Increased realistic fidelity of elevator effect on pitch.
 Cockpit: Added subtle noise to dashboard to make it appear less dull.
 
-1.20
+1.20 - 2013 Dec 16
 ----
 Sim: Made the crash code work properly.
 Engine: Fixed a minor bug in reverse-thrust code.
@@ -211,3 +215,40 @@ Sim: Moved start-offset-m property from Nasal to XML.
 Sound: Removed nasal sound system reinit code.
 Sim: Fixed wrapping sentences in the aircraft help.
 Engine: Fixed alignments in RM8B IdleThrust and AugThrust tables.
+
+1.21 - 2014 Jan 16
+----
+Sim: Made crash code depend on real speed instead of airspeed.
+HUD: Fixed that rain and snow is not shown though canvas HUD.
+Aero: Added pitch moments for higher and lower alpha values.
+Sim: When crashing the replay is no longer turned off.
+Sound: Removed the stall warnings, replaced with high alpha warnings that work approx like the pilot manual describes.
+Sim: Made flightrecorder track more properties, so sound and animation will function better in replay.
+Sim: Made crash code script pause when replay is in progress.
+Engine: Calculated new values for mil-thrust. It is now less powerful.
+Sim: Enabled animations when viewing the plane in multiplayer.
+Animation: Registered the cockpit glass as transparent.
+Effect: Adapted for Rembrandt. (Afterburner flame will not be transparent in Rembrandt though)
+HUD: Put a limit on the HUD script update speed.
+Engine: Adjusted RB8B engine to JT8D-17A specs, since its the same engine plus afterburner.
+Effect: Fixed engine smoke would come out at nosecone when thrust reversed.
+Sound: The alpha warnings should now stop after crashing.
+Sim: Wing tanks now lose content after structural break.
+Sim: Structural points now have less tendency to make the aircraft bounce at collision.
+Effect: Made trail of engine smoke come out after engine.
+Animation: Made canopy able to open.
+Sim: Is now not able to restart engine after crash.
+Animation: Fixed flaps was missing important polygons.
+Animation: Tilted the dashboard.
+Animation: Made the dashboard support thinner and retracted it a bit.
+Effect: Fixed wierd shadow in front of vtail.
+Effect: Adjusted the engine fire position and size.
+HUD: Made HUD not visible from afar.
+Animation: Made droptank fins visible from right side also.
+Effect: Adjusted trans-mach vapor cone, to better match the plane.
+Sound: Decreased volume for gear rumble and canopy.
+Effect: Made right navigation light green instead of blue.
+Effect: Added glow effect to lights.
+Effect: Made Rembrandt somewhat able to animate the emission of engine light.
+Sound: Made model view engine sound a little better
+Aero: Made axial coefficient more accurate.

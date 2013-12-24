@@ -118,8 +118,8 @@ aircraft_crash=func(crashtype, crashg, solid)
 
 		
 
-		setprop("sim/replay/disable", 1);
-		setprop("sim/menubar/default/menu[1]/item[8]/enabled", 0);
+		#setprop("sim/replay/disable", 1);
+		#setprop("sim/menubar/default/menu[1]/item[8]/enabled", 0);
 		return (1);
 	}
 
@@ -131,6 +131,11 @@ aircraftbreakprocess=func
 	{
 	#print("aircraftbreakprocess");
 		# check state
+		if ((getprop("sim/replay/replay-state") != nil) and (getprop("sim/replay/replay-state") == 1))
+		{
+			stop_aircraftbreakprocess();
+			return ( settimer(aircraftbreakprocess, 0.1) ); 
+		}
 		in_service = getprop("processes/aircraft-break/enabled" );
 		if (in_service == nil)
 		{
@@ -152,7 +157,7 @@ aircraftbreakprocess=func
 		#check altitude positions
 		altitude=getprop("position/altitude-ft");
 		elevation=getprop("position/ground-elev-ft");
-		speed=getprop("velocities/airspeed-kt");
+		speed=getprop("/velocities/groundspeed-3D-kt");
 		exploded=getprop("fdm/jsbsim/simulation/exploded");
 		crashed=getprop("fdm/jsbsim/simulation/crashed");
 		var wow=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -298,6 +303,10 @@ aircraftbreakprocess=func
 		{
 			print("Aircraft crashed: Wing broke off, due to G forces.");
 			exploded=1;
+			setprop("fdm/jsbsim/propulsion/tank[4]/external-flow-rate-pps", -75);
+			setprop("fdm/jsbsim/propulsion/tank[5]/external-flow-rate-pps", -75);
+			setprop("fdm/jsbsim/propulsion/tank[6]/external-flow-rate-pps", -75);
+			setprop("fdm/jsbsim/propulsion/tank[7]/external-flow-rate-pps", -75);
 			aircraft_lock();
 			aircraft_explode(pilot_g);
 		}
@@ -364,6 +373,10 @@ init_aircraftbreakprocess=func
 	setprop("fdm/jsbsim/accelerations/crash-g", 0);
 	setprop("fdm/jsbsim/velocities/v-down-previous", 0);
 	setprop("processes/aircraft-break/enabled", 1);
+	setprop("fdm/jsbsim/propulsion/tank[4]/external-flow-rate-pps", 0);
+	setprop("fdm/jsbsim/propulsion/tank[5]/external-flow-rate-pps", 0);
+	setprop("fdm/jsbsim/propulsion/tank[6]/external-flow-rate-pps", 0);
+	setprop("fdm/jsbsim/propulsion/tank[7]/external-flow-rate-pps", 0);
 }
 
 init_aircraftbreakprocess();
@@ -374,8 +387,8 @@ aircraft_explode = func(pilot_g)
 		setprop("fdm/jsbsim/simulation/explode-g", pilot_g);
 		setprop("fdm/jsbsim/simulation/exploded", 1);
 		setprop("sounds/aircraft-explode/on", 1);
-		setprop("sim/replay/disable", 1);
-		setprop("sim/menubar/default/menu[1]/item[8]/enabled", 0);
+		#setprop("sim/replay/disable", 1);
+		#setprop("sim/menubar/default/menu[1]/item[8]/enabled", 0);
 		settimer(end_aircraft_explode, 3);
 	}
 
@@ -515,7 +528,7 @@ init_aircraftbreaklistener();
 
 aircraft_crash_sound = func
 	{
-		speed=getprop("velocities/airspeed-kt");
+		speed=getprop("/velocities/groundspeed-3D-kt");
 		sounded=getprop("sounds/aircraft-crash/on");
 		if ((speed!=nil) and (sounded!=nil))
 		{
@@ -535,7 +548,7 @@ end_aircraft_crash = func
 
 aircraft_water_crash_sound = func
 	{
-		speed=getprop("velocities/airspeed-kt");
+		speed=getprop("velocities/groundspeed-3D-kt");
 		sounded=getprop("sounds/aircraft-water-crash/on");
 		if ((speed!=nil) and (sounded!=nil))
 		{

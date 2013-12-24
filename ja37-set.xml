@@ -7,10 +7,9 @@
 *************************************************************************-->   
 
 <PropertyList>
-
  <sim>
   <description>Saab JA-37 Viggen</description>
-  <author>Necolatis, Anders Lejczak (model and textures)</author>
+  <author>Nikolai V. Chr. (FDM, Scripting), Anders Lejczak (3D Model and Textures)</author>
   <status>Beta</status>
   <rating>
     <FDM type="int">4</FDM>
@@ -18,7 +17,7 @@
     <cockpit type="int">1</cockpit>
     <model type="int">3</model>
   </rating>
-  <aircraft-version>1.20</aircraft-version> 
+  <aircraft-version>1.21</aircraft-version> 
  
   <flight-model>jsb</flight-model>
   <aero>ja37-jsbsim</aero>
@@ -100,19 +99,91 @@
       </signal>
       <signal>
           <type>float</type>
-          <property type="string">/surface-positions/left-elevon-pos-deg</property>
+          <property type="string">surface-positions/left-elevon-pos-deg</property>
       </signal>
       <signal>
           <type>float</type>
-          <property type="string">/surface-positions/right-elevon-pos-deg</property>
+          <property type="string">surface-positions/right-elevon-pos-deg</property>
       </signal>
       <signal>
           <type>float</type>
-          <property type="string">/surface-positions/rudder-pos-norm</property>
+          <property type="string">surface-positions/rudder-pos-norm</property>
       </signal>
       <signal>
           <type>float</type>
-          <property type="string">/surface-positions/nose-wheel-pos-norm</property>
+          <property type="string">surface-positions/nose-wheel-pos-norm</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">engines/engine[0]/nozzle-pos-norm</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">engines/engine[0]/augmentation</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">systems/electrical/batterysignal</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">engines/engine/thrust_lb</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">velocities/groundspeed-kt</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">fdm/jsbsim/aero/alpha-deg</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">instrumentation/altimeter/indicated-altitude-ft</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">fdm/jsbsim/systems/crash-detect/crashed</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">controls/armament/trigger</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">ai/submodels/submodel[0]/flare-release</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">sounds/aircraft-explode/on</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">sounds/aircraft-crash/on</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">sounds/aircraft-water-crash/on</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">sounds/aircraft-crack/on</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">sounds/aircraft-creaking/on</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">engines/engine[0]/reversed</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">fdm/jsbsim/fcs/canopy-pos-norm</property>
+      </signal>
+      <signal>
+        <type>float</type>
+        <property type="string">systems/electrical/battery</property>
       </signal>
     </config>
   </flight-recorder>  
@@ -285,7 +356,26 @@
 *************************************************************************-->
   <multiplay>
    <generic>
-    <int n="2" type="int">0</int>    <!-- radar-standby -->
+    <!-- Animation control surfaces -->
+    <float n="0" alias="/surface-positions/right-elevon-pos-deg"/>
+    <float n="1" alias="/surface-positions/left-elevon-pos-deg"/>
+    <float n="2" alias="/fdm/jsbsim/fcs/flap-pos-deg"/>
+    <float n="4" alias="/fdm/jsbsim/fcs/canopy-pos-norm"/>
+    <!-- Animating engine -->
+    <float n="3" alias="/engines/engine[0]/nozzle-pos-norm"/>
+    <int n="3" alias="/engines/engine/running"/>
+    <int n="4" alias="/engines/engine[0]/augmentation"/>
+    <int n="8" alias="/engines/engine[0]/reversed"/>
+    <!-- Animating light -->
+    <int n="5" alias="/sim/model/lighting/strobe/state"/>
+    <int n="9" alias="/systems/electrical/battery"/>
+    <int n="15" alias="/sim/model/lighting/beacon/state"/>
+    <!-- Armament -->
+    <int n="6" alias="/controls/armament/trigger"/>
+    <int n="7" alias="/ai/submodels/submodel[0]/flare-release"/>
+    <!-- for Bombable: -->
+    <string n="9" type="string"/>
+    <int n="10" alias="controls/armament/trigger"/>
    </generic>
   </multiplay>
 
@@ -317,6 +407,10 @@
    <key>
     <name>Del</name>
     <desc>Yaw damper on/off</desc>
+   </key>
+   <key>
+    <name>C</name>
+    <desc>Toggle canopy</desc>
    </key>
    <text>    _______________  Saab JA-37 Viggen  ________________
     Startup
@@ -431,15 +525,15 @@
            gui.popupTip("HUD is already on in cockpit view.");
          </script>
       </binding>
-   </key>
-   <key n="115">
+    </key>
+    <key n="115">
       <name>s</name>
       <desc>Start engine</desc>
       <binding>
          <command>nasal</command>
          <script>ja37.autostarttimer();</script>
       </binding>
-   </key>
+    </key>
     <key n="6">
      <name>Ctrl-F</name>
      <desc>Trigger flare release</desc>
@@ -480,42 +574,50 @@
      <script>reversethrust.togglereverser();</script>
     </binding>
    </key>
-  <key n="127">
-  <name>Shift-Delete</name>
-  <!--<repeatable type="bool">true</repeatable>-->
-  <mod-shift>
-   <desc>Reload sound configuration (for debugging AP)</desc>
-   <binding>
-    <command>nasal</command>
-    <script>
-     fgcommand('reinit', props.Node.new({ subsystem: "sound" }));
-     print("sound reinitialized!");
-     gui.popupTip("Sound reinit.");
-    </script>
-   </binding>
-  </mod-shift>
- </key>
- <!--<key n="127">
-  <name>Shift-Delete</name>-->
-  <!--<repeatable type="bool">true</repeatable>-->
-  <!--<mod-shift>
-   <desc>Reload autopilot configuration (for debugging AP)</desc>
-   <binding>
-    <command>nasal</command>
-    <script>
-     fgcommand('reinit', props.Node.new({ subsystem: "xml-autopilot" }));
-     print("xml-autopilot reinitialized!");
-     gui.popupTip("Autopilot reinit.");
-    </script>
-   </binding>
-  </mod-shift>
- </key>-->
-  <key n="127">
+   <key n="127">
+    <name>Shift-Delete</name>
+    <!--<repeatable type="bool">true</repeatable>-->
+    <mod-shift>
+     <desc>Reload sound configuration (for debugging AP)</desc>
+     <binding>
+      <command>nasal</command>
+      <script>
+       fgcommand('reinit', props.Node.new({ subsystem: "sound" }));
+       print("sound reinitialized!");
+       gui.popupTip("Sound reinit.");
+      </script>
+     </binding>
+    </mod-shift>
+   </key>
+   <!--<key n="127">
+    <name>Shift-Delete</name>-->
+    <!--<repeatable type="bool">true</repeatable>-->
+    <!--<mod-shift>
+     <desc>Reload autopilot configuration (for debugging AP)</desc>
+     <binding>
+      <command>nasal</command>
+      <script>
+       fgcommand('reinit', props.Node.new({ subsystem: "xml-autopilot" }));
+       print("xml-autopilot reinitialized!");
+       gui.popupTip("Autopilot reinit.");
+      </script>
+     </binding>
+    </mod-shift>
+   </key>-->
+    <key n="127">
      <name>Delete</name>
      <desc>Yaw damper on/off</desc>
      <binding>
       <command>property-toggle</command>
       <property>/fdm/jsbsim/fcs/yaw-damper-enable</property>
+     </binding>
+    </key>
+    <key n="67">
+     <name>C</name>
+     <desc>Toggle canopy</desc>
+     <binding>
+      <command>property-toggle</command>
+      <property>/fdm/jsbsim/fcs/canopy-engage</property>
      </binding>
     </key>
    </keyboard>

@@ -773,7 +773,7 @@ var HUDnasal = {
        } else {
         me.root.show();
         me.root.update();
-        settimer(func me.update(), 0);
+        settimer(func me.update(), 0.05);
        }
 	     
        setprop("sim/hud/visibility[1]", 0);
