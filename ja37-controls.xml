@@ -1,26 +1,49 @@
 <?xml version="1.0"?>
 
 <flight_control name="JA37 FC">
-    <property>fcs/canopy-engage</property>
-    <property>fcs/yaw-damper-enable</property>
-    <property>fcs/flap-pos-cmd</property>
-    
     <channel name="Canopy">
+        <!-- canopy get stuck if it fail -->
+        <switch name="fails/canopy">
+          <default value="fcs/canopy/engage"/>
+          <test logic="OR" value="fcs/canopy-pos-norm">
+            fcs/canopy/serviceable == 0
+            fcs/canopy/has-power == 0
+          </test>
+          <output>fcs/canopy-engageTmp</output>
+        </switch>
         <kinematic name="fcs/canopy-control">
-            <input>fcs/canopy-engage</input>
+            <input>fcs/canopy-engageTmp</input>
             <traverse>
                 <setting>
-                    <position>0</position>
-                    <time>0</time>
+                    <position>0.0</position>
+                    <time>0.0</time>
                 </setting>
                 <setting>
-                    <position>1</position>
-                    <time>5</time>
+                    <position>1.0</position>
+                    <time>5.0</time>
                 </setting>
             </traverse>
             <output>fcs/canopy-pos-norm</output>
         </kinematic>
     </channel>
+
+<!--
+                   Elevator -25 to +20  (page 131, figure 108b) 
+                   Elevator -25 to +20  (page 133, figure 110a)
+                   Elevator -25 to +20  (page  79, figure  62a)
+                   Pretty sure I saw something about max +10 for elevator, but do not know where.
+
+                   Aileron  -15 to +15  (page 133, figure 110b)
+
+                   Rudder   -25 to +25  (page 115, figure  92 )
+
+                   Flaps           +30  (page  87)
+                   Flaps     -4 to +30  (page  78,  figure 60 )
+                   Flaps     -7 to +30  (page  76) -7 can be selected by pilot, -4 default
+                   Flaps     -7 to +30  (page  46) 
+
+-->
+
 
     <channel name="Elevons">
       <!-- Can move 20 degrees down, and 25 degrees up, pitching down restricted to 10 degrees -->
@@ -28,20 +51,53 @@
           <input>fcs/elevator-cmd-norm</input>
           <input>fcs/pitch-trim-cmd-norm</input>
           <clipto>
-              <min>-1</min>
-              <max>1</max>
+              <min>-1.0</min>
+              <max>1.0</max>
           </clipto>
           <output>fcs/pitch-trim-sum</output>
       </summer>
 
+      <!-- At high speeds elevator deflection is reduced,
+           At high altitude elevator deflection is increased -->
+      <scheduled_gain name="fcs/elevator-adjust">
+        <input>fcs/pitch-trim-sum</input>
+        <table>
+          <independentVar lookup="row">velocities/mach</independentVar>
+          <independentVar lookup="column">atmosphere/density-altitude</independentVar>
+          <tableData>
+                          0.0       60000.0
+              0.0         1.00         1.0
+              0.5         1.00         1.0
+              0.75        0.45         1.0
+              1.0         0.25         1.0
+              2.2         0.05         0.3
+          </tableData>
+        </table>
+        <output>fcs/elevator-cmd-adjust</output>
+      </scheduled_gain>
+
       <aerosurface_scale name="Elevator Control">
-          <input>fcs/pitch-trim-sum</input>
+          <input>fcs/elevator-cmd-adjust</input>
+          <zero_centered> true </zero_centered>
+          <domain>
+            <min> -1.0 </min>
+            <max>  1.0 </max>
+          </domain>
           <range>
-              <min>-0.4363</min>
-              <max>0.1745</max>
+              <min>-0.4363</min><!--  -25 deg -->
+              <max>0.3491</max><!--    20 deg -->
           </range>
-          <output>fcs/elevator-pos-rad</output>
+          <output>fcs/elevator-pos-radTmp</output>
       </aerosurface_scale>
+
+      <!-- elevator wont deploy if they fail -->
+      <switch name="fails/elevator">
+        <default value="fcs/elevator-pos-radTmp"/>
+        <test value="0">
+          fcs/elevator-serviceable == 0
+        </test>
+        <output>fcs/elevator-pos-rad</output>
+      </switch>
 
       <!--<aerosurface_scale name="Elevator Control Degrees">
           <input>fcs/pitch-trim-sum</input>
@@ -56,59 +112,91 @@
           <input>fcs/aileron-cmd-norm</input>
           <input>fcs/roll-trim-cmd-norm</input>
           <clipto>
-              <min>-1</min>
-              <max>1</max>
+              <min>-1.0</min>
+              <max>1.0</max>
           </clipto>
-          <output>fcs/roll-trim-sum</output>
+          <output>fcs/roll-trim-sumTmp</output>
       </summer>
 
+      <!-- aileron wont deploy if they fail -->
+      <switch name="fails/aileron">
+        <default value="fcs/roll-trim-sumTmp"/>
+        <test value="0">
+          fcs/aileron-serviceable == 0
+        </test>
+        <output>fcs/roll-trim-sum-fail</output>
+      </switch>
+
+      <!-- At high speeds aileron deflection is reduced -->
+      <scheduled_gain name="fcs/aileron-mach">
+        <input>fcs/roll-trim-sum-fail</input>
+        <table>
+          <independentVar lookup="row">velocities/mach</independentVar>
+          <independentVar lookup="column">atmosphere/density-altitude</independentVar>
+          <tableData>
+                          0.0         60000.0
+              0.0         0.40           1.0
+              0.5         0.20           0.75
+              1.0         0.14           0.35
+              2.2         0.06           0.15
+          </tableData>
+        </table>
+        <output>fcs/aileron-sum-mach</output>
+      </scheduled_gain>
+
       <aerosurface_scale name="Left Aileron Control">
-          <input>fcs/roll-trim-sum</input>
+          <input>fcs/aileron-sum-mach</input>
+          <domain>
+            <min> -1.0 </min>
+            <max>  1.0 </max>
+          </domain>
           <range>
-              <min>-0.4363</min>
-              <max>0.3491</max>
+              <min>-0.2618</min><!-- -15 deg -->
+              <max>0.2618</max><!--   15 deg -->
           </range>
           <output>fcs/left-aileron-pos-rad</output>
       </aerosurface_scale>
 
       <aerosurface_scale name="Right Aileron Control">
-          <input>-fcs/roll-trim-sum</input>
+          <input>-fcs/aileron-sum-mach</input>
+          <domain>
+            <min> -1.0 </min>
+            <max>  1.0 </max>
+          </domain>
           <range>
-              <min>-0.4363</min>
-              <max>0.3491</max>
+               <min>-0.2618</min><!-- -15 deg -->
+              <max>0.2618</max><!--   15 deg -->
           </range>
           <output>fcs/right-aileron-pos-rad</output>
       </aerosurface_scale>
 
+      <pure_gain>
+          <input>fcs/left-aileron-pos-rad</input>
+          <gain>57.296</gain>
+          <output>fcs/left-aileron-pos-deg</output>
+      </pure_gain>
+
       <summer name="Left Elevon Pos Rad">
          <input>fcs/left-aileron-pos-rad</input>
          <input>fcs/elevator-pos-rad</input>
-         <clipto>
-           <min>-0.4363</min>
-           <max>0.3491</max>
-         </clipto>
          <output>fcs/left-elevon-pos-rad</output>
       </summer>
 
       <summer name="Right Elevon Pos Rad">
          <input>fcs/right-aileron-pos-rad</input>
          <input>fcs/elevator-pos-rad</input>
-         <clipto>
-           <min>-0.4363</min>
-           <max>0.3491</max>
-         </clipto>
          <output>fcs/right-elevon-pos-rad</output>
       </summer> 
 
       <pure_gain name="Left Elevon Pos Deg">
           <input>fcs/left-elevon-pos-rad</input>
-          <gain>57.3</gain>
+          <gain>57.296</gain>
           <output>/surface-positions/left-elevon-pos-deg</output>
       </pure_gain>
 
       <pure_gain name="Right Elevon Pos Deg">
           <input>fcs/right-elevon-pos-rad</input>
-          <gain>57.3</gain>
+          <gain>57.296</gain>
           <output>/surface-positions/right-elevon-pos-deg</output>
       </pure_gain>
 
@@ -120,8 +208,8 @@
         <input>fcs/rudder-cmd-norm</input>
         <input>fcs/yaw-trim-cmd-norm</input>
         <clipto>
-          <min> -1 </min>
-          <max>  1 </max>
+          <min> -1.0 </min>
+          <max>  1.0 </max>
         </clipto>
       </summer>
       <scheduled_gain name="Yaw Damper Rate">
@@ -129,8 +217,8 @@
         <table>
           <independentVar lookup="row">velocities/ve-kts</independentVar>
           <tableData>
-            30     0.00
-            60     2.00
+            30.0     0.00
+            60.0     2.00
          </tableData>
         </table>
         <gain>fcs/yaw-damper-enable</gain>
@@ -144,6 +232,13 @@
           <max>  1.1 </max>
         </clipto>
       </summer>
+      <!-- rudder will get stuck if it fail -->
+      <!--<switch name="Rudder Stuck Control">
+        <default value="fcs/rudder-sum"/>
+        <test logic="AND" value="fcs/rudder-sum-stuck">
+          fcs/rudder/serviceable == 0
+        </test>
+      </switch>-->
       <aerosurface_scale name="Rudder Control">
         <input>fcs/rudder-sum</input>
         <domain>
@@ -151,24 +246,44 @@
           <max>  1.1 </max>
         </domain>
         <range>
-          <min> -0.3491 </min>
-          <max>  0.3491 </max>
+          <min> -0.4363 </min>
+          <max>  0.4363 </max><!-- 25 deg -->
         </range>
-        <output>fcs/rudder-pos-rad</output>
+        <output>fcs/rudder-pos-rad-tmp</output>
       </aerosurface_scale>
+
+      <!-- At high speeds rudder deflection is reduced -->
+      <scheduled_gain name="fcs/rudder-mach">
+        <input>fcs/rudder-pos-rad-tmp</input>
+        <table>
+          <independentVar lookup="row">velocities/mach</independentVar>
+          <independentVar lookup="column">atmosphere/density-altitude</independentVar>
+          <tableData>
+                          0.0         70000.0
+              0.0         0.40           1.00
+              0.5         0.15           0.40
+              1.0         0.07           0.25
+              2.2         0.03           0.10              
+          </tableData>
+        </table>
+        <output>fcs/rudder-pos-rad</output>
+      </scheduled_gain>
+
       <aerosurface_scale name="rudder normalization">
         <input>fcs/rudder-pos-rad</input>
         <domain>
-          <min> -0.3491 </min>
-          <max>  0.3491 </max>
+          <min> -0.4363 </min>
+          <max>  0.4363 </max><!-- 25 deg -->
         </domain>
         <range>
-          <min> -1 </min>
-          <max>  1 </max>
+          <min> -1.0 </min>
+          <max>  1.0 </max>
         </range>
         <output>fcs/rudder-pos-norm</output>
       </aerosurface_scale>
     </channel>
+
+
     <channel name="Landing Gear">
       <switch name="fcs/gear-wow">
         <default value="0"/>
@@ -180,70 +295,106 @@
 
                 </test>
       </switch>
+
+      <!-- gear wont deploy if they fail -->
+      <switch name="fails/gear">
+        <default value="gear/gear-cmd-norm"/>
+        <test value="0">
+          gear/serviceable == 0
+        </test>
+        <output>gear/gear-cmd-normTmp</output>
+      </switch>
+
       <kinematic name="fcs/gear-control">
-        <input>gear/gear-cmd-norm</input>
+        <input>gear/gear-cmd-normTmp</input>
         <traverse>
           <setting>
-            <position>0</position>
-            <time>0</time>
+            <position>0.0</position>
+            <time>0.0</time>
           </setting>
           <setting>
-            <position>1</position>
+            <position>1.0</position>
             <time>5</time>
           </setting>
         </traverse>
         <output>gear/gear-pos-norm</output>
       </kinematic>
-      <scheduled_gain name="fcs/scheduled-steer-pos-deg">
+
+      <scheduled_gain name="fcs/scheduled-steer-cmd-delayed">
         <input>fcs/steer-cmd-norm</input>
         <table>
           <independentVar>velocities/vg-fps</independentVar>
           <tableData>
               10.0        80.0
-              50.0        15.0
-              150.0       2.0
+              20.0        50.0
+              50.0        10.0
+              150.0       1.0
+              200.0       0.5
           </tableData>
         </table>
-        <output>fcs/steer-pos-deg</output>
+        <output>fcs/steer-cmd-delayed</output>
       </scheduled_gain>
+
+     <scheduled_gain name="Steering control">
+      <input>fcs/steer-cmd-delayed</input>
+      <table>
+        <independentVar lookup="row">systems/nose-wheel-steer/enable</independentVar>
+         <tableData>
+            0     0
+            1     1
+         </tableData>
+      </table>
+      <output>fcs/steer-pos-deg</output>
+     </scheduled_gain>        
     </channel>
 
     <channel name="Flaps">
       <!-- Can move 30 degrees down, and 4 degrees up -->
+
       <kinematic name="Flaps Control">
         <input>fcs/flap-pos-cmd</input><!-- flaps controlled by gear-->
         <traverse>
           <setting>
-            <position>  -4 </position>
-            <time>      0 </time>
+            <position>  -4.0 </position>
+            <time>      0.0 </time>
           </setting>
           <setting>
-            <position> 30 </position>
-            <time>      3 </time>
+            <position> 30.0 </position>
+            <time>      3.0 </time>
           </setting>
         </traverse>
-        <output>fcs/flap-pos-deg</output>
+        <output>fcs/flap-pos-degTmp</output>
       </kinematic>
+
+      <!-- flaps wont deploy if they fail -->
+      <switch name="fails/flaps">
+        <default value="fcs/flap-pos-degTmp"/>
+        <test logic="OR" value="0">
+          fcs/flaps-serviceable == 0
+          systems/flapscontrol/serviceable == 0
+        </test>
+        <output>fcs/flap-pos-deg</output>
+      </switch>
 
       <aerosurface_scale name="flap normalization">
         <input>fcs/flap-pos-deg</input>
         <domain>
-          <min>  0 </min>
-          <max> 30 </max>
+          <min> -4.0 </min>
+          <max> 30.0 </max>
         </domain>
         <range>
-          <min> 0 </min>
-          <max> 1 </max>
+          <min> 0.0 </min>
+          <max> 1.0 </max>
         </range>
         <output>fcs/flap-pos-norm</output>
       </aerosurface_scale>
     </channel>
 
-    <channel name="Throttle">
+    <!--<channel name="Throttle">
       <pure_gain name="fcs/throttle1">
         <input>fcs/throttle-cmd-norm</input>
-        <gain>1</gain>
+        <gain>1.0</gain>
         <output>fcs/throttle-pos-norm</output>
       </pure_gain>
-    </channel>    
+    </channel>    -->
   </flight_control>

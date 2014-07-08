@@ -2,7 +2,13 @@
 
 <PropertyList>
 
-	<path>Models/hud.ac</path>
+	<path>Aircraft/JA37/Models/hud.ac</path>
+
+	<offsets>
+      <x-m> -3.9</x-m>
+      <y-m>  0.0</y-m>
+      <z-m>  0.54</z-m>
+    </offsets>
 
 	<effect>
  		<inherits-from>Effects/model-transparent</inherits-from>
