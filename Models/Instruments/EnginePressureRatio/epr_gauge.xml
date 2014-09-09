@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<PropertyList>
+  <path>ja37_epr.ac</path>
+
+<animation>
+  <type>pick</type> 
+  <object-name>Needle_B</object-name>
+  <object-name>Needle_F</object-name>
+  <object-name>Plane</object-name>
+  <condition>   
+    <greater-than>
+    <property>systems/electrical/outputs/fuel</property>
+    <value>150</value>
+   </greater-than>
+  </condition>
+  <hovered>
+       <binding>
+         <command>set-tooltip</command>
+         <tooltip-id>epr</tooltip-id>
+         <label>Engine pressure ratio: %1.2f</label>
+         <property>/engines/engine/epr</property>
+      </binding>
+   </hovered>
+ </animation>
+
+
+ <animation>
+  <type>material</type> 
+  <object-name>Needle_B</object-name>
+  <object-name>Needle_F</object-name>
+  <object-name>Plane</object-name>
+  <emission>    
+   <red-prop>instrumentation/instrumentation-light/r</red-prop> 
+   <green-prop>instrumentation/instrumentation-light/g</green-prop> 
+   <blue-prop>instrumentation/instrumentation-light/b</blue-prop>
+   <factor-prop>controls/lighting/instruments-norm</factor-prop>
+  </emission>
+ </animation>
+
+<animation>
+        <type>rotate</type>
+        <object-name>Needle_F</object-name>
+        <condition>
+          <greater-than>
+            <property>systems/electrical/outputs/fuel</property>
+            <value>150</value>
+          </greater-than>
+       </condition>
+       <expression>
+        <product>
+        <sum>
+          <property>/engines/engine/epr</property>
+          <value>-1</value>
+        </sum>
+        <value>190</value>
+      </product>
+       </expression>        
+        <max>330</max>
+        <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+        <axis>
+            <x>-1</x>
+            <y>0</y>
+            <z>0</z>
+        </axis>
+</animation>
+
+<animation>
+        <type>select</type>
+        <object-name>Needle_B</object-name>
+        <condition>
+          <greater-than>
+          <value>0</value>  
+          <value>1</value>
+        </greater-than>
+       </condition>
+</animation>
+
+
+</PropertyList>

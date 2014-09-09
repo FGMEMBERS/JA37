@@ -1,0 +1,45 @@
+Authors of the JA-37 Viggen aircraft for the Flightgear simulator:
+
+Anders Lejczak - anders.lejczak at colacola.se
+====================================
+3D model
+Textures and bumpmap
+
+Nikolai V. Chr. - emptyyetfull at gmail.com
+==================================
+Forum name: Necolatis
+FDM
+HUD
+Animation
+Nasal
+Effects
+Instrument adaption
+System adaption
+XML
+Various minor modelling
+
+
+Thanks
+======
+Thanks to all the patient people on the forums, especially those who helped with understanding aerodynamics.
+Thanks to forum user jam007 for inspirational pictures of the real aircraft.
+Thanks to the test-pilots; JazzTp, Johan G, Jabberwocky, surpii, FGRS, Philosopher and HJ1AN, for feedback and suggestions.
+Thanks to the Flightgear project people for a great simulator.
+
+Note
+====
+Various stuff adapted from other aircrafts:
+
+F16 - Canopy. Inertia. Afterburner flame and engine glow. Texture for Strake-vortex. Cannon. Chronometer. ADI. Pedals.
+J35F - 8 instruments and electrical system
+Mig-15 - Crash code
+Buccaneer - Flight direction indicator in HUD
+TU-154B - Remove delay when switching to external view
+Mig29 - Light glow
+F-14b - Trans-mach vapor cone, guided missiles
+747-400 - Reverse thrust
+BAC-TSR2-GR3 - G-force breathing sounds
+Cessna-208-Caravan - Radiostack
+Zero - Performance monitor
+
+Might have forgotten some.
