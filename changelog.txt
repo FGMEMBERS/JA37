@@ -1,0 +1,650 @@
+======================================
+Flightgear Saab JA-37 Viggen Changelog
+======================================
+
+1.0
+---
+Got the idea to work on this plane.
+JSBSim FDM and engine adapted from Aeromatic output
+Flight controls mainly from F-16 (adjusted some values)
+Engine fire, smoke and other effects adapted from F-16
+Added thrust reverser
+Converted 3D model from MS-FS2004 (License: Creative Commons)
+Added some annunciater sounds
+Adapted some crash code from Mig-15
+
+1.1 
+---
+Fixed paths to work on Linux and Mac
+Renamed folder to JA37 from ja37
+Made all paths relative
+Removed extra copies of model and textures
+
+1.2 - 2013 Feb 15
+---
+Put in a Accelerometer (small inaccuracy due to my limited painting skill)
+
+1.3 - 2013 Feb 16
+---
+Mapped fuel tanks to match the real aircraft
+Put in a generic Canvas HUD
+Put in a Chronometer from Buccaneer, to make it look less empty
+
+1.4 - 2013 Feb 16
+---
+Canvas HUD made brighter, and some details from orig plane added
+Flight Dynamic Model now partly made by DATCOM. (drag & lift mainly)
+
+1.5 - 2013 Feb 17
+---
+Made texture a bit prettier
+Made new splash image and thumbnail
+Removed some debug messages
+
+1.6 - 2013 Feb 19
+---
+Made HUD pretty much function like the JA-37 (except for combat and landing)
+Lowered pilot view 5cm to better align with the HUD
+
+1.7 - 2013 Feb 21
+---
+Added more info to the changelog.
+Made HUD heading be a scale
+Put in horizon line and pitch lines
+Fixed some HUD bugs
+Cleaned up the nasal HUD code a bit
+Lifted pilot view 2cm
+Switched HUD font, which fixed an alignment canvas bug
+Made several adjustments to the HUD
+
+1.8 - 2013 Feb 23
+---
+Fixed small timing problem in HUD heading scale
+
+1.9 - 2013 Feb 23
+---
+HUD heading and alt scales ends now smothly comes into view 
+Made altimeter calibrate only if plane not moving
+Altimeter indicators are now drawn instead of characters
+Altimeter scale is now slightly more compressed
+
+1.10 - 2013 Feb 23
+----
+Improved nasal HUD comments, and beautified the script
+Changed 3D model to DATCOM generated one, due to possible license issue with other model, please stop using prior versions of this plane due to that.
+
+1.11 - 2013 Feb 28
+----
+Switched to Anders Lejczak's 3D model. (adapted it from Poser, relicensed to GPL 2)
+Adjusted many things in model, and xml positions.
+Adjusted materials for metal and glass.
+Animated the rudder, elevons and flaps.
+Made gears invisible when pulled up
+Added strobe to model, and adjusted effect
+Added navigation and beacon lights.
+Made livery selection (Standard and Ground-Attack variant)
+Removed the fly-by-wire system again
+Adjusted AeroRP and CoG
+Modified splash images
+Removed smoke from wingtips
+Adjusted exhaust smoke
+
+1.12 - 2013 March 3
+----
+Added cannon bullets and flares
+Fixed Km/h airspeed was converted from knots opposite
+Added normal map
+Flipped normals on gear, some missile ends and canopy
+Removed vertex colors on fuselage
+Seperated closed gear doors and left gear
+Animated gear doors and left gear
+Fixed altitude numbers on high scale was floating point in 2.11
+Added to fgdata GIT clone
+
+1.13 - 2013 March 7
+----
+Animation: Added proper animation of front and right gears
+Animated front and right gear
+Made fuselage less shiny to look more like military painted metal.
+Adjusted stall warnings to alpha values from plane manual
+Adjusted max sidewind indication to 30 kts, as per Draken, since I do not know Viggens.
+Improved the stall warnings and made them louder.
+Made chase views distance default.
+Moved the HUD down and closer to pilot. Also fixed a xml bug.
+Fixed '77' and 'QFE' symbols in HUD sometimes were displaced.
+Updated wheel contact positions to new model.
+Applied normal map and livery to new names of gear.
+Work-around for shader bug
+Upgraded the aircraft status
+Changed the aerodynamic wing and canard profile. It can now takeoff at 300 Km/h.
+Put in values for very high alpha to better simulate stalls.
+Made stall warning audible in external view.
+Changed lift and drag from DATCOM to graph data.
+Fixed that droptank fuel was calculated into internal fuel tanks.
+Switched afterburner to method 2.
+Adjusted lift and drag from flaps, now almost match takeoff speed of 250Km/h as per the manual.
+Fixed white on droptank
+Set flaps position max to 30 degrees as per manual
+Moved CoG 1 meter back as per document
+Moved aerodynamic ref. point. further back than CoG as per document
+Removed russian chronometer
+Adjusted G-meter to new cockpit.
+Made key 's' autostart and stop
+
+1.14 - 2013 March 13
+----
+Upgraded aircraft rating.
+Put in aerodynamic tables for Roll Moment coefficient due to roll resistance, Pitch moment due to alpha and Yawing moment induced by banking.
+Added lots of low speed aerodynamic tables from NASA document, wont fly properly anymore :(
+Flipped normals on glass and made it single sided.
+Added data to modify drag at higher speeds.
+Adjusted turbine fan sounds, and made gear sounds work.
+Added fuel gauge adapted from Draken
+Made cockpit panel grey.
+AeroRP and CoG, finally in the right places.
+Temporary removed estimates. Fixed some interpretations of the tables and added one.
+Refined aerodynamic yaw and pitch moments.
+Converted aerodynamic data to body-frame
+Added aerodynamic effects of lift due to elevons, flaps and ground effects
+Added aerodynamic effects of pitch due to flaps and ground effects
+Added aerodynamic effects of roll resistance due to ground effects
+Made key to toogle yaw damper on/off
+
+1.15 - 2013 Nov 9
+----
+Fixed yaw damper was off by default
+
+1.16 - 2013 Nov 10
+----
+Updated the splash and thumbnail images
+
+1.17 - 2013 Nov 29
+----
+Sim: Made engine use fuel from minor tanks also.
+Sim: Added flightrecorder support.
+Aero: Drag due to mach, gear, flaps, elevons and groundeffect.
+Aero: Wheels brake now is better able to hold plane shortly at augmented thrust.
+Sim: Made engine consume fuel in more realistic order from fuel tanks.
+Sim: Changed startup fuel tank contents.
+Animate: Fixed that afterburner flame was shortly seen at nose, when entering augmented thrust.
+Animate: Adjusted afterburner flame colors and made its size depend on exhaust nozzle opening size.
+Engine: Made afterburner thrust depend on mach and air-density from real RM8B values.
+Engine: Made augmented thrust toggle in at 99% thrust instead of 50%.
+Engine: Reduced reversed thrust to half of mil-thrust and no afterburner when in reverse.
+Aero: During normal flight, flaps is now kept at 4 degrees above the neutral position. Neutral position when battery off.
+Animate: Fixed bug in flare release.
+GUI: Added more info to aircraft help
+
+1.18 - 2013 Dec 1
+-----
+Animation: Removed the stutter when switching to outside view for first time.
+Engine: Made idle and mil thrust depend on mach and air-density from real RM8B values.
+Aero: Removed speedbrake controls, as per the mid 1980'ties upgrade.
+Animate: Seat up/down was bugged, is removed, would skew the precisely calibrated view through HUD anyway.
+Sim: Aerodynamic effects tested, and airplane FDM rating upgraded to 4 from 1.
+Sim: Airplane Systems rating upgraded to 1 from 0 after testing generic autopilot.
+Sim: Fixed airplane Model rating upgraded to 3 from 2.
+Sim: Airplane status upgraded to beta from alpha, due to combined status value of 9.
+
+1.19 - 2013 Dec 9
+----
+Effect: Made engine fire emission, depend on thrust.
+Effect: Made new animation for transmach vaporcone.
+Effect: Made new animation for strake vortexes.
+Sim: Fixed aircraft was not placed correctly at end of runway.
+Sound: Fixed some model and cockpit sounds had same tag name.
+Sound: Made sound play for turning on battery and systems.
+Sound: Fixed runway rumble heard all the time in cockpit.
+Sound: Made fly-by view engine sounds better.
+Sound: Made cockpit view engine sounds better.
+Animation: Made engine heat darker at lower thrust.
+FDM: Made aerodynamic drag table more accurate.
+Sim: Added structural G limits.
+Aero: Increased realistic fidelity of elevator effect on pitch.
+Cockpit: Added subtle noise to dashboard to make it appear less dull.
+
+1.20 - 2013 Dec 16 (stock FG 3.0.0 version)
+----
+Sim: Made the crash code work properly.
+Engine: Fixed a minor bug in reverse-thrust code.
+Model: Size of all textures is now power of two.
+Sim: Fixed thumbnail picture was wrong size.
+HUD: Removed output in console about missing HUD file.
+HUD: Fixed 'Invalid number of arguments' in FG 3.0.0
+Sim: Moved start-offset-m property from Nasal to XML.
+Sound: Removed nasal sound system reinit code.
+Sim: Fixed wrapping sentences in the aircraft help.
+Engine: Fixed alignments in RM8B IdleThrust and AugThrust tables.
+
+1.21 - 2014 Jan 16
+----
+Sim: Made crash code depend on real speed instead of airspeed.
+HUD: Fixed that rain and snow is not shown though canvas HUD.
+Aero: Added pitch moments for higher and lower alpha values.
+Sim: When crashing the replay is no longer turned off.
+Sound: Removed the stall warnings, replaced with high alpha warnings that work approx like the pilot manual describes.
+Sim: Made flightrecorder track more properties, so sound and animation will function better in replay.
+Sim: Made crash code script pause when replay is in progress.
+Engine: Calculated new values for mil-thrust. It is now less powerful.
+Sim: Enabled animations when viewing the plane in multiplayer.
+Animation: Registered the cockpit glass as transparent.
+Effect: Adapted for Rembrandt. (Afterburner flame will not be transparent in Rembrandt though)
+HUD: Put a limit on the HUD script update speed.
+Engine: Adjusted RB8B engine to JT8D-17A specs, since its the same engine plus afterburner.
+Effect: Fixed engine smoke would come out at nosecone when thrust reversed.
+Sound: The alpha warnings should now stop after crashing.
+Sim: Wing tanks now lose content after structural break.
+Sim: Structural points now have less tendency to make the aircraft bounce at collision.
+Effect: Made trail of engine smoke come out after engine.
+Animation: Made canopy able to open.
+Sim: Is now not able to restart engine after crash.
+Animation: Fixed flaps was missing important polygons.
+Animation: Tilted the dashboard.
+Animation: Made the dashboard support thinner and retracted it a bit.
+Effect: Fixed wierd shadow in front of vtail.
+Effect: Adjusted the engine fire position and size.
+HUD: Made HUD not visible from afar.
+Animation: Made droptank fins visible from right side also.
+Effect: Adjusted trans-mach vapor cone, to better match the plane.
+Sound: Decreased volume for gear rumble and canopy.
+Effect: Made right navigation light green instead of blue.
+Effect: Added glow effect to lights.
+Effect: Made Rembrandt somewhat able to animate the emission of engine light.
+Sound: Made model view engine sound a little better
+Aero: Made axial coefficient more accurate.
+
+1.22 - 2014 Jan 17
+----
+Sim: Enabled showing of fueltank names when flying.
+Aero: More accurate Normal Force Coefficients.
+Sim: First stab at custom Autopilot.
+Engine: Converted mil-thrust from cruise to maximum.
+
+1.23 - 2014 Jan 22
+----
+Animation: Added 5 instruments.
+Animation: Added instrument lights.
+System: Added electrical system.
+Animation: Rotated internal view down a bit.
+Sound: Added g-force breathing sounds.
+Sim: Increased the Flightgear cockpit status to 2.
+Sim: Implemented failures.
+Sim: Fixed engine would not restart if it had been shutdown before generator was fully spooled up.
+Aero: Now can use drop tank as fuel tank, and it is able to jettison.
+Sim: Canopy can now also random fail and fail if electric systems fail.
+Animation: Instruments now have tooltips.
+Sim: Added additional propeties of the fuel type.
+Animation: Changed the drop tank fuel needle to better match original.
+Animation: Added a Radar and basic radio stack.
+Animation: Changed the instrumentation light  color.
+Animation: Changed the formula for how the engine fire lights up.
+Animation: Put LOD on the radio-stack.
+Sim: Adapted radar to the way ja37 works and added a range-selector plus failure.
+Animation: Added 3 indicator lights to the dashboard.
+
+1.24 - 2014 Jan 27
+----
+Effect: Added a specular map for fuselage.
+Animation: Adjusted material on fuselage, glass and lights.
+Animation: Cleared radar screen when it is off.
+Sim: Small fixes to autostart/shutdown/restart.
+Effect: Added reflection and specular effect on glass.
+Effect: Made reflect and rust effect on nozzle.
+Animation: Flipped two places where 59 where 59 where inverted on geardoors.
+Animation: Removed part of geardoors, due to problems with material and angle. (might be put back later)
+Aero: Adjusted ground effect for pitch moment and normal force.
+Aero: Adjusted picth moments, and included pitch moments for flaps and gear down.
+Aero: Adjusted CoG and AeroRP.
+Aero: Inverted elevators effect on normal force.
+Aero: Reintroduced drag due to mach effect.
+Aero: Made ground effect on elevator effect normal force.
+Aero: Sideforce due to sideslip now also depends on gear and flaps.
+Aero: Improved on roll damping due to sideslip.
+Aero: Added pitch moment due to air intake factor.
+Aero: Added zero pitch moment.
+Aero: Improved pitch moment data.
+Engine: Finally found definite numbers on bypass ratio, updated.
+Sound: Fixed cannon too loud.
+
+1.25 - 2014 Feb 1
+----
+Aero: Elevator now deflect less at high speeds. Page 80: (System automatically regulates the interaction between the joystick and the elevator as a function of altitude and mach number.)
+Sound: Fixed fly-by engine sounds stop at low speeds.
+Sim: Made welcome message showing version number.
+Aero: Reduced Static Margin slightly. Can now properly perform the superstall Cobra maneovre as the J35 Draken also could.
+Aero: Readjusted drag due to mach to get 1.1 mach at 50m altitude.
+Sim: Got new engine fire to work on multiplay, and also vapor cone.
+Sim: Added welcome message, showing version number.
+Sim: Filled a bit more more fuel into tanks as default.
+Aero: Made aileron deflection depend on speed.
+
+1.26 - 2014 Feb 5
+----
+Sim: Fixed aircraft did not work on Windows XP.
+Aero: Made more structural points for more realistic crashing.
+Animation: Moved view forward, and increased field of view.
+Aero: Adjusted pilots head position for g forces.
+Animation: Fixed that wheel positions did not match wheel smoke positions.
+Aero: Decreased static margin even further to get higher maneuvres.
+Aero: Less drag due to gear and flaps to make for shorter takeoffs. Also improved the way they are applied.
+Sim: Made missiles firable and selectable. And can use the payload dialog to load/reload/unload.
+Aero: Reduced mach 1.2 - 1.8 regime drag.
+Aero: Slightly adjusted pilot mass position.
+Engine: Increased engine aug-thrust performance from cruise to maximum.
+
+1.27 - 2014 Feb 9
+----
+Engine: Adjusted exhaust position.
+Sim: Increased wheel brake strength.
+HUD: Adjusted HUD to new pilot eye position, and better calculation for pitch-lines pixel positions.
+Animation: Fixed strobe stopped working.
+Aero: Small adjustments.
+HUD: Cleaned up a bit and adjusted center and pixels per degree values.
+
+1.28 - 2014 May 1
+----
+Sim: Made option to toggle automatic thrust reverser.
+Sim: Made option to toogle structural breaking off.
+
+1.29 - 2014 May 11
+----
+Animation: Significantly reduced texture sizes for vaporcone, engine fire and afterburner flame.
+Sound: Fixed no engine sound at reverse thrust.
+Sound: Fixed canopy sounds was playing at startup.
+Animation: Switched to combined shaders to make the shaders take effect in als & rembrandt also.
+Engine: Engines will no longer produce thrust above 70,000 feet
+Aero: Fixed that zero moment was already factored into the Cm data for landing gear down with flaps. The heavy pitch up effect is now more moderate.
+
+1.30 - 2014 May 12
+----
+Aero: Increased elevator deflection in lower air densities. It now pitch better at high altitudes.
+
+1.31 - 2014 May 15
+----
+Sim: Fixed crashing into trees over water, but now possible to hit water waves at very low altitude.
+Sim: Improved autopilot a little, can be a bit wobbly though.
+HUD: Fixed the heading scale was swirling as mechanical compass.
+Animation: Added chronometer, airspeed indicator, 2 x altimeters, plaque, nozzle indicator and ADI.
+
+1.32 - 2014 May 20
+----
+HUD: In options the HUD brightness can now be modified.
+Effect: The combined shader on cockpit glass has been switched to deferred. Now works in standard, ALS and Rembrandt.
+
+1.33 - 2014 May 23
+----
+Effect: Removed the vapour effect at high alpha manoevres.
+Effect: Added wingtip condensation trails.
+Animation: Gear compression is now animated.
+Effect: Fixed normalmap shadow runs along the top of the plane. (still some minor ones left)
+Animation: Closed the two small holes inside the engine inlets.
+
+2.00 - 2014 May 24
+----
+Sim: Gear compression now shows in replay.
+Sim: Fixed payload visuals in replay.
+Sim: Fixed 'e' key would not activate trigger after joystick had fired trigger.
+Sim: Gear compression and payload armament now transmitted over multiplay.
+HUD: Moved QFE text up a small bit.
+Sound: Added sound for multiplayer.
+Aero: Fixed major bug that prevented the aircraft to take-off at 315 Km/h speed. Will also affect overall aerodynamic handling.
+
+2.01 - 2014 May 27
+----
+Sim: Fixed fuel tanks no longer showed name in the payload dialog.
+Aero: Added roll moment due to beta and ailerons.
+Aero: Limited ailerons to 15 degree deflections.
+Aero: Increased downward elevator deflection to 20 degrees.
+Aero: Fixed a bug that meant slightly asymmetric aileron control. (visually)
+Aero: Fixed that Aileron and elevator should not be clipped to 25 degrees in elevons (visually), but aileron simply superimposed on elevator.
+Aero: Rudder maximum deflection now also depends on speed and air-density.
+Aero: Readjusted how elevator and aileron maximum deflection depends on speed and air-density.
+Sim: Fixed when replaying after a crash, fly-by view sounds were gone.
+Animation: Added 3 new liveries.
+Sim: HUD and Radar now only gets activated in FG 2.10+
+Sim: A warning message is now displayed if FG is older than 2.8
+
+2.02 - 2014 May 28
+----
+Sim: Fixed pressing '5' would not reset controls.
+Sim: CHanged keybindings for selecting armaments.
+Sim: Added decals on Blue livery.
+
+2.03 - 2014 May 29
+----
+Aero: Made empty drop tank weigh something, and can now be selected from the payload dialog.
+Aero: Attached drop tank now influence roll and yaw.
+Aero: Solved an aerodynamical conflict, that would make rolling unstable.
+GUI: Fixed disabling crash due to structural damage, and then close options, prevents reenabling of same.
+Aero: Asymmetric wing mounted missiles now affects aerodynamics.
+
+2.04 - 2014 May 31
+----
+GUI: Aircraft can now be repaired from the the menu.
+Sim: Crash code properties are no longer spread out all over the property tree.
+Aero: Readjusted rudder, elevator and aileron deflection in different airspeeds/air-densities.
+Sim: Added Angle-of-attack hold to autopilot.
+Animaton: Added reverse and transonic indicator.
+Animation: Added electric condition on all indicators.
+Aero: Added fuselage contact point, and updated crashcode for contact point detection.
+Animation: Adjusted some instrument materials.
+Animation: Increased size of large attitude indicator.
+
+2.05 - 2014 June 5
+----
+Sim: Fixed reinit bug in radar.
+Animation: Added engine pressure ratio gauge.
+Animation: Optimized LOD for all instruments.
+Animation: Made only the dial on instruments have light.
+Aero: Increased roll damping at very high speeds.
+Animation: Added rudder pedals to cockpit.
+Animation: Added 2 informational plaques to the cockpit.
+
+2.06 - 2014 June 11
+----
+Animation: Replaced the 2D radio stack with a 3D one.
+Effect: Transonic vaporcone now only activates in 0.97-1.05 mach regime.
+GUI: Added performance monitor that show flight stats.
+Animation: Added crude sidepanels for future gauges and controls.
+Animation: Turned front gear 180 degrees, it was modeled wrong.
+Animation: Front gear now turns when steering.
+Aero: Made the mil thrust flight envelope match new data I got.
+GUI: Improvements to performance monitor; distances now shown also in meter, brakes will no longer auto-apply, re-init now works properly.
+HUD: When changing brightness, it no longer reload canvas, but simply assign colors.
+
+2.07 - 2014 June 17
+----
+Sim: Gears now individually have a chance to fail the locking mechanism when deployed at too high speeds.
+Sim: Added tags for future Aircraft-Center parsing (I hope).
+HUD: The HUD now shows all aircraft MP/AI infront as circles.
+HUD: The HUD now shows nearest aircraft MP/AI infront as a diamond with a distance.
+HUD: The HUD now shows nearest airport tower in as a small diamond with a distance.
+HUD: Resized and rotated the HUD. All parts have been moved/resized to cope with the new size.
+HUD: The key H can now cycle HUD brightness.
+HUD: The key I can now switch HUD bewteen imperial and metric units.
+HUD: Made horizon lines thinner to not interfere visually so much with the altimeter scale.
+Aero: Adjusted how fast the steering of the front gear reacts at different speeds.
+
+2.08 - 2014 June 18
+----
+GUI: Made splash screen different color.
+HUD: Fixed multiplayer diamond and airport showed 00 distance always in imperial units mode.
+
+2.10 - 2014 June 18
+----
+GUI: Made option to switch to default FG HUD.
+GUI: Made option to switch off radar and HUD radar tracks.
+
+2.13 - 2014 June 20
+----
+Engine: Set idle N1 at 30.
+Aero: Lowered wheels rolling friction.
+HUD: Radar now track various scenario objects, such as ferries, ballons, tankers, carriers, tanks, bus, trains etc.
+HUD: Now display callsign at diamond.
+
+2.14 - 2014 June 20
+----
+HUD: Fixed diamond callsign, did not change brightness with rest of HUD.
+Sim: Supressed error message about removing failure trigger in crash code.
+Animation: Fixed center plaque was floating in front of pilot, which will be seen if using 3D glasses.
+HUD: Fixed HUD was in testing mode, and got shown before the generator was running.
+
+2.15 - 2014 June 23
+----
+Engine: Increased reverse thrust slightly to match a diagram of reverse thrust angle in the RM8B.
+HUD: The default FG HUD will now be automatically switched on when using FG 2.8.
+Sim: The missiles are now guided, and will only fire if they have lock. The buzz sound will tell if they have lock.
+Sim: Fixed delay after pressing 'e' or trigger, before it fires.
+Sim: Changed firing rate of the KCA cannon to 1350 rounds per minute.
+Sim: Changed where the cannon muzzle on the aircraft is located.
+
+2.16 - 2014 June 24
+----
+Sim: Fixed missile guidence would be turned off, during flight.
+
+2.17 - 2014 June 25
+----
+HUD: Made a combat mode for the HUD. Different pitch lines, reticle and weapon name displayed.
+HUD: Combat mode HUD reticle vertical tail position shows angle of attack.
+HUD: Radar no longer can lock onto carriers.
+Sim: Adjusted the RB-24J specs to match Aim-9J.
+Sim: Increased propability when missile explodes that Bombable will register it.
+
+2.18 - 2014 June 25
+----
+Sim: If rb-24 loses lock, but last was close to target, it will now explode.
+GUI: Added option to enable missile hit messages in MP. Else they will be local.
+Sim: Adding a missile to a pylon whose previous missile is still flying will now not work.
+
+2.19 - 2014 June 26
+----
+HUD: In combat mode, the dots on the horizon line is no longer shown.
+HUD: The -v- symbol is now shown in combat mode, when ammo is out, and it follows flight direction.
+HUD: The -d- symbol now follows flight direction in nav and combat mode. The fin moves low if AoA too high. Goes up means AoA too low. Fin blinks when AoA critical high.
+Sim: Fixed missiles would crash when pausing the sim under flight.
+Sound: Fixed the buzz would start before a missile was armed and selected.
+GUI: HUD radar-tracks and radar screen, can now be disabled seperately.
+Aero: Stopped sending updates to jsbsim continuelly. Is now only done when properties change.
+Sim: Options if radar is enabled and units in HUD are now saved between flying sessions.
+
+2.20 - 2014 June 26
+----
+HUD: Made lines thinner.
+Sim: Fixed canopy would not get power to open.
+HUD: Symbol for nearest airport now show ICAO also.
+Sim: When crashing the reason is now displayed on screen.
+Sim: Updated the help to reflect the changes to the HUD.
+
+2.21 - 2014 June 27
+----
+HUD: Added key to toggle custom/FG HUD.
+
+2.22 - 2014 June 27
+----
+HUD: Added option to turn on a HUD bank and slip indicator.
+
+2.23 - 2014 June 27
+----
+Sim: Fixed a regression bug in missiles.
+HUD: Made slip indicator be more sensitive.
+HUD: Diamond is now only shown in combat mode.
+Sound: Lowered volume of tracking buzz.
+Sim: Changed the way missiles keep track of time. They are now more precise, especially at long distance.
+Sim: Missiles now work in FG 3.0, but they still wont display.
+
+2.24 - 2014 June 29
+----
+Aero: Moved primary fuel tank to CoG.
+Sim: Changed again how missiles keep track of time.
+Sound: Added clicksound when switching various functions.
+HUD: Changed radar track to half-circles and half-boxes. Made diamond only show when has lock.
+Sim: Increased logic explosion size, to better get bombable to register a hit.
+
+2.25 - 2014 June 29
+----
+HUD: Decreased size of alt scale indicator '>' slightly.
+HUD: Made pitch lines not be drawn on top of alt scale.
+HUD: Fixed target track would not change brightness with the rest of the HUD.
+HUD: Doubled size of turn coordinator and made it more sensitive.
+HUD: Decreased font size of all text elements.
+HUD: Switched mach and airspeed-kt as in the original HUD. Removed the 'M' again when in non-interoperability mode as per the original.
+Sim: Made some options saved between sessions. E.g. HUD units, turn coordinator, auto-reverse, radar on/off.
+
+2.26 - 2014 June 30
+----
+HUD: Made desired heading bug in heading scale.
+HUD: Made desired altitude lines.
+Sim: Made agl hold work in autopilot.
+Sim: Improved autopilot.
+Sim: Missiles will no longer lock until the HUD is in combat mode.
+
+2.27 - 2014 July 2
+====
+Sim: Made autostart more fail safe and start a bit faster.
+Aero: Increased empty mass significanty. (suspect the old value was from AJ-37)
+Engine: Adjusted how engine performs when idle to match specs.
+Engine: Recalculated augmented thrust in different altitudes and speeds. It now has less power in most regimes.
+Aero: Sideforce due to sideslip is now influenced by mach effect and ground effect.
+Aero: Normal force is now affected by mach effect.
+Engine: Adjusted reverse thrust to match performance specs.
+HUD: Made turn coordinator stop turning. Now its more of a sideslip indicator.
+
+2.28 - 2014 July 3
+====
+Engine: Fixed regression in reverse thrust making it thrust normal, it is now reversed again.
+Aero: Decreased aileron and rudder sensitivity at sealevel for low speeds.
+Sim: Changed fuel loadout.
+
+2.29 - 2014 July 4
+====
+Aero: Decreased aileron sensitivity at sealevel low speeds further.
+Aero: Reverted empty weight back to what it was before.
+Aero: Added sideforce due to aileron, mach and rudder.
+Aero: Updated tables for axial force due to gear and flaps.
+
+2.30 - 2014 July 5
+====
+Sim: Adjusted speed, weight and rate of cannon rounds.
+Sound: Made MP engine sound be heard when touched down, not only when flying.
+Aero: Decreased empty weight of drop tank.
+Engine: Adjusted thrust tables for below 10000ft and slower than M0.75.
+HUD: Made route-manager work with heading scale and alt scale.
+HUD: Heading bug now blink when not not in view, instead of using clip.
+GUI: Added option for yaw damper.
+
+2.31 - 2014 July 6
+====
+Engine: Convert engine tables to Aeromatic as it is more reliable than Stanford Engine Model. Take-off distance now 450m.
+Aero: Axial force is more sensible. Sealevel M0.93 mil-thrust, M2.25 aug-thrust. 36000ft M2.2 aug-thrust.
+
+2.32 - 2014 July 7
+====
+HUD: Moved turn coordinator above airspeed indicator.
+GUI: Made message to screen when toggling yaw damper.
+GUI: Improved message to screen when toggling reverse thrust.
+
+2.33 - 2014 July 7
+====
+HUD: Fixed flight path reticle was too low. When in combat mode and cannon selected it was too high.
+GUI: Updated aircraft help.
+
+2.34 - 2014 July 7
+====
+Aero: Make rudder deflect more at low speeds.
+
+2.35 - 2014 July 7
+====
+Aero: Made gear springs increase damping about 50%.
+Sim: The key 'm' now toggles nose gear steering.
+
+2.36 - 2014 July 8
+====
+Aero: Gear brakes can now again hold full aug thrust, as documented they should.
+HUD: Flight path indicator now is shown alongside sidewind indicator, when front gear is uncompressed.
+Aero: Made gear springs increase damping further.
+HUD: Moved turn coordinator back into the corner.
+
+2.37 - 2014 July 8 (FlightGear 3.2 version)
+====
+Aero: Reverted damping values back.
+Sim: Adjusted autostart fail message.
