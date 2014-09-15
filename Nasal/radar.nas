@@ -129,7 +129,6 @@ var radar = {
       forindex (i; me.stroke) me.stroke[i].show();
       var te = getprop("sim/time/elapsed-sec");
       
-      
       #Stroke animation
       if (te == nil) {
         te = 5;
@@ -150,16 +149,14 @@ var radar = {
       var prev_angle = me.stroke_dir[me.no_stroke-1];
       me.stroke_dir[me.no_stroke-1] = curr_angle;
 
-
-           
       #Update blips
       me.update_blip(curr_angle, prev_angle);
     
-
-      
-
-
-      settimer(func me.update(), 0.02);
+      settimer(
+        #func debug.benchmark("rad loop", 
+          func me.update()
+       #   )
+        , 0.05);
     } else {
       g.hide();
       settimer(func me.update(), 1);
@@ -326,4 +323,4 @@ var theinit = setlistener("sim/ja37/supported/initialized", func {
     var scope = radar.new();
     scope.update();
   }
-}, 1);
+}, 1, 0);
