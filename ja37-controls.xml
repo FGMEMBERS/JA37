@@ -2,6 +2,7 @@
 
 <flight_control name="JA37 FC">
     <channel name="Canopy">
+      
         <!-- canopy get stuck if it fail -->
         <switch name="fails/canopy">
           <default value="fcs/canopy/engage"/>
@@ -11,6 +12,7 @@
           </test>
           <output>fcs/canopy-engageTmp</output>
         </switch>
+
         <kinematic name="fcs/canopy-control">
             <input>fcs/canopy-engageTmp</input>
             <traverse>
@@ -25,6 +27,7 @@
             </traverse>
             <output>fcs/canopy-pos-norm</output>
         </kinematic>
+
     </channel>
 
 <!--
@@ -65,11 +68,12 @@
           <independentVar lookup="row">velocities/mach</independentVar>
           <independentVar lookup="column">atmosphere/density-altitude</independentVar>
           <tableData>
-                          0.0       60000.0
+                          0.0       45000.0
               0.0         1.00         1.0
               0.5         1.00         1.0
+              0.625       0.85         1.0
               0.75        0.45         1.0
-              1.0         0.25         1.0
+              1.0         0.20         1.0
               2.2         0.05         0.3
           </tableData>
         </table>
@@ -136,9 +140,9 @@
           <tableData>
                           0.0         60000.0
               0.0         0.47           1.0
-              0.5         0.20           0.75
-              1.0         0.14           0.35
-              2.2         0.06           0.15
+              0.5         0.40           0.75
+              1.0         0.20           0.45
+              2.2         0.06           0.225
           </tableData>
         </table>
         <output>fcs/aileron-sum-mach</output>
@@ -324,12 +328,12 @@
         <input>fcs/steer-cmd-norm</input>
         <table>
           <independentVar>velocities/vg-fps</independentVar>
-          <tableData>
+          <tableData><!-- note that this is positive also when moving in reverse -->
               10.0        80.0
               20.0        50.0
               50.0        10.0
-              150.0       1.0
-              200.0       0.5
+              150.0       2.5
+              200.0       2.0 <!-- by this speed the front wheel hardly touches the runway -->
           </tableData>
         </table>
         <output>fcs/steer-cmd-delayed</output>
@@ -397,4 +401,42 @@
         <output>fcs/throttle-pos-norm</output>
       </pure_gain>
     </channel>    -->
+
+    <channel name="Autopilot">
+      <scheduled_gain name="Autopilot max climb">
+        <input>autopilot/one</input>
+        <table>
+          <independentVar lookup="row">velocities/mach</independentVar>
+          <tableData>
+              0.25            5        
+              0.5          5000        
+              1.0         30000       
+          </tableData>
+        </table>
+        <output>autopilot/climb</output>
+      </scheduled_gain>
+
+      <pure_gain name="Autopilot min climb">
+          <input>autopilot/climb</input>
+          <gain>-0.2</gain>
+          <output>autopilot/descent</output>
+      </pure_gain>
+    </channel>
+
+    <channel name="Hook">
+        <kinematic name="fcs/hook-control">
+            <input>fcs/hook-engage</input>
+            <traverse>
+                <setting>
+                    <position>0</position>
+                    <time>0</time>
+                </setting>
+                <setting>
+                    <position>1</position>
+                    <time>2.5</time>
+                </setting>
+            </traverse>
+            <output>fcs/hook-pos-norm</output>
+        </kinematic>
+    </channel>
   </flight_control>
