@@ -595,10 +595,13 @@
       <mode>once</mode>
       <condition>
         <property>sim/current-view/internal</property>
-        <equals>
-          <property>sim/ja37/sound/click-on</property>
-          <value>1</value>
-        </equals>
+        <or>
+          <equals>
+            <property>sim/ja37/sound/click-on</property>
+            <value>1</value>
+          </equals>
+          <property>sim/ja37/avionics/master-warning-button</property>
+        </or>
       </condition>
       <volume>
         <factor>1</factor>
@@ -641,9 +644,10 @@
           </greater-than>
         </and>
       </or>
-      <not>
-          <property>fdm/jsbsim/simulation/exploded</property>
-      </not>
+      <greater-than>
+          <property>systems/electrical/outputs/annunciator</property>
+          <value>23</value>
+      </greater-than>
     </condition>
 		<volume><factor>4</factor></volume>
 	</alpha>
@@ -688,9 +692,10 @@
           </greater-than>
         </and>
       </or>
-  		<not>
-        	<property>fdm/jsbsim/simulation/exploded</property>
-      </not>
+      <greater-than>
+          <property>systems/electrical/outputs/annunciator</property>
+          <value>23</value>
+      </greater-than>
 		</condition>
 		<volume><factor>3.5</factor></volume>
 	</alphawarn>  
@@ -707,9 +712,10 @@
         <value>18</value>
       </greater-than>
       <property>sim/current-view/internal</property>
-      <not>
-          <property>fdm/jsbsim/simulation/exploded</property>
-      </not>
+      <greater-than>
+          <property>systems/electrical/outputs/annunciator</property>
+          <value>23</value>
+      </greater-than>
       <not>
           <property>gear/gear[1]/wow</property>
       </not>
@@ -720,6 +726,37 @@
     <volume><factor>4</factor></volume>
   </takeoffalpha>
 
+  <bingo>
+    <name>bingo</name>
+    <mode>single</mode>
+    <path>Aircraft/JA37/Sounds/fuel-low.wav</path>
+    <type>avionics</type>
+    <condition>
+      <property>sim/ja37/sound/fuel-low-on</property>
+      <property>sim/current-view/internal</property>
+      <greater-than>
+          <property>systems/electrical/outputs/annunciator</property>
+          <value>23</value>
+      </greater-than>
+    </condition>
+    <volume><factor>4</factor></volume>
+  </bingo>
+
+  <pullup>
+    <name>pull-up</name>
+    <mode>single</mode>
+    <path>Aircraft/JA37/Sounds/pull-up.wav</path>
+    <type>avionics</type>
+    <condition>
+      <property>sim/ja37/sound/terrain-on</property>
+      <property>sim/current-view/internal</property>
+      <greater-than>
+          <property>systems/electrical/outputs/annunciator</property>
+          <value>23</value>
+      </greater-than>
+    </condition>
+    <volume><factor>4</factor></volume>
+  </pullup>
 
   <!-- old stall warnings:-->
   
