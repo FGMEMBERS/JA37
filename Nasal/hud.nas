@@ -37,11 +37,13 @@ var TRUE = 1;
 var countQFE = 0;
 var QFEcalibrated = FALSE;# if the altimeters are calibrated
 
-var centerOffset = -143;#pilot eye position up from vertical center of HUD. (in line from pilots eyes)
+var HUDTop = 0.79; # position of top of HUD in meters
 # HUD z is 0 to 0.25 and raised 0.54 up. Finally is 0.54m to 0.79m, height of HUD is 0.25m
+var pixelPerMeter = 4096;
 # Therefore each pixel is 0.25 / 1024 = 0.000244140625m or each meter is 4096 pixels.
+var centerOffset = -143;#pilot eye position up from vertical center of HUD. (in line from pilots eyes)
 # View is 0.70m so 0.79-0.70 = 0.09m down from top of HUD, since Y in HUD increases downwards we get pixels from top:
-# 512 - (0.09 / 0.000244140625) = 143.36 pixels up from center. Since -y is upward, result is -143.
+# 512 - (0.09 / 0.000244140625) = 143.36 pixels up from center. Since -y is upward, result is -143. (Per default)
 
 var pixelPerDegreeY = 37; #vertical axis, view is tilted 10 degrees, zoom in on runway to check it hit the 10deg line
 var pixelPerDegreeX = 37; #horizontal axis
@@ -55,7 +57,7 @@ var indicatorOffset = -10; #alt scale indicators horizontal offset from scale (m
 var headScalePlace = 300; # vert placement of alt scale
 var headScaleTickSpacing = 65;# horizontal spacing between ticks. Remember to adjust bounding box when changing.
 var altimeterScaleHeight = 225; # the height of the low alt scale. Also used in the other scales as a reference height.
-var reticle_factor = 1.5;# size of flight path indicator, aiming reticle, and out of fuel reticle
+var reticle_factor = 1.3;# size of flight path indicator, aiming reticle, and out of ammo reticle
 var sidewind_factor = 1.0;# size of sidewind indicator
 var r = 0.0;
 var g = 1.0;
@@ -449,7 +451,7 @@ var HUDnasal = {
   
     # pitch lines
     var distance = pixelPerDegreeY * 5;
-    for(var i = -18; i <= -1; i += 1) {
+    for(var i = -18; i <= -1; i += 1) { # stipled lines
       append(artifacts1, HUDnasal.main.horizon_group2.createChild("path")
                      .moveTo(200, -i * distance)
                      .horiz(50)
@@ -460,6 +462,8 @@ var HUDnasal = {
                      .moveTo(500, -i * distance)
                      .horiz(50)
                      .moveTo(600, -i * distance)
+                     .horiz(50)
+                     .moveTo(700, -i * distance)
                      .horiz(50)
 
                      .moveTo(-200, -i * distance)
@@ -472,23 +476,25 @@ var HUDnasal = {
                      .horiz(-50)
                      .moveTo(-600, -i * distance)
                      .horiz(-50)
+                     .moveTo(-700, -i * distance)
+                     .horiz(-50)
                      
                      .setStrokeLineWidth(w)
                      .setColor(r,g,b, a));
     }
 
-    for(var i = 1; i <= 18; i += 1)
+    for(var i = 1; i <= 18; i += 1) # full drawn lines
       append(artifacts1, HUDnasal.main.horizon_group2.createChild("path")
-         .moveTo(650, -i * distance)
-         .horiz(-450)
+         .moveTo(750, -i * distance)
+         .horiz(-550)
 
-         .moveTo(-650, -i * distance)
-         .horiz(450)
+         .moveTo(-750, -i * distance)
+         .horiz(550)
          
          .setStrokeLineWidth(w)
          .setColor(r,g,b, a));
 
-    for(var i = -18; i <= 18; i += 1) {
+    for(var i = -18; i <= 18; i += 1) { # small vertical lines in combat mode
       append(artifacts1, HUDnasal.main.horizon_group3.createChild("path")
          .moveTo(-200, -i * distance)
          .vert(25)
@@ -706,13 +712,15 @@ var HUDnasal = {
         gears:    "gear/gear/position-norm",
         combat:   "/sim/ja37/hud/combat",
         station:  "controls/armament/station-select",
-        tenHz:    "sim/ja37/blink/ten-Hz",
-        fiveHz:   "sim/ja37/blink/five-Hz",
+        tenHz:    "sim/ja37/blink/ten-Hz/state",
+        fiveHz:   "sim/ja37/blink/five-Hz/state",
         callsign: "/sim/ja37/hud/callsign",
         elec:     "/systems/electrical/outputs/hud",
         altCalibrated: "sim/ja37/avionics/altimeters-calibrated",
         carrierNear: "fdm/jsbsim/ground/carrier-near",
-        terrainOn: "sim/ja37/sound/terrain-on"
+        terrainOn:   "sim/ja37/sound/terrain-on",
+        viewNumber:  "sim/current-view/view-number",
+        viewZ:       "sim/current-view/y-offset-m"
       };
    
       foreach(var name; keys(HUDnasal.main.input)) {
@@ -738,6 +746,11 @@ var HUDnasal = {
       # if it also later loses power, and the power comes back, the HUD will not reappear.
       settimer(func me.update(), 1);
      } else {
+      if(me.input.viewNumber.getValue() == 0) {
+        # in case the user has adjusted the Z view position, we calculate the Y point in the HUD in line with pilots eyes.
+        var fromTop = HUDTop - me.input.viewZ.getValue();
+        centerOffset = -1 * (512 - (fromTop * pixelPerMeter));
+      }
       var mode = me.input.gears.getValue() != 0 ? TAKEOFF : (me.input.combat.getValue() == 1 ? COMBAT : NAV);
       var cannon = me.input.station.getValue() == 0 and me.input.combat.getValue() == 1;
       var out_of_ammo = FALSE;
@@ -885,16 +898,38 @@ var HUDnasal = {
       var degOffset = nil;
       var headingMiddle = roundabout(me.input.hdg.getValue()/10.0)*10.0;
       #print("desired "~desired_mag_heading~" head-middle "~headingMiddle);
+
       #find difference between desired and middleText heading
-      if (headingMiddle > 300 and desired_mag_heading < 60) {
-        headingMiddle = headingMiddle - 360;
-        degOffset = desired_mag_heading - headingMiddle; # positive value
-      } elsif (headingMiddle < 60 and desired_mag_heading > 300) {
-        desired_mag_heading = desired_mag_heading - 360;
-        degOffset = desired_mag_heading - headingMiddle; # negative value
+      if (headingMiddle > desired_mag_heading) {
+        if (headingMiddle - desired_mag_heading < 180) {
+          # negative value
+          degOffset = desired_mag_heading - headingMiddle;
+        } else {
+          # positive value
+          headingMiddle = headingMiddle - 360;
+          degOffset = desired_mag_heading - headingMiddle;
+        }
       } else {
-        degOffset = desired_mag_heading - headingMiddle;
+        if (desired_mag_heading - headingMiddle < 180) {
+          # positive value
+          degOffset = desired_mag_heading - headingMiddle;
+        } else {
+          # negative value
+          desired_mag_heading = desired_mag_heading - 360;
+          degOffset = desired_mag_heading - headingMiddle;
+        }
       }
+
+
+#      if (headingMiddle > 300 and desired_mag_heading < 60) {
+ #       headingMiddle = headingMiddle - 360;
+  #      degOffset = desired_mag_heading - headingMiddle; # positive value
+   #   } elsif (headingMiddle < 60 and desired_mag_heading > 300) {
+    #    desired_mag_heading = desired_mag_heading - 360;
+     #   degOffset = desired_mag_heading - headingMiddle; # negative value
+      #} else {
+       # degOffset = desired_mag_heading - headingMiddle;
+      #}
       
       var pos_x = me.middleOffset + degOffset*(headScaleTickSpacing/5);
       #print("bug offset deg "~degOffset~"bug offset pix "~pos_x);
@@ -1813,8 +1848,16 @@ var HUDnasal = {
       var angle = (wind_heading -heading) * (math.pi / 180.0); 
       var wind_side = math.sin(angle) * wind_speed;
       #print((wind_heading -heading) ~ " " ~ wind_side);
-      me.takeoff_symbol.setTranslation(clamp(-wind_side * sidewindPerKnot, -450, 450), sidewindPosition);    
-      me.takeoff_symbol.show();
+      me.takeoff_symbol.setTranslation(clamp(-wind_side * sidewindPerKnot, -450, 450), sidewindPosition);
+      if(me.input.gears.getValue() < 1) {# gears are being deployed or retracted
+        if(me.input.tenHz.getValue() == 1) {
+          me.takeoff_symbol.show();
+        } else {
+          me.takeoff_symbol.hide();
+        }
+      } else {
+        me.takeoff_symbol.show();
+      }
     } else {
       me.takeoff_symbol.hide();
     }
@@ -1979,26 +2022,6 @@ var toggleCallsign = func () {
     aircraft.HUD.normal_type();
   }
 };
-
-var blinker_five_hz = func() {
-  if(getprop("sim/ja37/blink/five-Hz") == FALSE) {
-    setprop("sim/ja37/blink/five-Hz", TRUE);
-  } else {
-    setprop("sim/ja37/blink/five-Hz", FALSE);
-  }
-  settimer(func blinker_five_hz(), 0.2);
-};
-settimer(func blinker_five_hz(), 0.2);
-
-var blinker_ten_hz = func() {
-  if(getprop("sim/ja37/blink/ten-Hz") == FALSE) {
-    setprop("sim/ja37/blink/ten-Hz", TRUE);
-  } else {
-    setprop("sim/ja37/blink/ten-Hz", FALSE);
-  }
-  settimer(func blinker_ten_hz(), 0.1);
-};
-settimer(func blinker_ten_hz(), 0.1);
 
 var nextTarget = func () {
   var max_index = size(tracks)-1;
