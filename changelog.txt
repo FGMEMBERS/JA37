@@ -770,8 +770,57 @@ GUI: Made popup and sound feedback of deploying hook, launchbar and catapult.
 HUD: Fix for some cases where selection's velocity vector would be drawn, after selection was gone.
 Aero: Improved how elevator deflects at low altitude, at mach 0.6 and 1.0+
 
-2.58
+2.58 - 2014 September 15
 ====
 Sim: Fixed some cases where it would not properly detect if was on a carrier deck or not.
 HUD: Optimised Nasal reading and writing to properties and made parts of the code more readable.
 Sim: Optimized the crash code a little.
+
+2.59 - 2014 September 15
+====
+HUD: Fixed so that the heading bug is always to the correct side, when turned away from waypoint.
+
+2.60 - 2014 September 16
+====
+Animation: Refined how the radar stroke fades off.
+Sim: Fine adjustment of radar range is now 10 times more coarse.
+Animation: Refined how the radar tracks fades off, they now stay visible longer.
+Animation: Fixed master warning tooltips.
+Model: Made the HUD slightly brighter.
+Model: Added 14 switches. Aircraft can now also be started manually.
+Sim: Increased the aircraft ratings.
+
+2.61 - 2014 September 17
+====
+Model: Added 6 switches and 10 buttons.
+Animation: Master warning will now not engage on the ground.
+Sim: Exterior lights now properly uses the electrical system, and relies on generator power.
+
+2.62 - 2014 September 20
+====
+Sim: Decreased chance of hitting own aircraft when firing a missile.
+GUI: Enabled checklists markers.
+Sim: Cleaned up in the -set file.
+Sim: Increased negative G that the pilot can handle.
+Model: Added 1 switch.
+
+2.63 - 2014 September 23
+====
+Effect: Made engine smoke and wingtip vapour be influenced by sun/moonlight. Will now be dark when scene is dark.
+Aero: Made seperate adjustments for elevator when it is deflected downwards.
+
+2.64 - 2014 September 24
+====
+HUD: Pitch lines, tower indicators and radar tracks now auto adjust to user changing the pilot view Down/Up position.
+Model: Pilot view position is now reset to default every reset/startup.
+Sim: Changed some properties from generic to double.
+Effect: Made missile smoke be influenced by sun/moonlight. Will now be dark when scene is dark.
+Aero: Made upward elevator deflection table less linear around 20000ft.
+
+2.65 - 2014 September 25
+====
+Sim: Optimized how blinking indicators and HUD items is done.
+Sim: Performance optimized main loop.
+HUD: Made sidewind indicator blink when gear is retracting or deploying.
+HUD: Made flight path symbols slightly smaller.
+HUD: Extended the pitch lines a bit longer.
