@@ -843,6 +843,57 @@ Effect: Switched lightning off for wingtip vapour, since particles 'blink' in da
 Aero: Much increased accuracy of side force coefficient due to sideslip, with and without gears and flaps deployed.
 Aero: Improved correctness and accuracy of side force coefficient due to assymetric detachment of fuselage vortices at extreme AoA.
 Aero: Increased precision of yaw coefficient due to roll speed.
-Aero: Yaw due to beta now has much better fidelity.
+Aero: Yaw due to beta with and without gears and flaps now has much better fidelity.
 Aero: Added coefficient: Yaw due asymmetric detachment of vortexes
 Aero: Increased rudder deflection by 50% at low altitudes.
+
+2.69 - 2014 November 13
+====
+Sim: Flight recorder will now record the last 5 mins at high resolution, instead of the default 1 minute.
+Aero: Added Side Force coefficient due to Sideslip due to drop tank.
+Aero: Fixed that droptank mass change had not been propagated to the aerodynamic section, so the droptank effects was half.
+Sim: Fixed a bug that would make the failure system for gear locking mechanisms fail to install.
+Model: Fixed that the angle of attack indicator was slightly off. Notice it wont go past -7/30 degrees.
+Model: The accelerometer will now still work even if red/blackout is disabled.
+GUI: Angle of attack and G-Force has been added to the performance monitor.
+Model: The accelerometer tooltip will now display with 1 floating point precision.
+
+2.70 - 2014 November 13
+====
+Aero: Axial coefficients of RB-24J and drop tank estimated at 0.00075 and 0.00125.
+Aero: Roll damp due to roll rate now depends also on sideslip angle.
+Aero: Added how sideslip angle influences yaw due to roll speed.
+Aero: Yaw due to asymmetric wing pylon stores is now calculated.
+
+2.71 - 2014 November 20
+====
+Aero: Pitch damping due to pitch rate and also pitch damping due to alpha dot is now more detailed.
+Aero: Roll due to beta dot table redone with higher fidelity.
+Model: Adjusted 4 switches and 1 button positions, to align better with the panel.
+Animation: Added a new view - Left wing.
+Aero: Added separate elevon axial coefficients.
+Effect: Precipitation will now fall just outside the cockpit instead of 5 meters away. (only work in FG 3.3 or higher)
+Effect: Enabled that rain will now form rain drops when hitting the fuselage. (only work in FG 3.3 or higher)
+Effect: Added landing light cone, seen from cockpit only. ALS must be on and landmass shader must be at minimum setting 5. (only work in FG 3.3 or higher)
+
+2.72 - 2014 November 20
+====
+Aero: Added axial coefficient for rudder deflection.
+Aero: Adjusted axial coefficient for flaps and elevons.
+
+2.73 - 2014 November 22
+====
+Animation: Added a new view - Right wing.
+Animation: Added a new view - Top.
+Animation: Added a new view - Front.
+Animation: Added a new view - Selection, it will look from above the airplane toward the selection.
+
+2.74 - 2014 November 26
+====
+Animation: Adjusted selection view so that it keeps the ja37 in the center of view.
+Effect: Afterburner flame now fits the engine exhaust better.
+Sim: Improved code for backward compatibility control.
+
+2.75 - 2014 December 5
+====
+Effect: Made engine fire animation more smooth.

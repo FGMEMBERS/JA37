@@ -36,7 +36,7 @@
         <tag>afterburner</tag>
     </tags>
 
-    <aircraft-version>2.68</aircraft-version>
+    <aircraft-version>2.75</aircraft-version>
    
     <flight-model>jsb</flight-model>
     <aero>ja37-jsbsim</aero>
@@ -355,7 +355,7 @@
       <z-offset-m type="double">-3.40</z-offset-m>
     </current-view>
 
-    <view>
+    <view n="0">
      <internal>true</internal>
      <config>
        <pitch-offset-deg type="double">-15</pitch-offset-deg>
@@ -365,8 +365,133 @@
        <default-field-of-view-deg type="double">100</default-field-of-view-deg>
      </config>
     </view>
-  
-  
+    <!--<view n="100">
+      <name>Dashboard test View</name>
+      <type>lookfrom</type>
+      <internal>true</internal>
+      <config>
+        <from-model type="bool">true</from-model>
+        <x-offset-m>0.0</x-offset-m>
+        <y-offset-m>0.50</y-offset-m>
+        <z-offset-m>-3.75</z-offset-m>
+        <default-field-of-view-deg>90</default-field-of-view-deg>
+        <limits>
+          <enabled type="bool">false</enabled>
+        </limits>
+      </config>
+    </view>-->
+    <view n="101">
+      <name>Left wing view</name>
+      <type>lookfrom</type>
+      <internal>false</internal>
+      <config>
+        <from-model type="bool">true</from-model>
+        <x-offset-m>-4.0</x-offset-m>
+        <y-offset-m>1.55</y-offset-m>
+        <z-offset-m>11.3</z-offset-m>
+        <default-field-of-view-deg>70</default-field-of-view-deg>
+        <limits>
+          <enabled type="bool">false</enabled>
+        </limits>
+      </config>
+    </view>
+    <view n="102">
+      <name>Right wing view</name>
+      <type>lookfrom</type>
+      <internal>false</internal>
+      <config>
+        <from-model type="bool">true</from-model>
+        <x-offset-m> 4.0</x-offset-m>
+        <y-offset-m>1.55</y-offset-m>
+        <z-offset-m>11.3</z-offset-m>
+        <default-field-of-view-deg>70</default-field-of-view-deg>
+        <limits>
+          <enabled type="bool">false</enabled>
+        </limits>
+      </config>
+    </view>
+    <view n="103">
+      <name>Top view</name>
+      <type>lookfrom</type>
+      <internal>false</internal>
+      <config>
+        <pitch-offset-deg type="double">-90</pitch-offset-deg>
+        <from-model type="bool">true</from-model>
+        <x-offset-m>   0</x-offset-m>
+        <y-offset-m> 100</y-offset-m>
+        <z-offset-m>   1</z-offset-m>
+        <default-field-of-view-deg>25</default-field-of-view-deg>
+        <limits>
+          <enabled type="bool">false</enabled>
+        </limits>
+      </config>
+    </view>    
+    <view n="105">
+      <name>Front view</name>
+      <type>lookat</type>
+      <internal>false</internal>
+      <config>
+        <pitch-offset-deg type="double">5</pitch-offset-deg>
+        <heading-offset-deg type="double">180</heading-offset-deg>
+        <!--<from-model type="bool">true</from-model>-->
+
+        <default-field-of-view-deg>40</default-field-of-view-deg>
+
+        <from-model type="bool">false</from-model>
+        <from-model-idx type="int">0</from-model-idx>
+        <eye-lat-deg-path>/position/latitude-deg</eye-lat-deg-path>
+        <eye-lon-deg-path>/position/longitude-deg</eye-lon-deg-path>
+        <eye-alt-ft-path>/position/altitude-ft</eye-alt-ft-path>
+        <eye-heading-deg-path>/orientation/heading-deg</eye-heading-deg-path>
+
+        <at-model type="bool">true</at-model>
+        <at-model-idx type="int">0</at-model-idx>
+
+        <ground-level-nearplane-m type="double">0.5f</ground-level-nearplane-m>
+
+        <x-offset-m>0.0</x-offset-m>
+        <y-offset-m>5.35</y-offset-m>
+        <z-offset-m>-40.0</z-offset-m>
+        <!--<limits>
+          <enabled type="bool">true</enabled>
+          <left>
+            <heading-max-deg type="double">170</heading-max-deg>
+            <x-offset-max-m type="double">-2</x-offset-max-m>
+            <x-offset-threshold-deg type="double">170</x-offset-threshold-deg>
+          </left>
+          <right>
+            <heading-max-deg type="double">190</heading-max-deg>
+            <x-offset-max-m type="double">2</x-offset-max-m>
+            <x-offset-threshold-deg type="double">190</x-offset-threshold-deg>
+          </right>
+        </limits>-->
+      </config>
+    </view>
+    <view n="110">
+       <name>Selection view (experimental)</name>
+       <type>lookfrom</type>
+       <config>
+         <x-offset-m type="double">0.00</x-offset-m>
+         <y-offset-m type="double">3.00</y-offset-m>
+         <z-offset-m type="double">20.00</z-offset-m>
+         <eye-lat-deg-path>/position/latitude-deg</eye-lat-deg-path>
+         <eye-lon-deg-path>/position/longitude-deg</eye-lon-deg-path>
+         <eye-alt-ft-path>/fdm/jsbsim/position/h-sl-ft</eye-alt-ft-path>
+
+         <eye-pitch-deg-path>/sim/ja37/radar/selection-pitch-deg</eye-pitch-deg-path>
+         <eye-heading-deg-path>/sim/ja37/radar/selection-heading-deg</eye-heading-deg-path>
+
+         <at-model type="bool">true</at-model>
+         <at-model-idx type="int">0</at-model-idx>
+
+         <ground-level-nearplane-m type="double">10.0f</ground-level-nearplane-m>
+         <default-field-of-view-deg>70</default-field-of-view-deg>
+         <limits>
+          <enabled type="bool">false</enabled>
+         </limits>
+       </config>
+     </view>
+
   <!--**********************************************************************
 
                                           Rendering
@@ -731,14 +856,21 @@
 
 *************************************************************************--> 
     <ja37>
+      <accelerations>
+        <pilot-G type="double">1.0</pilot-G>
+      </accelerations>
       <autoReverseThrust userarchive="y" type="bool">false</autoReverseThrust>
       <supported>
         <old-custom-fails type="bool">false</old-custom-fails>
         <hud type="bool">false</hud>
         <radar type="bool">false</radar>
         <options type="bool">false</options>
+        <landing-light type="bool">false</landing-light>
         <initialized type="bool">false</initialized>
       </supported>
+      <failures>
+        <installed type="bool">false</installed>
+      </failures>
       <radar>
         <selectedMP type="int">-1</selectedMP>
         <selected type="int">-1</selected>
@@ -789,6 +921,15 @@
         <altimeters-calibrated type="bool">0</altimeters-calibrated>
       </avionics>
     </ja37>
+    <replay>
+      <buffer>
+        <high-res-time type="double">300</high-res-time>              <!-- default:   60 -->
+        <medium-res-time type="double">1200</medium-res-time>         <!-- default:  600 -->
+        <low-res-time type="double">3600</low-res-time>               <!-- default: 3600 -->
+        <medium-res-sample-dt type="double">0.5</medium-res-sample-dt><!-- default:  0.5 -->
+        <low-res-sample-dt type="double">5</low-res-sample-dt>        <!-- default:    5 -->
+      </buffer>
+    </replay>
     <carrier>
       <enabled type="bool">false</enabled>
       <heading-deg>0</heading-deg>
@@ -828,9 +969,9 @@
       <launchbar_free>
         <lock-cmd type="bool">false</lock-cmd>
       </launchbar_free>
-      <nose-wheel-steer>
+      <nose-wheel-steering>
         <enable type="bool">true</enable>
-      </nose-wheel-steer>
+      </nose-wheel-steering>
       <flapscontrol>
         <serviceable/>
       </flapscontrol>
@@ -841,6 +982,17 @@
     <aero>
       <factor-axial-mach type="double">1.0</factor-axial-mach>
       <factor-axial type="double">0.625</factor-axial>
+      <drag>
+        <!-- drag - Notice fuselage is about 0.024 at alpha=0 -->
+        <gear type="double">        0.020</gear><!-- fully extended -->
+        <flaps type="double">       0.010</flaps><!-- full 30 degrees downward deflection of canard flaps -->
+        <missile type="double">     0.00075</missile>
+        <drop-tank type="double">   0.0015</drop-tank>
+        <canopy type="double">      0.020</canopy><!-- fully open -->
+        <rudder type="double">      0.010</rudder><!-- at full 25 degrees deflection -->
+        <elevon-left type="double"> 0.015</elevon-left><!-- full 40 degrees upward deflection -->
+        <elevon-right type="double">0.015</elevon-right><!-- full 40 degrees upward deflection -->
+      </drag>
     </aero>
     <inertia>
       <asymmetric-wing-load type="int">0</asymmetric-wing-load>
@@ -851,6 +1003,9 @@
     <launchbar>
       <launch-bar-pos-norm type="double">0</launch-bar-pos-norm>
     </launchbar>
+    <position>
+      <selection-view-offset type="double">5</selection-view-offset>
+    </position>
   </jsbsim>
  </fdm>
  <controls>
@@ -899,12 +1054,16 @@
   <electric>
     <battery-switch type="bool">false</battery-switch>
     <lights-ext-switch type="bool">true</lights-ext-switch>
+    <lights-land-switch type="bool">true</lights-land-switch>
   </electric>
 </controls>
 <gear>
   <serviceable type="bool">true</serviceable>
 </gear>
 <environment>
+  <precipitation-control>
+    <clip-distance type="double">1.75</clip-distance>
+  </precipitation-control>
   <pressure-inhg type="double">30</pressure-inhg>
 </environment>
 <autopilot>

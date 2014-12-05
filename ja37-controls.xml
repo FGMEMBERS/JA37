@@ -378,7 +378,7 @@
      <scheduled_gain name="Steering control">
       <input>fcs/steer-cmd-delayed</input>
       <table>
-        <independentVar lookup="row">systems/nose-wheel-steer/enable</independentVar>
+        <independentVar lookup="row">systems/nose-wheel-steering/enable</independentVar>
          <tableData>
             0     0
             1     1
@@ -475,4 +475,11 @@
             <output>fcs/hook-pos-norm</output>
         </kinematic>
     </channel>
+
+    <!--<channel name="View">
+      <summer name="position/h-sl-pilot-ft">
+        <input>position/h-sl-ft</input>
+        <input>position/selection-view-offset</input>
+      </summer>
+    </channel>-->
   </flight_control>
