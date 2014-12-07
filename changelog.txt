@@ -897,3 +897,18 @@ Sim: Improved code for backward compatibility control.
 2.75 - 2014 December 5
 ====
 Effect: Made engine fire animation more smooth.
+
+2.76 - 2014 December 7
+====
+Sim: Added radar, HUD, generator and instrument light to the new FG 3.2 failure system. (you need the new failure dialog to activate them them)
+Sim: Added canopy motor to the new FG 3.2 failure system. (big chance to jam when open at too high speeds)
+Sim: Added canopy hinges to the new FG 3.2 failure system. (big chance to break off when open at too high speeds)
+Aero: Added drag when canopy breaks off.
+Sim: Renamed custom failure trigger.
+Sim: When radar fails, now so will HUD radar tracks.
+HUD: Doubled the number of radar tracks that can be shown at the same time.
+Sim: Another overhaul of the crash code. When flying in post FG 3.2, it now relies on the new failure manager system.
+Sim: When wings break off, pilot now loses elevons control.
+Aero: At wing break there will now be significantly less lift.
+Animation: Wing gears and elevons will now fly off when the wings break. Nav lights and wingtip vapour will not be seen.
+Aero: Fixed that flaps would be at zero degree during flight, they are now correctly at 4 degrees up.
