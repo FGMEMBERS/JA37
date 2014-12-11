@@ -11,6 +11,9 @@
     <description>Saab JA-37 Viggen</description>
     <author>Anders Lejczak (3D Model and Textures), Nikolai V. Chr. (rest)</author>
     <status>Beta</status>
+
+    <aircraft-version>2.79</aircraft-version>
+
     <rating>
       <FDM type="int">3</FDM>
       <systems type="int">2</systems>
@@ -36,8 +39,6 @@
         <tag>afterburner</tag>
     </tags>
 
-    <aircraft-version>2.76</aircraft-version>
-   
     <flight-model>jsb</flight-model>
     <aero>ja37-jsbsim</aero>
 
@@ -130,38 +131,64 @@
           <interpolation>linear</interpolation>
         </signal> -->
         <!-- More custom signals here -->
+
+        <!-- control surfaces -->
         <signal>
             <type>float</type>
-            <property type="string">fdm/jsbsim/fcs/flap-pos-deg</property>
-        </signal>
-        <signal>
-            <type>float</type>
-            <property type="string">surface-positions/left-elevon-pos-deg</property>
-        </signal>
-        <signal>
-            <type>float</type>
-            <property type="string">surface-positions/right-elevon-pos-deg</property>
+            <property type="string">surface-positions/flap-pos-norm</property>
+            <interpolation>angular-deg</interpolation>
         </signal>
         <signal>
             <type>float</type>
             <property type="string">surface-positions/rudder-pos-norm</property>
+            <interpolation>linear</interpolation>
         </signal>
         <signal>
             <type>float</type>
-            <property type="string">surface-positions/nose-wheel-pos-norm</property>
+            <property type="string">surface-positions/left-aileron-pos-norm</property>
+            <interpolation>angular-deg</interpolation>
         </signal>
         <signal>
-          <type>float</type>
-          <property type="string">engines/engine[0]/nozzle-pos-norm</property>
+            <type>float</type>
+            <property type="string">surface-positions/right-aileron-pos-norm</property>
+            <interpolation>angular-deg</interpolation>
         </signal>
-        <signal>
-          <type>bool</type>
-          <property type="string">engines/engine[0]/augmentation</property>
-        </signal>
+        <!-- Misc -->
         <signal>
           <type>bool</type>
           <property type="string">systems/electrical/batterysignal</property>
         </signal>
+        <signal>
+          <type>float</type>
+          <property type="string">velocities/groundspeed-kt</property>
+        </signal>
+        <signal>
+          <type>bool</type>
+          <property type="string">fdm/jsbsim/systems/crash-detect/crashed</property>
+        </signal>
+        <signal>
+          <type>int8</type>
+          <property type="string">fdm/jsbsim/fcs/wings/serviceable</property>
+        </signal>
+        <signal>
+          <type>float</type>
+          <property type="string">canopy/position-norm</property>
+        </signal>
+        <signal>
+          <type>bool</type>
+          <property type="string">fdm/jsbsim/fcs/canopy-hinges/serviceable</property>
+        </signal>
+        <!-- Instruments -->
+        <signal>
+          <type>float</type>
+          <property type="string">fdm/jsbsim/aero/alpha-deg</property>
+          <interpolation>angular-deg</interpolation>
+        </signal>
+        <signal>
+          <type>float</type>
+          <property type="string">instrumentation/altimeter/indicated-altitude-ft</property>
+        </signal>
+        <!-- Sound -->
         <signal>
           <type>float</type>
           <property type="string">engines/engine/thrust_lb</property>
@@ -169,30 +196,6 @@
         <signal>
           <type>float</type>
           <property type="string">engines/engine/thrust_lb-absolute</property>
-        </signal>      
-        <signal>
-          <type>float</type>
-          <property type="string">velocities/groundspeed-kt</property>
-        </signal>
-        <signal>
-          <type>float</type>
-          <property type="string">fdm/jsbsim/aero/alpha-deg</property>
-        </signal>
-        <signal>
-          <type>float</type>
-          <property type="string">instrumentation/altimeter/indicated-altitude-ft</property>
-        </signal>
-        <signal>
-          <type>bool</type>
-          <property type="string">fdm/jsbsim/systems/crash-detect/crashed</property>
-        </signal>
-        <signal>
-          <type>bool</type>
-          <property type="string">controls/armament/station[0]/trigger</property>
-        </signal>
-        <signal>
-          <type>bool</type>
-          <property type="string">ai/submodels/submodel[0]/flare-release</property>
         </signal>
         <signal>
           <type>bool</type>
@@ -218,17 +221,22 @@
           <type>bool</type>
           <property type="string">engines/engine[0]/reversed</property>
         </signal>
-        <signal>
-          <type>float</type>
-          <property type="string">fdm/jsbsim/fcs/canopy-pos-norm</property>
-        </signal>
-        <signal>
-          <type>bool</type>
-          <property type="string">fdm/jsbsim/fcs/canopy-hinges/serviceable</property>
-        </signal>        
+        <!-- exterior lights -->
         <signal>
           <type>bool</type>
           <property type="string">systems/electrical/lights-ext</property>
+        </signal>
+        <signal>
+          <type>bool</type>
+          <property type="string">sim/model/lighting/strobe/state</property>
+        </signal>
+        <signal>
+          <type>bool</type>
+          <property type="string">sim/model/lighting/beacon/state</property>
+        </signal>
+        <signal>
+          <type>bool</type>
+          <property type="string">sim/ja37/effect/landing-light</property>
         </signal>
         <signal>
           <type>float</type>
@@ -238,13 +246,40 @@
           <type>float</type>
           <property type="string">controls/lighting/instruments-norm</property>
         </signal>
-        <signal>
-          <type>bool</type>
-          <property type="string">consumables/fuel/tank[8]/jettisoned</property>
-        </signal>
+        <!--<signal>
+          <type>float</type>
+          <property type="string">sim/ja37/effect/sun-pos</property>
+          <interpolation>angular-rad</interpolation>
+        </signal>-->
+        <!-- Effects -->
         <signal>
           <type>float</type>
           <property type="string">engines/engine/flame</property>
+        </signal>
+        <signal>
+          <type>int8</type>
+          <property type="string">sim/ja37/effect/smoke</property>
+        </signal>
+        <signal>
+          <type>float</type>
+          <property type="string">engines/engine[0]/nozzle-pos-norm</property>
+        </signal>
+        <signal>
+          <type>bool</type>
+          <property type="string">engines/engine[0]/augmentation</property>
+        </signal>
+        <!-- Stores -->
+        <signal>
+          <type>bool</type>
+          <property type="string">controls/armament/station[0]/trigger</property>
+        </signal>
+        <signal>
+          <type>bool</type>
+          <property type="string">ai/submodels/submodel[0]/flare-release</property>
+        </signal>
+        <signal>
+          <type>bool</type>
+          <property type="string">consumables/fuel/tank[8]/jettisoned</property>
         </signal>
         <signal>
           <type>bool</type>
@@ -278,6 +313,7 @@
           <type>int16</type>
           <property type="string">payload/weight[3]/weight-lb</property>
         </signal>
+        <!-- Gears -->
         <signal>
           <type>float</type>
           <property type="string">gear/gear/compression-ft</property>
@@ -291,12 +327,8 @@
           <property type="string">gear/gear[2]/compression-ft</property>
         </signal>            
         <signal>
-          <type>int8</type>
-          <property type="string">sim/ja37/effect/smoke</property>
-        </signal>
-        <signal>
-          <type>int8</type>
-          <property type="string">fdm/jsbsim/fcs/wings/serviceable</property>
+            <type>float</type>
+            <property type="string">surface-positions/nose-wheel-pos-norm</property>
         </signal>
       </config><!-- 
     - double: 8 byte/sample
@@ -333,7 +365,7 @@
 *************************************************************************-->   
 
     <model>
-      <path archive="y">Aircraft/JA37/Models/ja37-model.xml</path>
+      <path archive="y">Aircraft/JA37/Models/JA37-Viggen.xml</path>
       
       <livery>                      <!-- Default Livery -->
         <file type="string"/>
@@ -531,10 +563,6 @@
       <!-- effects -->
       <int n="0" alias="/sim/ja37/effect/smoke"/>
       <!-- Animation control surfaces -->
-      <float n="0" alias="/surface-positions/right-elevon-pos-deg"/>
-      <float n="1" alias="/surface-positions/left-elevon-pos-deg"/>
-      <float n="2" alias="/fdm/jsbsim/fcs/flap-pos-deg"/>
-      <float n="4" alias="/fdm/jsbsim/fcs/canopy-pos-norm"/>
       <int n="1" alias="/fdm/jsbsim/fcs/canopy-hinges/serviceable"/>
       <int n="2" alias="/fdm/jsbsim/fcs/wings/serviceable"/>
       <!-- Animating engine -->
@@ -547,28 +575,31 @@
       <int n="8" alias="/engines/engine[0]/reversed"/>
       <!-- Animating light -->
       <int n="5" alias="/sim/model/lighting/strobe/state"/>
+      <int n="6" alias="/sim/ja37/effect/landing-light"/>
       <int n="9" alias="/systems/electrical/lights-ext"/>
       <int n="15" alias="/sim/model/lighting/beacon/state"/>
-      <int n="16" alias="/consumables/fuel/tank[8]/jettisoned"/>
-      <!-- Armament -->
+      <float n="19" alias="/sim/ja37/effect/sun-pos"/>
+      <!-- Stores -->
       <!-- <int n="6" alias="/controls/armament/station[0]/trigger"/> deprecated -->
-      <int n="7" alias="/ai/submodels/submodel[0]/flare-release"/>
+      <!--<int n="7" alias="/ai/submodels/submodel[0]/flare-release"/> submodels not used in MP -->
       <float n="11" alias="/payload/weight[0]/weight-lb"/>
       <float n="12" alias="/payload/weight[1]/weight-lb"/>
       <float n="13" alias="/payload/weight[2]/weight-lb"/>
       <float n="14" alias="/payload/weight[3]/weight-lb"/>
+      <int n="16" alias="/consumables/fuel/tank[8]/jettisoned"/><!-- used for drop tank -->
       <!-- gears -->
-      <float n="8" alias="/gear/gear/compression-ft"/>
-      <float n="9" alias="/gear/gear[1]/compression-ft"/>
-      <float n="10" alias="/gear/gear[2]/compression-ft"/>
-      <int n="17" alias="/gear/gear[0]/wow"/>
-      <int n="18" alias="/gear/gear[1]/wow"/>
-      <int n="19" alias="/gear/gear[2]/wow"/>
+      <float n="8" alias="/gear/gear/compression-ft"/><!-- used for gear anim -->
+      <float n="9" alias="/gear/gear[1]/compression-ft"/><!-- used for gear anim -->
+      <float n="10" alias="/gear/gear[2]/compression-ft"/><!-- used for gear anim -->
+      <int n="17" alias="/gear/gear[0]/wow"/><!-- used in MP sound -->
+      <int n="18" alias="/gear/gear[1]/wow"/><!-- used in MP sound -->
+      <int n="19" alias="/gear/gear[2]/wow"/><!-- used in MP sound -->
+      <float n="0" alias="/gear/gear[0]/steering-norm"/>
       <!-- Position and speed -->
-      <float n="6" alias="/position/altitude-ft"/>
-      <float n="7" alias="/velocities/mach"/>
-      <float n="17" alias="/velocities/airspeed-kt"/>
-      <float n="18" alias="/velocities/speed-down-fps"/>
+      <float n="6" alias="/position/altitude-ft"/><!-- used for vapor-cone -->
+      <float n="7" alias="/velocities/mach"/><!-- used for vapor-cone -->
+      <float n="17" alias="/velocities/airspeed-kt"/><!-- used in MP sound -->
+      <float n="18" alias="/velocities/speed-down-fps"/><!-- used in MP sound -->
       <!-- for Bombable: -->
       <string n="9" type="string"/>
       <int n="10" alias="/controls/armament/station[0]/trigger"/>
@@ -728,7 +759,7 @@
       Warnings
       ________
       Deploying gear above 30 meters at high and medium speeds will produce a powerful pitch up moment.
-      The Swedish Airforce forbids flying in superstall regime, so make sure the control tower do not see you perform the Cobra. :)
+      The Swedish Airforce forbids flying in superstall regime, so make sure the control tower do not catch you doing that. :)
 
       Failures
       _____
@@ -746,8 +777,21 @@
       If the target changes during the intercept, it will not switch to the new target.
       To stop, press 'F' and disable autopilot control. Or select another and press 'f' again to follow that instead.
 
+      Using the Selection View
+      ________________________
+      This view will keep the Viggen in view while at the same time pointing the camera at the selected entity.
+      Do not rotate the camera in this view, that will ruin its ability to track the selection. You can however zoom without a problem.
+
+      The unmarked switches in the cockpit
+      ____________________________________
+      The are a bunch of switches in the cockpit, that does not have any text markings. Hold your mouse pointer above one to read its function. Also remember that the position away from the pilot is always ON, towards the pilot is OFF.
+
+      Repairing
+      _________
+      In FG 3.2+ you can repair failed systems in the old failure dialogs, but there are some systems that the dialogs does not show. To be sure the aircraft is fully repaired you should select the menu option Repair under the JA37 menu.
+
       Trivia
-      _____
+      ______
       This is the mid 80'ties version. So it has no airbrake
       400 meter runway is required to takeoff.
       500 meter runway is required to land.
@@ -887,6 +931,7 @@
         <enabled userarchive="y" type="bool">true</enabled>
       </radar>
       <effect>
+        <landing-light type="bool">false</landing-light>
         <smoke type="int">1</smoke><!-- 1: off  2: yellow  3: blue -->
       </effect>
       <blink>
