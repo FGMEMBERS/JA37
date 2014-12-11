@@ -912,3 +912,30 @@ Sim: When wings break off, pilot now loses elevons control.
 Aero: At wing break there will now be significantly less lift.
 Animation: Wing gears and elevons will now fly off when the wings break. Nav lights and wingtip vapour will not be seen.
 Aero: Fixed that flaps would be at zero degree during flight, they are now correctly at 4 degrees up.
+
+2.77 - 2014 December 8
+====
+Animation: The wings will now actually detach when breaking off.
+Effect: Added 3 working landing lights to the gears on the model. They have angle/distance/time-of-day dependant glare.
+Model: Minor adjustments of fuselage material.
+Animation: Fixed another minor bug in displaying flaps at 4 degrees up in flight.
+Sim: There is now a failure actuator for the wings, it will cascade damage to other failure modes.
+Effect: Made beacon, navigation and strobe lights easier to see from far away.
+Effect: Passed to shaders that strobe light should be transparent.
+
+2.78 - 2014 December 8
+====
+Effect: Fixed a bug that would make landing lights not show externally in FG 3.2 and lower.
+
+2.79 - 2014 December 10
+====
+GUI: Updated the aircraft help dialog.
+GUI: Made a new splash screen.
+Model: Split droptank into two, to apply ubershader on most of it.
+Model: Increased ambient light on the fuselage when running in ubershader.
+Effect: Increased flare ammo from 40 to 200.
+Effect: Fixed blinking lights not seen in replay.
+Effect: Adjusted light of flares, beacons, nav-lights, strobe and landing lights.
+Sim: Sorted the replay signals into categories.
+Sim: Renamed the type name in MP pilot list from ja37 to JA37-Viggen. (people flying older ja37 will not see 2.79+ versions)
+Sim: Canopy, flaps, nose wheel steering and elevons now gets transmitted over MP differently.
