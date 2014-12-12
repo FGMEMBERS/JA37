@@ -63,13 +63,16 @@
   <animation>
     <type>scale</type>
     <object-name>LightBeaconGlow</object-name>
-    <property>sim/multiplay/generic/float[19]</property><!-- sim/ja37/effect/sun-pos -->
+    <property>/sim/time/sun-angle-rad</property>
     <x-min>0.000</x-min>
     <y-min>0.000</y-min>
     <z-min>0.000</z-min>
-    <x-factor>1.00</x-factor>
-    <y-factor>1.00</y-factor>
-    <z-factor>1.00</z-factor>
+    <x-offset>-1</x-offset>
+    <y-offset>-1</y-offset>
+    <z-offset>-1</z-offset>
+    <x-factor>1</x-factor>
+    <y-factor>1</y-factor>
+    <z-factor>1</z-factor>
   </animation>
 
   <animation>
