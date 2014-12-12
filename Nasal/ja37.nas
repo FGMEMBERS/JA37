@@ -423,9 +423,6 @@ var update_loop = func {
       input.warn.setValue(0);
     }
 
-    # sun position for ext lights
-    setprop("sim/ja37/effect/sun-pos", getprop("sim/time/sun-angle-rad") - 1);
-
     settimer(
       #func debug.benchmark("j37 loop", 
         update_loop
@@ -930,4 +927,24 @@ var cycleSmoke = func() {
       setprop("/sim/ja37/effect/smoke", 1);#1 for backward compatibility to be off per default
       gui.popupTip("Smoke: OFF");
     }
+}
+
+reload = func {
+  # Reload missiles - 4 of them.
+  setprop("payload/weight[0]/selected", "RB 24J");
+  setprop("payload/weight[1]/selected", "RB 24J");
+  setprop("payload/weight[2]/selected", "RB 24J");
+  setprop("payload/weight[3]/selected", "RB 24J");
+  screen.log.write("RB 24J missiles attached", 0.0, 1.0, 0.0);
+
+  # Reload flares - 40 of them.
+  setprop("ai/submodels/submodel[0]/count", 40);
+  setprop("ai/submodels/submodel[1]/count", 40);
+  screen.log.write("40 flares loaded", 0.0, 1.0, 0.0);
+
+  # Reload cannon - 146 of them.
+  setprop("ai/submodels/submodel[2]/count", 146);
+  setprop("ai/submodels/submodel[3]/count", 146);
+  setprop("ai/submodels/submodel[4]/count", 146);
+  screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);
 }
