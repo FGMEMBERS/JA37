@@ -206,6 +206,71 @@ var install_new_failures = func {
     var actuator_generator = set_unserviceable(prop);
     FailureMgr.add_failure_mode(prop, "Generator", actuator_generator);
 
+    prop = "controls/engines/engine/reverse-system";
+    var actuator_reverser = set_unserviceable(prop);
+    FailureMgr.add_failure_mode(prop, "Thrust reverser", actuator_reverser);
+
+    prop = "fdm/jsbsim/fcs/yaw-damper";
+    var actuator_damper = set_unserviceable(prop);
+    FailureMgr.add_failure_mode(prop, "Yaw damper", actuator_damper);
+
+    prop = "fdm/jsbsim/fcs/pitch-damper";
+    var actuator_damperp = set_unserviceable(prop);
+    FailureMgr.add_failure_mode(prop, "Pitch damper", actuator_damperp);
+
+    prop = "fdm/jsbsim/gear/unit[0]/nose-wheel-steering";
+    var actuator_steering = set_unserviceable(prop);
+    FailureMgr.add_failure_mode(prop, "Nose wheel steering", actuator_steering);
+
+    prop = "fdm/jsbsim/systems/hydraulics/flight-system/pump";
+    var actuator_pump = set_unserviceable(prop);
+    FailureMgr.add_failure_mode(prop, "Hydraulic pump", actuator_pump);        
+
+    # replace actuators on control surfaces due to jsbsim takes care of jamming
+
+    prop = "controls/flight/aileron";
+    var actuator_aileron = set_unserviceable("fdm/jsbsim/fcs/aileron-serviceable");
+#    FailureMgr.remove_failure_mode(prop);
+ #   FailureMgr.add_failure_mode(prop, "Aileron", actuator_aileron);
+
+    prop = "controls/flight/elevator";
+    var actuator_elevator = set_unserviceable("fdm/jsbsim/fcs/elevator-serviceable");
+ #   FailureMgr.remove_failure_mode(prop);
+  #  FailureMgr.add_failure_mode(prop, "Elevator", actuator_elevator);
+
+    prop = "controls/flight/rudder";
+    var actuator_rudder = set_unserviceable("fdm/jsbsim/fcs/rudder-serviceable");
+#    FailureMgr.remove_failure_mode(prop);
+ #   FailureMgr.add_failure_mode(prop, "Rudder", actuator_rudder);
+
+    prop = "controls/flight/flaps";
+    var actuator_flaps = set_unserviceable("fdm/jsbsim/fcs/flaps-serviceable");
+#    FailureMgr.remove_failure_mode(prop);
+ #   FailureMgr.add_failure_mode(prop, "Flaps", actuator_flaps);
+
+    ##
+    # Returns an actuator object that will set the serviceable property at
+    # the given node to zero when the level of failure is > 0.
+    # it will also fail additionally failure modes.
+
+    var set_empty = func(path, flow_paths) {
+
+        return {
+            parents: [FailureMgr.FailureActuator],
+            paths: flow_paths,
+            set_failure_level: func(level) {
+                level = level == 0?0:1;
+
+                foreach(var flow_path ; me.paths) {
+                    setprop(flow_path, level==0?0:-75);
+                }
+            },
+            get_failure_level: func {
+                getprop(me.paths[0]) == -75? 1 : 0;
+            }
+        }
+    }
+
     ##
     # Returns an actuator object that will set the serviceable property at
     # the given node to zero when the level of failure is > 0.
@@ -231,9 +296,16 @@ var install_new_failures = func {
         }
     }
 
-    prop = "fdm/jsbsim/fcs/wings";
-    var actuator_wings = set_unserviceable_cascading(prop, ["controls/gear1", "controls/gear2", "controls/flight/aileron", "controls/flight/elevator"]);
-    FailureMgr.add_failure_mode(prop, "Delta wings", actuator_wings);
+    prop = "consumables/fuel/wing-tanks";
+    var actuator_wing_tanks = set_empty(prop, ["fdm/jsbsim/propulsion/tank[4]/external-flow-rate-pps", "fdm/jsbsim/propulsion/tank[5]/external-flow-rate-pps", "fdm/jsbsim/propulsion/tank[6]/external-flow-rate-pps", "fdm/jsbsim/propulsion/tank[7]/external-flow-rate-pps"]);
+    FailureMgr.add_failure_mode(prop, "Wing tanks", actuator_wing_tanks);
+
+    #prop = "fdm/jsbsim/fcs/wings";
+    #var actuator_wings = set_unserviceable_cascading(prop, ["controls/gear1", "controls/gear2", "controls/flight/aileron", "controls/flight/elevator", "consumables/fuel/wing-tanks"]);
+    #FailureMgr.add_failure_mode(prop, "Delta wings", actuator_wings);
+    
+    
+
     
 
     ## test stuff: ##

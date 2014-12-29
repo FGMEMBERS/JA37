@@ -29,48 +29,9 @@
     </offsets>
   </model>
 
+  <!-- tutorial marker -->
   <model>
       <path>Models/Aircraft/marker.xml</path>
-  </model>
-
-  <model>
-    <path>Aircraft/JA37/Models/Effects/nav-light-glow-right.xml</path>
-    <name>lightglowR</name>
-    <offsets>
-      <x-m>0.0</x-m>
-      <y-m>0.0</y-m>
-      <z-m>0.0</z-m>
-    </offsets>
-  </model> 
-
- <model>
-    <path>Aircraft/JA37/Models/Effects/nav-light-glow-left.xml</path>
-    <name>lightglowL</name>
-    <offsets>
-      <x-m>0.0</x-m>
-      <y-m>0.0</y-m>
-      <z-m>0.0</z-m>
-    </offsets>
-  </model> 
-
-  <model>
-    <path>Aircraft/JA37/Models/Effects/beacon-light-glow-top.xml</path>
-    <name>lightglowT</name>
-    <offsets>
-      <x-m>0.0</x-m>
-      <y-m>0.0</y-m>
-      <z-m>0.0</z-m>
-    </offsets>
-  </model>
-
-  <model>
-    <path>Aircraft/JA37/Models/Effects/beacon-light-glow-bottom.xml</path>
-    <name>lightglowB</name>
-    <offsets>
-      <x-m>0.0</x-m>
-      <y-m>0.0</y-m>
-      <z-m>0.0</z-m>
-    </offsets>
   </model>
 
 <!-- Material shaders   -->
@@ -147,7 +108,7 @@
   <type>rotate</type>
   <object-name>rudder</object-name>
   <property>surface-positions/rudder-pos-norm</property><!-- auto MP transmit -->
-  <factor>60</factor>
+  <factor>25</factor>
   <axis>   
    <x2-m> 5.70491</x2-m>
    <y1-m> 0</y1-m>
@@ -448,37 +409,6 @@
   </axis>
  </animation>
 
-<!-- radius = -1.59622 + 1.84812 = 0.2519
-     circum = 2*pi*radius = 1.5827
-     factor = 1/circum * 60 = 0.6318 * 60 = 
-
--3.38246
--0.11702
--1.84812
-
--3.38246
- 0.17426
--1.84812
-
-                 Spinning wheel works fine, but not with gear compression, its either-or sadly.
-     -->
-<!--<animation>
-    <type>spin</type>
-    <object-name>wheelFront</object-name>
-    <property>gear/gear/rollspeed-ms</property>
-    <factor>37.9091</factor>
-    <center>
-        <x-m>-3.38246</x-m>
-        <y-m>0.0</y-m>
-        <z-m>-1.84812</z-m>
-    </center>
-    <axis>
-        <x>0</x>
-        <y>-1</y>
-        <z>0</z>
-    </axis>
-</animation>-->
-
 <animation><!--            compress front gear-->
    <type>translate</type>
    <object-name>gearFront</object-name>
@@ -486,6 +416,7 @@
    <object-name>wheelFront</object-name>
    <object-name>landingLight</object-name>
    <object-name>frontLandingLightGlare</object-name>
+   <object-name>tyre-smoke-nose</object-name>
    <property>sim/multiplay/generic/float[8]</property><!-- gear/gear/compression-ft -->
    <factor>0.3048</factor>
    <axis>
@@ -498,12 +429,44 @@
     </center>
 </animation>
 
+<!-- spinning wheel calc
+
+     radius = -1.59622 + 1.84812 = 0.2519
+     circum = 2*pi*radius = 1.5827
+     factor = 1/circum * 60 = 0.6318 * 60 = 37.9091
+
+-3.38246
+-0.11702
+-1.84812
+
+-3.38246
+ 0.17426
+-1.84812
+     -->
+<animation>
+    <type>spin</type>
+    <object-name>wheelFront</object-name>
+    <property>gear/gear/rollspeed-ms</property>
+    <factor>37.9091</factor>
+    <center>
+        <x-m>-3.64749</x-m>
+        <y-m>0.0</y-m>
+        <z-m>-1.84812</z-m>
+    </center>
+    <axis>
+        <x>0</x>
+        <y>-1</y>
+        <z>0</z>
+    </axis>
+</animation>
+
 <animation><!--            compress left gear-->
    <type>translate</type>
    <object-name>gearLeft</object-name>
    <object-name>gearLeftTop</object-name>
    <object-name>landingLightLeft</object-name>
    <object-name>leftLandingLightGlare</object-name>
+   <object-name>tyre-smoke-left</object-name>
    <property>sim/multiplay/generic/float[9]</property><!-- gear/gear[1]/compression-ft -->
    <factor>0.3048</factor>
    <axis>
@@ -522,6 +485,7 @@
    <object-name>gearRightTop</object-name>
    <object-name>landingLightRight</object-name>
    <object-name>rightLandingLightGlare</object-name>
+   <object-name>tyre-smoke-right</object-name>
    <property>sim/multiplay/generic/float[10]</property><!-- gear/gear[2]/compression-ft -->
    <factor>0.3048</factor>
    <axis>
@@ -534,10 +498,13 @@
     </center>
 </animation>
 
- <!-- start effects -->
- <model>
+<!-- ==================================== Start effects ======================= -->
+
+ <!-- engine -->
+
+ <model><!-- smoke trail after the plane -->
   <name>exhaust_smoke</name>
-  <path>Aircraft/JA37/Models/Effects/exhaust.xml</path>
+  <path>Aircraft/JA37/Models/Effects/engine/exhaust.xml</path>
   <offsets>
    <x-m>1.0</x-m>
    <y-m>0.0</y-m>
@@ -545,16 +512,42 @@
   </offsets>
  </model>
 
-<model>
+<model><!-- dark smoke at low rpm and afterburner -->
   <name>engine_smoke</name>
-  <path>Aircraft/JA37/Models/Effects/smoke.xml</path>
+  <path>Aircraft/JA37/Models/Effects/engine/smoke.xml</path>
   <offsets>
-   <x-m>8.0</x-m>
+   <x-m>7.0</x-m>
+   <y-m>0.0</y-m>
+   <z-m>0.0</z-m>
+  </offsets>
+ </model>
+
+<model>
+  <name>InternalFlame</name>
+  <path>Aircraft/JA37/Models/Effects/engine/InternalFlame.xml</path>
+  <offsets>
+   <x-m>0.0</x-m>
    <y-m>0.0</y-m>
    <z-m>0.0</z-m>
   </offsets>
  </model>
  
+ 
+<model>
+  <name>ExternalFlame</name>
+  <path>Aircraft/JA37/Models/Effects/engine/ExternalFlame.xml</path>
+  <offsets>
+   <x-m>5.75</x-m>
+   <y-m>0.0</y-m>
+   <z-m>0.0</z-m>
+  </offsets>
+ </model>
+ 
+
+<!--  other particle effects -->
+
+
+
  <!--<model>  never worked as intended, so commented out.
   <name>strake-vortex</name>
   <path>Aircraft/JA37/Models/Effects/strake-vortex.xml</path>
@@ -637,13 +630,13 @@
     </offsets>
   </model>
 
-<!--         tiresmoke               -->
+<!--         tyresmoke               -->
 
 <model>
   <path>Aircraft/Generic/Effects/tyre-smoke-nose.xml</path>
-  <name>tyre-smoke-n</name>
+  <name>tyre-smoke-nose</name>
   <offsets>
-    <x-m> -3.37652 </x-m>
+    <x-m> -3.65342 </x-m>
     <y-m> 0 </y-m>
     <z-m> -2.1 </z-m>
   </offsets>
@@ -669,33 +662,32 @@
  </offsets>
 </model>
 
-<model>
-  <name>InternalFlame</name>
-  <path>Aircraft/JA37/Models/Effects/InternalFlame.xml</path>
-  <offsets>
-   <x-m>0.0</x-m>
-   <y-m>0.0</y-m>
-   <z-m>0.0</z-m>
-  </offsets>
- </model>
- 
- 
-<model>
-  <name>ExternalFlame</name>
-  <path>Aircraft/JA37/Models/Effects/ExternalFlame.xml</path>
-  <offsets>
-   <x-m>5.75</x-m>
-   <y-m>0.0</y-m>
-   <z-m>0.0</z-m>
-  </offsets>
- </model>
-
  <!-- end effects -->
 
 
 <!-- ===================== START LIGHTING =========================== -->
 
 <!-- beacon lights -->
+
+  <model>
+    <path>Aircraft/JA37/Models/Effects/beacon-light-glow-top.xml</path>
+    <name>lightglowT</name>
+    <offsets>
+      <x-m>0.0</x-m>
+      <y-m>0.0</y-m>
+      <z-m>0.0</z-m>
+    </offsets>
+  </model>
+
+  <model>
+    <path>Aircraft/JA37/Models/Effects/beacon-light-glow-bottom.xml</path>
+    <name>lightglowB</name>
+    <offsets>
+      <x-m>0.0</x-m>
+      <y-m>0.0</y-m>
+      <z-m>0.0</z-m>
+    </offsets>
+  </model>
 
  <animation>
   <type>material</type>
@@ -707,7 +699,7 @@
    <red>1.0</red>
    <green>0.0</green>
    <blue>0.0</blue>
-   <factor-prop>sim/multiplay/generic/int[15]</factor-prop><!-- sim/model/lighting/beacon/state -->
+   <factor-prop>sim/multiplay/generic/float[1]</factor-prop><!-- sim/model/lighting/beacon/state -->
   </emission>
  </animation>
 
@@ -721,7 +713,7 @@
    <red>1.0</red>
    <green>0.0</green>
    <blue>0.0</blue>
-   <factor-prop>sim/multiplay/generic/int[15]</factor-prop><!-- sim/model/lighting/beacon/state -->
+   <factor-prop>sim/multiplay/generic/float[1]</factor-prop><!-- sim/model/lighting/beacon/state -->
   </emission>
  </animation>
 
@@ -812,6 +804,26 @@
   </model>
 
 <!-- Navigation lights -->
+
+  <model>
+    <path>Aircraft/JA37/Models/Effects/nav-light-glow-right.xml</path>
+    <name>lightglowR</name>
+    <offsets>
+      <x-m>0.0</x-m>
+      <y-m>0.0</y-m>
+      <z-m>0.0</z-m>
+    </offsets>
+  </model> 
+
+ <model>
+    <path>Aircraft/JA37/Models/Effects/nav-light-glow-left.xml</path>
+    <name>lightglowL</name>
+    <offsets>
+      <x-m>0.0</x-m>
+      <y-m>0.0</y-m>
+      <z-m>0.0</z-m>
+    </offsets>
+  </model>
 
  <animation>
   <type>material</type>

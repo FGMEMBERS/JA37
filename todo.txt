@@ -11,6 +11,9 @@ GUI: Option to switch off hitting stuff above ground.
 Aero: Make cannon pod detachable and have pointweight.
 Aero: Add kinematic on all flight-control surfaces.
 Aero: Air-brakes, even though they got welded shut in mid 80ties.
+Aero: Disable failure system from freezing surfaces (bug prevents)
+Aero: Randomize vortex detachment
+Aero: Names for name in jsbsim aero code to avoid cluttering the property tree
 Animation: Min and max on several gauges.
 Animation: Animate wheels. (tough when gears get compressed..)
 Model: Adjust instrument materials, and make the gauges look more similar.
@@ -22,7 +25,6 @@ Model: Gauges that share mount design should also share geometry and textures.
 Model: Make use of the new LOD interior system. FG 3.4. (will break backwards compatibility)
 Sim: Improve autopilot further. (alt-hold should use pitch not v-speed)
 Sim: Make autopilot depend fully on instrument properties not sim properties.
-Sim: Limit cannon rounds to 150. (146?) And make menu item to reload it.
 Sim: Overhaul crash code. (sliding, loss of inertia when crashing)
 Sim: Implement ejection seat. (with parachute?)
 Sim: Make braking parachute.
@@ -36,6 +38,7 @@ Sim: Make replay show the guided missiles flying.
 Sim: Improve terrain warning system.
 Sim: Use statics for true and false in all nasal code.
 Sim: Make more use of default multiplay properties to free more of the custom up.
+Sim: Hydralic pump depend on electric instead of rpm
 Effect: Rembrandt landing lightcone.
 Effect: Check contrail effect is properly installed.
 Effect: Make pilot faint/die due to G-forces.
@@ -76,7 +79,7 @@ GUI: The performance monitor can duplicate itself when selecting airport. [repro
 Effect: {JazzTp} Strobe looks bad in FG 3.0, but better in FG 3.1 [wont fix]
 Model: sim load-lag when coming near other ja37. [reproduced]
 Model: Sim lag at final retraction of gear. [reproduced]
-Sim: When running at reduced sim time, autostart might fail.
+Sim: When running at reduced sim time, autostart might fail. [reproduced]
 Sim: {JazzTp} Firing a missile can make the missile crash into own aircraft if unlucky. [reproduced, might be fixed now]
 Sim: When Bombable 4.5 is installed redout and blackout might not work properly. [related to certain Bombable settings I think]
 Animation: Selection view does not follow carriers. (they lack radar properties)
@@ -84,7 +87,6 @@ Animation: Selection view does not follow carriers. (they lack radar properties)
 
 Issues with FG: (or my limited understanding of it)
 ---------------
-Effect: Rembrandt makes the afterburner flame not transparent. (test using animator, some of the other planes achieved it)
 Effect: Rembrandt does not make the engine flame lit enough, unless diffuse and ambient is increased also.
 
 
