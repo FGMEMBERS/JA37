@@ -940,7 +940,7 @@ Sim: Sorted the replay signals into categories.
 Sim: Renamed the type name in MP pilot list from ja37 to JA37-Viggen. (people flying older ja37 will not see 2.79+ versions)
 Sim: Canopy, flaps, nose wheel steering and elevons now gets transmitted over MP differently.
 
-2.80
+2.80 - 2014 December 12
 ====
 Effect: Ext. lights dependance on daylight in MP is now dependant on the viewers daylight, not the planes daylight.
 Effect: Readjusted ext. lights in daylight to be more subtle.
@@ -951,3 +951,50 @@ Animation: When wings break off, wing mounted missiles is now also detached.
 Sim: Flares will now deploy to both sides from positions beneath the wings.
 Sim: Increased flare speed.
 Effect: Flare trail light now depends also on daylight and distance.
+
+2.81 - 2014 December 14
+====
+Effect: Fixed that landing lights could blink in replay after a crash.
+Sim: Disabled the electrical system during replay.
+Aero: Increased spring damping on gears to better land in heavy crosswind.
+Effect: Updated tyre smoke to use the new system.
+Effect: Corrected nose tyre smoke position.
+Effect: Tyresmoke now follows the gear wheels when they get compressed.
+Engine: At reinit the thrust will now be set to forward.
+Engine: Made afterburner onset more responsive.
+Sim: Fixed crash code would manually set wings unserviceable even though they had installed a failure mode.
+Sim: Fixed wings would always break off at crashing, now they have proper 70% chance to fail at crash.
+Sim: Moved engine effects into own folder.
+
+2.82 - 2014 December 17
+====
+Effect: Repositioned engine smoke origin.
+GUI: Made the message tips show higher on the screen to avoid covering part of the HUD/landscape in cockpit view.
+Sim: Crashing into something now in a randomized way fail systems depending on the impact speed.
+System: Added a simple hydraulics system.
+Control: Gear, nose wheel steering, flaps, rudder, elevons now depend on hydraulic and is time-actuated.
+Aero: Yaw damper now is only active when AoA is less than +/-10 degrees.
+Control: Cleaned up the control code.
+GUI: The rudder, aileron and elevator limiter now can be disabled.
+Aero: Added a pitch damper.
+Sim: Added yaw damper, pitch damper, hydraulic pump, nose wheel steering and thrust reverser to the systems that can be failed.
+Control: Names for name in jsbsim control code to avoid cluttering the property tree
+Animation: Fixed rudder would move more than jsb told it it to.
+
+2.83 - 2014 December 20
+====
+Sim: Rewrote the crash/stress system into a generic framwork.
+Sim: Added wing fuel tanks to failure manager.
+Sound: Started recording volume of wing stress sounds for replay.
+GUI: Made popupTip appear even higher on screen.
+
+2.84 - 2014 December 29
+====
+Sim: Improved crash handling code.
+Aero: Structure points now have greater friction to counter sliding.
+Animation: Beacons lights now properly fade in and out as if rotating.
+Aero: Structure points now have greater rebound damping to counter springyness.
+Effect: Made wingtip-vapour work over MP, but only dependant on humidity, temperature and altitude, not alpha.
+Effect: Made afterburner flame transparent in Rembrandt.
+Effect: Made mach vapourcone cast no shadow in MP when Rembrandt enabled.
+Animation: Front gear wheel now spins when moving on runway.
