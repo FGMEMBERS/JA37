@@ -12,7 +12,7 @@
     <author>Anders Lejczak (3D Model and Textures), Nikolai V. Chr. (rest)</author>
     <status>Beta</status>
 
-    <aircraft-version>2.84</aircraft-version>
+    <aircraft-version>2.86</aircraft-version>
 
     <rating>
       <FDM type="int">3</FDM>
@@ -1694,6 +1694,14 @@
 *************************************************************************-->
 
 <instrumentation>
+  <comm n="0">
+    <power-btn type="bool">1</power-btn>
+    <power-good type="bool">0</power-good>
+  </comm>
+  <comm n="1">
+    <power-btn type="bool">1</power-btn>
+    <power-good type="bool">0</power-good>
+  </comm>
  <switches>
   <generator>
    <pos type="int">0</pos>
