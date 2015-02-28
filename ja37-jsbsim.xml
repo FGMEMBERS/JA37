@@ -13,7 +13,7 @@
   <fileheader>
     <author> Nikolai V. Chr. </author>
     <filecreationdate> 2013-02-15 </filecreationdate>
-    <version> 2.86 </version>
+    <version> 3.007 </version>
     <license>
       <licenseName>GPL 2 (General Public License version 2)</licenseName>
       <licenseURL>http://www.gnu.org/licenses/old-licenses/gpl-2.0.html</licenseURL>
@@ -65,6 +65,7 @@ to an airplane of that size). -->
       <y> 0 </y>
       <z> 0 </z>
     </location>
+    <pitot_angle unit="DEG"> 0.0 </pitot_angle>
   </metrics>
   
   <mass_balance>
@@ -126,7 +127,6 @@ to an airplane of that size). -->
         <z> -1.50 </z>
       </location>
     </pointmass>
-
   </mass_balance>
   
   <ground_reactions>

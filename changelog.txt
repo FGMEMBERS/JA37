@@ -2,7 +2,7 @@
 Flightgear Saab JA-37 Viggen Changelog
 ======================================
 
-1.0
+1.0 - Late 2012
 ---
 Got the idea to work on this plane.
 JSBSim FDM and engine adapted from Aeromatic output
@@ -13,7 +13,7 @@ Converted 3D model from MS-FS2004 (License: Creative Commons)
 Added some annunciater sounds
 Adapted some crash code from Mig-15
 
-1.1 
+1.1 - Late 2012 
 ---
 Fixed paths to work on Linux and Mac
 Renamed folder to JA37 from ja37
@@ -999,17 +999,238 @@ Effect: Made afterburner flame transparent in Rembrandt.
 Effect: Made mach vapourcone cast no shadow in MP when Rembrandt enabled.
 Animation: Front gear wheel now spins when moving on runway.
 
-2.85 - 2014 January 11
+2.85 - 2015 January 11
 ====
 Sim: Added comm 1 & 2 to failure system.
 Sim: Spoken ATIS now works out of the box, just remember to turn on battery power.
 Model: Converted livery 59 and 61 to png from jpg.
 Model: When using Livery 59, it now shares base texture, for better memory optimization. Other liveries still require double fuselage texture loaded.
 
-2.86 - 2014 January 16
+2.86 - 2015 January 16  (Flightgear 3.4.0 version)
 ====
 Effect: Fixed engine fire would sometimes become black at full throttle.
 Sim: Fixed some sound and repair timers in the crash code.
 Sim: Increased the negative G the airframe can withstand.
 Model: The cockpit interior is now not loaded in MP, when viewing the plane from a distance. (FG 3.4)
 Effect: Fitted the afterburner flame better to exhaust nozzle to avoid graphics anomalies.
+
+2.87 - 2015 February 03
+====
+Effect: Made the beacon light better simulate a rotating light and increased the frequency to better match the real thing.
+Effect: Made the afterburning flame vibrate.
+Effect: Made the afterburner flame transparency depend on time of day.
+Effect: made the afterburner and engine flame be light purple to better match the real thing.
+
+2.88 - 2015 February 04
+====
+Model: Added livery 57 red demo.
+Model: Added livery 46 with unknown flag on vertical tail. Suspect it is a livery for potential export.
+Model: Made landing gear and missiles not be affected by livery textures.
+
+2.89 - 2015 February 07
+====
+Effect: Strobe light replaced to improve resolution.
+Model: Added the 02-21 'sun on vertical tail' livery.
+
+2.90 - 2015 February 08
+====
+HUD: In the options dialog the HUD line width can now be increased or decreased.
+Model: Added pilot in exterior view.
+Model: Moved the seat a little forward.
+Model: The seat will no longer change texture from livery change.
+
+2.91 - 2015 February 09
+====
+HUD: Added a landing mode, negative pitch lines are not shown in this mode.
+HUD: Added a scale in takeoff mode that shows when to pull back the stick to take off.
+Sim: Added TILS landing system, it auto tunes in to the nearest ILS runway on nav 1.
+HUD: Landing mode shows TILS/ILS using 4 vertical bars, align their top to horizontal line and horizontal to the middle. Keep flight path vector on the dot.
+HUD: Landing mode horizontal line and dot, will follow the fligth path vector, when ILS not active.
+HUD: Landing mode ILS/TILS is tied into nav 1 only.
+HUD: Landing mode will show a heading bug to the runway, if ILS/TILS is tuned into one.
+HUD: In takeoff mode target altitude is now forced to 500 meters.
+
+2.92 - 2015 February 09
+====
+HUD: The 4 vertical bars should no longer fluctuate when far away from the glideslope.
+
+2.93 - 2015 February 10
+====
+Sim: Added a popup message when TILS switch is used.
+Sim: Added a popup message every time TILS change runway.
+Sim: Improved the conditions of getting ground collision warning.
+Sim: Made TILS able to put nearby parallel runway as standby frequency.
+HUD: Takeoff mode now waits 3 seconds before switching to another mode.
+
+2.94 - 2015 February 10
+====
+HUD: Fixed sideslip indicator dot would sometimes turn into a line.
+GUI: Made a default line thickness button.
+Sim: Set ILS glideslope to 1/20 steepness instead of 3 degrees.
+
+2.95 - 2015 February 11
+====
+HUD: The distance scale now also works in tactical mode. It shows if the target is within weapon range.
+Model: Rear gear and wheels are now shaded better.
+Model: Gear is now painted white.
+Animation: All 5 wheels will now spin when plane is moving on ground.
+Effect: The strobe now flashes every 1.5 second.
+
+2.96 - 2015 February 11
+====
+Effect: Added explosion effect when aircraft explodes.
+Sound: Detaching of wings now has its own sound.
+Sound: Canopy detachment now has a sound.
+Sound: When missiles hit something, there will now be a sound.
+Sound: Lowered volume of missile seeker and lock beep.
+Sound: Replaced sounds for crashing and exploding.
+
+2.97 - 2015 February 12
+====
+Sim: Fixed crash would not ignite wildfires.
+Sound: Made the missile hit sound delay according to distance traveled by speed of sound.
+GUI: Updated the aircraft help info.
+HUD: Added a missile optimal firing resolution circle.
+HUD: Fixed cannon out of ammo would not change flight path indicator symbol.
+Sim: Wildfire will now only ignite at crashing if that option is enabled in the wildfire GUI.
+Sound: Fixed cannon sound would play, even if out of ammo.
+Effect: Made cannon tracers bigger.
+Sound: Replaced the cannon sound. It now has the correct frequency for the KCA 30mm.
+Sim: Every 5th round is now a tracer instead of every 10th round.
+Sim: Fixed that there was same amount of tracers as bullets. There are now only 1/5.
+Effect: The impact of the cannon rounds is now 10 times bigger.
+
+2.98 - 2015 February 12
+====
+Animation: Left and right gear wheels now spin with their own respective speeds.
+HUD: Optimized HUD code, to run a bit faster.
+Sim: Fixed left altimeter coarse adjustment with middle button, would adjust up on both sides of the knob.
+Sim: HUD and radar does no longer update outside cockpit view.
+HUD: The HUD animated texture is now 4 times smaller to help with graphics memory use.
+System: The HUD and radar is no longer mipmapped. They now look less blurry, and use less graphics memory.
+HUD: Sideslip indicator dot is no longer hollow.
+
+2.99 - 2015 February 13
+====
+Sound: Fixed some positions for some engine, missiles, cannon, runway rumbling, touchdown squal and various damage.
+Sound: Revised sound calculations for touchdown and engine fan outside (not fly-by).
+Sound: The engine fan can now be heard right from when the engine starts in external view. (not fly-by)
+Sound: Rumbling when going along the runway, can now be heard at slow speeds also.
+Sound: These sounds are now unpositional: wind, switch clicks and pilot breaths.
+Sim: Fixed (I hope) missiles hitting aircraft at firing.
+Sim: Missiles will now arm only after they are more than 50m away from the aircraft.
+Sim: Fixed missiles would sometimes not fire from the correct positions.
+HUD: Fixed that HUD would briefly go to nav/tact mode inbetween takeoff and landing mode, when gears still down.
+
+3.000 - 2015 February 14
+=====
+Sound: Fixed missile lock could be heard when masterarm was on, but not in tactical mode.
+Sound: Missile hit sounds from different missiles can now be played at the same time.
+Sound: Missile hit sound delay is now influenced by the altitude speed of sound and position of the aircraft in relation to soundwave.
+Sound: Missile hit sound volume is now attenuated by distance.
+Sim: Prevented accidental missile release when changing location in GUI.
+Sim: Fixed three cases of use of wrong units in missile guidance system. And an altitude bug.
+Sim: Missiles will now be ejected 1 meter down from the pylons before taking off.
+Sim: Fixed that if missile is not continuously selected during its flight, then it will miss. They are now truly fire and forget.
+Sim: Fixed again (I hope) missiles hitting aircraft at firing.
+Effect: Missiles will now have rocket exhaust beside the smoke.
+
+3.001 -  2015 February 15
+=====
+GUI: Updated aircraft help info.
+Animation: Fixed that chronometer was doing double updates. And lowered update rate.
+Effect: Made missile exhaust more transparent and bit more orange, and smaller.
+GUI: Made the welcome message more light red.
+Sound: Improved the MP touchdown squeal sound.
+Sim: Tried to fix again again missiles hitting aircraft at release.
+
+3.002 - 2015 February 16
+=====
+Sim: Fixed again again again missiles hitting aircraft at release.
+Sound: Fixed MP sound was broken.
+Model: Fixed strike livery 61-18 had the wrong numbers on one side of the plane, and on gear doors.
+Sim: Improved nasal property reading a tiny bit.
+Aero: Put names in jsbsim aero systems code own property branch to avoid cluttering the JSB property tree.
+Aero: When wings detach, the plane now has 33% less normal force than it would have before this version.
+Sim: Fixed that pitot, static and vacuum system, was wrongly configured and therefore used the default settings.
+Sim: Static sensor system now does inperfect measurement from angle of attack and side-slip influence.
+Sim: Vacuum system now is electrical driven instead of rpm as in piston engine aircrafts.
+Sim: Pitot system stalls at 60 degs angle of attack.
+Sound: Made firing missiles less loud.
+
+3.003 - 2015 February 17
+=====
+HUD: Fixed QFE warning would sometimes blink when altimeter was calibrated in interoperability mode.
+GUI: Added popup messages for all undocumented features.
+Effect: Fixed that ALS landing light could be shown even if gears was retracted.
+Sim: Replaced uses for 0 and 1 with true and false in main nasal script.
+Sim: Added transponder failure mode.
+Sim: Default transponder setting is now to transmit altitude.
+Model: Added a transponder instrument.
+
+3.004 - 2015 February 18
+=====
+Model: Made the flight stick not light up, when battery is turned on.
+Sim: Made the speed loop pause if replay is active.
+Model: Made the HUD smaller.
+HUD: Fixed that radar altitude pointer, would be shown on top of altitude pointer.
+Model: Made a HUD view, which is zoomed in on the HUD.
+Model: Made pilot select check more robust.
+Sim: When crashing should now get a nicer description of what was hit, if it is available.
+Sim: Moved all 'duplicate' radar logic into its own code. Also cleaned up the code a bit. Should give slightly better performance.
+Sim: Fixed radar distance was about 3 times off, due to unit conversion.
+Sim: Increased number of shown radar bleps to 50.
+Sim: Radar will now also show carriers, balloons, vehicles, ships and tankers. Just like the HUD did.
+GUI: Option to switch off radar tracks in HUD, is now replaced with switch off radar.
+Model: Switch to switch off radar tracks in HUD, is now replaced with switch off radar.
+
+3.005 - 2015 February 20
+=====
+Sim: Fixed that following a AI plane could freeze the HUD.
+Model: Fixed radar screen would be too dark at evenings and nights.
+Sim: Fixed a bug in radar logic that could make the logic fail, when spotting a MP.
+Sim: Made an extra check in radar logic to make sure selection view would not get corrupted data.
+Sim: Improved radar screen performance a tiny bit.
+HUD: Fixed error that would freeze HUD.
+Sound: Lowered MP engine volume. And added property to control it.
+GUI: Added true airspeed to performance monitor.
+Sim: Fixed a case where missiles could not be loaded after having been unloaded manually.
+Sim: Missiles can now be mounted on a pylon, right after that pylon has fired another missile which is still flying.
+HUD: Some extra checks for selection not showing in HUD when nothing selected.
+Aero: Asymmetric detachment of vortexes left or right side is now randomly decided.
+Sim: Made TILS work as long as battery is on, instead of being slaved to landing mode.
+Sim: When turning on TILS it now always popup if it find an airport, even if nav1 was alread tuned into that one.
+Model: Added a landing mode switch. This will force landing mode, when otherwise tactical or navigation mode would be selected.
+HUD: Fixed that landing guide could hide behind altimeter scale after the HUD was made smaller.
+HUD: Fixed carrier would appear as not selected, even though it was.
+Sim: Fixed bug in crash system when crashing into carrier.
+
+3.006 - 2015 February 25
+=====
+HUD: Fixed that if carrier was selected, but outside radar cone, it would be shown in the HUD blinking in corner.
+Animation: Distance shown in radar screen is now the distance in the radar cone center plane.
+HUD: Distance shown in HUD now accounts for altitude, instead of horizontal distance along athmospheres curvature.
+Sim: Fixed a rare case where crashing into ocean would produce bug in crash system.
+HUD: Turning on HUD should max take 0.5 second now instead of 1.
+HUD: The HUD will now track missiles also.
+Animation: The radar will now show missiles also.
+Sim: The selection view should be able to look at missiles now.
+GUI: For users of FG 3.5 and newer, the plane now uses the new popup tip positioning system.
+Sim: Fixed that scanning MP aircrafts there was a chance of a bug in the radar logic when checking for validity.
+Model: Removed interference with default view. Maybe that caused zoom reset problem.
+Model: Fixed that when looking into the engine intake, one could spot part of the canards.
+Model: Wheels texture are now more centered, will look better when spinning.
+Animation: Wheels will now stop spinning entirely when aircraft is in the air.
+
+3.007 - 2015 February 27
+=====
+HUD: Made a heading scale on the horizon line, in landing mode. The regular heading scale will be hidden.
+HUD: Sidewind indicator is now only shown in takeoff mode.
+GUI: Updated aircraft help to the new HUD features.
+Model: Raised pilots view point with 2.5cm. [reverted]
+Sim: Prevented trigger listener to activate before node inputs were ready.
+Model: Lowered the view angle in the internal views.
+HUD: Moved QFE and digital altitude up a small bit.
+Sim: Prevented tracer rounds from running out of ammo before cannon rounds.
+Effect: Fixed landing light spot can be seen in replay in external view, if it was shown when replay was started.
+Sim: Fixed that auto-starting engine would fail if it was attempted before the engine was spooled down.
