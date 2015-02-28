@@ -1,12 +1,12 @@
 #
-# A Flightgear JSBSim crash and stress damage system.
+# A Flightgear crash and stress damage system.
 #
 # Inspired by the crash system in Mig15 by Slavutinsky Victor. And by Hvengel's formula for wingload stress.
 #
 # Authors: Slavutinsky Victor, Nikolai V. Chr. (Necolatis)
 #
 #
-# Version 0.12
+# Version 0.13
 #
 # License:
 #   GPL 2.0
@@ -70,6 +70,8 @@ var CrashAndStress = {
 				crashOn:    "damage/sounds/crash-on",
 				detachOn:   "damage/sounds/detach-on",
 				explodeOn:  "damage/sounds/explode-on",
+				simCrashed: "sim/crashed",
+				wildfire:   "environment/wildfire/fire-on-crash",
 			};
 			foreach(var ident; keys(m.input)) {
 			    m.input[ident] = props.globals.getNode(m.input[ident], 1);
@@ -191,7 +193,7 @@ var CrashAndStress = {
 		me.exploded = FALSE;
 		me.lastMessageTime = 0;
 		me.repairing = TRUE;
-		
+		me.input.simCrashed.setValue(FALSE);
 		me.repairTimer.restart(10.0);
 	},
 	_finishRepair: func () {
@@ -270,10 +272,21 @@ var CrashAndStress = {
 		    var mode_list = keys(failure_modes);
 		    var probability = speed / 200.0;# 200kt will fail everything, 0kt will fail nothing.
 
+		    var hitStr = "something";
+		    if(info != nil and info[1] != nil) {
+			    hitStr = info[1].names == nil?"something":info[1].names[0];
+			    foreach(infoStr; info[1].names) {
+			    	if(find('_', infoStr) == -1) {
+			    		hitStr = infoStr;
+			    		break;
+			    	}
+			    }
+			}
 		    # test for explosion
 		    if(probability > 1.0 and me.fdm.input.fuel.getValue() > 2500) {
 		    	# 200kt+ and fuel in tanks will explode the aircraft on impact.
-		    	me._explodeBegin();
+		    	me.input.simCrashed.setValue(TRUE);
+		    	me._explodeBegin("Aircraft hit "~hitStr~".");
 		    	return;
 		    }
 
@@ -282,11 +295,15 @@ var CrashAndStress = {
 		      		FailureMgr.set_failure_level(failure_mode_id, 1);
 		      	}
 		    }
-			var str = "Aircraft hit "~info[1].names[size(info[1].names)-1]~".";
+
+			var str = "Aircraft hit "~hitStr~".";
 			me._output(str);
 		} elsif (solid == TRUE) {
-			var pos= geo.Coord.new().set_latlon(lat, lon);
-			wildfire.ignite(pos, 1);
+			# The aircraft is burning and will ignite the ground
+			if(me.input.wildfire.getValue() == TRUE) {
+				var pos= geo.Coord.new().set_latlon(lat, lon);
+				wildfire.ignite(pos, 1);
+			}
 		}
 		if(solid == TRUE) {
 			me._impactSoundBegin(speed);
@@ -312,7 +329,7 @@ var CrashAndStress = {
 	_impactSoundEnd: func () {
 		me.input.crashOn.setValue(0);
 	},
-	_explodeBegin: func() {
+	_explodeBegin: func(str) {
 		me.input.explodeOn.setValue(1);
 		me.exploded = TRUE;
 		var failure_modes = FailureMgr._failmgr.failure_modes;
@@ -322,7 +339,7 @@ var CrashAndStress = {
       		FailureMgr.set_failure_level(failure_mode_id, 1);
 	    }
 
-	    me._output("Aircraft exploded.", TRUE);
+	    me._output(str~" and exploded.", TRUE);
 		
 		me.explodeTimer.restart(3);
 	},
@@ -359,7 +376,7 @@ var CrashAndStress = {
 			var lat = me.input.lat.getValue();
 			var lon = me.input.lon.getValue();
 			var info = geodinfo(lat, lon);
-			var solid = info[1] == nil?TRUE:info[1].solid;
+			var solid = info==nil?TRUE:(info[1] == nil?TRUE:info[1].solid);
 			if(solid == FALSE) {
 				me._impactDamage();
 			}

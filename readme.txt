@@ -4,7 +4,7 @@ Readme for the JA-37 Viggen aircraft for the Flightgear simulator:
 
 Install
 ----------
-1 - Have flightgear installed. Version 2.8.0.2 to 3.2.0 is tested. Earlier version will not work, later might.
+1 - Have flightgear installed. Version 2.8.0.2 to 3.4.0 is tested. Earlier version will not work, later might.
 2 - Copy the entire 'JA37' folder into a folder (must be called Aircraft) where Flightgear will look for aircraft.
 3 - Happy flying. Check the aircraft help page inside the sim for instructions.
 
@@ -43,11 +43,11 @@ Help?
 -----
 Looking for a contributor for these features, or what else you would like to work on: (I have many photos of these)
 
-- Modeling of more detailed cockpit
-- More accurate gears.
+- Modeling of more detailed cockpit interior.
+- More accurate gears and gear doors.
 - Engine reverser.
-- South African livery.
-- Red/black liveries.
+- Black livery.
+- Grey/black livery.
 
 Contact Necolatis on the forums to get in contact, got plenty of cockpit pictures.
 
@@ -55,3 +55,5 @@ Liberties taken:
 ----------------
 In the orig plane the HUD decimal delimiter is ','. I choose to use the english '.' instead.
 The Radar is able to look through hills and mountains, and the missiles is also able to fly through those.
+The air-to-air RB-24J missiles is also able to hit ground targets, as no air-to-ground misslies can be mounted at the moment.
+The plane has undocumented un-autenthic feature: Carrier operations. Use keys Shift-L (hold for 10 seconds), Shift-C and L. Only work on carriers.
