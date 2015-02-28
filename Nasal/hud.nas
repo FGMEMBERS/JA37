@@ -12,7 +12,6 @@ var vec_length = func(x, y) { return math.sqrt(pow2(x) + pow2(y)); };
 var round0 = func(x) { return math.abs(x) > 0.01 ? x : 0; };
 var roundabout = func(x) {
   var y = x - int(x);
-
   return y < 0.5 ? int(x) : 1 + int(x) ;
 };
 var deg2rads = math.pi/180.0;
@@ -22,14 +21,16 @@ var feet2meter = 0.3048;
 
 var alt_scale_mode = -1; # the alt scale is not liniar, this indicates which part is showed
 
-
+var FALSE = 0;
+var TRUE = 1;
 
 var TAKEOFF = 0;
 var NAV = 1;
 var COMBAT =2;
+var LANDING = 3;
 
-var FALSE = 0;
-var TRUE = 1;
+var mode = TAKEOFF;
+var modeTimeTakeoff = -1;
 
 # -100 - 0 : not blinking
 # 1 - 10   : blinking
@@ -37,16 +38,16 @@ var TRUE = 1;
 var countQFE = 0;
 var QFEcalibrated = FALSE;# if the altimeters are calibrated
 
-var HUDTop = 0.79; # position of top of HUD in meters
-# HUD z is 0 to 0.25 and raised 0.54 up. Finally is 0.54m to 0.79m, height of HUD is 0.25m
-var pixelPerMeter = 4096;
-# Therefore each pixel is 0.25 / 1024 = 0.000244140625m or each meter is 4096 pixels.
-var centerOffset = -143;#pilot eye position up from vertical center of HUD. (in line from pilots eyes)
-# View is 0.70m so 0.79-0.70 = 0.09m down from top of HUD, since Y in HUD increases downwards we get pixels from top:
-# 512 - (0.09 / 0.000244140625) = 143.36 pixels up from center. Since -y is upward, result is -143. (Per default)
+var HUDTop = 0.77; # position of top of HUD in meters. 0.18 + 0.59 = 0.77
+# HUD z is 0 to 0.18 and raised 0.59 up. Finally is 0.59m to 0.77m, height of HUD is 0.18m
+# Therefore each pixel is 0.18 / 1024 = 0.00017578125m or each meter is 5688.8888888888888888888888888889 pixels.
+var pixelPerMeter = 5688.9;
+var centerOffset = -113.78;#pilot eye position up from vertical center of HUD. (in line from pilots eyes)
+# View is 0.70m so 0.77-0.70 = 0.07m down from top of HUD, since Y in HUD increases downwards we get pixels from top:
+# 512 - (0.07 / 0.00017578125) = 113.77777777777777777777777777778 pixels up from center. Since -y is upward, result is -113.78. (Per default)
 
-var pixelPerDegreeY = 37; #vertical axis, view is tilted 10 degrees, zoom in on runway to check it hit the 10deg line
-var pixelPerDegreeX = 37; #horizontal axis
+var pixelPerDegreeY = 51; #vertical axis, view is tilted 10 degrees, zoom in when on runway to check it hit the 10deg line
+var pixelPerDegreeX = pixelPerDegreeY; #horizontal axis
 #var slant = 35; #degrees the HUD is slanted away from the pilot.
 var sidewindPosition = centerOffset+(2*pixelPerDegreeY); #should be 2 degrees under horizon.
 var sidewindPerKnot = 450/30; # Max sidewind displayed is set at 30 kts. 450pixels is maximum is can move to the side.
@@ -59,27 +60,26 @@ var headScaleTickSpacing = 65;# horizontal spacing between ticks. Remember to ad
 var altimeterScaleHeight = 225; # the height of the low alt scale. Also used in the other scales as a reference height.
 var reticle_factor = 1.3;# size of flight path indicator, aiming reticle, and out of ammo reticle
 var sidewind_factor = 1.0;# size of sidewind indicator
-var r = 0.0;
+var r = 0.0;#HUD colors
 var g = 1.0;
-var b = 0.0;#HUD colors
+var b = 0.0;
 var a = 1.0;
-var w = 4;  #line stroke width
+var w = getprop("sim/ja37/hud/stroke-linewidth");  #line stroke width (saved between sessions)
 var ar = 0.9;#font aspect ratio
 var fs = 0.8;#font size factor
 var artifacts0 = nil;
 var artifacts1 = [];
+var artifactsText1 = [];
+var artifactsText0 = nil;
 var maxTracks = 32;# how many radar tracks can be shown at once in the HUD (was 16)
 var diamond_node = nil;
-var selection = nil;
-var tracks = [];
-var tracks_index = -1;
 
 var HUDnasal = {
   canvas_settings: {
     "name": "HUDnasal",
-    "size": [2048, 2048],# width of texture to be replaced
-    "view": [1024, 1024],# width of canvas
-    "mipmapping": 1
+    "size": [1024, 1024],# size of the texture
+    "view": [1024, 1024],# size of canvas coordinate system
+    "mipmapping": 0
   },
   main: nil,
 
@@ -333,17 +333,17 @@ var HUDnasal = {
     HUDnasal.main.qfe.hide();
     HUDnasal.main.qfe.setColor(r,g,b, a);
     HUDnasal.main.qfe.setAlignment("center-center");
-    HUDnasal.main.qfe.setTranslation(-375, 125);
+    HUDnasal.main.qfe.setTranslation(-375, centerOffset+(5.5*pixelPerDegreeY));
     HUDnasal.main.qfe.setFontSize(80*fs, ar);
 
     # Altitude number (Not shown in landing/takeoff mode. Radar at less than 100 feet)
     HUDnasal.main.alt = HUDnasal.main.root.createChild("text");
     HUDnasal.main.alt.setColor(r,g,b, a);
     HUDnasal.main.alt.setAlignment("center-center");
-    HUDnasal.main.alt.setTranslation(-375, 300);
+    HUDnasal.main.alt.setTranslation(-375, centerOffset+(7.5*pixelPerDegreeY));
     HUDnasal.main.alt.setFontSize(85*fs, ar);
 
-    # Cannon aiming reticle
+    # Collision warning arrow
     HUDnasal.main.arrow_group = HUDnasal.main.root.createChild("group");  
     HUDnasal.main.arrow_trans   = HUDnasal.main.arrow_group.createTransform();
     HUDnasal.main.arrow =
@@ -369,6 +369,15 @@ var HUDnasal = {
       .lineTo(0,  15*reticle_factor)
       .setStrokeLineCap("round")
       .setStrokeLineWidth(w);
+    # Missile aiming circle
+    HUDnasal.main.reticle_missile =
+      HUDnasal.main.root.createChild("path")
+      .setColor(r,g,b, a)
+      .moveTo( 200, centerOffset)
+      .arcSmallCW(200,200, 0, -400, 0)
+      .arcSmallCW(200,200, 0,  400, 0)
+      .setStrokeLineCap("round")
+      .setStrokeLineWidth(w);      
     # Out of ammo flight path indicator
     HUDnasal.main.reticle_no_ammo =
       HUDnasal.main.root.createChild("path")
@@ -434,9 +443,13 @@ var HUDnasal = {
          .setColor(r,g,b, a);
     HUDnasal.main.turn_group3 = HUDnasal.main.turn_group2.createChild("group");
     HUDnasal.main.slip_indicator = HUDnasal.main.turn_group3.createChild("path")
-         .moveTo(-8, -20)
+         .moveTo(-8, -26)
          .horiz(16)
-         .setStrokeLineWidth(16)
+         .vert(16)
+         .horiz(-16)
+         .vert(-16)
+         .setColorFill(r,g,b, a)
+         .setStrokeLineWidth(w)
          .setColor(r,g,b, a);
 
 
@@ -444,6 +457,7 @@ var HUDnasal = {
     HUDnasal.main.horizon_group = HUDnasal.main.root.createChild("group");
     HUDnasal.main.horizon_group.set("clip", "rect(0px, 712px, 1024px, 0px)");#top,right,bottom,left (absolute in canvas)
     HUDnasal.main.horizon_group2 = HUDnasal.main.horizon_group.createChild("group");
+    HUDnasal.main.horizon_group4 = HUDnasal.main.horizon_group.createChild("group");
     HUDnasal.main.desired_lines_group = HUDnasal.main.horizon_group2.createChild("group");
     HUDnasal.main.horizon_group3 = HUDnasal.main.horizon_group.createChild("group");
     HUDnasal.main.h_rot   = HUDnasal.main.horizon_group.createTransform();
@@ -451,8 +465,9 @@ var HUDnasal = {
   
     # pitch lines
     var distance = pixelPerDegreeY * 5;
+    HUDnasal.main.negative_horizon_lines = 
     for(var i = -18; i <= -1; i += 1) { # stipled lines
-      append(artifacts1, HUDnasal.main.horizon_group2.createChild("path")
+      append(artifacts1, HUDnasal.main.horizon_group4.createChild("path")
                      .moveTo(200, -i * distance)
                      .horiz(50)
                      .moveTo(300, -i * distance)
@@ -508,14 +523,14 @@ var HUDnasal = {
 
     #pitch line numbers
     for(var i = -18; i <= 0; i += 1)
-      append(artifacts1, HUDnasal.main.horizon_group2.createChild("text")
+      append(artifactsText1, HUDnasal.main.horizon_group4.createChild("text")
          .setText(i*5)
          .setFontSize(75*fs, ar)
          .setAlignment("right-bottom")
          .setTranslation(-200, -i * distance - 5)
          .setColor(r,g,b, a));
     for(var i = 1; i <= 18; i += 1)
-      append(artifacts1, HUDnasal.main.horizon_group2.createChild("text")
+      append(artifactsText1, HUDnasal.main.horizon_group2.createChild("text")
          .setText("+" ~ i*5)
          .setFontSize(75*fs, ar)
          .setAlignment("right-bottom")
@@ -532,13 +547,78 @@ var HUDnasal = {
                      .setStrokeLineWidth(w)
                      .setColor(r,g,b, a);
 
-    HUDnasal.main.desired_lines = HUDnasal.main.desired_lines_group.createChild("path")
+    HUDnasal.main.horizon_line_gap = HUDnasal.main.horizon_group2.createChild("path")
+                     .moveTo(-200, 0)
+                     .horiz(400)
+                     .setStrokeLineWidth(w)
+                     .setColor(r,g,b, a);
+
+    # heading scale on horizon line
+    HUDnasal.main.head_scale_horz_grp = HUDnasal.main.horizon_group2.createChild("group");
+    HUDnasal.main.head_scale_horz_ticks = HUDnasal.main.head_scale_horz_grp.createChild("path")
+                      .moveTo(0, 0)
+                      .vert(-30)
+                      .moveTo(10*pixelPerDegreeX, 0)
+                      .vert(-30)
+                      .moveTo(-10*pixelPerDegreeX, 0)
+                      .vert(-30)
+                      .setStrokeLineWidth(w)
+                      .setColor(r,g,b, a);
+    # Heading middle number on horizon line
+    HUDnasal.main.hdgMH = HUDnasal.main.head_scale_horz_grp.createChild("text")
+                      .setColor(r,g,b, a)
+                      .setAlignment("center-bottom")
+                      .setFontSize(65*fs, ar);
+    # Heading left number on horizon line
+    HUDnasal.main.hdgLH = HUDnasal.main.head_scale_horz_grp.createChild("text")
+                      .setColor(r,g,b, a)
+                      .setAlignment("center-bottom")
+                      .setFontSize(65*fs, ar);
+    # Heading right number on horizon line
+    HUDnasal.main.hdgRH = HUDnasal.main.head_scale_horz_grp.createChild("text")
+                      .setColor(r,g,b, a)
+                      .setAlignment("center-bottom")
+                      .setFontSize(65*fs, ar);
+    #heading bug on horizon
+    HUDnasal.main.heading_bug_horz_group = HUDnasal.main.horizon_group2.createChild("group");
+    HUDnasal.main.heading_bug_horz = HUDnasal.main.heading_bug_horz_group.createChild("path")
+                      .setColor(r,g,b, a)
+                      .setStrokeLineCap("round")
+                      .setStrokeLineWidth(w)
+                      .moveTo( 0,  10)
+                      .lineTo( 0,  55)
+                      .moveTo( 15, 55)
+                      .lineTo( 15, 25)
+                      .moveTo(-15, 55)
+                      .lineTo(-15, 25);                      
+
+
+    HUDnasal.main.desired_lines3 = HUDnasal.main.desired_lines_group.createChild("path")
                      .moveTo(-200 + w/2, 0)
                      .vert(5*pixelPerDegreeY)
                      .moveTo(200 - w/2, 0)
                      .vert(5*pixelPerDegreeY)
                      .setStrokeLineWidth(w)
                      .setColor(r,g,b, a);
+
+    HUDnasal.main.landing_line = HUDnasal.main.horizon_group2.createChild("path")
+                     .moveTo(-200, pixelPerDegreeY*2.86)
+                     .horiz(160)
+                     .moveTo(40, pixelPerDegreeY*2.86)
+                     .horiz(160)
+                     .moveTo(0, pixelPerDegreeY*2.86)
+                     .arcSmallCW(4, 4, 0, -8, 0)
+                     .arcSmallCW(4, 4, 0,  8, 0)
+                     .setStrokeLineWidth(w)
+                     .setColor(r,g,b, a);                     
+
+    HUDnasal.main.desired_lines2 = HUDnasal.main.desired_lines_group.createChild("path")
+                     .moveTo(-140 + w/2, 0)
+                     .vert(3*pixelPerDegreeY)
+                     .moveTo(140 - w/2, 0)
+                     .vert(3*pixelPerDegreeY)
+                     .setStrokeLineWidth(w)
+                     .setColor(r,g,b, a);                     
 
     HUDnasal.main.horizon_dots = HUDnasal.main.horizon_group2.createChild("path")
                      .moveTo(-37, 0)#-35
@@ -634,28 +714,71 @@ var HUDnasal = {
     HUDnasal.main.tower_symbol_icao.setTranslation(12, -12);
     HUDnasal.main.tower_symbol_icao.setFontSize(60*fs, ar);
 
+    #distance scale
+    HUDnasal.main.dist_scale_group = HUDnasal.main.root.createChild("group").setTranslation(-100, 130);
+    HUDnasal.main.mySpeed = HUDnasal.main.dist_scale_group.createChild("path")
+                            .moveTo(   0,   0)
+                            .lineTo( -10, -10)
+                            .lineTo(   0, -20)
+                            .lineTo(  10, -10)
+                            .lineTo(   0,   0)
+                            .setStrokeLineWidth(w)
+                            .setColor(r,g,b, a);
+    HUDnasal.main.targetSpeed = HUDnasal.main.dist_scale_group.createChild("path")
+                            .moveTo(   0,   0)
+                            .lineTo(   0,  20)
+                            .moveTo( -10,  20)
+                            .lineTo(  10,  20)
+                            .setStrokeLineWidth(w)
+                            .setColor(r,g,b, a);
+    HUDnasal.main.targetDistance1 = HUDnasal.main.dist_scale_group.createChild("path")
+                            .moveTo(   0,   0)
+                            .lineTo(   0,  20)
+                            .lineTo(  20,  20)
+                            .moveTo( -30,  20)
+                            .lineTo( -30,  50)
+                            .lineTo(   0,  50)
+                            .setStrokeLineWidth(w)
+                            .setColor(r,g,b, a);
+    HUDnasal.main.targetDistance2 = HUDnasal.main.dist_scale_group.createChild("path")
+                            .moveTo(   0,   0)
+                            .lineTo(   0,  20)
+                            .lineTo( -20,  20)
+                            .setStrokeLineWidth(w)
+                            .setColor(r,g,b, a);                            
+    var distanceScale = HUDnasal.main.dist_scale_group.createChild("path")
+                            .moveTo(   0, 0)
+                            .lineTo( 200, 0)
+                            .setStrokeLineWidth(w)
+                            .setColor(r,g,b, a);
+
       #other targets
     HUDnasal.main.target_circle = [];
+    HUDnasal.main.target_group = HUDnasal.main.radar_group.createChild("group");
     for(var i = 0; i < maxTracks; i += 1) {      
-      var target_group = HUDnasal.main.radar_group.createChild("group");
-      append(HUDnasal.main.target_circle, target_group);
-      target_group.createTransform();
-      target_circles = target_group.createChild("path")
+      target_circles = HUDnasal.main.target_group.createChild("path")
                            .moveTo(-50, 0)
                            .arcLargeCW(50, 50, 0,  100, 0)
                            #.arcLargeCW(50, 50, 0, -100, 0)
                            .setStrokeLineWidth(w)
                            .setColor(r,g,b, a);
+      append(HUDnasal.main.target_circle, target_circles);
       append(artifacts1, target_circles);
     }
 
-    artifacts0 = [HUDnasal.main.airspeedInt, HUDnasal.main.airspeed, HUDnasal.main.head_scale, HUDnasal.main.hdgLineL, HUDnasal.main.heading_bug, HUDnasal.main.vel_vec,
-             HUDnasal.main.hdgLineR, HUDnasal.main.head_scale_indicator, HUDnasal.main.hdgM, HUDnasal.main.hdgL, HUDnasal.main.turn_indicator, HUDnasal.main.arrow,
-             HUDnasal.main.hdgR, HUDnasal.main.alt_scale_high, HUDnasal.main.alt_scale_med, HUDnasal.main.alt_scale_low, HUDnasal.main.slip_indicator,
-             HUDnasal.main.alt_scale_line, HUDnasal.main.alt_low, HUDnasal.main.alt_med, HUDnasal.main.alt_high, HUDnasal.main.aim_reticle_fin, HUDnasal.main.reticle_cannon,
-             HUDnasal.main.alt_higher, HUDnasal.main.alt_pointer, HUDnasal.main.rad_alt_pointer, HUDnasal.main.qfe, HUDnasal.main.target, HUDnasal.main.desired_lines,
-             HUDnasal.main.alt, HUDnasal.main.reticle_no_ammo, HUDnasal.main.takeoff_symbol, HUDnasal.main.horizon_line, HUDnasal.main.horizon_dots, HUDnasal.main.diamond,
-             tower, HUDnasal.main.diamond_dist, HUDnasal.main.tower_symbol_dist, HUDnasal.main.tower_symbol_icao, HUDnasal.main.diamond_name, HUDnasal.main.aim_reticle];
+    artifacts0 = [HUDnasal.main.head_scale, HUDnasal.main.hdgLineL, HUDnasal.main.heading_bug, HUDnasal.main.vel_vec, HUDnasal.main.reticle_missile,
+             HUDnasal.main.hdgLineR, HUDnasal.main.head_scale_indicator, HUDnasal.main.turn_indicator, HUDnasal.main.arrow, HUDnasal.main.head_scale_horz_ticks,
+             HUDnasal.main.alt_scale_high, HUDnasal.main.alt_scale_med, HUDnasal.main.alt_scale_low, HUDnasal.main.slip_indicator,
+             HUDnasal.main.alt_scale_line, HUDnasal.main.aim_reticle_fin, HUDnasal.main.reticle_cannon, HUDnasal.main.desired_lines2,
+             HUDnasal.main.alt_pointer, HUDnasal.main.rad_alt_pointer, HUDnasal.main.target, HUDnasal.main.desired_lines3, HUDnasal.main.horizon_line_gap,
+             HUDnasal.main.reticle_no_ammo, HUDnasal.main.takeoff_symbol, HUDnasal.main.horizon_line, HUDnasal.main.horizon_dots, HUDnasal.main.diamond,
+             tower, HUDnasal.main.aim_reticle, HUDnasal.main.targetSpeed, HUDnasal.main.mySpeed, distanceScale, HUDnasal.main.targetDistance1,
+             HUDnasal.main.targetDistance2, HUDnasal.main.landing_line, HUDnasal.main.heading_bug_horz];
+
+    artifactsText0 = [HUDnasal.main.airspeedInt, HUDnasal.main.airspeed, HUDnasal.main.hdgM, HUDnasal.main.hdgL, HUDnasal.main.hdgR, HUDnasal.main.qfe,
+                      HUDnasal.main.diamond_dist, HUDnasal.main.tower_symbol_dist, HUDnasal.main.tower_symbol_icao, HUDnasal.main.diamond_name,
+                      HUDnasal.main.alt_low, HUDnasal.main.alt_med, HUDnasal.main.alt_high, HUDnasal.main.alt_higher, HUDnasal.main.alt,
+                      HUDnasal.main.hdgMH, HUDnasal.main.hdgLH, HUDnasal.main.hdgRH];
 
 
   },
@@ -677,52 +800,75 @@ var HUDnasal = {
       };
       HUDnasal.main.verbose = 0;
       HUDnasal.main.input = {
-        pitch:    "/orientation/pitch-deg",
-        roll:     "/orientation/roll-deg",
+        pitch:            "/orientation/pitch-deg",
+        roll:             "/orientation/roll-deg",
         #     hdg:      "/instrumentation/magnetic-compass/indicated-heading-deg",
         #      hdg:      "/instrumentation/gps/indicated-track-magnetic-deg",
-        hdg:      "/orientation/heading-magnetic-deg",
-        hdgReal:  "/orientation/heading-deg",
-        speed_n:  "velocities/speed-north-fps",
-        speed_e:  "velocities/speed-east-fps",
-        speed_d:  "velocities/speed-down-fps",
-        alpha:    "/orientation/alpha-deg",
-        alphaJSB: "fdm/jsbsim/aero/alpha-deg",
-        beta:     "/orientation/side-slip-deg",
-        ias:      "/velocities/airspeed-kt",
-        mach:     "/velocities/mach",
-        gs:       "/velocities/groundspeed-kt",
-        vs:       "/velocities/vertical-speed-fps",
-        rad_alt:  "position/altitude-agl-ft",#/instrumentation/radar-altimeter/radar-altitude-ft",
-        alt_ft:   "/instrumentation/altimeter/indicated-altitude-ft",
-        alt_ft_real: "position/altitude-ft",
-        wow_nlg:  "/gear/gear[0]/wow",
-        #Vr:       "/controls/switches/HUDnasal_rotation_speed",
-        #Bright:   "/controls/switches/HUDnasal_brightness",
-        #Dir_sw:   "/controls/switches/HUDnasal_director", 
-        #H_sw:     "/controls/switches/HUDnasal_height", 
-        #Speed_sw: "/controls/switches/HUDnasal_speed", 
-        #Test_sw:  "/controls/switches/HUDnasal_test",
-        fdpitch:  "/autopilot/settings/fd-pitch-deg",
-        fdroll:   "/autopilot/settings/fd-roll-deg",
-        fdspeed:  "/autopilot/settings/target-speed-kt",
-        mode:     "sim/ja37/hud/mode",
-        service:  "/instrumentation/head-up-display/serviceable",
-        radar_serv: "instrumentation/radar/serviceable",
-        units:    "sim/ja37/hud/units-metric",
-        gears:    "gear/gear/position-norm",
-        combat:   "/sim/ja37/hud/combat",
-        station:  "controls/armament/station-select",
-        tenHz:    "sim/ja37/blink/ten-Hz/state",
-        fiveHz:   "sim/ja37/blink/five-Hz/state",
-        callsign: "/sim/ja37/hud/callsign",
-        elec:     "/systems/electrical/outputs/hud",
-        altCalibrated: "sim/ja37/avionics/altimeters-calibrated",
-        carrierNear: "fdm/jsbsim/ground/carrier-near",
-        terrainOn:   "sim/ja37/sound/terrain-on",
-        viewNumber:  "sim/current-view/view-number",
-        viewZ:       "sim/current-view/y-offset-m",
-        tracks_enabled: "sim/ja37/hud/tracks-enabled"
+        hdg:              "/orientation/heading-magnetic-deg",
+        hdgReal:          "/orientation/heading-deg",
+        speed_n:          "velocities/speed-north-fps",
+        speed_e:          "velocities/speed-east-fps",
+        speed_d:          "velocities/speed-down-fps",
+        alpha:            "/orientation/alpha-deg",
+        alphaJSB:         "fdm/jsbsim/aero/alpha-deg",
+        beta:             "/orientation/side-slip-deg",
+        ias:              "/velocities/airspeed-kt",
+        mach:             "/velocities/mach",
+        gs:               "/velocities/groundspeed-kt",
+        vs:               "/velocities/vertical-speed-fps",
+        rad_alt:          "position/altitude-agl-ft",#/instrumentation/radar-altimeter/radar-altitude-ft",
+        alt_ft:           "/instrumentation/altimeter/indicated-altitude-ft",
+        alt_ft_real:      "position/altitude-ft",
+        wow0:             "/gear/gear[0]/wow",
+        wow1:             "/gear/gear[1]/wow",
+        wow2:             "/gear/gear[2]/wow",
+        fdpitch:          "/autopilot/settings/fd-pitch-deg",
+        fdroll:           "/autopilot/settings/fd-roll-deg",
+        fdspeed:          "/autopilot/settings/target-speed-kt",
+        mode:             "sim/ja37/hud/mode",
+        currentMode:      "sim/ja37/hud/current-mode",
+        service:          "/instrumentation/head-up-display/serviceable",
+        radar_serv:       "instrumentation/radar/serviceable",
+        units:            "sim/ja37/hud/units-metric",
+        gearsPos:         "gear/gear/position-norm",
+        combat:           "/sim/ja37/hud/combat",
+        station:          "controls/armament/station-select",
+        tenHz:            "sim/ja37/blink/ten-Hz/state",
+        fiveHz:           "sim/ja37/blink/five-Hz/state",
+        callsign:         "/sim/ja37/hud/callsign",
+        elec:             "/systems/electrical/outputs/hud",
+        altCalibrated:    "sim/ja37/avionics/altimeters-calibrated",
+        carrierNear:      "fdm/jsbsim/ground/carrier-near",
+        terrainOn:        "sim/ja37/sound/terrain-on",
+        viewNumber:       "sim/current-view/view-number",
+        viewZ:            "sim/current-view/y-offset-m",
+        TILS:             "sim/ja37/hud/TILS",
+        landingMode:      "sim/ja37/hud/landing-mode",
+        tracks_enabled:   "sim/ja37/hud/tracks-enabled",
+        elapsedSec:       "sim/time/elapsed-sec",
+        cannonAmmo:       "ai/submodels/submodel[3]/count",
+        nav0InRange:      "instrumentation/nav[0]/in-range",
+        nav0Heading:      "instrumentation/nav[0]/heading-deg",
+        nav0HeadingDefl:  "instrumentation/nav[0]/heading-needle-deflection",
+        nav0HasGS:        "instrumentation/nav[0]/has-gs",
+        nav0GSInRange:    "instrumentation/nav[0]/gs-in-range",
+        nav0GSDirectDeg:  "instrumentation/nav[0]/gs-direct-deg",
+        APLockHeading:    "autopilot/locks/heading",
+        APHeadingBug:     "autopilot/settings/heading-bug-deg",
+        APTrueHeadingErr: "autopilot/internal/true-heading-error-deg",
+        APnav0HeadingErr: "autopilot/internal/nav1-heading-error-deg",
+        RMActive:         "autopilot/route-manager/active",
+        RMWaypointBearing:"autopilot/route-manager/wp/bearing-deg",
+        APLockAlt:        "autopilot/locks/altitude",
+        APTgtAlt:         "autopilot/settings/target-altitude-ft",
+        APTgtAgl:         "autopilot/settings/target-agl-ft",
+        RMCurrWaypoint:   "autopilot/route-manager/current-wp",
+        towerAlt:         "sim/tower/altitude-ft",
+        towerLat:         "sim/tower/latitude-deg",
+        towerLon:         "sim/tower/longitude-deg",
+        sideslipOn:       "sim/ja37/hud/bank-indicator",
+        windHeading:      "environment/wind-from-heading-deg",
+        windSpeed:        "environment/wind-speed-kt",        
       };
    
       foreach(var name; keys(HUDnasal.main.input)) {
@@ -742,23 +888,48 @@ var HUDnasal = {
     if(me.input.elec.getValue() < 24 or me.input.mode.getValue() == 0) {
       me.root.hide();
       me.root.update();
-      settimer(func me.update(), 0.5);
-     } elsif (me.input.service.getValue() == FALSE) {
+      settimer(func me.update(), 0.3);
+     } elsif ((me.input.viewNumber.getValue() != 0 and me.input.viewNumber.getValue() != 13) or me.input.service.getValue() == FALSE) {
       # The HUD has failed, due to the random failure system or crash, it will become frozen.
       # if it also later loses power, and the power comes back, the HUD will not reappear.
-      settimer(func me.update(), 1);
+      settimer(func me.update(), 0.25);
      } else {
-      if(me.input.viewNumber.getValue() == 0) {
-        # in case the user has adjusted the Z view position, we calculate the Y point in the HUD in line with pilots eyes.
-        var fromTop = HUDTop - me.input.viewZ.getValue();
-        centerOffset = -1 * (512 - (fromTop * pixelPerMeter));
+      # in case the user has adjusted the Z view position, we calculate the Y point in the HUD in line with pilots eyes.
+      var fromTop = HUDTop - me.input.viewZ.getValue();
+      centerOffset = -1 * (512 - (fromTop * pixelPerMeter));
+
+      var takeoffForbidden = me.input.pitch.getValue() > 3 or me.input.mach.getValue() > 0.35 or me.input.gearsPos.getValue() != 1;
+
+      if(mode != TAKEOFF and !takeoffForbidden and me.input.wow0.getValue() == TRUE and me.input.wow0.getValue() == TRUE and me.input.wow0.getValue() == TRUE) {
+        mode = TAKEOFF;
+        modeTimeTakeoff = -1;
+      } elsif (mode == TAKEOFF and modeTimeTakeoff == -1 and takeoffForbidden) {
+        modeTimeTakeoff = me.input.elapsedSec.getValue();
+      } elsif (modeTimeTakeoff != -1 and me.input.elapsedSec.getValue() - modeTimeTakeoff > 3) {
+        if (me.input.gearsPos.getValue() == 1 or me.input.landingMode.getValue() == TRUE) {
+          mode = LANDING;
+        } else {
+          mode = me.input.combat.getValue() == 1 ? COMBAT : NAV;
+        }
+        modeTimeTakeoff = -1;
+      } elsif ((mode == COMBAT or mode == NAV) and (me.input.gearsPos.getValue() == 1 or me.input.landingMode.getValue() == TRUE)) {
+        mode = LANDING;
+        modeTimeTakeoff = -1;
+      } elsif (mode == COMBAT or mode == NAV) {
+        mode = me.input.combat.getValue() == 1 ? COMBAT : NAV;
+        modeTimeTakeoff = -1;
+      } elsif (mode == LANDING and me.input.gearsPos.getValue() == 0 and me.input.landingMode.getValue() == FALSE) {
+        mode = me.input.combat.getValue() == 1 ? COMBAT : NAV;
+        modeTimeTakeoff = -1;
       }
-      var mode = me.input.gears.getValue() != 0 ? TAKEOFF : (me.input.combat.getValue() == 1 ? COMBAT : NAV);
-      var cannon = me.input.station.getValue() == 0 and me.input.combat.getValue() == 1;
+      me.input.currentMode.setValue(mode);
+
+      var cannon = me.input.station.getValue() == 0 and me.input.combat.getValue() == TRUE;
       var out_of_ammo = FALSE;
-      if (me.input.combat.getValue() == 1 and me.input.station.getValue() != 0 and 
-          getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "none") {
-            out_of_ammo = 1;
+      if (me.input.station.getValue() != 0 and getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "none") {
+            out_of_ammo = TRUE;
+      } elsif (me.input.station.getValue() == 0 and me.input.cannonAmmo.getValue() == 0) {
+            out_of_ammo = TRUE;
       }
 
       # ground collision warning
@@ -769,6 +940,7 @@ var HUDnasal = {
             
       # heading scale
       me.displayHeadingScale();
+      me.displayHeadingHorizonScale();
 
       #heading bug, must be after heading scale
       me.displayHeadingBug();
@@ -776,14 +948,20 @@ var HUDnasal = {
       # altitude. Digital and scale.
       me.displayAltitude();
 
-      # desired alt lines
-      me.displayDesiredAltitudeLines();
-
       ####   display QFE or weapon   ####
       me.displayQFE(mode);
 
       ####   reticle  ####
-      me.showReticle(mode, cannon, out_of_ammo);
+      deflect = me.showReticle(mode, cannon, out_of_ammo);
+
+      # Visual, TILS and ILS landing guide
+      var guide = me.displayLandingGuide(mode, deflect);
+
+      # desired alt lines
+      me.displayDesiredAltitudeLines(guide);
+
+      # distance scale
+      me.showDistanceScale(mode);
 
       ### artificial horizon and pitch lines ###
       me.displayPitchLines(mode);
@@ -817,77 +995,132 @@ var HUDnasal = {
 
   displayGroundCollisionArrow: func (mode) {
     var rad_alt = me.input.rad_alt.getValue();
-    #var x = mp.getNode("position/global-x").getValue();# meters probably
-    #var y = mp.getNode("position/global-y").getValue();
-    #var z = mp.getNode("position/global-z").getValue();
-    #var aircraftPos = geo.Coord.new().set_xyz(x, y, z);
-    #var vel_gx = me.input.speed_n.getValue();#feet per second
-    #var vel_gy = me.input.speed_e.getValue();
-    var vel_gz = me.input.speed_d.getValue();
+    if (mode != TAKEOFF and ((mode == LANDING and rad_alt > (50/feet2meter)) or mode != LANDING)) {
+      #var x = mp.getNode("position/global-x").getValue();# meters probably
+      #var y = mp.getNode("position/global-y").getValue();
+      #var z = mp.getNode("position/global-z").getValue();
+      #var aircraftPos = geo.Coord.new().set_xyz(x, y, z);
+      #var vel_gx = me.input.speed_n.getValue();#feet per second
+      #var vel_gy = me.input.speed_e.getValue();
+      var vel_gz = me.input.speed_d.getValue();
 
-    #extend vector of ground elevations
-    if(rad_alt != nil and vel_gz != nil) {
-      var time_till_crash = rad_alt / vel_gz;
+      #extend vector of ground elevations
+      if(rad_alt != nil and vel_gz != nil) {
+        var time_till_crash = rad_alt / vel_gz;
 
-      # very simple ground detection.
-      if(mode != TAKEOFF and time_till_crash < 10 and time_till_crash > 0) {
-        me.input.terrainOn.setValue(TRUE);
-        if(me.input.tenHz.getValue() == TRUE) {
-          me.arrow_trans.setRotation(- me.input.roll.getValue()*deg2rads);
-          me.arrow.show();
+        # very simple ground detection.
+        if(time_till_crash < 10 and time_till_crash > 0) {
+          me.input.terrainOn.setValue(TRUE);
+          if(me.input.tenHz.getValue() == TRUE) {
+            me.arrow_trans.setRotation(- me.input.roll.getValue()*deg2rads);
+            me.arrow.show();
+          } else {
+            me.arrow.hide();
+          }
         } else {
+          me.input.terrainOn.setValue(FALSE);
           me.arrow.hide();
         }
-      } else {
-        me.input.terrainOn.setValue(FALSE);
-        me.arrow.hide();
       }
+    } else {
+      me.input.terrainOn.setValue(FALSE);
+      me.arrow.hide();
     }
   },
 
   displayHeadingScale: func () {
-    var heading = me.input.hdg.getValue();
-    var headOffset = heading/10 - int (heading/10);
-    var headScaleOffset = headOffset;
-    var middleText = roundabout(me.input.hdg.getValue()/10);
-    me.middleOffset = nil;
-    if(middleText == 36) {
-      middleText = 0;
-    }
-    var leftText = middleText == 0?35:middleText-1;
-    var rightText = middleText == 35?0:middleText+1;
-    if (headOffset > 0.5) {
-      me.middleOffset = -(headScaleOffset-1)*headScaleTickSpacing*2;
-      me.head_scale_grp_trans.setTranslation(me.middleOffset, -headScalePlace);
-      me.head_scale_grp.update();
-      me.hdgLineL.show();
-      #me.hdgLineR.hide();
+    if (mode != LANDING) {
+      var heading = me.input.hdg.getValue();
+      var headOffset = heading/10 - int (heading/10);
+      var headScaleOffset = headOffset;
+      var middleText = roundabout(me.input.hdg.getValue()/10);
+      me.middleOffset = nil;
+      if(middleText == 36) {
+        middleText = 0;
+      }
+      var leftText = middleText == 0?35:middleText-1;
+      var rightText = middleText == 35?0:middleText+1;
+      if (headOffset > 0.5) {
+        me.middleOffset = -(headScaleOffset-1)*headScaleTickSpacing*2;
+        me.head_scale_grp_trans.setTranslation(me.middleOffset, -headScalePlace);
+        me.head_scale_grp.update();
+        me.hdgLineL.show();
+        #me.hdgLineR.hide();
+      } else {
+        me.middleOffset = -headScaleOffset*headScaleTickSpacing*2;
+        me.head_scale_grp_trans.setTranslation(me.middleOffset, -headScalePlace);
+        me.head_scale_grp.update();
+        me.hdgLineR.show();
+        #me.hdgLineL.hide();
+      }
+      me.hdgR.setTranslation(headScaleTickSpacing*2, -65);
+      me.hdgR.setText(sprintf("%02d", rightText));
+      me.hdgM.setTranslation(0, -65);
+      me.hdgM.setText(sprintf("%02d", middleText));
+      me.hdgL.setTranslation(-headScaleTickSpacing*2, -65);
+      me.hdgL.setText(sprintf("%02d", leftText));
+      me.head_scale_grp.show();
+      me.head_scale_indicator.show();
     } else {
-      me.middleOffset = -headScaleOffset*headScaleTickSpacing*2;
-      me.head_scale_grp_trans.setTranslation(me.middleOffset, -headScalePlace);
-      me.head_scale_grp.update();
-      me.hdgLineR.show();
-      #me.hdgLineL.hide();
+      me.head_scale_grp.hide();
+      me.head_scale_indicator.hide();
     }
-    me.hdgR.setTranslation(headScaleTickSpacing*2, -65);
-    me.hdgR.setText(sprintf("%02d", rightText));
-    me.hdgM.setTranslation(0, -65);
-    me.hdgM.setText(sprintf("%02d", middleText));
-    me.hdgL.setTranslation(-headScaleTickSpacing*2, -65);
-    me.hdgL.setText(sprintf("%02d", leftText));
+  },
+
+  displayHeadingHorizonScale: func () {
+    if (mode == LANDING) {
+      var heading = me.input.hdg.getValue();
+      var headOffset = heading/10 - int (heading/10);
+      var headScaleOffset = headOffset;
+      var middleText = roundabout(me.input.hdg.getValue()/10);
+      me.middleOffsetHorz = nil;
+      if(middleText == 36) {
+        middleText = 0;
+      }
+      var leftText = middleText == 0?35:middleText-1;
+      var rightText = middleText == 35?0:middleText+1;
+      if (headOffset > 0.5) {
+        me.middleOffsetHorz = -(headScaleOffset-1)*10*pixelPerDegreeX;
+        me.head_scale_horz_grp.setTranslation(me.middleOffsetHorz, 0);
+        me.head_scale_horz_grp.update();
+        #me.hdgLineL.show();
+      } else {
+        me.middleOffsetHorz = -headScaleOffset*10*pixelPerDegreeX;
+        me.head_scale_horz_grp.setTranslation(me.middleOffsetHorz, 0);
+        me.head_scale_horz_grp.update();
+        #me.hdgLineR.show();
+      }
+      me.hdgRH.setTranslation(10*pixelPerDegreeX, -30);
+      me.hdgRH.setText(sprintf("%02d", rightText));
+      me.hdgMH.setTranslation(0, -30);
+      me.hdgMH.setText(sprintf("%02d", middleText));
+      me.hdgLH.setTranslation(-10*pixelPerDegreeX, -30);
+      me.hdgLH.setText(sprintf("%02d", leftText));
+      me.hdgRH.show();
+      me.hdgMH.show();
+      me.hdgLH.show();
+      me.head_scale_horz_ticks.show();
+    } else {
+      me.hdgRH.hide();
+      me.hdgMH.hide();
+      me.hdgLH.hide();
+      me.head_scale_horz_ticks.hide();
+    }
   },
 
   displayHeadingBug: func () {
     var desired_mag_heading = nil;
-    if (getprop("autopilot/locks/heading") == "dg-heading-hold") {
-      desired_mag_heading = getprop("autopilot/settings/heading-bug-deg");
-    } elsif (getprop("autopilot/locks/heading") == "true-heading-hold") {
-      desired_mag_heading = getprop("autopilot/internal/true-heading-error-deg")+me.input.hdg.getValue();#getprop("autopilot/settings/true-heading-deg")+
-    } elsif (getprop("autopilot/locks/heading") == "nav1-hold") {
-      desired_mag_heading = getprop("/autopilot/internal/nav1-heading-error-deg")+me.input.hdg.getValue();
-    } elsif( getprop("autopilot/route-manager/active") == 1) {
+    if (mode == LANDING and me.input.nav0InRange.getValue() == TRUE) {
+      desired_mag_heading = me.input.nav0Heading.getValue();
+    } elsif (me.input.APLockHeading.getValue() == "dg-heading-hold") {
+      desired_mag_heading = me.input.APHeadingBug.getValue();
+    } elsif (me.input.APLockHeading.getValue() == "true-heading-hold") {
+      desired_mag_heading = me.input.APTrueHeadingErr.getValue()+me.input.hdg.getValue();#getprop("autopilot/settings/true-heading-deg")+
+    } elsif (me.input.APLockHeading.getValue() == "nav1-hold") {
+      desired_mag_heading = me.input.APnav0HeadingErr.getValue()+me.input.hdg.getValue();
+    } elsif( me.input.RMActive.getValue() == 1) {
       #var i = getprop("autopilot/route-manager/current-wp");
-      desired_mag_heading = getprop("autopilot/route-manager/wp/bearing-deg");
+      desired_mag_heading = me.input.RMWaypointBearing.getValue();
     }
     if(desired_mag_heading != nil) {
       #print("desired "~desired_mag_heading);
@@ -945,13 +1178,21 @@ var HUDnasal = {
         pos_x = 687-512;
       }
       me.heading_bug_group.setTranslation(pos_x, -headScalePlace);
-      if(blink == FALSE or me.input.fiveHz.getValue() == TRUE) {
+      if(mode != LANDING and (blink == FALSE or me.input.fiveHz.getValue() == TRUE)) {
         me.heading_bug.show();
       } else {
         me.heading_bug.hide();
       }
+      if (mode == LANDING) {
+        pos_x = me.middleOffsetHorz + degOffset*(pixelPerDegreeX);
+        me.heading_bug_horz_group.setTranslation(pos_x, 0);
+        me.heading_bug_horz.show();
+      } else {
+        me.heading_bug_horz.hide();
+      }
     } else {
       me.heading_bug.hide();
+      me.heading_bug_horz.hide();
     }
   },
 
@@ -1078,10 +1319,10 @@ var HUDnasal = {
       var rad_offset = altimeterScaleHeight/alt_scale_factor * radAlt;
       me.rad_alt_pointer.setTranslation(indicatorOffset, rad_offset - offset);
       me.rad_alt_pointer.show();
-      if (radPointerProxim < rad_offset - offset or rad_offset - offset < -radPointerProxim) {
-        me.alt_pointer.show();
-      } else {
+      if ((-radPointerProxim) < rad_offset and rad_offset < radPointerProxim) {
         me.alt_pointer.hide();
+      } else {
+        me.alt_pointer.show();
       }
       me.alt_scale_grp.update();
       if(me.verbose > 2) print("alt " ~ sprintf("%3d", alt) ~ " radAlt:" ~ sprintf("%3d", radAlt) ~ " rad_offset:" ~ sprintf("%3d", rad_offset));
@@ -1118,10 +1359,10 @@ var HUDnasal = {
       } else {
         me.alt_scale_line.hide();
       }
-      if (radPointerProxim > rad_offset - offset > -radPointerProxim) {
-        me.alt_pointer.show();
-      } else {
+      if ((-radPointerProxim) < rad_offset and rad_offset < radPointerProxim) {
         me.alt_pointer.hide();
+      } else {
+        me.alt_pointer.show();
       }
       me.alt_scale_grp.update();
       #print("alt " ~ sprintf("%3d", alt) ~ " placing med " ~ sprintf("%3d", offset));
@@ -1174,10 +1415,10 @@ var HUDnasal = {
       var rad_offset = 2*altimeterScaleHeight/alt_scale_factor * (radAlt);
       me.rad_alt_pointer.setTranslation(indicatorOffset, rad_offset - offset);
       me.rad_alt_pointer.show();
-      if (radPointerProxim > rad_offset - offset > -radPointerProxim) {
-        me.alt_pointer.show();
-      } else {
+      if ((-radPointerProxim) < rad_offset and rad_offset < radPointerProxim) {
         me.alt_pointer.hide();
+      } else {
+        me.alt_pointer.show();
       }
       me.alt_scale_grp.update();
       #print("alt " ~ sprintf("%3d", alt) ~ " radAlt:" ~ sprintf("%3d", radAlt) ~ " rad_offset:" ~ sprintf("%3d", rad_offset));
@@ -1188,6 +1429,7 @@ var HUDnasal = {
     # alt and radAlt is in current unit
     # determine max radar alt in current unit
     var radar_clamp = me.input.units.getValue() ==1 ? 100 : 100/feet2meter;
+    var alt_diff = me.input.units.getValue() ==1 ? 7 : 7/feet2meter;
     if (radAlt == nil) {
       # Radar alt instrument not initialized yet.
       me.alt.setText("");
@@ -1199,14 +1441,14 @@ var HUDnasal = {
       me.alt.setText("R " ~ sprintf("%3d", clamp(radAlt, 0, radar_clamp)));
       # check for QFE warning
       var diff = radAlt - alt;
-      if (countQFE == 0 and (diff > 7 or diff < -7)) {
+      if (countQFE == 0 and (diff > alt_diff or diff < -alt_diff)) {
         #print("QFE warning " ~ countQFE);
         # is not calibrated, and is not blinking
         QFEcalibrated = FALSE;
         me.input.altCalibrated.setValue(FALSE);
         countQFE = 1;     
         #print("QFE not calibrated, and is not blinking");     
-      } elsif (diff > -7 and diff < 7) {
+      } elsif (diff > -alt_diff and diff < alt_diff) {
           #is calibrated
         if (QFEcalibrated == FALSE and countQFE < 11) {
           # was not calibrated before, is now.
@@ -1215,7 +1457,7 @@ var HUDnasal = {
         }
         QFEcalibrated = TRUE;
         me.input.altCalibrated.setValue(TRUE);
-      } elsif (QFEcalibrated == 1 and (diff > 7 or diff < -7)) {
+      } elsif (QFEcalibrated == 1 and (diff > alt_diff or diff < -alt_diff)) {
         # was calibrated before, is not anymore.
         #print("QFE was calibrated before, is not anymore. "~countQFE);
         countQFE = 1;
@@ -1233,266 +1475,59 @@ var HUDnasal = {
     }
   },
 
-  displayDesiredAltitudeLines: func () {
-    var desired_alt_delta_ft = nil;
-    if (getprop("autopilot/locks/altitude") == "altitude-hold") {
-      desired_alt_delta_ft = getprop("autopilot/settings/target-altitude-ft")-me.input.alt_ft.getValue();
-    } elsif (getprop("autopilot/locks/altitude") == "agl-hold") {
-      desired_alt_delta_ft = getprop("autopilot/settings/target-agl-ft")-me.input.rad_alt.getValue();
-    } elsif(getprop("autopilot/route-manager/active") == 1) {
-      var i = getprop("autopilot/route-manager/current-wp");
-      var rt_alt = getprop("autopilot/route-manager/route/wp["~i~"]/altitude-ft");
-      if(rt_alt != nil and rt_alt > 0) {
-        desired_alt_delta_ft = rt_alt - me.input.alt_ft.getValue();
-      }
-    }# elsif (getprop("autopilot/locks/altitude") == "gs1-hold") {
-    if(desired_alt_delta_ft != nil) {
-      var pos_y = clamp(-desired_alt_delta_ft*me.pixelPerFeet, -2.5*pixelPerDegreeY, 2.5*pixelPerDegreeY);
+  displayDesiredAltitudeLines: func (guideUseLines) {
+    if (guideUseLines == FALSE) {
+      var desired_alt_delta_ft = nil;
+      if(mode == TAKEOFF) {
+        desired_alt_delta_ft = 1640-me.input.alt_ft.getValue();#500 meter
+      } elsif (me.input.APLockAlt.getValue() == "altitude-hold") {
+        desired_alt_delta_ft = me.input.APTgtAlt.getValue()-me.input.alt_ft.getValue();
+      } elsif (me.input.APLockAlt.getValue() == "agl-hold") {
+        desired_alt_delta_ft = me.input.APTgtAgl.getValue()-me.input.rad_alt.getValue();
+      } elsif(me.input.RMActive.getValue() == 1) {
+        var i = me.input.RMCurrWaypoint.getValue();
+        var rt_alt = getprop("autopilot/route-manager/route/wp["~i~"]/altitude-ft");
+        if(rt_alt != nil and rt_alt > 0) {
+          desired_alt_delta_ft = rt_alt - me.input.alt_ft.getValue();
+        }
+      }# elsif (getprop("autopilot/locks/altitude") == "gs1-hold") {
+      if(desired_alt_delta_ft != nil) {
+        var pos_y = clamp(-desired_alt_delta_ft*me.pixelPerFeet, -2.5*pixelPerDegreeY, 2.5*pixelPerDegreeY);
 
-      me.desired_lines.setTranslation(0, pos_y);
-      me.desired_lines.show();
+        me.desired_lines3.setTranslation(0, pos_y);
+        me.desired_lines3.show();
+      } else {
+        me.desired_lines3.hide();
+      }
+      me.desired_lines2.hide();
     } else {
-      me.desired_lines.hide();
+      me.desired_lines2.show();
+      me.desired_lines3.show();
     }
   },
 
-  displayTower: func () {
-    var towerAlt = getprop("sim/tower/altitude-ft");
-    var towerLat = getprop("sim/tower/latitude-deg");
-    var towerLon = getprop("sim/tower/longitude-deg");
-    if(towerAlt != nil and towerLat != nil and towerLon != nil) {
-      var towerPos = geo.Coord.new();
-      towerPos.set_latlon(towerLat, towerLon, towerAlt);
-      var showme = TRUE;
+  displayLandingGuide: func (mode, deflect) {
+    var guideUseLines = FALSE;
+    if(mode == LANDING) {
+      var deg = deflect;
+      if (me.input.nav0InRange.getValue() == TRUE or me.input.TILS.getValue() == TRUE) {
+        deg = me.input.nav0HeadingDefl.getValue()/2;# -10 to 10, divided by 2.
 
-      var hud_pos = me.trackCalc(towerPos, 99000, 1);
-      if(hud_pos != nil) {
-        var distance = hud_pos[2];
-        var pos_x = hud_pos[0];
-        var pos_y = hud_pos[1];
-
-        if(pos_x > 512) {
-          showme = FALSE;
-          #pos_x = 512;
+        if (me.input.nav0HasGS.getValue() == TRUE and me.input.nav0GSInRange.getValue() == TRUE) {
+          var normDeviation = (clamp(me.input.nav0GSDirectDeg.getValue() - 2.86, -4, 4)/4);
+          var dev3 = normDeviation * 5*pixelPerDegreeY+2.86*pixelPerDegreeY;
+          var dev2 = normDeviation * 3*pixelPerDegreeY+2.86*pixelPerDegreeY;
+          me.desired_lines3.setTranslation(pixelPerDegreeX*deg, dev3);
+          me.desired_lines2.setTranslation(pixelPerDegreeX*deg, dev2);
+          guideUseLines = TRUE;
         }
-        if(pos_x < -512) {
-          showme = FALSE;
-          #pos_x = -512;
-        }
-        if(pos_y > 512) {
-          showme = FALSE;
-          #pos_y = 512;
-        }
-        if(pos_y < -512) {
-          showme = FALSE;
-          #pos_y = -512;
-        }
-
-        if(showme == TRUE) {
-          me.tower_symbol.setTranslation(pos_x, pos_y);
-          var tower_dist = me.input.units.getValue() ==1  ? distance : distance/kts2kmh;
-          me.tower_symbol_dist.setText(sprintf("%02d", tower_dist/1000));
-          me.tower_symbol_icao.setText(getprop("sim/tower/airport-id"));
-          me.tower_symbol.show();
-          me.tower_symbol.update();
-          #print(i~" "~mp.getNode("callsign").getValue());
-        } else {
-          me.tower_symbol.hide();
-          #print(i~" hidden! "~mp.getNode("callsign").getValue());
-        }
-      } else {
-        me.tower_symbol.hide();
       }
+      HUDnasal.main.landing_line.setTranslation(pixelPerDegreeX*deg, 0);
+      HUDnasal.main.landing_line.show();
     } else {
-      me.tower_symbol.hide();
+      HUDnasal.main.landing_line.hide();
     }
-  },
-
-  displayRadarTracks: func (mode) {
-    me.self      =  geo.aircraft_position();
-    me.myPitch   =  me.input.pitch.getValue()*deg2rads;
-    me.myRoll    = -me.input.roll.getValue()*deg2rads;
-    me.groundAlt =  me.input.alt_ft_real.getValue()*feet2meter;
-    me.myHeading =  me.input.hdgReal.getValue();
-    me.track_index = 0;
-    me.selection_updated = FALSE;
-    #me.short_dist = nil;
-
-    if(me.input.tracks_enabled.getValue() == 1 and me.input.radar_serv.getValue() > 0) {
-      me.radar_group.show();
-
-      tracks = [];
-
-      #do the MP planes
-
-      var players = [];
-      foreach(item; multiplayer.model.list) {
-        append(players, item.node);
-      }
-      me.trackAI(players, 1);
-
-      #AI planes:
-      var node_ai = props.globals.getNode("/ai/models");
-      var planes = node_ai.getChildren("aircraft");
-      var tankers = node_ai.getChildren("tanker");
-      var ships = node_ai.getChildren("ship");
-      var carriers = node_ai.getChildren("carrier");
-      var vehicles = node_ai.getChildren("groundvehicle");
-      #print();
-      
-      me.trackAI(carriers, 0);
-      #print(size(carriers)~"carriers: "~me.track_index);
-      me.trackAI(tankers, 1);
-      #print(size(tankers)~"tankers: "~me.track_index);
-      me.trackAI(ships, 1);
-      #print(size(ships)~"ship: "~me.track_index);
-      me.trackAI(planes, 1);
-      #print(size(planes)~"planes: "~me.track_index);
-      me.trackAI(vehicles, 1);
-      #print();
-      if(me.track_index != -1) {
-        #hide the the rest unused circles
-        for(i = me.track_index; i < maxTracks ; i+=1) {
-          me.target_circle[i].hide();
-        }
-      }
-
-      # draw selection
-      if(selection != nil) {
-        # something is selected
-        if (selection[5].getChild("valid").getValue() == TRUE) {
-          if (me.selection_updated == TRUE) {
-            # selection is currently in forward looking radar view
-            var blink = FALSE;
-            if(selection[0] > 512) {
-              blink = TRUE;
-              selection[0] = 512;
-            }
-            if(selection[0] < -512) {
-              blink = TRUE;
-              selection[0] = -512;
-            }
-            if(selection[1] > 512) {
-              blink = TRUE;
-              selection[1] = 512;
-            }
-            if(selection[1] < -450) {
-              blink = TRUE;
-              selection[1] = -450;
-            }
-            if(selection[6] == TRUE and mode == COMBAT) {
-              #targetable
-              diamond_node = selection[5];
-              me.diamond_group.setTranslation(selection[0], selection[1]);
-              var diamond_dist = me.input.units.getValue() ==1  ? selection[2] : selection[2]/kts2kmh;
-              me.diamond_dist.setText(sprintf("%02d", diamond_dist/1000));
-              me.diamond_name.setText(selection[4]);
-              me.target_circle[selection[3]].hide();
-
-
-              var armSelect = me.input.station.getValue();
-              
-              if(armament.AIM9.active[armSelect-1] != nil and armament.AIM9.active[armSelect-1].status == 1) {
-                me.diamond.show();
-                me.target.hide();
-              } else {
-                me.target.show();
-                me.diamond.hide();
-              }
-
-              #var bearing = diamond_node.getNode("radar/bearing-deg").getValue();
-              #var heading = diamond_node.getNode("orientation/true-heading-deg").getValue();
-              #var speed = diamond_node.getNode("velocities/true-airspeed-kt").getValue();
-              #var down = me.myHeading+180.0;
-              #var relative_heading = heading + down - 90.0;
-              #var relative_speed = speed/10.0;
-              #var pos_y = relative_speed * math.sin(relative_heading/rad2deg);
-              #var pos_x = relative_speed * math.cos(relative_heading/rad2deg);
-
-              #if(me.track_line != nil) {
-              #  me.diamond_group_line.removeAllChildren();
-              #}
-
-              #me.track_line = me.diamond_group_line.createChild("path")
-              #               .lineTo( pos_x, pos_y)
-              #               .setStrokeLineWidth(w)
-              #               .setColor(r,g,b, a);
-              if(blink == TRUE and me.input.fiveHz.getValue() == FALSE) {
-                me.diamond_group.hide();
-              } else {
-                me.diamond_group.show();
-              }
-            } else {
-              #untargetable, like carriers and tankers
-              diamond_node = nil;
-              me.diamond_group.setTranslation(selection[0], selection[1]);
-              me.target_circle[selection[3]].setTranslation(selection[0], selection[1]);
-              var diamond_dist = me.input.units.getValue() == TRUE  ? selection[2] : selection[2]/kts2kmh;
-              me.diamond_dist.setText(sprintf("%02d", diamond_dist/1000));
-              me.diamond_name.setText(selection[4]);
-              
-              if(blink == TRUE and me.input.fiveHz.getValue() == FALSE) {
-                me.diamond_group.hide();
-                me.target_circle[selection[3]].hide();
-              } else {
-                me.diamond_group.show();
-                me.target_circle[selection[3]].show()
-              }
-              me.diamond.hide();
-              me.target.hide();
-            }
-
-            #velocity vector
-            if(selection[0] > -512 and selection[0] < 512 and selection[1] > -512 and selection[1] < 512) {
-              var tgtHeading = selection[5].getNode("orientation/true-heading-deg").getValue();
-              var tgtSpeed = selection[5].getNode("velocities/true-airspeed-kt").getValue();
-              var myHeading = me.input.hdgReal.getValue();
-              var myRoll = me.input.roll.getValue();
-              if (tgtHeading == nil or tgtSpeed == nil) {
-                me.vel_vec.hide();
-              } else {
-                var relHeading = tgtHeading - myHeading - myRoll;
-                
-                relHeading -= 180;# this makes the line trail instead of lead
-                relHeading = relHeading * deg2rads;
-
-                me.vel_vec_trans_group.setTranslation(selection[0], selection[1]);
-                me.vel_vec_rot_group.setRotation(relHeading);
-                me.vel_vec.setScale(1, tgtSpeed/4);
-                
-                # note since trinometry circle is opposite direction of compas heading direction, the line will trail the target.
-                me.vel_vec.show();
-              }
-            } else {
-              me.vel_vec.hide();
-            }
-
-            me.target_circle[selection[3]].update();
-            me.diamond_group.update();
-          } else {
-            # selection is outside radar view
-            diamond_node = nil;
-            me.diamond_group.hide();
-            me.vel_vec.hide();
-          }
-        } else {
-          # selection is no longer valid
-          selection = nil;
-          diamond_node = nil;
-          me.vel_vec.hide();
-          me.diamond_group.hide();
-        }
-      } else {
-        # Nothing selected
-        diamond_node = nil;
-        me.vel_vec.hide();
-        me.diamond_group.hide();
-      }
-      #print("");
-    } else {
-      # radar tracks not shown at all
-      me.radar_group.hide();
-    }
+    return guideUseLines;
   },
 
   displayDigitalSpeed: func () {
@@ -1516,22 +1551,32 @@ var HUDnasal = {
   displayPitchLines: func (mode) {
     me.horizon_group2.setTranslation(0, pixelPerDegreeY * me.input.pitch.getValue());
     me.horizon_group3.setTranslation(0, pixelPerDegreeY * me.input.pitch.getValue());
+    me.horizon_group4.setTranslation(0, pixelPerDegreeY * me.input.pitch.getValue());
     me.horizon_group.setTranslation(0, centerOffset);
     var rot = -me.input.roll.getValue() * deg2rads;
     me.h_rot.setRotation(rot);
     if(mode == COMBAT) {
       me.horizon_group3.show();
+      me.horizon_group4.show();
       me.horizon_dots.hide();
+      me.horizon_line_gap.hide();
+    } elsif (mode == LANDING) {
+      me.horizon_group3.hide();
+      me.horizon_group4.hide();
+      me.horizon_dots.hide();
+      me.horizon_line_gap.show();
     } else {
       me.horizon_group3.hide();
+      me.horizon_group4.show();
       me.horizon_dots.show();
+      me.horizon_line_gap.hide();
     }
   },
 
   displayTurnCoordinator: func () {
-    if (getprop("sim/ja37/hud/bank-indicator") == 1) {
+    if (me.input.sideslipOn.getValue() == TRUE) {
       #me.t_rot.setRotation(getprop("/orientation/roll-deg") * deg2rads * 0.5);
-      me.slip_indicator.setTranslation(clamp(getprop("/orientation/side-slip-deg")*20, -150, 150), 0);
+      me.slip_indicator.setTranslation(clamp(me.input.beta.getValue()*20, -150, 150), 0);
       me.turn_group.show();
     } else {
       me.turn_group.hide();
@@ -1539,7 +1584,15 @@ var HUDnasal = {
   },
 
   displayQFE: func (mode) {
-    if (mode == COMBAT) {
+    if (mode == LANDING and me.input.nav0InRange.getValue() == TRUE) {
+      if (me.input.TILS.getValue() == TRUE) {
+        me.qfe.setText("TILS");
+        me.qfe.show();
+      } else {
+        me.qfe.setText("ILS");
+        me.qfe.show();
+      }
+    } elsif (mode == COMBAT) {
       var armSelect = me.input.station.getValue();
       if(armSelect == 0) {
         me.qfe.setText("KCA");
@@ -1592,267 +1645,52 @@ var HUDnasal = {
     #print("QFE count " ~ countQFE);
   },
 
-  remove_suffix: func(s, x) {
-      var len = size(x);
-      if (substr(s, -len) == x)
-          return substr(s, 0, size(s) - len);
-      return s;
-  },
-
-  # param carrier must be 0 for carriers
-  trackAI: func (AI_vector, carrier) {
-    var carrierNear = FALSE;
-    foreach (var mp; AI_vector) {
-      if(mp != nil and me.track_index != -1 and mp.getNode("valid").getValue() != FALSE) {#only the MP that are valid are sent here
-        hud_pos = me.trackItemCalc(mp, 48000, carrier);
-
-        if(hud_pos != nil) {
-          append(tracks, hud_pos);
-          var pos_x = hud_pos[0];
-          var pos_y = hud_pos[1];
-          var distance = hud_pos[2];
-          var showme = 1;
-
-          # tell the jsbsim hook system that if we are near a carrier
-          if(carrier == 0 and distance < 1000) {
-            # is carrier and is within 1 Km range
-            carrierNear = TRUE;
-          }
-
-          # find and remember the type of the track
-          var typeNode = mp.getNode("model-shorter");
-          var model = nil;
-          if (typeNode != nil) {
-            model = typeNode.getValue();
-          } else {
-            var pathNode = mp.getNode("sim/model/path");
-            if (pathNode != nil) {
-              var path = pathNode.getValue();
-              model = split(".", split("/", path)[-1])[0];
-              model = me.remove_suffix(model, "-model");
-              model = me.remove_suffix(model, "-anim");
-              mp.addChild("model-shorter").setValue(model);
-
-              var funcHash = {
-                init: func (listener) {
-                  funcHash.listenerID = listener;
-                },
-                call: func {
-                  if(mp.getNode("valid").getValue() == FALSE) {
-                    var child = mp.removeChild("model-shorter");                    
-                    if (child != nil) {#for some reason this can be called two times, even if listener removed, therefore this check.
-                      removelistener(me.listenerID);
-                    }
-                  }
-                }
-              };
-              funcHash.init(setlistener(mp.getNode("valid"), func () {funcHash.call()}, 0, 0));
-            }
-          }
-
-
-          append(hud_pos, me.track_index);
-          
-          # figure out what indentification to show in hud
-          if(me.input.callsign.getValue() == 1) {
-            if(mp.getNode("callsign") != nil and mp.getNode("callsign").getValue() != "" and mp.getNode("callsign").getValue() != nil) {
-              ident = mp.getNode("callsign").getValue();
-            } elsif (mp.getNode("name") != nil and mp.getNode("name").getValue() != "" and mp.getNode("name").getValue() != nil) {
-              #only used by AI
-              ident = mp.getNode("name").getValue();
-            } elsif (mp.getNode("sign") != nil and mp.getNode("sign").getValue() != "" and mp.getNode("sign").getValue() != nil) {
-              #only used by AI
-              ident = mp.getNode("sign").getValue();
-            } else {
-              ident = "";
-            }
-          } else {
-            if(model != nil) {
-              ident = model;
-            } elsif (mp.getNode("sign") != nil and mp.getNode("sign").getValue() != "" and mp.getNode("sign").getValue() != nil) {
-              #only used by AI
-              ident = mp.getNode("sign").getValue();  
-            } elsif (mp.getNode("name") != nil and mp.getNode("name").getValue() != "" and mp.getNode("name").getValue() != nil) {
-              #only used by AI
-              ident = mp.getNode("name").getValue();
-            } elsif (mp.getNode("callsign") != nil and mp.getNode("callsign").getValue() != "" and mp.getNode("callsign").getValue() != nil) {
-              ident = mp.getNode("callsign").getValue();
-            } else {
-              ident = "";
-            } 
-          }
-
-          append(hud_pos, ident);
-          append(hud_pos, mp);
-          append(hud_pos, carrier);
-
-          var unique = mp.getChild("unique");
-          if (unique == nil) {
-            unique = mp.addChild("unique");
-            unique.setValue(rand());
-          }
-
-          if(selection == nil and pos_x != 90000) {
-            #this is first tracks in radar field, so will be default target
-            selection = hud_pos;
-            lookatSelection();
-            me.selection_updated = TRUE;
-          } elsif (selection != nil and selection[5].getChild("unique").getValue() == unique.getValue() and pos_x != 90000) {
-            # this track is already selected, updating it
-            selection = hud_pos;
-            me.selection_updated = TRUE;
-          }
-
-          #me.short_dist = hud_pos;
-          #print(i~" Diamond: "~mp.getNode("callsign").getValue());
-          #}
-
-          if(pos_x > 512) {
-            showme = FALSE;
-          }
-          if(pos_x < -512) {
-            showme = FALSE;
-          }
-          if(pos_y > 512) {
-            showme = FALSE;
-          }
-          if(pos_y < -512) {
-            showme = FALSE;
-          }
-          
-          if(showme == TRUE) {
-            me.target_circle[me.track_index].setTranslation(pos_x, pos_y);
-            me.target_circle[me.track_index].show();
-            me.target_circle[me.track_index].update();
-            #print(me.track_index~" "~mp.getNode("callsign").getValue()~" dist="~distance~" shortest="~me.short_dist[2]);
-            me.track_index += 1;
-            if (me.track_index == maxTracks) {
-              me.track_index = -1;
-            }
-          } else {
-            #print(me.track_index~" not shown. Select="~selected);
-          }
-        }#end of error check
-      }#end of valid check
-    }#end of foreach
-    if(carrier == 0) {
-      if(carrierNear != me.input.carrierNear.getValue()) {
-        me.input.carrierNear.setValue(carrierNear);
-      }      
-    }
-  },#end of trackAI
-
-  # hud_pos
-  #
-  # 0 - x position
-  # 1 - y position
-  # 2 - distance in meter
-  # 3 - track index
-  # 4 - identifier
-  # 5 - node
-  # 6 - targetable
-
-  trackItemCalc: func (mp, range, carrier) {
-    var x = mp.getNode("position/global-x").getValue();
-    var y = mp.getNode("position/global-y").getValue();
-    var z = mp.getNode("position/global-z").getValue();
-    var aircraftPos = geo.Coord.new().set_xyz(x, y, z);
-    return me.trackCalc(aircraftPos, range, carrier);
-  },
-
-  trackCalc: func (aircraftPos, range, carrier) {
-    var distance = nil;
-    
-    call(func distance = me.self.distance_to(aircraftPos), nil, var err = []);
-
-    if ((size(err))or(distance==nil)) {
-      # Oops, have errors. Bogus position data (and distance==nil).
-      #print("Received invalid position data: " ~ debug._error(mp.callsign));
-      #me.target_circle[track_index+maxTargetsMP].hide();
-      #print(i~" invalid pos.");
-    } elsif (distance < range) {#is max radar range of ja37
-      # Node with valid position data (and "distance!=nil").
-      #distance = distance*kts2kmh*1000;
-      var aircraftAlt=aircraftPos.alt(); #altitude in meters
-      #ground angle
-      var yg_rad=math.atan2((aircraftAlt-me.groundAlt), distance)-me.myPitch; 
-      var xg_rad=(me.self.course_to(aircraftPos)-me.myHeading)*deg2rads;
-      if (xg_rad > math.pi) {
-        xg_rad = xg_rad - 2*math.pi;
-      }
-      if (xg_rad < -math.pi) {
-        xg_rad = xg_rad + 2*math.pi;
-      }
-
-      if (yg_rad > math.pi) {
-        yg_rad = yg_rad - 2*math.pi;
-      }
-      if (yg_rad < -math.pi) {
-        yg_rad = yg_rad + 2*math.pi;
-      }
-
-      #aircraft angle
-      var ya_rad=xg_rad*math.sin(-me.myRoll)+yg_rad*math.cos(-me.myRoll);
-      var xa_rad=xg_rad*math.cos(-me.myRoll)-yg_rad*math.sin(-me.myRoll);
-
-      if (xa_rad < -math.pi) {
-        xa_rad = xa_rad + 2*math.pi;
-      }
-      if (xa_rad > math.pi) {
-        xa_rad = xa_rad - 2*math.pi;
-      }
-      if (ya_rad > math.pi) {
-        ya_rad = ya_rad - 2*math.pi;
-      }
-      if (ya_rad < -math.pi) {
-        ya_rad = ya_rad + 2*math.pi;
-      }
-
-      if(ya_rad > -1 and ya_rad < 1 and xa_rad > -1 and xa_rad < 1) {
-        #is within the radar cone
-        var pos_x = pixelPerDegreeX*xa_rad*rad2deg;
-        var pos_y = centerOffset+pixelPerDegreeY*-ya_rad*rad2deg;
-
-        return [pos_x, pos_y, distance];
-      } elsif (carrier == 0) {
-        return [90000, 90000, distance];
-      }
-    }
-    return nil;
-  },
-
   showReticle: func (mode, cannon, out_of_ammo) {
     if (mode == COMBAT and cannon == TRUE) {
       me.showSidewind(FALSE);
       
       me.reticle_cannon.setTranslation(0, centerOffset);
       me.reticle_cannon.show();
-
-      me.showFlightPathVector(1, 0);
-    } elsif (mode != TAKEOFF) {# or me.input.wow_nlg.getValue() == 0
-      # flight path vector (FPV)
-      me.showFlightPathVector(1, out_of_ammo);
+      me.reticle_missile.hide();
+      return me.showFlightPathVector(1, out_of_ammo);
+    } elsif (mode == COMBAT and cannon == FALSE) {
       me.showSidewind(FALSE);
       me.reticle_cannon.hide();
-    } elsif(mode == TAKEOFF) {
-      me.showFlightPathVector(!me.input.wow_nlg.getValue(), out_of_ammo);
+      me.reticle_missile.show();
+      return me.showFlightPathVector(1, out_of_ammo);
+    } elsif (mode != TAKEOFF and mode != LANDING) {# or me.input.wow_nlg.getValue() == 0
+      # flight path vector (FPV)
+      
+      me.showSidewind(FALSE);
+      me.reticle_cannon.hide();
+      me.reticle_missile.hide();
+      return me.showFlightPathVector(1, FALSE);
+    } elsif(mode == TAKEOFF) {      
       me.showSidewind(TRUE);
       me.reticle_cannon.hide();
-    }    
+      me.reticle_missile.hide();
+      return me.showFlightPathVector(!me.input.wow0.getValue(), FALSE);
+    } elsif(mode == LANDING) {      
+      me.showSidewind(FALSE);
+      me.reticle_cannon.hide();
+      me.reticle_missile.hide();
+      return me.showFlightPathVector(!me.input.wow0.getValue(), FALSE);
+    }
+    return 0;
   },
 
   showSidewind: func(show) {
     if(show == TRUE) {
       #move sidewind symbol according to side wind:
-      var wind_heading = getprop("environment/wind-from-heading-deg");
-      var wind_speed = getprop("environment/wind-speed-kt");
+      var wind_heading = me.input.windHeading.getValue();
+      var wind_speed = me.input.windSpeed.getValue();
       var heading = me.input.hdgReal.getValue();
       #var speed = me.input.ias.getValue();
       var angle = (wind_heading -heading) * (math.pi / 180.0); 
       var wind_side = math.sin(angle) * wind_speed;
       #print((wind_heading -heading) ~ " " ~ wind_side);
       me.takeoff_symbol.setTranslation(clamp(-wind_side * sidewindPerKnot, -450, 450), sidewindPosition);
-      if(me.input.gears.getValue() < 1) {# gears are being deployed or retracted
+      if(me.input.gearsPos.getValue() < 1 and me.input.gearsPos.getValue() > 0) {# gears are being deployed or retracted
         if(me.input.tenHz.getValue() == 1) {
           me.takeoff_symbol.show();
         } else {
@@ -1919,22 +1757,329 @@ var HUDnasal = {
           me.aim_reticle_fin.show();
         }
       }    
+      return dir_x;
     } else {
       me.aim_reticle_fin.hide();
       me.aim_reticle.hide();
       me.reticle_no_ammo.hide();
+      return 0;
     }
-  }
+  },
+
+  showDistanceScale: func (mode) {
+    if(mode == TAKEOFF) {
+      var line = 200;
+      var pixelPerKmh = (2/3*line)/250;
+      if(me.input.ias.getValue() < 75/kts2kmh) {
+        me.mySpeed.setTranslation(pixelPerKmh*75, 0);
+      } else {
+        var pos = pixelPerKmh*me.input.ias.getValue()*kts2kmh;
+        if(pos > line) {
+          pos = line;
+        }
+        me.mySpeed.setTranslation(pos, 0);
+      }      
+      me.targetSpeed.setTranslation(2/3*line, 0);
+      me.targetSpeed.show();
+      me.mySpeed.show();
+      me.targetDistance1.hide();
+      me.targetDistance2.hide();
+      me.dist_scale_group.show();
+    } elsif (mode == COMBAT and radar_logic.selection != nil) {
+      var line = 200;
+      var armSelect = me.input.station.getValue();
+      var minDist = nil;
+      var maxDist = nil;
+      var currDist = radar_logic.selection[2];
+      if(armSelect == 0) {
+        minDist =  100;
+        maxDist = 1000;
+      } else {
+        minDist =   300;
+        maxDist = 18520;
+      }
+      if(currDist != nil) {
+        var pixelPerMeter = (3/5*line)/(maxDist - minDist);
+        var startDist = (minDist - ((maxDist - minDist)/3));
+        var pos = pixelPerMeter*(currDist-startDist);
+        pos = clamp(pos, 0, line);
+        me.mySpeed.setTranslation(pos, 0);
+        me.mySpeed.show();
+      } else {
+        me.mySpeed.hide();
+      }
+      me.targetDistance1.setTranslation(1/5*line, 0);
+      me.targetDistance2.setTranslation(4/5*line, 0);
+
+      #tttt
+
+      me.targetSpeed.hide();
+      me.targetDistance1.show();
+      me.targetDistance2.show();
+      me.dist_scale_group.show();
+    } else {
+      me.dist_scale_group.hide();
+    }
+  },
+
+  displayTower: func () {
+    var towerAlt = me.input.towerAlt.getValue();
+    var towerLat = me.input.towerLat.getValue();
+    var towerLon = me.input.towerLon.getValue();
+    if(towerAlt != nil and towerLat != nil and towerLon != nil) {
+      var towerPos = geo.Coord.new();
+      towerPos.set_latlon(towerLat, towerLon, towerAlt);
+      var showme = TRUE;
+
+      var hud_pos = radar_logic.trackCalc(towerPos, 99000, FALSE);
+      if(hud_pos != nil) {
+        var distance = hud_pos[2];
+        var pos_x = hud_pos[0];
+        var pos_y = hud_pos[1];
+
+        if(pos_x > 512) {
+          showme = FALSE;
+        }
+        if(pos_x < -512) {
+          showme = FALSE;
+        }
+        if(pos_y > 512) {
+          showme = FALSE;
+        }
+        if(pos_y < -512) {
+          showme = FALSE;
+        }
+
+        if(showme == TRUE) {
+          me.tower_symbol.setTranslation(pos_x, pos_y);
+          var tower_dist = me.input.units.getValue() ==1  ? distance : distance/kts2kmh;
+          me.tower_symbol_dist.setText(sprintf("%02d", tower_dist/1000));
+          me.tower_symbol_icao.setText(getprop("sim/tower/airport-id"));
+          me.tower_symbol.show();
+          me.tower_symbol.update();
+          #print(i~" "~mp.getNode("callsign").getValue());
+        } else {
+          me.tower_symbol.hide();
+          #print(i~" hidden! "~mp.getNode("callsign").getValue());
+        }
+      } else {
+        me.tower_symbol.hide();
+      }
+    } else {
+      me.tower_symbol.hide();
+    }
+  },
+
+  displayRadarTracks: func (mode) {
+    me.track_index = 1;
+    me.selection_updated = FALSE;
+
+    if(me.input.tracks_enabled.getValue() == 1 and me.input.radar_serv.getValue() > 0) {
+      me.radar_group.show();
+
+      var selection = radar_logic.selection;
+
+      # selection/hud_pos
+      #
+      # 0 - x position
+      # 1 - y position
+      # 2 - direct distance in meter
+      # 3 - distance in radar screen plane
+      # 4 - horizontal angle from aircraft in rad
+      # 5 - identifier
+      # 6 - node
+      # 7 - carrier
+
+      # do circles here
+      foreach(hud_pos; radar_logic.tracks) {
+        var pos_x = hud_pos[0];
+        var pos_y = hud_pos[1];
+        var distance = hud_pos[2];
+        var showme = TRUE;
+        
+        if(pos_x > 512) {
+          showme = FALSE;
+        }
+        if(pos_x < -512) {
+          showme = FALSE;
+        }
+        if(pos_y > 512) {
+          showme = FALSE;
+        }
+        if(pos_y < -512) {
+          showme = FALSE;
+        }
+
+        var currentIndex = me.track_index;
+
+        if(hud_pos == selection and hud_pos[0] != 90000) {
+            me.selection_updated = TRUE;
+            me.selection_index = 0;
+            currentIndex = 0;
+        }
+        
+        if(currentIndex > -1 and (showme == TRUE or currentIndex == 0)) {
+          me.target_circle[currentIndex].setTranslation(pos_x, pos_y);
+          me.target_circle[currentIndex].show();
+          me.target_circle[currentIndex].update();  
+          if(currentIndex != 0) {
+            me.track_index += 1;
+            if (me.track_index == maxTracks) {
+              me.track_index = -1;
+            }
+          }
+        }
+      }
+      if(me.track_index != -1) {
+        #hide the the rest unused circles
+        for(i = me.track_index; i < maxTracks ; i+=1) {
+          me.target_circle[i].hide();
+        }
+      }
+      if(me.selection_updated == FALSE) {
+        me.target_circle[0].hide();
+      }
+      #me.target_group.update();
+      
+
+      # draw selection
+      if(selection != nil and selection[6].getChild("valid").getValue() == TRUE and me.selection_updated == TRUE) {
+        # selection is currently in forward looking radar view
+        var blink = FALSE;
+        if(selection[0] > 512) {
+          blink = TRUE;
+          selection[0] = 512;
+        }
+        if(selection[0] < -512) {
+          blink = TRUE;
+          selection[0] = -512;
+        }
+        if(selection[1] > 512) {
+          blink = TRUE;
+          selection[1] = 512;
+        }
+        if(selection[1] < -450) {
+          blink = TRUE;
+          selection[1] = -450;
+        }
+        if(selection[7] == FALSE and mode == COMBAT) {
+          #targetable
+          diamond_node = selection[6];
+          me.diamond_group.setTranslation(selection[0], selection[1]);
+          var diamond_dist = me.input.units.getValue() ==1  ? selection[2] : selection[2]/kts2kmh;
+          me.diamond_dist.setText(sprintf("%02d", diamond_dist/1000));
+          me.diamond_name.setText(selection[5]);
+          me.target_circle[me.selection_index].hide();
+
+
+          var armSelect = me.input.station.getValue();
+          
+          if(armament.AIM9.active[armSelect-1] != nil and armament.AIM9.active[armSelect-1].status == 1) {
+            me.diamond.show();
+            me.target.hide();
+          } else {
+            me.target.show();
+            me.diamond.hide();
+          }
+
+          #var bearing = diamond_node.getNode("radar/bearing-deg").getValue();
+          #var heading = diamond_node.getNode("orientation/true-heading-deg").getValue();
+          #var speed = diamond_node.getNode("velocities/true-airspeed-kt").getValue();
+          #var down = me.myHeading+180.0;
+          #var relative_heading = heading + down - 90.0;
+          #var relative_speed = speed/10.0;
+          #var pos_y = relative_speed * math.sin(relative_heading/rad2deg);
+          #var pos_x = relative_speed * math.cos(relative_heading/rad2deg);
+
+          #if(me.track_line != nil) {
+          #  me.diamond_group_line.removeAllChildren();
+          #}
+
+          #me.track_line = me.diamond_group_line.createChild("path")
+          #               .lineTo( pos_x, pos_y)
+          #               .setStrokeLineWidth(w)
+          #               .setColor(r,g,b, a);
+          if(blink == TRUE and me.input.fiveHz.getValue() == FALSE) {
+            me.diamond_group.hide();
+          } else {
+            me.diamond_group.show();
+          }
+        } else {
+          #untargetable but selectable, like carriers and tankers, or planes in navigation mode
+          diamond_node = nil;
+          me.diamond_group.setTranslation(selection[0], selection[1]);
+          me.target_circle[me.selection_index].setTranslation(selection[0], selection[1]);
+          var diamond_dist = me.input.units.getValue() == TRUE  ? selection[2] : selection[2]/kts2kmh;
+          me.diamond_dist.setText(sprintf("%02d", diamond_dist/1000));
+          me.diamond_name.setText(selection[5]);
+          
+          if(blink == TRUE and me.input.fiveHz.getValue() == FALSE) {
+            me.diamond_group.hide();
+            me.target_circle[me.selection_index].hide();
+          } else {
+            me.diamond_group.show();
+            me.target_circle[me.selection_index].show()
+          }
+          me.diamond.hide();
+          me.target.hide();
+        }
+
+        #velocity vector
+        if(selection[0] > -512 and selection[0] < 512 and selection[1] > -512 and selection[1] < 512) {
+          var tgtHeading = selection[6].getNode("orientation/true-heading-deg").getValue();
+          var tgtSpeed = selection[6].getNode("velocities/true-airspeed-kt").getValue();
+          var myHeading = me.input.hdgReal.getValue();
+          var myRoll = me.input.roll.getValue();
+          if (tgtHeading == nil or tgtSpeed == nil) {
+            me.vel_vec.hide();
+          } else {
+            var relHeading = tgtHeading - myHeading - myRoll;
+            
+            relHeading -= 180;# this makes the line trail instead of lead
+            relHeading = relHeading * deg2rads;
+
+            me.vel_vec_trans_group.setTranslation(selection[0], selection[1]);
+            me.vel_vec_rot_group.setRotation(relHeading);
+            me.vel_vec.setScale(1, tgtSpeed/4);
+            
+            # note since trinometry circle is opposite direction of compas heading direction, the line will trail the target.
+            me.vel_vec.show();
+          }
+        } else {
+          me.vel_vec.hide();
+        }
+
+        me.target_circle[me.selection_index].update();
+        me.diamond_group.update();
+      } else {
+        # selection is outside radar view
+        # or invalid
+        # or nothing selected
+        diamond_node = nil;
+        if(selection != nil) {
+          selection[2] = nil;#no longer sure why I do this..
+        }
+        me.diamond_group.hide();
+        me.vel_vec.hide();
+        me.target_circle[0].hide();
+      }
+      #print("");
+    } else {
+      # radar tracks not shown at all
+      me.radar_group.hide();
+    }
+  },
 };#end of HUDnasal
 
 
 var id = 0;
 
 var reinitHUD = FALSE;
+var hud_pilot = nil;
 var init = func() {
   removelistener(id); # only call once
   if(getprop("sim/ja37/supported/hud") == TRUE) {
-    var hud_pilot = HUDnasal.new({"node": "HUDobject", "texture": "hud.png"});
+    hud_pilot = HUDnasal.new({"node": "HUDobject", "texture": "hud.png"});
     #setprop("sim/hud/visibility[1]", 0);
     
     #print("HUD initialized.");
@@ -1954,12 +2099,22 @@ var reinit = func() {#mostly called to change HUD color
 
    foreach(var item; artifacts0) {
     item.setColor(r, g, b, a);
+    item.setStrokeLineWidth(getprop("sim/ja37/hud/stroke-linewidth"));
    }
 
    foreach(var item; artifacts1) {
     item.setColor(r, g, b, a);
+    item.setStrokeLineWidth(getprop("sim/ja37/hud/stroke-linewidth"));
    }
 
+   foreach(var item; artifactsText0) {
+    item.setColor(r, g, b, a);
+   }
+
+   foreach(var item; artifactsText1) {
+    item.setColor(r, g, b, a);
+   }
+   hud_pilot.slip_indicator.setColorFill(r,g,b, a);
    HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.02);
    ja37.click();
   #print("HUD being reinitialized.");
@@ -1988,7 +2143,7 @@ var cycle_units = func () {
   if(getprop("sim/ja37/hud/mode") > 0) {
     ja37.click();
     var current = getprop("sim/ja37/hud/units-metric");
-    if(current == 1) {
+    if(current == TRUE) {
       setprop("sim/ja37/hud/units-metric", FALSE);
     } else {
       setprop("sim/ja37/hud/units-metric", TRUE);
@@ -1996,6 +2151,16 @@ var cycle_units = func () {
   } else {
     aircraft.HUD.cycle_type();
   }
+};
+
+var cycle_landingMode = func () {
+    ja37.click();
+    var current = getprop("sim/ja37/hud/landing-mode");
+    if(current == TRUE) {
+      setprop("sim/ja37/hud/landing-mode", FALSE);
+    } else {
+      setprop("sim/ja37/hud/landing-mode", TRUE);
+    }
 };
 
 var toggle_combat = func () {
@@ -2025,25 +2190,3 @@ var toggleCallsign = func () {
     aircraft.HUD.normal_type();
   }
 };
-
-var nextTarget = func () {
-  var max_index = size(tracks)-1;
-  if(max_index > -1) {
-    if(tracks_index < max_index) {
-      tracks_index += 1;
-    } else {
-      tracks_index = 0;
-    }
-    selection = tracks[tracks_index];
-    lookatSelection();
-  } else {
-    tracks_index = -1;
-  }
-}
-
-var lookatSelection = func () {
-  props.globals.getNode("/sim/ja37/radar/selection-heading-deg", 1).unalias();
-  props.globals.getNode("/sim/ja37/radar/selection-pitch-deg", 1).unalias();
-  props.globals.getNode("/sim/ja37/radar/selection-heading-deg", 1).alias(selection[5].getNode("radar/bearing-deg"));
-  props.globals.getNode("/sim/ja37/radar/selection-pitch-deg", 1).alias(selection[5].getNode("radar/elevation-deg"));
-}

@@ -4,24 +4,19 @@ TODO for Flightgear JA-37
 
 Features and improvements:
 --------------------------
-GUI: Make popups appear higher on screen.
 GUI: Option to turn off verbose popups.
 GUI: Improve Checklists.
-GUI: Option to switch off hitting stuff above ground.
+GUI: Option to switch off hitting stuff above ground. (switched off now, might confuse users)
 Aero: Make cannon pod detachable and have pointweight.
 Aero: Air-brakes, even though they got welded shut in mid 80ties.
-Aero: Disable failure system from freezing surfaces (bug prevents)
-Aero: Randomize vortex detachment
-Aero: Names for name in jsbsim aero code to avoid cluttering the property tree
-Animation: Min and max on several gauges.
-Animation: Animate aft wheels.
+Aero: Disable failure system from freezing surfaces (remove failure mode bug prevents)
 Model: Adjust instrument materials, and make the gauges look more similar.
-Model: Pilot from F16CJ?
 Model: Proper pilot seat.
 Model: Throttle.
 Model: Make minimal polygon model for multiplayer LOD.
 Model: Gauges that share mount design should also share geometry and textures.
 Model: Make liveries that is not 59, able to not have to use base texture.
+Model: Make HUD model not be square anymore. Also model support beams on each side.
 Sim: Improve autopilot further. (alt-hold should use pitch not v-speed)
 Sim: Make autopilot depend fully on instrument properties not sim properties.
 Sim: Implement ejection seat. (with parachute?)
@@ -31,30 +26,33 @@ Sim: Stop using integers in xml where floating point is expected.
 Sim: Check that all instruments and instr. lights rely on battery/generator power. Plus on instrument properties, not sim properties.
 Sim: Make verbose property to be used in all nasal scripts. (possible include in options)
 Sim: Air to ground missiles.
-Sim: Move all radar logic back into radar so that users of FG HUD can use combat features. (and save performance)
+Sim: Longer range air2air missiles.
+Sim: Unguided missiles with terrain collision detection. (submodels with ext. force)
+Sim: Make users of FG HUD able to use tactical features.
 Sim: Make replay show the guided missiles flying.
 Sim: Improve terrain warning system.
-Sim: Use statics for true and false in all nasal code.
-Sim: Make more use of default multiplay properties to free more of the custom up.
 Sim: Hydralic pump depend on electric instead of rpm
+Sim: Replace generic getValue and setValue in nasal with specific types.
+Sim: Make droptank do collision detection. (use retractable)
+Sim: Make drop-tank fall down. (use slaved submodel)
 Effect: Rembrandt landing lightcone.
 Effect: Check contrail effect is properly installed.
 Effect: Make pilot faint/die due to G-forces.
 Effect: Make tires burst if too high speed with parking brakes.
-Effect: Sun glare.
 Effect: Smoke after structural break.
 Effect: Adjust normalmap to be more subtle.
+Effect: Show aircraft explosion in MP also.
+Animation: Show wheels spinning in MP also.
 Sound: More annunciater warnings and other sounds.
 Sound: Make sounds when taking damage in bombable.
-HUD: Make TILS landing system in the HUD (maybe just make it follow ILS)
 HUD: Make individual parts in HUD fail if the corresponding instrument fails. (like heading indicator etc.)
-HUD: Make desired height columns for landing and boxes for desired pitch.
+HUD: Make boxes for desired pitch.
 HUD: Alt scale follow pitch lines at more than 1 degree roll from level flight. (swedish pilots seems able to read upside down, not sure I will make this)
 HUD: Use instrument properties instead of simulation properties.
 HUD: Make too low reference speed change reticle vertical tail down.
-HUD: Seperate landing and takeoff mode.
 HUD: All track semi circles and semi box should have a line in them. (might degrade performance)
 HUD: Adjust pilots eyes so that HUD is viewed as in the real (angle and distance). Also key to zoom in on HUD.
+HUD: Sidewind indicator should really be 10 degs below plane axis line.
 
 
 Bugs:
@@ -63,23 +61,23 @@ Sound: If at the end of non-looped replay view mode is fly-by-view, sounds will 
 Report: {JabberWocky} After A/P the plane consumes too much fuel. [not reproduceable]
 Aero: The plane can spin into NaN. Check that. (maybe cap on some dampers, use FG-Plot to check which ones) [might be fixed]
 Aero: {JazzTp} Landing in 40KT crosswind usually fails, 25KT crosswind can fail also if upwind rear gear touchdown first.
-HUD: When the altitude difference to a target is much larger than the horizontal distance, the target positions are off.
 Sim: {JazzTp} On Linux, after firing first missile, the key bindings for weapons go to other things, like exit FG. [Cannot reproduce on Win]
-Sim: If the fuel and payload dialog is open while firing a missile, the logic when loading a missle does not act predictable. [so keep it closed :)]
 Sim: Missiles do not show when using FG 3.0, in FG 3.1+ they work fine. [reproduced]
 Sim: Missiles will not lock on to ferries that is missing the radar properties.
 Sim: Find out why cannon and sidewinder fire randomly after instant replay.
 Sim: {JazzTp} A repair did repair aircraft except for HUD, it was frozen. [not reproduced yet]
 Sim: {JazzTp} Radar screen did not see MP aircraft pass by. [not reproduced yet]
+Sim: When running at reduced sim time, relocating or pausing, autostart might fail. [reproduced]
+Sim: Missile that misses dont seem to delete by altitude.
+Sim: When Bombable 4.5 is installed redout and blackout might not work properly. [related to certain Bombable settings I think]
+Sim: The auto-pilot can be bank unstable when auto-coordination is turned on.
 HUD: {JazzTp} When FG HUD is in 2nd or 3rd mode, it does not go away when switching to custom. [reproduced]
-HUD: I have experienced that combat mode was on by default. [not reliable reproduced]
+HUD: I have experienced that tactical mode was on by default. [not reliable reproduced]
+HUD: When the altitude difference to a track is much larger than the horizontal distance, the track positions are off.
 GUI: The performance monitor can duplicate itself when selecting airport. [reproduced]
-Effect: {JazzTp} Strobe looks bad in FG 3.0, but better in FG 3.1 [wont fix]
 Model: sim load-lag when coming near other ja37. [reproduced]
 Model: Sim lag at final retraction of gear. [reproduced]
-Sim: When running at reduced sim time, autostart might fail. [reproduced]
-Sim: {JazzTp} Firing a missile can make the missile crash into own aircraft if unlucky. [reproduced, might be fixed now]
-Sim: When Bombable 4.5 is installed redout and blackout might not work properly. [related to certain Bombable settings I think]
+Model: CTRL-X in HUD view will not zoom to correct level.
 Animation: Selection view does not follow carriers. (they lack radar properties)
 
 
@@ -98,6 +96,20 @@ No custom HUD (done)
 Default FG HUD (done)
 
 
+Livery work
+-----------
+Model: Improve the 31-17 grey livery.
+Model: Improve the 32-17 Blå Petter livery. (Blue Peter)
+Model: Improve the 59-16 grey livery.
+Model: Improve the 61-18 strike camo livery.
+Model: Improve the 57-21 red 'ghost' livery.
+Model: Improve the 46-04 unknown export livery.
+Model: Improve the 02-21 swedish sun livery.
+Model: Make the 11-16 black/grey camo livery.
+Model: Make the 12-04 black and gold livery.
+Model: Make the 48-21 finnish export livery. (Akktu Stakki - Lonely Wolf)
+
+
 Require modeling/texture skills (above my level):
 -------------------------------------------------
 Model: Model proper panels and cockpit layout.
@@ -105,13 +117,12 @@ Model: Put in more working instruments and controls. (semi doable if can find si
 Animation: Animate scissor gear compression. The gears are currently modelled wrong for this.
 Animation: Proper animation of gear doors.
 Model: Model the reverser for reverse thrust.
-Effect: Make gun fire bullets from correct position. (should be a pod under belly)
+Model: Make gunpod, between the fuselage and droptank.
 
 
 Depends on better 3D cockpit:
 -----------------------------
-Sim: Make control surfaces depend on hydralic system.
-Sim: Make proper power flow to external lights. (use potemkin)
+Sim: Make proper power flow to all and seperate external light controls. (use potemkin)
 Sim: Make proper fuel pump system. (Fuel tanks 3V and 3H is used for flying upside down. All fuel to engine has to go through tank 1)
 Model: Put in alot more not-working instruments and controls for immersion.
 

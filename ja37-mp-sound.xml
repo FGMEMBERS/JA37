@@ -66,6 +66,9 @@
     <outer-gain>0.75</outer-gain>
    </orientation>
    <volume>
+    <property>sim/ja37/sound/mp-volume</property>
+   </volume> 
+   <volume>
     <property>sim/multiplay/generic/float[16]</property><!-- engines/engine/thrust_lb-absolute -->
     <factor>0.000050</factor>
    </volume>
@@ -103,6 +106,9 @@
     <outer-gain>0.5</outer-gain>
    </orientation>
    <volume>
+    <property>sim/ja37/sound/mp-volume</property>
+   </volume>
+   <volume>
     <property>sim/multiplay/generic/float[16]</property><!-- engines/engine/thrust_lb-absolute -->
     <factor>0.000050</factor>
    </volume>
@@ -139,6 +145,9 @@
     <outer-angle>180.0</outer-angle>
     <outer-gain>0</outer-gain>
    </orientation>
+   <volume>
+    <property>sim/ja37/sound/mp-volume</property>
+   </volume>
    <volume>
     <property>sim/multiplay/generic/float[16]</property><!-- engines/engine/thrust_lb-absolute -->
     <factor>0.000150</factor>
@@ -307,6 +316,7 @@
    <path>Sounds/squeal.wav</path>
    <condition>
     <or>
+      <property>sim/multiplay/generic/int[17]</property><!-- gear/gear[0]/wow -->
       <property>sim/multiplay/generic/int[18]</property><!-- gear/gear[1]/wow -->
       <property>sim/multiplay/generic/int[19]</property><!-- gear/gear[2]/wow -->
     </or>
@@ -314,9 +324,9 @@
    <reference-dist>150</reference-dist>
    <max-dist>500</max-dist>
    <position>
-    <x>1.2</x>
+    <x>2.64670</x>
     <y>0.01</y>
-    <z>-0.6</z>
+    <z>-2.1</z>
    </position>
    <volume>
     <property>sim/multiplay/generic/float[18]</property><!--  velocities/speed-down-fps -->
@@ -325,10 +335,11 @@
    <volume>
     <property>sim/multiplay/generic/float[17]</property><!--  velocities/airspeed-kt -->
     <factor>0.01</factor>
+    <max>1.0</max>
    </volume>
    <volume>
     <internal>dt_stop</internal>
-    <factor>0.05</factor>
+    <factor>0.1</factor>
     <max>1.0</max>
    </volume>
    <pitch>
@@ -336,6 +347,6 @@
     <factor>0.0025</factor>
     <offset>1.2</offset>
    </pitch>
-  </squeal>
+ </squeal>
  </fx>
 </PropertyList>

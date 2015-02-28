@@ -37,13 +37,13 @@
   </submodel>
 
   <submodel>
-    <name>gun-pod</name>
+    <name>cannon tracer</name>
     <model>Aircraft/JA37/Models/Armament/Weapons/KCA/tracer.xml</model>
-    <trigger>sim/multiplay/generic/int[10]</trigger><!-- controls/armament/trigger -->
+    <trigger>sim/multiplay/generic/int[10]</trigger><!-- controls/armament/station[0]/trigger -->
     <speed>3383.33</speed><!-- ft/sec-->
     <repeat>true</repeat>
-    <delay>0.44</delay><!-- secs between repeats, every 10th is tracer -->
-    <count>146</count>
+    <delay>0.22</delay><!-- secs between repeats, every 5th is tracer -->
+    <count>-1</count>
     <x-offset>  0.0</x-offset>
     <y-offset>  0.0</y-offset>
     <z-offset> -1.2</z-offset>
@@ -58,7 +58,7 @@
   <submodel>
     <name>cannon</name>
     <model>Models/Geometry/null.ac</model>
-    <trigger>sim/multiplay/generic/int[10]</trigger><!-- controls/armament/trigger -->
+    <trigger>sim/multiplay/generic/int[10]</trigger><!-- controls/armament/station[0]/trigger -->
     <speed>3383.33</speed>
     <repeat>true</repeat>
     <delay>0.044</delay>
@@ -79,14 +79,13 @@
     <submodel-path>Aircraft/JA37/Models/Armament/Weapons/KCA/bullet-submodel.xml</submodel-path>
   </submodel>
 
-
   <submodel>
     <name>gunsmoke</name>
     <model>Aircraft/JA37/Models/Armament/Weapons/KCA/smoke.xml</model>
-    <trigger>sim/multiplay/generic/int[10]</trigger><!-- controls/armament/trigger -->
+    <trigger>sim/multiplay/generic/int[10]</trigger><!-- controls/armament/station[0]/trigger -->
     <speed>10.0</speed>
     <repeat>true</repeat>
-    <delay>0.01</delay>
+    <delay>0.044</delay>
     <count>146</count>
     <x-offset>  0.0</x-offset>
     <y-offset>  0.0</y-offset>

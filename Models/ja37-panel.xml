@@ -170,6 +170,17 @@
   </model>
 
 <model>
+    <path>Aircraft/JA37/Models/Instruments/Transponder/kt76a.xml</path>
+    <name>Transponder</name>
+    <offsets>
+    <pitch-deg>-10.671</pitch-deg>
+      <x-m> -3.8016</x-m>
+      <y-m> -0.27</y-m>
+      <z-m>  0.205</z-m>
+    </offsets>
+  </model>
+
+<model>
     <path>Aircraft/JA37/Models/Instruments/Airspeed/airspeed.xml</path>
     <name>Airspeed</name>
     <offsets>
@@ -308,7 +319,7 @@
     <name>SwitchReverserAuto</name>
     <offsets>
     <pitch-deg>-10.671</pitch-deg>
-      <x-m> -3.84</x-m>
+      <x-m> -3.840</x-m>
       <y-m> -0.305</y-m>
       <z-m>  0.385</z-m>
     </offsets>
@@ -322,6 +333,28 @@
       <x-m> -3.8375</x-m>
       <y-m> -0.305</y-m>
       <z-m>  0.365</z-m>
+    </offsets>
+  </model>
+
+  <model>
+    <path>Aircraft/JA37/Models/Cockpit/switches/switch-landing-mode.xml</path>
+    <name>SwitchLanding</name>
+    <offsets>
+    <pitch-deg>-10.671</pitch-deg>
+      <x-m> -3.859</x-m>
+      <y-m> -0.165</y-m>
+      <z-m>  0.485</z-m>
+    </offsets>
+  </model>  
+
+  <model>
+    <path>Aircraft/JA37/Models/Cockpit/switches/switch-tils.xml</path>
+    <name>Reverse</name>
+    <offsets>
+    <pitch-deg>-10.671</pitch-deg>
+      <x-m> -3.8345</x-m>
+      <y-m> -0.305</y-m>
+      <z-m>  0.345</z-m>
     </offsets>
   </model>
 
