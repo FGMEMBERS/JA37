@@ -65,7 +65,7 @@ var g = 1.0;
 var b = 0.0;
 var a = 1.0;
 var w = getprop("sim/ja37/hud/stroke-linewidth");  #line stroke width (saved between sessions)
-var ar = 0.9;#font aspect ratio
+var ar = 1.0;#font aspect ratio, less than 1 make more wide.
 var fs = 0.8;#font size factor
 var artifacts0 = nil;
 var artifacts1 = [];
@@ -106,16 +106,16 @@ var HUDnasal = {
     # digital airspeed kts/mach 
     HUDnasal.main.airspeed = HUDnasal.main.root.createChild("text")
       .setText("000")
-      .setFontSize(100*fs, ar)
+      .setFontSize(85*fs, ar)
       .setColor(r,g,b, a)
       .setAlignment("center-center")
-      .setTranslation(0 , 400);
+      .setTranslation(0 , 420);
     HUDnasal.main.airspeedInt = HUDnasal.main.root.createChild("text")
       .setText("000")
-      .setFontSize(100*fs, ar)
+      .setFontSize(85*fs, ar)
       .setColor(r,g,b, a)
       .setAlignment("center-center")
-      .setTranslation(0 , 315);
+      .setTranslation(0 , 350);
 
 
     # scale heading ticks
@@ -1029,7 +1029,7 @@ var HUDnasal = {
   },
 
   displayHeadingScale: func () {
-    if (mode != LANDING) {
+    if (mode != LANDING or me.input.pitch.getValue() < -5 or me.input.pitch.getValue() > 7) {
       var heading = me.input.hdg.getValue();
       var headOffset = heading/10 - int (heading/10);
       var headScaleOffset = headOffset;
@@ -1541,6 +1541,9 @@ var HUDnasal = {
       } else {
         me.airspeed.setText(sprintf("%03d", me.input.ias.getValue() * kts2kmh));
       }
+    } elsif (mode == LANDING or mode == TAKEOFF) {
+      me.airspeedInt.hide();
+      me.airspeed.setText(sprintf("KT%03d", me.input.ias.getValue()));
     } else {
       me.airspeedInt.setText(sprintf("KT%03d", me.input.ias.getValue()));
       me.airspeedInt.show();
@@ -1853,7 +1856,11 @@ var HUDnasal = {
         if(showme == TRUE) {
           me.tower_symbol.setTranslation(pos_x, pos_y);
           var tower_dist = me.input.units.getValue() ==1  ? distance : distance/kts2kmh;
-          me.tower_symbol_dist.setText(sprintf("%02d", tower_dist/1000));
+          if(tower_dist < 10000) {
+            me.tower_symbol_dist.setText(sprintf("%.1f", tower_dist/1000));
+          } else {
+            me.tower_symbol_dist.setText(sprintf("%02d", tower_dist/1000));
+          }          
           me.tower_symbol_icao.setText(getprop("sim/tower/airport-id"));
           me.tower_symbol.show();
           me.tower_symbol.update();
@@ -1932,7 +1939,7 @@ var HUDnasal = {
       }
       if(me.track_index != -1) {
         #hide the the rest unused circles
-        for(i = me.track_index; i < maxTracks ; i+=1) {
+        for(var i = me.track_index; i < maxTracks ; i+=1) {
           me.target_circle[i].hide();
         }
       }
@@ -1946,19 +1953,19 @@ var HUDnasal = {
       if(selection != nil and selection[6].getChild("valid").getValue() == TRUE and me.selection_updated == TRUE) {
         # selection is currently in forward looking radar view
         var blink = FALSE;
-        if(selection[0] > 512) {
+        if(selection[0] >= 512) {#since radar logic run slower than HUD loop, this must be >= check to prevent erratic blinking since pos is being overwritten
           blink = TRUE;
           selection[0] = 512;
         }
-        if(selection[0] < -512) {
+        if(selection[0] <= -512) {
           blink = TRUE;
           selection[0] = -512;
         }
-        if(selection[1] > 512) {
+        if(selection[1] >= 512) {
           blink = TRUE;
           selection[1] = 512;
         }
-        if(selection[1] < -450) {
+        if(selection[1] <= -450) {
           blink = TRUE;
           selection[1] = -450;
         }
@@ -1967,7 +1974,12 @@ var HUDnasal = {
           diamond_node = selection[6];
           me.diamond_group.setTranslation(selection[0], selection[1]);
           var diamond_dist = me.input.units.getValue() ==1  ? selection[2] : selection[2]/kts2kmh;
-          me.diamond_dist.setText(sprintf("%02d", diamond_dist/1000));
+          
+          if(diamond_dist < 10000) {
+            me.diamond_dist.setText(sprintf("%.1f", diamond_dist/1000));
+          } else {
+            me.diamond_dist.setText(sprintf("%02d", diamond_dist/1000));
+          }
           me.diamond_name.setText(selection[5]);
           me.target_circle[me.selection_index].hide();
 
@@ -2010,7 +2022,11 @@ var HUDnasal = {
           me.diamond_group.setTranslation(selection[0], selection[1]);
           me.target_circle[me.selection_index].setTranslation(selection[0], selection[1]);
           var diamond_dist = me.input.units.getValue() == TRUE  ? selection[2] : selection[2]/kts2kmh;
-          me.diamond_dist.setText(sprintf("%02d", diamond_dist/1000));
+          if(diamond_dist < 10000) {
+            me.diamond_dist.setText(sprintf("%.1f", diamond_dist/1000));
+          } else {
+            me.diamond_dist.setText(sprintf("%02d", diamond_dist/1000));
+          }
           me.diamond_name.setText(selection[5]);
           
           if(blink == TRUE and me.input.fiveHz.getValue() == FALSE) {
@@ -2018,7 +2034,7 @@ var HUDnasal = {
             me.target_circle[me.selection_index].hide();
           } else {
             me.diamond_group.show();
-            me.target_circle[me.selection_index].show()
+            me.target_circle[me.selection_index].show();
           }
           me.diamond.hide();
           me.target.hide();
