@@ -1234,3 +1234,29 @@ HUD: Moved QFE and digital altitude up a small bit.
 Sim: Prevented tracer rounds from running out of ammo before cannon rounds.
 Effect: Fixed landing light spot can be seen in replay in external view, if it was shown when replay was started.
 Sim: Fixed that auto-starting engine would fail if it was attempted before the engine was spooled down.
+
+3.008 - 2015 March 03  (only for FG 2.8)
+=====
+Sim: Typecast all property writes in crash system. And initialized custom properties.
+Sim: Made autostart work even if sim time is accelerated or slowed down.
+HUD: Changed font aspect ratio to default 1:1.
+HUD: Made the default heading scale appear in landing mode, if the horizon scale is not in center of view.
+Sim: Fixed that crash system in FG 3.5 would start before failure system was initialized.
+Sim: Updated failures to work in FG 3.5 failure system.
+HUD: Removed mach indicator in landing and takeoff mode as per the manual.
+HUD: Made digital airspeed smaller fonts.
+HUD: Made distance indication be floating point below 10Nm or 10Km.
+HUD: Fixed that if selection or target was in radar cone but outside HUD view, it could blink erratically at medium/high framerates.
+Sim: Fixed electrical system would break down due to generator failure mode not installed on FG 3.0.
+Sim: Electrical Potemkin system cleaned up and increased performance.
+Sim: Fixed aliasing with type would fail in FG 3.0.
+Sim: Made FGs earlier than 3.2 use the old crash code.
+GUI: Fixed popuptips should use oldest code in FG 2.10 and earlier.
+Effect: made beacon work in FG 2.10 and earlier.
+Aero: Made jsbsim system files have no folder, as FG 3.12 and earlier fill that in forcefully on its own.
+Sim: Removed ubershaders. (in this version only)
+Sim: This version is now only for FG 2.8
+
+3.009 - 2015 March 03
+=====
+Sim: Tested and works in FG 2.10, 2.12, 3.0, 3.2, 3.4, 3.4 and 3.5.
