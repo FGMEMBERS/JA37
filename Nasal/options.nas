@@ -414,11 +414,12 @@ var Dialog = {
     },
 
     breakToggle: func {
-      var enabled = crash.crashCode.isStarted();
+      var version = getprop("sim/ja37/supported/crash-system");
+      var enabled = version==0?getprop("sim/ja37/damage/enabled"):crash1.crashCode.isStarted();
       if(enabled == 1) {
-        crash.crashCode.stop();
+        version==0?setprop("sim/ja37/damage/enabled", 0):crash1.crashCode.stop();
       } else {
-        crash.crashCode.start();
+        version==0?setprop("sim/ja37/damage/enabled", 1):crash1.crashCode.start();
       }
       me.refreshButtons();
     },
@@ -553,7 +554,8 @@ var Dialog = {
 
     refreshButtons: func {
       # update break button
-      var enabled = crash.crashCode.isStarted();
+      var version = getprop("sim/ja37/supported/crash-system");
+      var enabled = version==0?getprop("sim/ja37/damage/enabled"):crash1.crashCode.isStarted();
       var legend = "";
       if(enabled == 1) {
         legend = "Enabled";
