@@ -68,8 +68,12 @@
     <object-name>wingLeft</object-name>
     <object-name>wingRight</object-name>
 	  <object-name>rudder</object-name>
-	  <object-name>gearFront</object-name>
-	  <object-name>gearFrontDoorsOpen</object-name>
+	  <object-name>gearFrontBottom</object-name>
+    <object-name>gearFrontHub</object-name>
+    <object-name>gearFrontScissor</object-name>
+    <object-name>gearFrontTop</object-name>
+	  <object-name>gearFrontDoorsOpenLeft</object-name>
+    <object-name>gearFrontDoorsOpenRight</object-name>
 	  <object-name>gearFrontDoorsClosed</object-name>
 	  <object-name>gearLeft</object-name>
     <object-name>gearLeftTop</object-name>
@@ -90,16 +94,43 @@
   </effect>
 
   <effect>  
-	  <inherits-from>Aircraft/JA37/Models/Effects/ja37-glass-combined</inherits-from>
-	  <object-name>glass</object-name>
-	  <object-name>frontglas</object-name>
+    <inherits-from>Aircraft/JA37/Models/Effects/ja37-glass-combined</inherits-from>
+    <object-name>glassInternal</object-name>
+    <object-name>frontglasInternal</object-name>
   </effect>
+
+  <effect>  
+    <inherits-from>Aircraft/JA37/Models/Effects/frostAndRain/glass</inherits-from>
+    <object-name>glass</object-name>
+    <object-name>frontglas</object-name>
+  </effect>
+
+  <!--<animation>
+  <type>select</type>
+  <object-name>glass</object-name>
+  <object-name>frontglas</object-name>
+  <condition>
+    <not>
+      <property>sim/current-view/internal</property>
+    </not>
+  </condition>
+ </animation>
+
+ <animation>
+  <type>select</type>
+  <object-name>glassInternal</object-name>
+  <object-name>frontglasInternal</object-name>
+  <condition>
+    <property>sim/current-view/internal</property>
+  </condition>
+ </animation>-->
 
 <!-- Fuselage animations -->
 
 <animation>
   <type>rotate</type>
   <object-name>glass</object-name>
+  <object-name>glassInternal</object-name>
   <object-name>canopy</object-name>
   <property>canopy/position-norm</property><!-- auto MP transmit -->
   <factor>30.0</factor>
@@ -201,6 +232,8 @@
   <object-name>landingLightRight</object-name>
   <object-name>missile</object-name>
   <object-name>missile1</object-name>
+  <object-name>pod0</object-name>
+  <object-name>pod1</object-name>
   <condition>
     <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
   </condition>
@@ -226,27 +259,34 @@
 <animation>
   <type>select</type>
   <condition>
-   <greater-than>
+   <equals>
     <property>gear/gear[0]/position-norm</property>
     <value>0.0</value>
-   </greater-than>
+   </equals>
   </condition>
-  <object-name>gearLeftDoorsOpen</object-name>
-  <object-name>gearRightDoorsOpen</object-name>
-  <object-name>gearFrontDoorsOpen</object-name>
+  <object-name>gearFrontDoorsClosed</object-name>
  </animation>
 
-<animation>
+ <animation>
   <type>select</type>
   <condition>
    <equals>
-    <property>gear/gear[0]/position-norm</property>
+    <property>gear/gear[1]/position-norm</property>
     <value>0.0</value>
    </equals>
   </condition>
   <object-name>gearLeftDoorsClosed</object-name>
+ </animation>
+
+ <animation>
+  <type>select</type>
+  <condition>
+   <equals>
+    <property>gear/gear[2]/position-norm</property>
+    <value>0.0</value>
+   </equals>
+  </condition>
   <object-name>gearRightDoorsClosed</object-name>
-  <object-name>gearFrontDoorsClosed</object-name>
  </animation>
 
 <animation>
@@ -257,34 +297,13 @@
     <value>0.0</value>
    </greater-than>
   </condition>
-  <object-name>gearFront</object-name>
+  <object-name>gearFrontDoorsOpenLeft</object-name>
+  <object-name>gearFrontDoorsOpenRight</object-name>
+  <!--<object-name>gearFront</object-name>
   <object-name>wheelFront</object-name>
-  <object-name>landingLight</object-name>
+  <object-name>landingLight</object-name>-->
   <object-name>frontLandingLightGlare</object-name>
  </animation>
-
-<!--<animation>
-  <type>select</type>
-  <condition>
-    <equals>
-    <value>1</value>
-    <value>0</value>
-    </equals>--><!--
-   <equals>
-    <property>gear/gear[0]/position-norm</property>
-    <value>1.0</value>
-   </equals>
-   <greater-than>
-    <property>gear/gear[0]/steering-norm</property>
-    <value>-0.05</value>
-   </greater-than>
-   <less-than>
-    <property>gear/gear[0]/steering-norm</property>
-    <value>0.05</value>
-   </less-than>--><!--
-  </condition>
-  <object-name>gearFrontHinge</object-name>
- </animation>-->
 
 <animation>
   <type>select</type>
@@ -301,6 +320,7 @@
   <object-name>wheelLeft2</object-name>
   <object-name>landingLightLeft</object-name>
   <object-name>leftLandingLightGlare</object-name>
+  <object-name>gearLeftDoorsOpen</object-name>
  </animation>
 
 <animation>
@@ -318,13 +338,15 @@
   <object-name>wheelRight2</object-name>
   <object-name>landingLightRight</object-name>
   <object-name>rightLandingLightGlare</object-name>
+  <object-name>gearRightDoorsOpen</object-name>
  </animation>
-
-
 
 <animation>
   <type>rotate</type>
-  <object-name>gearFront</object-name>
+  <object-name>gearFrontBottom</object-name>
+  <object-name>gearFrontHub</object-name>
+  <object-name>gearFrontScissor</object-name>
+  <object-name>gearFrontTop</object-name>
   <object-name>wheelFront</object-name>
   <object-name>landingLight</object-name>
   <object-name>frontLandingLightGlare</object-name>
@@ -342,8 +364,8 @@
   <min-deg>0</min-deg>
   <max-deg>110</max-deg>
   <center>
-   <x-m>-3.70585</x-m>
-   <y-m>0.000000</y-m>
+   <x-m>-3.35848</x-m>
+   <y-m>-0.000003</y-m>
    <z-m>-0.78153</z-m>
   </center>
   <axis>
@@ -355,19 +377,81 @@
 
 <animation>
   <type>rotate</type>
+  <object-name>gearFrontDoorsOpenLeft</object-name>
+  <property>gear/gear[1]/position-norm</property><!-- auto MP transmit -->
+  <interpolation>
+   <entry>
+    <ind> 0.0</ind>
+    <dep> 90.0</dep>
+   </entry>
+   <entry>
+    <ind> 0.20</ind>
+    <dep> 0.0</dep>
+   </entry>
+   <entry>
+    <ind> 1.0</ind>
+    <dep> 0.0</dep>
+   </entry>
+  </interpolation>
+  <min-deg>0</min-deg>
+  <max-deg>90</max-deg>
+  <axis>   
+   <x1-m> -4.98851</x1-m>
+   <y1-m> -0.20881</y1-m>
+   <z1-m>-0.78645</z1-m>
+   <x2-m> -3.05037</x2-m>
+   <y2-m>-0.22542</y2-m>
+   <z2-m>-0.8066</z2-m>
+  </axis>
+ </animation>
+
+<animation>
+  <type>rotate</type>
+  <object-name>gearFrontDoorsOpenRight</object-name>
+  <property>gear/gear[2]/position-norm</property><!-- auto MP transmit -->
+  <interpolation>
+   <entry>
+    <ind> 0.0</ind>
+    <dep> 90.0</dep>
+   </entry>
+   <entry>
+    <ind> 0.20</ind>
+    <dep> 0.0</dep>
+   </entry>
+   <entry>
+    <ind> 1.0</ind>
+    <dep> 0.0</dep>
+   </entry>
+  </interpolation>
+  <min-deg>0</min-deg>
+  <max-deg>90</max-deg>
+  <axis>   
+   <x1-m> -3.05041</x1-m>
+   <y1-m> 0.22836</y1-m>
+   <z1-m>-0.80326</z1-m>
+   <x2-m> -4.98856</x2-m>
+   <y2-m>0.21209</y2-m>
+   <z2-m>-0.78329</z2-m>
+  </axis>
+ </animation>
+
+<animation>
+  <type>rotate</type>
   <condition>
     <property>sim/multiplay/generic/int[17]</property><!-- gear/gear[0]/wow -->
   </condition>
-  <object-name>gearFront</object-name>
+  <object-name>gearFrontBottom</object-name>
+  <object-name>gearFrontHub</object-name>
+  <object-name>gearFrontScissor</object-name>
+  <object-name>gearFrontTop</object-name>
   <object-name>wheelFront</object-name>
-  <!--<object-name>gearFrontHinge</object-name>-->
   <object-name>landingLight</object-name>
   <object-name>frontLandingLightGlare</object-name>
   <property>sim/multiplay/generic/float[0]</property><!-- gear/gear[0]/steering-norm -->
   <factor>80</factor>
   <center>
-   <x-m> -3.65342 </x-m>
-   <y-m>0.000000</y-m>
+   <x-m>-3.35848</x-m>
+   <y-m>-0.000003</y-m>
    <z-m>-0.78153</z-m>
   </center>
   <axis>
@@ -412,6 +496,36 @@
 
 <animation>
   <type>rotate</type>
+  <object-name>gearLeftDoorsOpen</object-name>
+  <property>gear/gear[1]/position-norm</property><!-- auto MP transmit -->
+  <interpolation>
+   <entry>
+    <ind> 0.0</ind>
+    <dep> 80.0</dep>
+   </entry>
+   <entry>
+    <ind> 0.75</ind>
+    <dep> 0.0</dep>
+   </entry>
+   <entry>
+    <ind> 1.0</ind>
+    <dep> 0.0</dep>
+   </entry>
+  </interpolation>
+  <min-deg>0</min-deg>
+  <max-deg>90</max-deg>
+  <axis>   
+   <x2-m> 3.105</x2-m>
+   <y2-m> -2.45236</y2-m>
+   <z2-m>-0.40247</z2-m>
+   <x1-m> 2.41235</x1-m>
+   <y1-m>-2.45238</y1-m>
+   <z1-m>-0.40247</z1-m>
+  </axis>
+ </animation>
+
+<animation>
+  <type>rotate</type>
   <object-name>gearRight</object-name>
   <object-name>gearRightTop</object-name>
   <object-name>wheelRight1</object-name>
@@ -443,13 +557,42 @@
   </axis>
  </animation>
 
+<animation>
+  <type>rotate</type>
+  <object-name>gearRightDoorsOpen</object-name>
+  <property>gear/gear[2]/position-norm</property><!-- auto MP transmit -->
+  <interpolation>
+   <entry>
+    <ind> 0.0</ind>
+    <dep> 80.0</dep>
+   </entry>
+   <entry>
+    <ind> 0.75</ind>
+    <dep> 0.0</dep>
+   </entry>
+   <entry>
+    <ind> 1.0</ind>
+    <dep> 0.0</dep>
+   </entry>
+  </interpolation>
+  <min-deg>0</min-deg>
+  <max-deg>90</max-deg>
+  <axis>   
+   <x1-m> 3.105</x1-m>
+   <y1-m> 2.45236</y1-m>
+   <z1-m>-0.40247</z1-m>
+   <x2-m> 2.41235</x2-m>
+   <y2-m>2.45238</y2-m>
+   <z2-m>-0.40247</z2-m>
+  </axis>
+ </animation>
+
 <animation><!--            compress front gear-->
    <type>translate</type>
-   <object-name>gearFront</object-name>
-   <!--<object-name>gearFrontHinge</object-name>-->
+   <object-name>gearFrontBottom</object-name>
+   <object-name>gearFrontHub</object-name>
+   <object-name>gearFrontScissor</object-name>
    <object-name>wheelFront</object-name>
-   <object-name>landingLight</object-name>
-   <object-name>frontLandingLightGlare</object-name>
    <object-name>tyre-smoke-nose</object-name>
    <property>sim/multiplay/generic/float[8]</property><!-- gear/gear/compression-ft -->
    <factor>0.3048</factor>
@@ -457,7 +600,7 @@
      <z>1</z>
    </axis>
    <center>
-        <x-m>-3.38246</x-m>
+        <x-m>-3.37534</x-m>
         <y-m>0.0</y-m>
         <z-m>-1.84812</z-m>
     </center>
@@ -486,7 +629,7 @@
     <property>gear/gear[0]/rollspeed-ms</property>
     <factor>37.9091</factor>
     <center>
-        <x-m>-3.64749</x-m>
+        <x-m>-3.3694</x-m>
         <y-m>0.0</y-m>
         <z-m>-1.84812</z-m>
     </center>
@@ -500,7 +643,6 @@
 <animation><!--            compress left gear-->
    <type>translate</type>
    <object-name>gearLeft</object-name>
-   <object-name>gearLeftTop</object-name>
    <object-name>wheelLeft1</object-name>
    <object-name>wheelLeft2</object-name>
    <object-name>landingLightLeft</object-name>
@@ -574,7 +716,6 @@
 <animation><!--            compress right gear-->
    <type>translate</type>
    <object-name>gearRight</object-name>
-   <object-name>gearRightTop</object-name>
    <object-name>wheelRight1</object-name>
    <object-name>wheelRight2</object-name>
    <object-name>landingLightRight</object-name>
@@ -936,9 +1077,9 @@
     <path>Aircraft/JA37/Models/Effects/landingLight/landingLightGlare.xml</path>
     <name>frontLandingLightGlare</name>
     <offsets>
-      <x-m>-3.64036</x-m>
+      <x-m>-3.47732</x-m>
       <y-m>-0.000005</y-m>
-      <z-m>-1.37051</z-m>
+      <z-m>-1.3621</z-m>
     </offsets>
   </model>
 
@@ -1068,6 +1209,89 @@
   </condition>
  </animation>
 
+  <model><!-- Left wing pylon -->
+    <path>Aircraft/JA37/Models/Armament/Weapons/M70/rocketPod.xml</path>
+    <name>pod0</name>
+    <offsets>
+      <y-m> -2.75</y-m>
+      <z-m> -1.50</z-m>
+      <x-m>  2.20</x-m>
+    </offsets>
+  </model>
+
+ <animation>
+  <object-name>pod0</object-name>
+  <type>select</type>
+  <condition>
+   <equals>
+    <property>sim/multiplay/generic/float[11]</property><!-- payload/weight[0]/weight-lb -->
+    <value>200</value>
+   </equals>
+  </condition>
+ </animation>
+
+  <model><!-- Left fuselage pylon -->
+    <path>Aircraft/JA37/Models/Armament/Weapons/M70/rocketPod.xml</path>
+    <name>pod2</name>
+    <offsets>
+      <y-m> -0.95</y-m>
+      <z-m> -1.775</z-m>
+      <x-m> -1.00</x-m>
+    </offsets>
+  </model>
+
+ <animation>
+  <object-name>pod2</object-name>
+  <type>select</type>
+  <condition>
+   <equals>
+    <property>sim/multiplay/generic/float[12]</property><!-- payload/weight[1]/weight-lb -->
+    <value>200</value>
+   </equals>
+  </condition>
+ </animation>
+
+  <model><!-- Right wing pylon -->
+    <path>Aircraft/JA37/Models/Armament/Weapons/M70/rocketPod.xml</path>
+    <name>pod1</name>
+    <offsets>
+      <y-m>  2.75</y-m>
+      <z-m> -1.50</z-m>
+      <x-m>  2.20</x-m>
+    </offsets>
+  </model>
+
+ <animation>
+  <object-name>pod1</object-name>
+  <type>select</type>
+  <condition>
+   <equals>
+    <property>sim/multiplay/generic/float[13]</property><!-- payload/weight[2]/weight-lb -->
+    <value>200</value>
+   </equals>
+  </condition>
+ </animation>
+
+   <model><!-- Right fuselage pylon -->
+    <path>Aircraft/JA37/Models/Armament/Weapons/M70/rocketPod.xml</path>
+    <name>pod3</name>
+    <offsets>
+      <y-m>  0.95</y-m>
+      <z-m> -1.775</z-m>
+      <x-m> -1.00</x-m>
+    </offsets>
+  </model>
+
+ <animation>
+  <object-name>pod3</object-name>
+  <type>select</type>
+  <condition>
+   <equals>
+    <property>sim/multiplay/generic/float[14]</property><!-- payload/weight[3]/weight-lb -->
+    <value>200</value>
+   </equals>
+  </condition>
+ </animation>
 
 <animation>
   <type>range</type>
@@ -1111,7 +1335,8 @@
   <object-name>rudder</object-name>
   <!--<object-name>gearFront</object-name>
   <object-name>gearFrontHinge</object-name>-->
-  <object-name>gearFrontDoorsOpen</object-name>
+  <object-name>gearFrontDoorsOpenLeft</object-name>
+  <object-name>gearFrontDoorsOpenRight</object-name>
   <object-name>gearFrontDoorsClosed</object-name>
   <!--<object-name>gearLeft</object-name>
   <object-name>gearLeftHinge</object-name>-->

@@ -958,7 +958,50 @@
         <factor>0.75</factor>
         <max>1</max>
       </volume>
-    </missile4>     
+    </missile4>
+
+    <m70>
+      <name>m70</name>
+      <path>Aircraft/JA37/Sounds/M70-release.wav</path>
+      <mode>looped</mode>
+      <type>avionics</type>
+      <condition>
+        <or>
+          <and>
+            <property>controls/armament/station[1]/trigger-m70</property>
+            <greater-than>
+              <property>ai/submodels/submodel[5]/count</property>
+              <value>0</value>
+            </greater-than>
+          </and>
+          <and>
+            <property>controls/armament/station[2]/trigger-m70</property>
+            <greater-than>
+              <property>ai/submodels/submodel[6]/count</property>
+              <value>0</value>
+            </greater-than>
+          </and>
+          <and>
+            <property>controls/armament/station[3]/trigger-m70</property>
+            <greater-than>
+              <property>ai/submodels/submodel[7]/count</property>
+              <value>0</value>
+            </greater-than>
+          </and>
+          <and>
+            <property>controls/armament/station[4]/trigger-m70</property>
+            <greater-than>
+              <property>ai/submodels/submodel[8]/count</property>
+              <value>0</value>
+            </greater-than>
+          </and>
+        </or>
+      </condition>
+      <volume>
+        <factor>0.75</factor>
+        <max>1</max>
+      </volume>
+    </m70>
 
    <rb24-signal> 
       <name>rb24-signal</name>
@@ -1169,7 +1212,7 @@
   		<path>Aircraft/JA37/Sounds/aircraft-crack.wav</path>
   		<mode>once</mode>
   		<condition>
-  		<property>sim/current-view/internal</property>
+  		  <property>sim/current-view/internal</property>
   			<equals>
   				<property>damage/sounds/crack-on</property>
   				<value>1</value>
@@ -1214,16 +1257,16 @@
       <name>Geforce-breath-vox</name>
       <path>Aircraft/JA37/Sounds/Geforce.wav</path>
       <type>avionics</type>
-      <condition> 
+      <condition>
         <greater-than>
           <property>/accelerations/pilot/z-accel-fps_sec</property>
           <value>-161</value>
-        </greater-than>   
+        </greater-than>
       </condition>
       <reference-dist>2</reference-dist>
       <max-dist>4</max-dist>
       <volume>
-        <property>sim/time/full-init</property>
+        <property>sim/ja37/sound/breath-volume</property>
         <factor>0.9</factor>
       </volume>
     </voice>
@@ -1236,12 +1279,12 @@
        <less-than>
         <property>/accelerations/pilot/z-accel-fps_sec</property>
         <value>-225</value>
-       </less-than>   
+       </less-than> 
       </condition>
       <reference-dist>2</reference-dist>
       <max-dist>4</max-dist>
       <volume>
-        <property>sim/time/full-init</property>
+        <property>sim/ja37/sound/breath-volume</property>
         <factor>0.9</factor>
       </volume>
     </voice>       

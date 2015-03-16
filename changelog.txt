@@ -1268,3 +1268,49 @@ Sim: Did some extra check for when to engage LB and release CTPL.
 HUD: Digital mach speed will only be shown above M0.5.
 Sim: Optimized how Potemkin electrical system access properties.
 GUI: Fixed options menu would not show.
+
+3.011 - 2015 March 09
+=====
+Sound: Made pilot breath sounds only audible from inside cockpit.
+Model: Made radar screen sweep better match the radar cone as in the real JA-37, and make better use of radar screen height.
+Model: Made radar bleeps round and slightly smaller.
+Effect: Adjusted the colour of missile exhaust slightly more white.
+Effect: Adjusted wind, drag, boyancy, frequency, speed, pitch and count of flares.
+Sound: Fixed regresssion that pilot high-G sounds would play randomly when selecting internal view.
+Effect: Made explosion visible and audible in MP.
+Sim: Added Bofors M70 rocket pods with 6 135mm rockets in each. They explode on impact and make sound when fired.
+GUI: Added 'Reload air to ground' menu point.
+Model: Added texture and ubershader to M70 pods.
+
+3.012 - 2015 March 13
+=====
+Model: Replaced droptank switch with a button.
+Model: Fixed buttons was missing a ring, also split them into 3 meshes.
+Sim: Fixed that next selection button, would cause an error.
+Model: Fixed that rocket pods and landing light glare was showing up in FGRun.
+Effect: Rain will now splash on cockpit glass in ALS, and depend on airspeed.
+Effect: Cockpit glass will now be frosted and fogged in ALS depending on glass, outside and cockpit temperature and dew point.
+Sim: Generator now drives the cockpit aircondition.
+Sim: Cockpit temperature and dew point will now align to outside when canopy is open.
+Model: Made double layered glass to get frost/rain/fog effect together with ubershader when seen from outside.
+Sim: Adjusted how the airconditioner work.
+Sim: Adjusted how glass temperature is calculated.
+Sim: Made precipitation visible through the glass again.
+Sim: Fixed that dew point was wrongly used in determining amount of frost.
+Animation: Gear doors are now animated.
+
+3.013 - 2015 March 16
+=====
+Model: Made adjustments on beacon, flash and navigation lights glass materials.
+Effect: Made a tint adjustment on frost, rain and fog effect.
+Model: Made sure the wing mounted rocket pods would not be visible if wings break off.
+Animation: Cleaned up a bit in the gears select animations.
+Animation: Fixed that gear compression on rear gears would translate also the top part, now only the oleo is.
+Sim: Moved front gear back about 30cm.
+Model: Straightened out the front gear strut, it is now vertical.
+Model: Frontgear scissor is now aligned to the new strut position.
+Animation: Front gear compression now uses a proper oleo.
+Aero: Reduced the gain of the pitch damper to avoid small violent oscillations.
+Sim: Added a long description for the catalog.
+Sim: Improved airconditioning and alignment of cockpit temperature to outside.
+Effect: Updated to newest fog/rain/frost effect.
