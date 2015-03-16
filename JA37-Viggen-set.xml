@@ -11,8 +11,8 @@
     <description>Saab JA-37 Viggen</description>
     <author>Anders Lejczak (3D Model and Textures), Nikolai V. Chr. (rest)</author>
     <status>Beta</status>
-
-    <aircraft-version>3.010</aircraft-version>
+    <long-description>The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards.</long-description>
+    <aircraft-version>3.013</aircraft-version>
 
     <rating>
       <FDM type="int">3</FDM>
@@ -21,6 +21,7 @@
       <model type="int">3</model>
     </rating>
 
+    <exclude-from-gui type="bool">false</exclude-from-gui>
     <tags>
         <!--<tag>saab</tag>
         <tag>1-engine</tag>
@@ -595,6 +596,7 @@
      <generic>
       <!-- effects -->
       <int n="0" alias="/sim/ja37/effect/smoke"/><!-- to show smoke -->
+      <int n="7" alias="/damage/sounds/explode-on"/><!-- to show explosion plus its sound -->
       <!-- Animation control surfaces -->
       <int n="1" alias="/fdm/jsbsim/fcs/canopy-hinges/serviceable"/><!-- to show detachment of canopy -->
       <int n="2" alias="/fdm/jsbsim/structural/wings/serviceable"/><!-- to show detachment of wings -->
@@ -893,10 +895,17 @@
         </binding>
        </item>
        <item>
-        <label>Reload all</label>
+        <label>Reload air to air</label>
         <binding>
          <command>nasal</command>
-         <script>ja37.reload();</script>
+         <script>ja37.reloadAir2Air();</script>
+        </binding>
+       </item>
+       <item>
+        <label>Reload air to ground</label>
+        <binding>
+         <command>nasal</command>
+         <script>ja37.reloadAir2Ground();</script>
         </binding>
        </item>
         <item>
@@ -1012,6 +1021,7 @@
         <click-on type="bool">false</click-on>
         <terrain-on type="bool">false</terrain-on>
         <mp-volume type="double">0.4</mp-volume>
+        <breath-volume type="double">0</breath-volume>
       </sound>
       <damage>
         <enabled type="bool">true</enabled>
@@ -1227,6 +1237,17 @@
   <serviceable type="bool">true</serviceable>
 </gear>
 <environment>
+  <aircraft-effects>
+      <splash-vector-x type="float" userarchive="n">0.0</splash-vector-x>
+      <splash-vector-y type="float" userarchive="n">0.1</splash-vector-y>
+      <splash-vector-z type="float" userarchive="n">1.0</splash-vector-z>
+      <frost-level type="float" userarchive="n">0.0</frost-level>
+      <fog-level type="float" userarchive="n">0.0</fog-level>
+      <ground-splash-norm type="float" userarchive="n">0.0</ground-splash-norm>
+      <use-wipers type="int" userarchive="n">0</use-wipers>
+      <use-overlay type="int" userarchive="n">0</use-overlay>
+      <overlay-alpha type="float" userarchive="n">1.0</overlay-alpha>
+  </aircraft-effects>
   <precipitation-control>
     <clip-distance type="double">1.75</clip-distance>
   </precipitation-control>
@@ -1274,6 +1295,7 @@
         <selected>none</selected>
         <opt><name>none</name><lbs>0</lbs></opt>
         <opt><name>RB 24J</name><lbs>188</lbs></opt>
+        <opt><name>M70</name><lbs>200</lbs></opt>
   </weight>
   <weight n="1">
         <name>Left fuselage pylon</name>
@@ -1281,6 +1303,7 @@
         <selected>none</selected>
         <opt><name>none</name><lbs>0</lbs></opt>
         <opt><name>RB 24J</name><lbs>188</lbs></opt>
+        <opt><name>M70</name><lbs>200</lbs></opt>
   </weight>
   <weight n="2">
         <name>Right wing pylon</name>
@@ -1288,6 +1311,7 @@
         <selected>none</selected>
         <opt><name>none</name><lbs>0</lbs></opt>
         <opt><name>RB 24J</name><lbs>188</lbs></opt>
+        <opt><name>M70</name><lbs>200</lbs></opt>
   </weight>
   <weight n="3">
         <name>Right fuselage pylon</name>
@@ -1295,6 +1319,7 @@
         <selected>none</selected>
         <opt><name>none</name><lbs>0</lbs></opt>
         <opt><name>RB 24J</name><lbs>188</lbs></opt>
+        <opt><name>M70</name><lbs>200</lbs></opt>
   </weight>
   <weight n="4">
         <name>Center fuselage pylon</name>

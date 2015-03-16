@@ -17,6 +17,7 @@ Model: Make minimal polygon model for multiplayer LOD.
 Model: Gauges that share mount design should also share geometry and textures.
 Model: Make liveries that is not 59, able to not have to use base texture.
 Model: Make HUD model not be square anymore. Also model support beams on each side.
+Model: Make drop-tank switch into button.
 Sim: Improve autopilot further. (alt-hold should use pitch not v-speed)
 Sim: Make autopilot depend fully on instrument properties not sim properties.
 Sim: Implement ejection seat. (with parachute?)
@@ -25,30 +26,29 @@ Sim: Reset controls after A/P let go of them.
 Sim: Stop using integers in xml where floating point is expected.
 Sim: Check that all instruments and instr. lights rely on battery/generator power. Plus on instrument properties, not sim properties.
 Sim: Make verbose property to be used in all nasal scripts. (possible include in options)
-Sim: Air to ground missiles.
+Sim: Air to ground guided missiles.
 Sim: Longer range air2air missiles.
-Sim: Unguided missiles with terrain collision detection. (submodels with ext. force)
 Sim: Make users of FG HUD able to use tactical features.
 Sim: Make replay show the guided missiles flying.
 Sim: Improve terrain warning system.
 Sim: Hydralic pump depend on electric instead of rpm
-Sim: Replace generic getValue and setValue in nasal with specific types.
+Sim: Replace generic setValue in nasal with specific types.
 Sim: Make droptank do collision detection. (use retractable)
 Sim: Make drop-tank fall down. (use slaved submodel)
+Sim: Battery drain.
+Sim: Make lights control separated. Instr., beacon, flash, landing, navigation.
 Effect: Rembrandt landing lightcone.
 Effect: Check contrail effect is properly installed.
 Effect: Make pilot faint/die due to G-forces.
 Effect: Make tires burst if too high speed with parking brakes.
 Effect: Smoke after structural break.
 Effect: Adjust normalmap to be more subtle.
-Effect: Show aircraft explosion in MP also.
 Animation: Show wheels spinning in MP also.
 Sound: More annunciater warnings and other sounds.
 Sound: Make sounds when taking damage in bombable.
 HUD: Make individual parts in HUD fail if the corresponding instrument fails. (like heading indicator etc.)
 HUD: Make boxes for desired pitch.
 HUD: Alt scale follow pitch lines at more than 1 degree roll from level flight. (swedish pilots seems able to read upside down, not sure I will make this)
-HUD: Use instrument properties instead of simulation properties.
 HUD: Make too low reference speed change reticle vertical tail down.
 HUD: All track semi circles and semi box should have a line in them. (might degrade performance)
 HUD: Adjust pilots eyes so that HUD is viewed as in the real (angle and distance). Also key to zoom in on HUD.
@@ -80,6 +80,10 @@ Model: Sim lag at final retraction of gear. [reproduced]
 Model: CTRL-X in HUD view will not zoom to correct level.
 Animation: Selection view does not follow carriers. (they lack radar properties)
 Model: In FG 2.12 radar screen does not work as it should. (no canvas replacement)
+Sim: Sometimes when exploding, the sim freezes, typically at redout.
+Sim: {JazzTP} Replay did not replay explosion.
+Sim: Cannot use weapons in external view without first activating them in internal view.
+Sound: Could hear aim-9 buzz even though not in tact mode, in external view.
 
 Issues with FG: (or my limited understanding of it)
 ---------------

@@ -1,15 +1,12 @@
 <PropertyList>
 
+
 <particlesystem>
-   <name>smoke</name>
-   <texture>smoke.png</texture>
+   <name>rocket-explosion</name>
+   <texture>../RB-24J/smoke.png</texture>
 
-   <emissive type="bool">false</emissive>
-   <lighting type="bool">true</lighting>
-
-   <condition>
-         <property>sim/ja37/armament/rb24/flags/smoke-id-1</property>
-   </condition>
+   <emissive type="bool">true</emissive>
+   <lighting type="bool">false</lighting>
 
    <attach>world</attach>
 
@@ -17,20 +14,14 @@
      <type>point</type> 
    </placer>
 
-   <offsets>
-      <x-m>7</x-m>
-      <y-m>0</y-m>
-      <z-m>0</z-m>
-   </offsets>
-
    <shooter>
-     <theta-min-deg>-1.5</theta-min-deg>
-     <theta-max-deg>1.5</theta-max-deg>
-     <phi-min-deg>-1.5</phi-min-deg>
-     <phi-max-deg>1.5</phi-max-deg>
+     <theta-min-deg>-180</theta-min-deg>
+     <theta-max-deg>180</theta-max-deg>
+     <phi-min-deg>-180</phi-min-deg>
+     <phi-max-deg>180</phi-max-deg>
      <speed-mps>
-       <value>0</value>
-       <spread>0</spread>
+       <value>500</value>
+       <spread>80</spread>
      </speed-mps>
      <rotation-speed>
        <x-min-deg-sec>0</x-min-deg-sec>
@@ -44,8 +35,8 @@
 
    <counter>
      <particles-per-sec>
-       <value>300</value>
-       <spread>0</spread>
+       <value>30</value>
+       <spread>10</spread>
      </particles-per-sec>
    </counter>
       
@@ -56,31 +47,31 @@
        <color>
          <red><value>   1.0 </value></red>
          <green><value> 1.0 </value></green>
-         <blue><value>  0.9 </value></blue>
-         <alpha><value> 0.5 </value></alpha>
+         <blue><value>  0.4 </value></blue>
+         <alpha><value> 1 </value></alpha>
        </color>
        <size>
-         <value>1.0</value>
+         <value>1</value>
        </size>
      </start>
 
      <end>
        <color>
-         <red><value>   0.9 </value></red>
-         <green><value> 0.9 </value></green>
-         <blue><value>  0.9 </value></blue>
+         <red><value>   0.8 </value></red>
+         <green><value> 0.5 </value></green>
+         <blue><value>  0.2 </value></blue>
          <alpha><value> 0.1 </value></alpha>
        </color>
        <size>
-         <value>6</value>
+         <value>15</value>
        </size>
      </end>
 
      <life-sec>
-       <value>4</value>
+       <value>0.5</value>
      </life-sec>
         
-     <mass-kg>  0.5 </mass-kg>
+     <mass-kg>  5 </mass-kg>
      <radius-m> 0.5 </radius-m>
    </particle>
 
@@ -93,15 +84,11 @@
  </particlesystem>
 
 <particlesystem>
-   <name>exhaust</name>
-   <texture>smoke.png</texture>
+   <name>rocket-explosion-smoke</name>
+   <texture>../RB-24J/smoke.png</texture>
 
-   <emissive type="bool">true</emissive>
+   <emissive type="bool">false</emissive>
    <lighting type="bool">false</lighting>
-
-   <condition>
-         <property>sim/ja37/armament/rb24/flags/smoke-id-1</property>
-   </condition>
 
    <attach>world</attach>
 
@@ -109,20 +96,14 @@
      <type>point</type> 
    </placer>
 
-   <offsets>
-      <x-m>1.0</x-m>
-      <y-m>0</y-m>
-      <z-m>0</z-m>
-   </offsets>
-
    <shooter>
-     <theta-min-deg>-1.5</theta-min-deg>
-     <theta-max-deg>1.5</theta-max-deg>
-     <phi-min-deg>-1.5</phi-min-deg>
-     <phi-max-deg>1.5</phi-max-deg>
+     <theta-min-deg>-180</theta-min-deg>
+     <theta-max-deg>180</theta-max-deg>
+     <phi-min-deg>-180</phi-min-deg>
+     <phi-max-deg>180</phi-max-deg>
      <speed-mps>
-       <value>0</value>
-       <spread>0</spread>
+       <value>500</value>
+       <spread>60</spread>
      </speed-mps>
      <rotation-speed>
        <x-min-deg-sec>0</x-min-deg-sec>
@@ -136,8 +117,8 @@
 
    <counter>
      <particles-per-sec>
-       <value>300</value>
-       <spread>0</spread>
+       <value>50</value>
+       <spread>10</spread>
      </particles-per-sec>
    </counter>
       
@@ -146,33 +127,33 @@
    <particle>
      <start>
        <color>
-         <red><value>   1.0 </value></red>
-         <green><value> 0.7 </value></green>
-         <blue><value>  0.2 </value></blue>
-         <alpha><value> 0.7 </value></alpha>
+         <red><value>   0.3 </value></red>
+         <green><value> 0.3 </value></green>
+         <blue><value>  0.25 </value></blue>
+         <alpha><value> 0.5 </value></alpha>
        </color>
        <size>
-         <value>1.0</value>
+         <value>5</value>
        </size>
      </start>
 
      <end>
        <color>
-         <red><value>   0.9 </value></red>
-         <green><value> 0.6 </value></green>
-         <blue><value>  0.2 </value></blue>
-         <alpha><value> 0.1 </value></alpha>
+         <red><value>   0.4 </value></red>
+         <green><value> 0.4 </value></green>
+         <blue><value>  0.4 </value></blue>
+         <alpha><value> 0.04 </value></alpha>
        </color>
        <size>
-         <value>1.5</value>
+         <value>30</value>
        </size>
      </end>
 
      <life-sec>
-       <value>0.15</value>
+       <value>40</value>
      </life-sec>
         
-     <mass-kg>  0.5 </mass-kg>
+     <mass-kg>  5 </mass-kg>
      <radius-m> 0.5 </radius-m>
    </particle>
 
@@ -183,5 +164,6 @@
    </program>
 
  </particlesystem>
+
 
 </PropertyList>

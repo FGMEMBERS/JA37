@@ -1,4 +1,5 @@
 # $Id$
+var clamp = func(v, min, max) { v < min ? min : v > max ? max : v }
 
 var UPDATE_PERIOD = 0.1;
 
@@ -98,6 +99,7 @@ input = {
   MPfloat2:         "sim/multiplay/generic/float[2]", 
   subAmmo2:         "ai/submodels/submodel[2]/count", 
   subAmmo3:         "ai/submodels/submodel[3]/count", 
+  breathVol:        "sim/ja37/sound/breath-volume",
 };
    
 var update_loop = func {
@@ -252,16 +254,18 @@ var update_loop = func {
         setprop("controls/armament/station["~(i+1)~"]/released", FALSE);
         #print("adding "~i);
         if(i != 4) {
-          #is not drop tank
-          if(armament.AIM9.new(i) == -1 and armament.AIM9.active[i].status == MISSILE_FLYING) {
-            #missile added through menu while another from that pylon is still flying.
-            #to handle this we have to ignore that addition.
-            setprop("controls/armament/station["~(i+1)~"]/released", TRUE);
-            setprop("payload/weight["~ (i) ~"]/selected", "none");
-            #print("refusing to mount new missile yet "~i);
+          if (getprop("payload/weight["~ (i) ~"]/selected") == "RB 24J") {
+            #is not center pylon and is RB24
+            if(armament.AIM9.new(i) == -1 and armament.AIM9.active[i].status == MISSILE_FLYING) {
+              #missile added through menu while another from that pylon is still flying.
+              #to handle this we have to ignore that addition.
+              setprop("controls/armament/station["~(i+1)~"]/released", TRUE);
+              setprop("payload/weight["~ (i) ~"]/selected", "none");
+              #print("refusing to mount new missile yet "~i);
+            }
+          } elsif (getprop("payload/weight["~ (i) ~"]/selected") == "M70") {
+              setprop("ai/submodels/submodel["~(5+i)~"]/count", 6);
           }
-          #print("new "~(i-1));
-
         }
       }
       #if(i!=0 and getprop("payload/weight["~ (i-1) ~"]/selected") == "none" and getprop("payload/weight["~ (i-1) ~"]/weight-lb") != 0) {
@@ -313,6 +317,11 @@ var update_loop = func {
         # the pylon has a sidewinder, give it a pointmass
         if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 188) {
           setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 188);
+        }
+      } elsif (selected == "M70") {
+        # the pylon has a sidewinder, give it a pointmass
+        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 200) {
+          setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 200);
         }
       } elsif (selected == "Drop tank") {
         # the pylon has a drop tank, give it a pointmass
@@ -437,6 +446,9 @@ var update_loop = func {
       input.subAmmo2.setValue(0);
     }
 
+    # breath sound volume
+    input.breathVol.setValue(input.viewInternal.getValue() and input.fullInit.getValue());
+
 
     settimer(
       #func debug.benchmark("j37 loop", 
@@ -500,6 +512,70 @@ var slow_loop = func () {
   } else {
     TILSprev = FALSE;
   }
+
+  #frost and rain
+  var airspeed = getprop("/velocities/airspeed-kt");
+  # ja37
+  #var airspeed_max = 250; 
+  var airspeed_max = 120;
+  if (airspeed > airspeed_max) {airspeed = airspeed_max;}
+  airspeed = math.sqrt(airspeed/airspeed_max);
+  # f-16
+  var splash_x = -0.1 - 2.0 * airspeed;
+  var splash_y = 0.0;
+  var splash_z = 1.0 - 1.35 * airspeed;
+  setprop("/environment/aircraft-effects/splash-vector-x", splash_x);
+  setprop("/environment/aircraft-effects/splash-vector-y", splash_y);
+  setprop("/environment/aircraft-effects/splash-vector-z", splash_z);
+
+  var tempOutside = getprop("environment/temperature-degc");
+  var tempInside = getprop("environment/temperature-inside-degc");
+  var tempOutsideDew = getprop("environment/dewpoint-degc");
+  var tempAC = 20;#aircondition temp
+  var tempACDew = 5;#aircondition dew point. 5 = dry
+
+  # calc inside temp
+  if (getprop("canopy/position-norm") > 0) {
+    tempInside = tempOutside;
+  } elsif(getprop("systems/electrical/generator_on") == 1) {
+    if (tempInside < tempAC) {
+      tempInside = clamp(tempInside+0.5, -1000, tempAC);
+    } elsif (tempInside > tempAC) {
+      tempInside = clamp(tempInside-0.5, tempAC, 1000);
+    }
+  } else {
+    if (tempInside < tempOutside) {
+      tempInside = clamp(tempInside+1, -1000, tempOutside);
+    } elsif (tempInside > tempOutside) {
+      tempInside = clamp(tempInside-1, tempOutside, 1000);
+    }
+  }
+  
+  # calc temp of glass itself
+  var tempIndex = 0.70; # 0.80 = good window   0.45 = bad window
+  var tempGlass = tempIndex*(tempInside - tempOutside)+tempOutside;
+  
+  # calculate dew point for inside air. When full airconditioning is achieved at tempAC dewpoint will be tempACdew.
+  # slope = (outsideDew - desiredInsideDew)/(outside-desiredInside)
+  # insideDew = slope*(inside-desiredInside)+desiredInsideDew
+
+  var slope = (tempOutsideDew - tempACDew)/(tempOutside-tempAC);
+  var tempInsideDew = slope*(tempInside-tempAC)+tempACDew;
+
+  # calc fogging outside and inside on glass
+  var fogNormOutside = clamp((tempOutsideDew-tempGlass)*0.05, 0, 1);
+  var fogNormInside = clamp((tempInsideDew-tempGlass)*0.05, 0, 1);
+
+  var fogNorm = fogNormOutside>fogNormInside?fogNormOutside:fogNormInside;
+  var frostNorm = clamp((tempGlass-0)*-0.05, 0, 1);# will freeze below 0
+
+  setprop("/environment/aircraft-effects/fog-inside", fogNormInside);
+  setprop("/environment/aircraft-effects/fog-outside", fogNormOutside);
+  setprop("/environment/aircraft-effects/temperature-glass-degc", tempGlass);
+
+  setprop("environment/temperature-inside-degc", tempInside);
+  setprop("/environment/aircraft-effects/frost-level", frostNorm);
+  setprop("/environment/aircraft-effects/fog-level", fogNorm);
 
   settimer(slow_loop, 1.5);
 }
@@ -568,6 +644,10 @@ var trigger_listener = func {
     #if masterarm is on and HUD in tactical mode, propagate trigger to station
     if(input.combat.getValue() == 2) {
       setprop("/controls/armament/station["~armSelect~"]/trigger", trigger);
+      var str = "payload/weight["~(armSelect-1)~"]/selected";
+      if (armSelect != 0 and getprop(str) == "M70") {
+        setprop("/controls/armament/station["~armSelect~"]/trigger-m70", trigger);
+      }
     } else {
       setprop("/controls/armament/station["~armSelect~"]/trigger", FALSE);
     }
@@ -754,6 +834,9 @@ var main_init = func {
   }
 
   screen.log.write("Welcome to Saab JA-37 Viggen, version "~getprop("sim/aircraft-version"), 1.0, 0.2, 0.2);
+
+  # init cockpit temperature
+  setprop("environment/temperature-inside-degc", getprop("environment/temperature-degc"));
 
   # start minor loops
   speed_loop();
@@ -1115,7 +1198,7 @@ var cycleSmoke = func() {
     }
 }
 
-reload = func {
+reloadAir2Air = func {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "RB 24J");
   setprop("payload/weight[1]/selected", "RB 24J");
@@ -1124,9 +1207,33 @@ reload = func {
   screen.log.write("RB 24J missiles attached", 0.0, 1.0, 0.0);
 
   # Reload flares - 40 of them.
-  setprop("ai/submodels/submodel[0]/count", 40);
-  setprop("ai/submodels/submodel[1]/count", 40);
-  screen.log.write("40 flares loaded", 0.0, 1.0, 0.0);
+  setprop("ai/submodels/submodel[0]/count", 60);
+  setprop("ai/submodels/submodel[1]/count", 60);
+  screen.log.write("60 flares loaded", 0.0, 1.0, 0.0);
+
+  # Reload cannon - 146 of them.
+  #setprop("ai/submodels/submodel[2]/count", 29);
+  setprop("ai/submodels/submodel[3]/count", 146);
+  setprop("ai/submodels/submodel[4]/count", 146);
+  screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);
+}
+
+reloadAir2Ground = func {
+  # Reload missiles - 4 of them.
+  setprop("payload/weight[0]/selected", "M70");
+  setprop("payload/weight[1]/selected", "M70");
+  setprop("payload/weight[2]/selected", "M70");
+  setprop("payload/weight[3]/selected", "M70");
+  setprop("ai/submodels/submodel[5]/count", 6);
+  setprop("ai/submodels/submodel[6]/count", 6);
+  setprop("ai/submodels/submodel[7]/count", 6);
+  setprop("ai/submodels/submodel[8]/count", 6);
+  screen.log.write("Bofors M70 rocket pods attached", 0.0, 1.0, 0.0);
+
+  # Reload flares - 40 of them.
+  setprop("ai/submodels/submodel[0]/count", 60);
+  setprop("ai/submodels/submodel[1]/count", 60);
+  screen.log.write("60 flares loaded", 0.0, 1.0, 0.0);
 
   # Reload cannon - 146 of them.
   #setprop("ai/submodels/submodel[2]/count", 29);
