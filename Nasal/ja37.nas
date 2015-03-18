@@ -413,7 +413,12 @@ var update_loop = func {
       if (input.warnButton.getValue() == TRUE) {
         # test, should really be turn off sound
         input.warn.setValue(TRUE);
-      } elsif (input.engineRunning.getValue() == FALSE and autostarting == FALSE and input.wow0.getValue() == FALSE) {
+      } elsif (input.wow0.getValue() == FALSE and (
+        (input.engineRunning.getValue() == FALSE and autostarting == FALSE)
+        or (getprop("canopy/position-norm") > 0)
+        or (input.generatorOn.getValue() == FALSE)
+        or (getprop("fdm/jsbsim/systems/hydraulics/flight-system/pressure") != 1)
+        )) {
         # Major warning
         if(input.hz10.getValue() == TRUE) {
           input.warn.setValue(TRUE);
@@ -610,7 +615,6 @@ var speed_loop = func () {
   }
 
   ## control augmented thrust ##
-   
   var n1 = input.n1.getValue();
   var n2 = input.n2.getValue();
   var reversed = input.reversed.getValue();
@@ -1105,6 +1109,17 @@ var togglePitchDamper = func {
     popupTip("Pitch damper: ON");
   } else {
     popupTip("Pitch damper: OFF");
+  }
+}
+
+var toggleRollDamper = func {
+  ja37.click();
+  var enabled = getprop("fdm/jsbsim/fcs/roll-limiter/enable");
+  setprop("fdm/jsbsim/fcs/roll-limiter/enable", !enabled);
+  if(enabled == FALSE) {
+    popupTip("Roll damper: ON");
+  } else {
+    popupTip("Roll damper: OFF");
   }
 }
 
