@@ -12,7 +12,7 @@
     <author>Anders Lejczak (3D Model and Textures), Nikolai V. Chr. (rest)</author>
     <status>Beta</status>
     <long-description>The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards.</long-description>
-    <aircraft-version>3.014</aircraft-version>
+    <aircraft-version>3.016</aircraft-version>
 
     <rating>
       <FDM type="int">3</FDM>
@@ -177,7 +177,7 @@
         </signal>
         <signal>
           <type>bool</type>
-          <property type="string">fdm/jsbsim/fcs/canopy-hinges/serviceable</property>
+          <property type="string">fdm/jsbsim/fcs/canopy/hinges/serviceable</property>
         </signal>
         <!-- Instruments -->
         <signal>
@@ -235,10 +235,10 @@
           <type>bool</type>
           <property type="string">systems/electrical/lights-ext</property>
         </signal>
-        <signal>
+        <!--<signal> this is continuosly running so recording it will make double blinks
           <type>bool</type>
           <property type="string">sim/model/lighting/strobe/state</property>
-        </signal>
+        </signal>-->
         <signal>
           <type>float</type>
           <property type="string">sim/model/lighting/beacon/state-rotary</property>
@@ -412,7 +412,7 @@
      <config>
        <pitch-offset-deg type="double">-20</pitch-offset-deg>
        <x-offset-m type="double">0</x-offset-m>
-       <y-offset-m type="double">0.70</y-offset-m>
+       <y-offset-m type="double">0.70</y-offset-m><!-- remember to change eyepoint in JSB when changing this -->
        <z-offset-m type="double">-3.40</z-offset-m>
        <default-field-of-view-deg type="double">100</default-field-of-view-deg>
      </config>
@@ -598,7 +598,7 @@
       <int n="0" alias="/sim/ja37/effect/smoke"/><!-- to show smoke -->
       <int n="7" alias="/damage/sounds/explode-on"/><!-- to show explosion plus its sound -->
       <!-- Animation control surfaces -->
-      <int n="1" alias="/fdm/jsbsim/fcs/canopy-hinges/serviceable"/><!-- to show detachment of canopy -->
+      <int n="1" alias="/fdm/jsbsim/fcs/canopy/hinges/serviceable"/><!-- to show detachment of canopy -->
       <int n="2" alias="/fdm/jsbsim/structural/wings/serviceable"/><!-- to show detachment of wings -->
       <!-- Animating engine -->
       <!-- float n="2" is controlled from nasal -->
@@ -815,6 +815,8 @@
       Deploying gear above 30 meters at high and medium speeds will produce a powerful pitch up moment.
       The Swedish Airforce forbids flying in superstall regime, so make sure the control tower do not catch you doing that. :)
       Beware trying to land if the gears are damaged.
+      If you try to extend the gears at high speed they won't extend till you get into lower speeds. The limit is 0.65M or 620Km/h (335KTS).
+      The gears will not retract on the runway.
 
       Automatic Thrust reversing
       __________________________
@@ -1067,6 +1069,9 @@
       <heading-deg>0</heading-deg>
       <no-catapult-definition type="bool">true</no-catapult-definition>
     </carrier>
+    <time>
+      <full-init type="bool">false</full-init>
+    </time>
   </sim>
 
  <fdm>
@@ -1078,42 +1083,51 @@
     </structural>
     <fcs>
       <canopy>
-        <engage/>
+        <engage type="bool"/>
         <has-power/>
         <serviceable type="bool">true</serviceable>
+        <hinges>
+          <serviceable type="bool">true</serviceable>
+        </hinges>
       </canopy>
-      <canopy-hinges>
-        <serviceable type="bool">true</serviceable>
-      </canopy-hinges>
       <yaw-damper>
         <serviceable type="bool">true</serviceable>
         <enable type="bool">true</enable>
+        <yaw-rate-gain type="double">3</yaw-rate-gain>
+        <roll-rate-gain type="double">0.125</roll-rate-gain>
+        <lateral-acc-gain type="double">-0.05</lateral-acc-gain>
+        <washout-factor type="double">1.0</washout-factor>
       </yaw-damper>
       <pitch-damper>
         <serviceable type="bool">true</serviceable>
-        <enable type="bool">false</enable>
+        <enable type="bool">true</enable>
+        <pitch-rate-gain type="double">2</pitch-rate-gain>
+        <washout-factor type="double">1.33</washout-factor>
       </pitch-damper>
       <roll-limiter>
         <serviceable type="bool">true</serviceable>
-        <enable type="bool">false</enable>
-        <gain type="double">0.1</gain>
+        <enable type="bool">true</enable>
+        <washout-factor type="double">1.0</washout-factor>
+        <roll-rate-gain type="double">0.10</roll-rate-gain>
       </roll-limiter>
       <rudder>
         <limiter-enable type="bool">true</limiter-enable>
+        <serviceable alias="/sim/failure-manager/controls/flight/rudder/serviceable"/>
       </rudder>
       <aileron>
         <limiter-enable type="bool">true</limiter-enable>
+        <limit-factor type="double">1.0</limit-factor>
+        <serviceable alias="/sim/failure-manager/controls/flight/aileron/serviceable"/>
       </aileron>
       <elevator>
         <limiter-enable type="bool">true</limiter-enable>
+        <serviceable alias="/sim/failure-manager/controls/flight/elevator/serviceable"/>
       </elevator>
-      <flap-pos-cmd type="double"/>
-      <flaps-serviceable alias="/sim/failure-manager/controls/flight/flaps/serviceable"/>
-      <elevator-serviceable alias="/sim/failure-manager/controls/flight/elevator/serviceable"/>
-      <aileron-serviceable alias="/sim/failure-manager/controls/flight/aileron/serviceable"/>
-      <rudder-serviceable alias="/sim/failure-manager/controls/flight/rudder/serviceable"/>
+      <flaps>
+        <pos-cmd type="double"/>
+        <serviceable alias="/sim/failure-manager/controls/flight/flaps/serviceable"/>
+      </flaps>
       <mouse-optimized type="bool">false</mouse-optimized>
-      <hook-engage/>
     </fcs>
     <gear>
       <serviceable alias="/gear/serviceable"/>
@@ -1660,8 +1674,8 @@
      </binding>
     </mod-shift>
    </key>-->
-   <!--<key n="127">
-    <name>Shift-Delete</name>
+   <key n="8">
+    <name>Shift-Backspace</name>
     <mod-shift>
      <desc>Reload autopilot configuration (for debugging AP)</desc>
      <binding>
@@ -1673,7 +1687,7 @@
       </script>
      </binding>
     </mod-shift>
-   </key>-->
+   </key>
     <key n="127">
      <name>Delete</name>
      <desc>Yaw damper on/off</desc>
