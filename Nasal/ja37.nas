@@ -49,7 +49,7 @@ input = {
   gearCmdNorm:      "/fdm/jsbsim/gear/gear-cmd-norm",
   gearsPos:         "gear/gear/position-norm",
   batteryOutput:    "systems/electrical/outputs/battery",
-  flapPosCmd:       "/fdm/jsbsim/fcs/flap-pos-cmd",
+  flapPosCmd:       "/fdm/jsbsim/fcs/flaps/pos-cmd",
   serviceElec:      "systems/electrical/serviceable",
   canopyPower:      "/fdm/jsbsim/fcs/canopy/has-power",
   vgFps:            "/fdm/jsbsim/velocities/vg-fps",
@@ -103,6 +103,14 @@ input = {
 };
    
 var update_loop = func {
+
+  # Stuff that will run even in replay:
+
+  # breath sound volume
+  input.breathVol.setValue(input.viewInternal.getValue() and input.fullInit.getValue());
+
+  # End stuff
+
   if(input.replay.getValue() == TRUE) {
     # replay is active, skip rest of loop.
     settimer(update_loop, UPDATE_PERIOD);
@@ -450,10 +458,6 @@ var update_loop = func {
     } else {
       input.subAmmo2.setValue(0);
     }
-
-    # breath sound volume
-    input.breathVol.setValue(input.viewInternal.getValue() and input.fullInit.getValue());
-
 
     settimer(
       #func debug.benchmark("j37 loop", 
