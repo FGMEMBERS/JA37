@@ -1351,7 +1351,7 @@ Aero: Roll damper is now enabled by default.
 
 3.016 - 2015 March 23
 =====
-Aero: Major fix in roll due to sideslip rate coefficient.
+Aero: Major fix in pitch due to alpha rate coefficient.
 Aero: Pitch damper now enabled per default and tuned to the fixed Clbdot.
 Aero: Roll damper is again disabled by default.
 Aero: Roll due to yaw rate is now enabled in all regimes.
@@ -1373,3 +1373,33 @@ Aero: Cleaned up a bit in the control code.
 Aero: Cleaned up a bit in some aerodynamic tables.
 Aero: Yaw damper now also take roll rate as input to prevent aileron gas, as per manual.
 Aero: Adjusted rudder limiter to deflect more rudder at mach 1+.
+
+3.017 - 2015 March 24
+=====
+Aero: Removed washout filter on roll damper and installed a switch on roll rate gain instead.
+Aero: Tuned the aileron limiter to the new roll damper setup.
+Sim: Semi tuned autopilot to new roll damper. Needs more work though, it has tendency to do barrel rolls.
+
+3.018 - 2015 March 30
+=====
+Model: Made radar slightly bigger and significantly more flat.
+Model: Increased size of center plaque with Swedish writing.
+Model: Made coarse and fine adjustment of radar range 10 times larger.
+Model: Made radar range selector larger, and made the tooltip show nautical miles.
+Model: Made tooltip on all altimeters show feet instead of meters.
+HUD: When the selection is outside HUD view but in radar cone, polar coordinates are now used to determine blinking border position.
+Sim: Fixed that in FG 3.5 if canopy motor failed the canopy would close instead of being stuck.
+Sim: Fixed if canopy or gears fail due to high speed and is repaired, they won't fail again. (in 3.5 crash system)
+Animation: Fixed that airspeed indicator was a little bit off at times.
+Effect: Added uber shader to cockpit panel.
+Sim: Minor autopilot tuning.
+Aero: Enabled yaw-damper also when weight on wheels, as per the manual.
+Aero: Accuracy improvements to pitch moment due to alpha at small and medium alpha values.
+Aero: Used a graph analyser to improve accuracy of pitch due to Air intake factor.
+Aero: Resampled and restructured all normal forces.
+Aero: Normal force due to groundeffect from elevator is now seperate coefficient.
+Aero: Normal force due to groundeffect is now seperate coefficient.
+Aero: Normal force due to flaps and gear is now seperate coefficient.
+GUI: Made landing monitor not start measure landing distance before touchdown.
+GUI: Removed reinit from menu and put it into the landing monitor.
+Aero: Used a graph analyser to improve accuracy of normal force due to flaps and gear.
