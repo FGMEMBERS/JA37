@@ -12,7 +12,7 @@
     <author>Anders Lejczak (3D Model and Textures), Nikolai V. Chr. (rest)</author>
     <status>Beta</status>
     <long-description>The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards.</long-description>
-    <aircraft-version>3.016</aircraft-version>
+    <aircraft-version>3.018</aircraft-version>
 
     <rating>
       <FDM type="int">3</FDM>
@@ -915,7 +915,7 @@
         </binding>
        </item>
         <item>
-          <label>Monitor Start</label>
+          <label>Monitor</label>
           <binding>
            <command>nasal</command>
            <script>
@@ -924,23 +924,13 @@
           </binding>
         </item>
         <item>
-          <label>Monitor Re-initialize</label>
+          <label>Options</label>
           <binding>
            <command>nasal</command>
            <script>
-              monitor.PerformanceMonitor.instance().reinit();
+            ja37.Dialog.show();
            </script>
           </binding>
-        </item>    
-       
-       <item>
-        <label>Options</label>
-        <binding>
-         <command>nasal</command>
-         <script>
-          ja37.Dialog.show();
-         </script>
-        </binding>
        </item>
       </menu>
      </default>
@@ -1089,6 +1079,7 @@
         <hinges>
           <serviceable type="bool">true</serviceable>
         </hinges>
+        <pos-norm type="double">1.0</pos-norm>
       </canopy>
       <yaw-damper>
         <serviceable type="bool">true</serviceable>
@@ -1107,7 +1098,7 @@
       <roll-limiter>
         <serviceable type="bool">true</serviceable>
         <enable type="bool">true</enable>
-        <washout-factor type="double">1.0</washout-factor>
+        <!--<washout-factor type="double">1.0</washout-factor>-->
         <roll-rate-gain type="double">0.10</roll-rate-gain>
       </roll-limiter>
       <rudder>
@@ -1891,9 +1882,9 @@
     <limits>
       <file>Aircraft/Generic/limits.nas</file>
     </limits>
-    <failure-mgr>
+    <failureSys>
       <file>Aircraft/JA37/Nasal/ja37-failures.nas</file>
-    </failure-mgr>
+    </failureSys>
     <crash0>
       <file>Aircraft/JA37/Nasal/crash.nas</file>
     </crash0>
