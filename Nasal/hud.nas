@@ -38,18 +38,24 @@ var modeTimeTakeoff = -1;
 var countQFE = 0;
 var QFEcalibrated = FALSE;# if the altimeters are calibrated
 
-var HUDTop = 0.77; # position of top of HUD in meters. 0.18 + 0.59 = 0.77
-# HUD z is 0 to 0.18 and raised 0.59 up. Finally is 0.59m to 0.77m, height of HUD is 0.18m
-# Therefore each pixel is 0.18 / 1024 = 0.00017578125m or each meter is 5688.8888888888888888888888888889 pixels.
-var pixelPerMeter = 5688.9;
-var centerOffset = -113.78;#pilot eye position up from vertical center of HUD. (in line from pilots eyes)
-# View is 0.70m so 0.77-0.70 = 0.07m down from top of HUD, since Y in HUD increases downwards we get pixels from top:
-# 512 - (0.07 / 0.00017578125) = 113.77777777777777777777777777778 pixels up from center. Since -y is upward, result is -113.78. (Per default)
+var HUDTop = 0.77; # position of top of HUD in meters. 0.77
+var HUDBottom = 0.63; # position of bottom of HUD in meters. 0.63
+var HUDHoriz = -4.0; # position of HUD on x axis in meters. -4.0
+var HUDHeight = HUDTop - HUDBottom; # height of HUD
+var canvasWidth = 1024;
+# HUD z is 0.63 - 0.77. Height of HUD is 0.14m
+# Therefore each pixel is 0.14 / 1024 = 0.00013671875m or each meter is 7314.2857142857142857142857142857 pixels.
+var pixelPerMeter = canvasWidth / HUDHeight;
+var centerOffset = -1 * (canvasWidth/2 - ((HUDTop - getprop("sim/view[0]/config/y-offset-m"))*pixelPerMeter));#pilot eye position up from vertical center of HUD. (in line from pilots eyes)
+# View is 0.71m so 0.77-0.71 = 0.06m down from top of HUD, since Y in HUD increases downwards we get pixels from top:
+# 512 - (0.06 / 0.00013671875) = 73.142857142857142857142857142857 pixels up from center. Since -y is upward, result is -73.1. (Per default)
 
-var pixelPerDegreeY = 51; #vertical axis, view is tilted 10 degrees, zoom in when on runway to check it hit the 10deg line
+
+#vertical axis, view is tilted 10 degrees, zoom in when on runway to check it hit the 10deg line. Remember gear compressing will alter it.
+var pixelPerDegreeY = pixelPerMeter*(((getprop("sim/view[0]/config/z-offset-m") - HUDHoriz) * math.tan(7.5*deg2rads))/7.5); 
 var pixelPerDegreeX = pixelPerDegreeY; #horizontal axis
 #var slant = 35; #degrees the HUD is slanted away from the pilot.
-var sidewindPosition = centerOffset+(2*pixelPerDegreeY); #should be 2 degrees under horizon.
+var sidewindPosition = centerOffset+(3*pixelPerDegreeY); #should be 2 degrees under horizon.
 var sidewindPerKnot = 450/30; # Max sidewind displayed is set at 30 kts. 450pixels is maximum is can move to the side.
 var radPointerProxim = 60; #when alt indicater is too close to radar ground indicator, hide indicator
 var scalePlace = 200; #horizontal placement of alt scales
@@ -60,6 +66,12 @@ var headScaleTickSpacing = 65;# horizontal spacing between ticks. Remember to ad
 var altimeterScaleHeight = 225; # the height of the low alt scale. Also used in the other scales as a reference height.
 var reticle_factor = 1.3;# size of flight path indicator, aiming reticle, and out of ammo reticle
 var sidewind_factor = 1.0;# size of sidewind indicator
+var airspeedPlace = 420;
+var airspeedPlaceFinal = -100;
+var sideslipPlaceX = 325;
+var sideslipPlaceY = 425;
+var sideslipPlaceXFinal = 0;
+var sideslipPlaceYFinal = 0;
 var r = 0.0;#HUD colors
 var g = 1.0;
 var b = 0.0;
@@ -77,8 +89,8 @@ var diamond_node = nil;
 var HUDnasal = {
   canvas_settings: {
     "name": "HUDnasal",
-    "size": [1024, 1024],# size of the texture
-    "view": [1024, 1024],# size of canvas coordinate system
+    "size": [canvasWidth, canvasWidth],# size of the texture
+    "view": [canvasWidth, canvasWidth],# size of canvas coordinate system
     "mipmapping": 0
   },
   main: nil,
@@ -96,12 +108,12 @@ var HUDnasal = {
     #HUDnasal.main.canvas.del();
     #HUDnasal.main.canvas = canvas.new(HUDnasal.canvas_settings);
     HUDnasal.main.canvas.addPlacement(HUDnasal.main.place);
-    HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.02);
+    HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.05);
     HUDnasal.main.root = HUDnasal.main.canvas.createGroup()
                 .set("font", "LiberationFonts/LiberationMono-Regular.ttf");# If using default font, horizontal alignment is not accurate (bug #1054), also prettier char spacing. 
     
     #HUDnasal.main.root.setScale(math.sin(slant*deg2rads), 1);
-    HUDnasal.main.root.setTranslation(512, 512);
+    HUDnasal.main.root.setTranslation(canvasWidth/2, canvasWidth/2);
 
     # digital airspeed kts/mach 
     HUDnasal.main.airspeed = HUDnasal.main.root.createChild("text")
@@ -109,13 +121,13 @@ var HUDnasal = {
       .setFontSize(85*fs, ar)
       .setColor(r,g,b, a)
       .setAlignment("center-center")
-      .setTranslation(0 , 420);
+      .setTranslation(0 , airspeedPlace);
     HUDnasal.main.airspeedInt = HUDnasal.main.root.createChild("text")
       .setText("000")
       .setFontSize(85*fs, ar)
       .setColor(r,g,b, a)
       .setAlignment("center-center")
-      .setTranslation(0 , 350);
+      .setTranslation(0 , airspeedPlace-70);
 
 
     # scale heading ticks
@@ -427,7 +439,7 @@ var HUDnasal = {
       .setColor(r,g,b, a);
 
     #turn coordinator
-    HUDnasal.main.turn_group = HUDnasal.main.root.createChild("group").setTranslation(325, 425);
+    HUDnasal.main.turn_group = HUDnasal.main.root.createChild("group").setTranslation(sideslipPlaceX, sideslipPlaceY);
     HUDnasal.main.turn_group2 = HUDnasal.main.turn_group.createChild("group");
     HUDnasal.main.t_rot   = HUDnasal.main.turn_group2.createTransform();
     HUDnasal.main.turn_indicator = HUDnasal.main.turn_group2.createChild("path")
@@ -715,7 +727,7 @@ var HUDnasal = {
     HUDnasal.main.tower_symbol_icao.setFontSize(60*fs, ar);
 
     #distance scale
-    HUDnasal.main.dist_scale_group = HUDnasal.main.root.createChild("group").setTranslation(-100, 130);
+    HUDnasal.main.dist_scale_group = HUDnasal.main.root.createChild("group").setTranslation(-100, 200);
     HUDnasal.main.mySpeed = HUDnasal.main.dist_scale_group.createChild("path")
                             .moveTo(   0,   0)
                             .lineTo( -10, -10)
@@ -845,6 +857,7 @@ var HUDnasal = {
         TILS:             "sim/ja37/hud/TILS",
         landingMode:      "sim/ja37/hud/landing-mode",
         tracks_enabled:   "sim/ja37/hud/tracks-enabled",
+        final:            "sim/ja37/hud/final",
         elapsedSec:       "sim/time/elapsed-sec",
         cannonAmmo:       "ai/submodels/submodel[3]/count",
         nav0InRange:      "instrumentation/nav[0]/in-range",
@@ -902,6 +915,7 @@ var HUDnasal = {
 
       if(mode != TAKEOFF and !takeoffForbidden and me.input.wow0.getValue() == TRUE and me.input.wow0.getValue() == TRUE and me.input.wow0.getValue() == TRUE) {
         mode = TAKEOFF;
+        me.input.final.setValue(FALSE);
         modeTimeTakeoff = -1;
       } elsif (mode == TAKEOFF and modeTimeTakeoff == -1 and takeoffForbidden) {
         modeTimeTakeoff = me.input.elapsedSec.getValue();
@@ -1435,52 +1449,57 @@ var HUDnasal = {
   },
 
   displayDigitalAltitude: func (alt, radAlt) {
-    # alt and radAlt is in current unit
-    # determine max radar alt in current unit
-    var radar_clamp = me.input.units.getValue() ==1 ? 100 : 100/feet2meter;
-    var alt_diff = me.input.units.getValue() ==1 ? 7 : 7/feet2meter;
-    if (radAlt == nil) {
-      # Radar alt instrument not initialized yet.
-      me.alt.setText("");
-      countQFE = 0;
-      QFEcalibrated = FALSE;
-      me.input.altCalibrated.setValue(FALSE);
-    } elsif (radAlt < radar_clamp) {
-      # in radar alt range
-      me.alt.setText("R " ~ sprintf("%3d", clamp(radAlt, 0, radar_clamp)));
-      # check for QFE warning
-      var diff = radAlt - alt;
-      if (countQFE == 0 and (diff > alt_diff or diff < -alt_diff)) {
-        #print("QFE warning " ~ countQFE);
-        # is not calibrated, and is not blinking
+    if (me.input.final.getValue() == TRUE) {
+      me.alt.hide();
+    } else {
+      me.alt.show();
+      # alt and radAlt is in current unit
+      # determine max radar alt in current unit
+      var radar_clamp = me.input.units.getValue() ==1 ? 100 : 100/feet2meter;
+      var alt_diff = me.input.units.getValue() ==1 ? 7 : 7/feet2meter;
+      if (radAlt == nil) {
+        # Radar alt instrument not initialized yet.
+        me.alt.setText("");
+        countQFE = 0;
         QFEcalibrated = FALSE;
         me.input.altCalibrated.setValue(FALSE);
-        countQFE = 1;     
-        #print("QFE not calibrated, and is not blinking");     
-      } elsif (diff > -alt_diff and diff < alt_diff) {
-          #is calibrated
-        if (QFEcalibrated == FALSE and countQFE < 11) {
-          # was not calibrated before, is now.
-          #print("QFE was not calibrated before, is now. "~countQFE);
-          countQFE = 11;
+      } elsif (radAlt < radar_clamp) {
+        # in radar alt range
+        me.alt.setText("R " ~ sprintf("%3d", clamp(radAlt, 0, radar_clamp)));
+        # check for QFE warning
+        var diff = radAlt - alt;
+        if (countQFE == 0 and (diff > alt_diff or diff < -alt_diff)) {
+          #print("QFE warning " ~ countQFE);
+          # is not calibrated, and is not blinking
+          QFEcalibrated = FALSE;
+          me.input.altCalibrated.setValue(FALSE);
+          countQFE = 1;     
+          #print("QFE not calibrated, and is not blinking");     
+        } elsif (diff > -alt_diff and diff < alt_diff) {
+            #is calibrated
+          if (QFEcalibrated == FALSE and countQFE < 11) {
+            # was not calibrated before, is now.
+            #print("QFE was not calibrated before, is now. "~countQFE);
+            countQFE = 11;
+          }
+          QFEcalibrated = TRUE;
+          me.input.altCalibrated.setValue(TRUE);
+        } elsif (QFEcalibrated == 1 and (diff > alt_diff or diff < -alt_diff)) {
+          # was calibrated before, is not anymore.
+          #print("QFE was calibrated before, is not anymore. "~countQFE);
+          countQFE = 1;
+          QFEcalibrated = FALSE;
+          me.input.altCalibrated.setValue(FALSE);
         }
+      } else {
+        # is above height for checking for calibration
+        countQFE = 0;
+        #QFE = 0;
         QFEcalibrated = TRUE;
         me.input.altCalibrated.setValue(TRUE);
-      } elsif (QFEcalibrated == 1 and (diff > alt_diff or diff < -alt_diff)) {
-        # was calibrated before, is not anymore.
-        #print("QFE was calibrated before, is not anymore. "~countQFE);
-        countQFE = 1;
-        QFEcalibrated = FALSE;
-        me.input.altCalibrated.setValue(FALSE);
+        #print("QFE not calibrated, and is not blinking");
+        me.alt.setText(sprintf("%4d", clamp(alt, 0, 9999)));
       }
-    } else {
-      # is above height for checking for calibration
-      countQFE = 0;
-      #QFE = 0;
-      QFEcalibrated = TRUE;
-      me.input.altCalibrated.setValue(TRUE);
-      #print("QFE not calibrated, and is not blinking");
-      me.alt.setText(sprintf("%4d", clamp(alt, 0, 9999)));
     }
   },
 
@@ -1558,6 +1577,14 @@ var HUDnasal = {
       me.airspeedInt.show();
       me.airspeed.setText(sprintf("M%.2f", mach));
     }
+
+    if (me.input.final.getValue() == 1) {
+      me.airspeed.setTranslation(0, airspeedPlaceFinal);
+      me.airspeedInt.setTranslation(0, airspeedPlaceFinal - 70);
+    } else {
+      me.airspeed.setTranslation(0, airspeedPlace);
+      me.airspeedInt.setTranslation(0, airspeedPlace - 70);
+    }
   },
 
   displayPitchLines: func (mode) {
@@ -1589,6 +1616,11 @@ var HUDnasal = {
     if (me.input.sideslipOn.getValue() == TRUE) {
       #me.t_rot.setRotation(getprop("/orientation/roll-deg") * deg2rads * 0.5);
       me.slip_indicator.setTranslation(clamp(me.input.beta.getValue()*20, -150, 150), 0);
+      if(me.input.final.getValue() == TRUE) {
+        me.turn_group.setTranslation(sideslipPlaceXFinal, sideslipPlaceYFinal);
+      } else {
+        me.turn_group.setTranslation(sideslipPlaceX, sideslipPlaceY);
+      }
       me.turn_group.show();
     } else {
       me.turn_group.hide();
@@ -1817,16 +1849,19 @@ var HUDnasal = {
       var maxDist = nil;
       var currDist = radar_logic.selection[2];
       if(armSelect == 0) {
+        # cannon
         minDist =  100;
         maxDist = 1000;
       } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 24J") {
+        # sidewinders
         minDist =   300;
         maxDist = 18520;
-      } else {
+      } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M70") {
+        # Rocket pod
         minDist =   200;
         maxDist =  2000;
       }
-      if(currDist != nil) {
+      if(currDist != nil and minDist != nil) {
         var pixelPerMeter = (3/5*line)/(maxDist - minDist);
         var startDist = (minDist - ((maxDist - minDist)/3));
         var pos = pixelPerMeter*(currDist-startDist);
@@ -1852,7 +1887,7 @@ var HUDnasal = {
     var towerAlt = me.input.towerAlt.getValue();
     var towerLat = me.input.towerLat.getValue();
     var towerLon = me.input.towerLon.getValue();
-    if(towerAlt != nil and towerLat != nil and towerLon != nil) {
+    if(me.input.final.getValue() == FALSE and towerAlt != nil and towerLat != nil and towerLon != nil) {
       var towerPos = geo.Coord.new();
       towerPos.set_latlon(towerLat, towerLon, towerAlt);
       var showme = TRUE;
@@ -2144,7 +2179,7 @@ var hud_pilot = nil;
 var init = func() {
   removelistener(id); # only call once
   if(getprop("sim/ja37/supported/hud") == TRUE) {
-    hud_pilot = HUDnasal.new({"node": "HUDobject", "texture": "hud.png"});
+    hud_pilot = HUDnasal.new({"node": "hud", "texture": "hud.png"});
     #setprop("sim/hud/visibility[1]", 0);
     
     #print("HUD initialized.");

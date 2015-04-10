@@ -40,6 +40,8 @@ var findRadarTracks = func () {
   
   tracks = [];
 
+  var node_ai = props.globals.getNode("/ai/models");
+
   if(input.tracks_enabled.getValue() == 1 and input.radar_serv.getValue() > 0 and input.voltage.getValue() == 200 and input.hydrPressure.getValue() == 1) {
 
     #do the MP planes
@@ -48,12 +50,9 @@ var findRadarTracks = func () {
       append(players, item.node);
     }
 
-    #do the AI:
-    var node_ai = props.globals.getNode("/ai/models");
     var AIplanes = node_ai.getChildren("aircraft");
     var tankers = node_ai.getChildren("tanker");
     var ships = node_ai.getChildren("ship");
-    var carriers = node_ai.getChildren("carrier");
     var vehicles = node_ai.getChildren("groundvehicle");
     var rb24 = node_ai.getChildren("rb-24j");
 
@@ -62,13 +61,14 @@ var findRadarTracks = func () {
     }
 
     processTracks(players, FALSE);    
-    processTracks(carriers, TRUE);
     processTracks(tankers, FALSE);
     processTracks(ships, FALSE);
     processTracks(AIplanes, FALSE);
     processTracks(vehicles, FALSE);
     processTracks(rb24, FALSE, TRUE);
   }
+  var carriers = node_ai.getChildren("carrier");
+  processTracks(carriers, TRUE);
 }
 
 

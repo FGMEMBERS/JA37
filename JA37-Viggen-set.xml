@@ -12,7 +12,7 @@
     <author>Anders Lejczak (3D Model and Textures), Nikolai V. Chr. (rest)</author>
     <status>Beta</status>
     <long-description>The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards.</long-description>
-    <aircraft-version>3.018</aircraft-version>
+    <aircraft-version>3.020</aircraft-version>
 
     <rating>
       <FDM type="int">3</FDM>
@@ -160,6 +160,14 @@
           <property type="string">systems/electrical/batterysignal</property>
         </signal>
         <signal>
+          <type>bool</type>
+          <property type="string">instrumentation/head-up-display/serviceable</property>
+        </signal>
+        <signal>
+          <type>int8</type>
+          <property type="string">systems/electrical/outputs/hud</property>
+        </signal>
+        <signal>
           <type>float</type>
           <property type="string">velocities/groundspeed-kt</property>
         </signal>
@@ -180,11 +188,11 @@
           <property type="string">fdm/jsbsim/fcs/canopy/hinges/serviceable</property>
         </signal>
         <!-- Instruments -->
-        <signal>
+        <!--<signal>
           <type>float</type>
           <property type="string">fdm/jsbsim/aero/alpha-deg</property>
           <interpolation>angular-deg</interpolation>
-        </signal>
+        </signal>-->
         <signal>
           <type>float</type>
           <property type="string">instrumentation/altimeter/indicated-altitude-ft</property>
@@ -248,8 +256,12 @@
           <property type="string">sim/ja37/effect/landing-light</property>
         </signal>
         <signal>
-          <type>float</type>
+          <type>int16</type>
           <property type="string">systems/electrical/outputs/inst_ac</property>
+        </signal>
+        <signal>
+          <type>int16</type>
+          <property type="string">systems/electrical/outputs/battery</property>
         </signal>
         <signal>
           <type>float</type>
@@ -399,22 +411,22 @@
     <current-view>
       <field-of-view type="double">100</field-of-view>
       <config>
-        <default-field-of-view-deg type="double">100</default-field-of-view-deg>
+        <default-field-of-view-deg type="double">95</default-field-of-view-deg>
       </config>
       <!-- Sometimes these get changed (in FG 3.0-) and saved and will override the defaults. This will set the defaults everytime its started up. -->
       <x-offset-m type="double">0</x-offset-m>
-      <y-offset-m type="double">0.70</y-offset-m>
-      <z-offset-m type="double">-3.40</z-offset-m>
+      <y-offset-m type="double">0.71</y-offset-m>
+      <z-offset-m type="double">-3.6</z-offset-m>
     </current-view>
 
     <view n="0">
      <internal>true</internal>
      <config>
-       <pitch-offset-deg type="double">-20</pitch-offset-deg>
+       <pitch-offset-deg type="double">-23</pitch-offset-deg>
        <x-offset-m type="double">0</x-offset-m>
-       <y-offset-m type="double">0.70</y-offset-m><!-- remember to change eyepoint in JSB when changing this -->
-       <z-offset-m type="double">-3.40</z-offset-m>
-       <default-field-of-view-deg type="double">100</default-field-of-view-deg>
+       <y-offset-m type="double">0.71</y-offset-m><!-- remember to change eyepoint in JSB when changing this -->
+       <z-offset-m type="double">-3.6</z-offset-m>
+       <default-field-of-view-deg type="double">95</default-field-of-view-deg>
      </config>
     </view>
     <!--<view n="100">
@@ -550,10 +562,10 @@
         <config>
          <from-model type="bool">true</from-model>
          <from-model-idx type="int">0</from-model-idx>
-         <pitch-offset-deg type="double">-12.5</pitch-offset-deg>
+         <pitch-offset-deg type="double">-10.0</pitch-offset-deg>
          <x-offset-m type="double">0</x-offset-m>
-         <y-offset-m type="double">0.70</y-offset-m>
-         <z-offset-m type="double">-3.40</z-offset-m>
+         <y-offset-m type="double">0.71</y-offset-m>
+         <z-offset-m type="double">-3.6</z-offset-m>
          <default-field-of-view-deg type="double">65</default-field-of-view-deg>
          <ground-level-nearplane-m type="double">0.5f</ground-level-nearplane-m>
          <dynamic-view type="bool">false</dynamic-view>
@@ -724,6 +736,10 @@
      <key>
       <name>m</name>
       <desc>Toggle nose wheel steering</desc>
+     </key>
+     <key>
+      <name>N</name>
+      <desc>Toggle radar</desc>
      </key>
      <key>
       <name>f</name>
@@ -1012,6 +1028,7 @@
         <stroke-linewidth userarchive="y" type="double">4.0</stroke-linewidth>
         <TILS type="bool">false</TILS>
         <landing-mode type="bool">false</landing-mode>
+        <final type="bool">false</final>
       </hud>
       <sound>
         <click-on type="bool">false</click-on>
@@ -1281,6 +1298,7 @@
   <electrical>
     <lights-ext type="int">0</lights-ext>
     <generator_enabled type="bool">false</generator_enabled>
+    <generator_on type="bool">false</generator_on>
     <battery_voltage type="double">0</battery_voltage>
     <outputs>
       <main_ac type="double">0</main_ac>
@@ -1494,6 +1512,14 @@
       <binding>
        <command>nasal</command>
        <script>ja37.cycle_weapons()</script>
+      </binding>
+    </key>
+    <key n="78">
+      <name>N</name>
+      <desc>Toggle radar</desc>
+      <binding>
+       <command>nasal</command>
+       <script>ja37.toggleTracks()</script>
       </binding>
     </key> 
     <key n="80">
@@ -1734,6 +1760,14 @@
         <command>nasal</command>
         <script>ja37.toggleNosewheelSteer();</script>
      </binding>
+    </key>
+    <key n="77">
+      <name>M</name>
+      <desc>Final approach</desc>
+      <binding>
+       <command>property-toggle</command>
+       <property>sim/ja37/hud/final</property>
+      </binding>
     </key>
    </keyboard>
   </input>
