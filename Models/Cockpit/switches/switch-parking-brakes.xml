@@ -7,6 +7,7 @@
 	<animation>
 	    <type>pick</type>
 	    <object-name>Switch</object-name>
+	    <object-name>Base</object-name>
 	    <action>
 	        <button>0</button>
 	        <binding>
@@ -49,8 +50,17 @@
 	 </animation>
 
 	<animation>
+	  <type>material</type>
+	   <object-name>Text</object-name>
+	   <property-base>sim/ja37/texture</property-base>
+	   <texture-prop>switch-parking-brake</texture-prop>
+	   <texture>switch-parking-brake.png</texture>
+	 </animation>
+
+	<animation>
 	  	<type>material</type> 
 		<object-name>Base</object-name>
+		<object-name>Text</object-name>
   		<emission>  
 			<red-prop>instrumentation/instrumentation-light/r</red-prop> 
 			<green-prop>instrumentation/instrumentation-light/g</green-prop> 

@@ -30,6 +30,7 @@ var AIM9 = {
 
 		m.status            = 0; # -1 = stand-by, 0 = searching, 1 = locked, 2 = fired.
 		m.free              = 0; # 0 = status fired with lock, 1 = status fired but having lost lock.
+		m.trackWeak         = 1;
 
 		m.prop              = AcModel.getNode("armament/rb24/").getChild("msl", 0 , 1);
 		m.PylonIndex        = m.prop.getNode("pylon-index", 1).setValue(p);
@@ -118,7 +119,7 @@ var AIM9 = {
 
 		SwSoundOnOff.setValue(1);
 
-		settimer(func { SwSoundVol.setValue(vol_search); m.search() }, 1);
+		settimer(func { SwSoundVol.setValue(vol_search); me.trackWeak = 1; m.search() }, 1);
 		return AIM9.active[m.ID] = m;
 
 	},
@@ -155,7 +156,7 @@ var AIM9 = {
 
 		in[0] =  me.pylon_prop.getNode("offsets/x-m").getValue() * M2FT;
 		in[1] =  me.pylon_prop.getNode("offsets/y-m").getValue() * M2FT;
-		in[2] =  (me.pylon_prop.getNode("offsets/z-m").getValue()-0.5) * M2FT;#-0.5 for it to drop beneath pylon before firing
+		in[2] =  me.pylon_prop.getNode("offsets/z-m").getValue() * M2FT;
 		# Pre-process trig functions:
 		cosRx = math.cos(-ac_roll * D2R);
 		sinRx = math.sin(-ac_roll * D2R);
@@ -213,6 +214,7 @@ var AIM9 = {
 
 		me.smoke_prop.setBoolValue(1);
 		SwSoundVol.setValue(0);
+		me.trackWeak = 1;
 		#settimer(func { HudReticleDeg.setValue(0) }, 2);
 		#interpolate(HudReticleDev, 0, 2);
 		me.update();
@@ -281,9 +283,12 @@ var AIM9 = {
 		var cdm = 0;
 		var speed_m = (total_s_ft / dt) / sound_fps;
 		#print("mach "~speed_m);
-		if (speed_m < 0.7) cdm = 0.0125 * speed_m + me.cd;
-		elsif (speed_m < 1.2 ) cdm = 0.3742 * math.pow(speed_m, 2) - 0.252 * speed_m + 0.0021 + me.cd;
-		else cdm = 0.2965 * math.pow(speed_m, -1.1506) + me.cd;
+		if (speed_m < 0.7)
+		 cdm = 0.0125 * speed_m + me.cd;
+		elsif (speed_m < 1.2 )
+		 cdm = 0.3742 * math.pow(speed_m, 2) - 0.252 * speed_m + 0.0021 + me.cd;
+		else
+		 cdm = 0.2965 * math.pow(speed_m, -1.1506) + me.cd;
 
 		# Add drag to the total speed using Standard Atmosphere (15C sealevel temperature);
 		# rho is adjusted for altitude in environment.rho_sndspeed(altitude),
@@ -316,7 +321,7 @@ var AIM9 = {
 		#### Guidance.
 
 		if ( me.status == 2 and me.free == 0) {
-			me.update_track();
+			me.update_track(dt);
 			if (init_launch == 0 ) {
 				# Use the rail or a/c pitch for the first frame.
 				pitch_deg = getprop("orientation/pitch-deg");
@@ -387,7 +392,7 @@ var AIM9 = {
 	},
 
 
-	update_track: func() {
+	update_track: func(dt) {
 		if ( me.Tgt == nil ) {
 		 #print("no target");
 		 return(1);
@@ -396,6 +401,7 @@ var AIM9 = {
 			# Status = searching.
 			me.reset_seeker();
 			SwSoundVol.setValue(vol_search);
+			me.trackWeak = 1;
 			settimer(func me.search(), 0.1);
 			return(1);
 		}
@@ -403,6 +409,7 @@ var AIM9 = {
 			# Status = stand-by.
 			me.reset_seeker();
 			SwSoundVol.setValue(0);
+			me.trackWeak = 1;
 			return(1);
 		}
 		if (!me.Tgt.getChild("valid").getValue()) {
@@ -412,14 +419,17 @@ var AIM9 = {
 			me.status = 0;
 			me.reset_seeker();
 			SwSoundVol.setValue(vol_search);
+			me.trackWeak = 1;
 			settimer(func me.search(), 0.1);
 			return(1);
 		}
 		#print("track");
 		# Time interval since lock time or last track loop.
-		var time = props.globals.getNode("/sim/time/elapsed-sec", 1).getValue();
-		var dt = time - me.update_track_time;
-		me.update_track_time = time;
+		if (dt == nil) {
+			var time = props.globals.getNode("/sim/time/elapsed-sec", 1).getValue();
+			dt = time - me.update_track_time;
+			me.update_track_time = time;
+		}
 		var last_tgt_e = me.curr_tgt_e;
 		var last_tgt_h = me.curr_tgt_h;
 		if (me.status == 1) {		
@@ -485,7 +495,8 @@ var AIM9 = {
 			me.check_t_in_fov();
 			# We are not launched yet: update_track() loops by itself at 10 Hz.
 			SwSoundVol.setValue(vol_track);
-			settimer(func me.update_track(), 0.1);
+			me.trackWeak = 0;
+			settimer(func me.update_track(nil), 0.1);
 		}
 		return(1);
 	},
@@ -572,9 +583,10 @@ var AIM9 = {
 		if ( me.curr_tgt_e < e_d or me.curr_tgt_e > e_u or me.curr_tgt_h < h_l or me.curr_tgt_h > h_r ) {		
 			# Target out of FOV while still not launched, return to search loop.
 			me.status = 0;
-			settimer(func me.search(), 2);
+			settimer(func me.search(), rand()*3.5);
 			me.Tgt = nil;
 			SwSoundVol.setValue(vol_search);
+			me.trackWeak = 1;
 			me.reset_seeker();
 		}
 		return(1);
@@ -585,6 +597,7 @@ var AIM9 = {
 		if ( me.status == -1 ) {
 			# Stand by.
 			SwSoundVol.setValue(0);
+			me.trackWeak = 1;
 			return;
 		} elsif ( me.status > 0 ) {
 			# Locked or fired.
@@ -603,6 +616,7 @@ var AIM9 = {
 			if (rng < me.max_detect_rng and abs_total_elev < me.aim9_fov_diam and abs_dev_deg < me.aim9_fov_diam ) {
 				me.status = 1;
 				SwSoundVol.setValue(vol_weak_track);
+				me.trackWeak = 1;
 				me.Tgt = tgt;
 				var t_pos_str = me.Tgt.getChild("position");
 				var t_ori_str = me.Tgt.getChild("orientation");
@@ -610,11 +624,12 @@ var AIM9 = {
 				me.TgtLat_prop       = t_pos_str.getChild("latitude-deg");
 				me.TgtAlt_prop       = t_pos_str.getChild("altitude-ft");
 				me.TgtHdg_prop       = t_ori_str.getChild("true-heading-deg");
-				settimer(func me.update_track(), 2);
+				settimer(func me.update_track(nil), rand()*3.5);
 				return;
 			}
 		}
 		SwSoundVol.setValue(vol_search);
+		me.trackWeak = 1;
 		settimer(func me.search(), 0.1);
 	},
 
