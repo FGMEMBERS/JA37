@@ -919,11 +919,13 @@ var HUDnasal = {
         modeTimeTakeoff = -1;
       } elsif (mode == TAKEOFF and modeTimeTakeoff == -1 and takeoffForbidden) {
         modeTimeTakeoff = me.input.elapsedSec.getValue();
+        me.input.final.setValue(FALSE);
       } elsif (modeTimeTakeoff != -1 and me.input.elapsedSec.getValue() - modeTimeTakeoff > 3) {
         if (me.input.gearsPos.getValue() == 1 or me.input.landingMode.getValue() == TRUE) {
           mode = LANDING;
         } else {
           mode = me.input.combat.getValue() == 1 ? COMBAT : NAV;
+          me.input.final.setValue(FALSE);
         }
         modeTimeTakeoff = -1;
       } elsif ((mode == COMBAT or mode == NAV) and (me.input.gearsPos.getValue() == 1 or me.input.landingMode.getValue() == TRUE)) {
@@ -931,9 +933,11 @@ var HUDnasal = {
         modeTimeTakeoff = -1;
       } elsif (mode == COMBAT or mode == NAV) {
         mode = me.input.combat.getValue() == 1 ? COMBAT : NAV;
+        me.input.final.setValue(FALSE);
         modeTimeTakeoff = -1;
       } elsif (mode == LANDING and me.input.gearsPos.getValue() == 0 and me.input.landingMode.getValue() == FALSE) {
         mode = me.input.combat.getValue() == 1 ? COMBAT : NAV;
+        me.input.final.setValue(FALSE);
         modeTimeTakeoff = -1;
       }
       me.input.currentMode.setValue(mode);
@@ -1851,7 +1855,7 @@ var HUDnasal = {
       if(armSelect == 0) {
         # cannon
         minDist =  100;
-        maxDist = 1000;
+        maxDist = 2500;# as per sources
       } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 24J") {
         # sidewinders
         minDist =   300;
@@ -1887,7 +1891,7 @@ var HUDnasal = {
     var towerAlt = me.input.towerAlt.getValue();
     var towerLat = me.input.towerLat.getValue();
     var towerLon = me.input.towerLon.getValue();
-    if(me.input.final.getValue() == FALSE and towerAlt != nil and towerLat != nil and towerLon != nil) {
+    if(mode != COMBAT and me.input.final.getValue() == FALSE and towerAlt != nil and towerLat != nil and towerLon != nil) {
       var towerPos = geo.Coord.new();
       towerPos.set_latlon(towerLat, towerLon, towerAlt);
       var showme = TRUE;
@@ -2069,13 +2073,15 @@ var HUDnasal = {
 
 
           var armSelect = me.input.station.getValue();
-          
+          var diamond = 0;
           if(armament.AIM9.active[armSelect-1] != nil and armament.AIM9.active[armSelect-1].status == 1) {
-            me.diamond.show();
-            me.target.hide();
-          } else {
-            me.target.show();
-            me.diamond.hide();
+            # lock
+            var weak = armament.AIM9.active[armSelect-1].trackWeak;
+            if (weak == TRUE) {
+              diamond = 1;
+            } else {
+              diamond = 2;
+            }
           }
 
           #var bearing = diamond_node.getNode("radar/bearing-deg").getValue();
@@ -2095,11 +2101,33 @@ var HUDnasal = {
           #               .lineTo( pos_x, pos_y)
           #               .setStrokeLineWidth(w)
           #               .setColor(r,g,b, a);
-          if(blink == TRUE and me.input.fiveHz.getValue() == FALSE) {
-            me.diamond_group.hide();
+
+          if (diamond > 0) {
+            me.target.hide();
+
+            if (blink == TRUE) {
+              if((diamond == 1 and me.input.fiveHz.getValue() == TRUE) or (diamond == 2 and me.input.tenHz.getValue() == TRUE)) {
+                me.diamond.show();
+              } else {
+                me.diamond.hide();
+              }
+            } else {
+              if (diamond == 1 or me.input.tenHz.getValue() == TRUE) {
+                me.diamond.show();
+              } else {
+                me.diamond.hide();
+              }
+            }
+
+          } elsif (blink == FALSE or me.input.fiveHz.getValue() == TRUE) {
+            me.target.show();
+            me.diamond.hide();
           } else {
-            me.diamond_group.show();
+            me.target.hide();
+            me.diamond.hide();
           }
+          me.diamond_group.show();
+
         } else {
           #untargetable but selectable, like carriers and tankers, or planes in navigation mode
           diamond_node = nil;
@@ -2215,7 +2243,7 @@ var reinit = func() {#mostly called to change HUD color
     item.setColor(r, g, b, a);
    }
    hud_pilot.slip_indicator.setColorFill(r,g,b, a);
-   HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.02);
+   HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.05);
    ja37.click();
   #print("HUD being reinitialized.");
 };
