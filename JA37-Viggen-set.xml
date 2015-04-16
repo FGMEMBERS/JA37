@@ -12,10 +12,10 @@
     <author>Anders Lejczak (3D Model and Textures), Nikolai V. Chr. (rest)</author>
     <status>Beta</status>
     <long-description>The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards.</long-description>
-    <aircraft-version>3.020</aircraft-version>
+    <aircraft-version>3.021</aircraft-version>
 
     <rating>
-      <FDM type="int">3</FDM>
+      <FDM type="int">4</FDM>
       <systems type="int">2</systems>
       <cockpit type="int">3</cockpit>
       <model type="int">3</model>
@@ -810,7 +810,6 @@
       The HUD switches automatically between takeoff, landing, navigation and tactical mode.
       An exception is when landing mode switch is activated, that will force landing mode, when not in takeoff mode.
       When in takeoff mode the sidewind indicator - -o- - will move to a side according to sidewind.
-      The sidewind indicator will blink when gears is retracting.
       The vertical tail on the flight path indicator will move/blink according to AoA.
       In tactical mode when the cannon is selected, a fixed crosshair will appear.
       In tactical mode the reticle change if out of ammo.
@@ -824,7 +823,7 @@
       Next to '0' on the alt scale a '|' symbol will appear if the radar altimeter ground is higher than the altimeter 0.
       The heading at the top is shown as a scale showing 1/10 of heading in degrees. The scale will move to the hozizon line in landing mode.
       Radar tracks are shown as semi-circles, the nearest will also show callsign and distance. In tactical mode the selected radar track is the target, and will be shown as a semi-box, it will change to a diamond with missile lock.
-      Nearest tower is shown as a small diamond, with ICAO and distance.
+      Nearest tower is shown as a small diamond, with ICAO and distance. It will not be shown in tactical mode though.
       
       Warnings
       ________
@@ -850,10 +849,6 @@
       ________________________
       This view will keep the Viggen in view while at the same time pointing the camera at the selected entity.
       Do not rotate the camera in this view, that will ruin its ability to track the selection. You can however zoom without a problem.
-
-      The unmarked switches in the cockpit
-      ____________________________________
-      The are a bunch of switches in the cockpit, that does not have any text markings. Hold your mouse pointer above one to read its function. Also remember that the position away from the pilot is always ON, towards the pilot is OFF.
 
       Repairing
       _________
@@ -1064,7 +1059,7 @@
     </ja37>
     <replay>
       <buffer>
-        <high-res-time type="double">300</high-res-time>              <!-- default:   60 -->
+        <high-res-time type="double">1200</high-res-time>             <!-- default:   60 -->
         <medium-res-time type="double">1200</medium-res-time>         <!-- default:  600 -->
         <low-res-time type="double">3600</low-res-time>               <!-- default: 3600 -->
         <medium-res-sample-dt type="double">0.5</medium-res-sample-dt><!-- default:  0.5 -->
@@ -1905,6 +1900,7 @@
      <file>Aircraft/JA37/Nasal/options.nas</file>
      <file>Aircraft/JA37/Nasal/chronograph.nas</file>
      <file>Aircraft/JA37/Nasal/track_target.nas</file>
+     <file>Aircraft/JA37/Nasal/callsign.nas</file>
     </ja37>
     <canvas_HUD>
       <file>Aircraft/JA37/Nasal/hud.nas</file>
