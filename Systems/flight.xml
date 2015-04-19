@@ -115,6 +115,32 @@
               <property>systems/flight/drag-force-lb</property>
           </quotient>
         </function>
+     </fcs_function>
+
+    <fcs_function name="systems/flight/turning-radius-nm">
+        <function>
+          <abs>
+            <quotient>
+              <product>
+                <quotient>
+                  <property>velocities/vg-fps</property>
+                  <value>0.000164578834</value><!-- convert fps to nm/sec -->
+                </quotient>
+                <quotient>
+                    <product>
+                      <pi/>
+                      <value>2.0</value>
+                    </product>
+                    <property>velocities/psidot-rad_sec</property>
+                </quotient>
+              </product>
+              <product>
+                <pi/>
+                <value>0.5</value>
+              </product>
+            </quotient>
+          </abs>
+        </function>
      </fcs_function>     
 
   </channel>
