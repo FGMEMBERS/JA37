@@ -12,7 +12,7 @@
     <author>Anders Lejczak (3D Model and Textures), Nikolai V. Chr. (rest)</author>
     <status>Beta</status>
     <long-description>The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards.</long-description>
-    <aircraft-version>3.022</aircraft-version>
+    <aircraft-version>3.023</aircraft-version>
 
     <rating>
       <FDM type="int">4</FDM>
@@ -614,7 +614,7 @@
       <int n="2" alias="/fdm/jsbsim/structural/wings/serviceable"/><!-- to show detachment of wings -->
       <!-- Animating engine -->
       <!-- float n="2" is controlled from nasal -->
-      <float n="3" alias="/engines/engine[0]/nozzle-pos-norm"/><!-- to animate afterburnerflame -->
+      <float n="3" alias="/fdm/jsbsim/propulsion/engine/zone-scaled"/><!-- to animate afterburnerflame -->
       <float n="5" alias="/engines/engine/flame"/><!-- to animate engine flame -->
       <float n="15" alias="/engines/engine/n1"/><!-- used in MP sound -->
       <float n="16" alias="/engines/engine/thrust_lb-absolute"/><!-- used in MP sound -->
@@ -804,6 +804,11 @@
       At takeoff and landing it will set flaps to 30 degrees down.
       In flight it will be set at 4 degrees up.    
 
+      Afterburner stages
+      __________________
+      The afterburner has 3 stages, the throttle controls this. Throttle position 94% = stage 1, 96% = stage 2, 98% = stage 3
+      The nozzle indicator alternate as a afterburner stage indicator.
+
       HUD info
       ________
       The HUD uses Km/h and meters, but this can be switched to imperial with 'I'.
@@ -866,7 +871,7 @@
       Climb to 10,000m from brakes off in less than 100 seconds.
       Supersonic speed at low altitude in less than 60 seconds from take-off.
       Mach 1.25 at 100m altitude.
-      Maximum speed: Mach 2.2 at 11,000m alt (36,000 ft).
+      Maximum speed: Mach 2+ at 11,000m alt (36,000 ft).
       Service ceiling: 18,300 m (60,000 ft)
       From mach 0.6 till 0.8 it accelerates faster than F-16A. (tested against a Danish F-16A)
       
@@ -926,11 +931,20 @@
         </binding>
        </item>
         <item>
-          <label>Monitor</label>
+          <label>Performance Monitor</label>
           <binding>
            <command>nasal</command>
            <script>
               monitor.PerformanceMonitor.instance().start();
+           </script>
+          </binding>
+        </item>
+        <item>
+          <label>Systems Monitor</label>
+          <binding>
+           <command>nasal</command>
+           <script>
+              monitor2.SystemsMonitor.instance().start();
            </script>
           </binding>
         </item>
@@ -1028,8 +1042,10 @@
       <sound>
         <click-on type="bool">false</click-on>
         <terrain-on type="bool">false</terrain-on>
+        <speed-on type="bool">false</speed-on>
         <mp-volume type="double">0.4</mp-volume>
         <breath-volume type="double">0</breath-volume>
+        <annunciation-enabled type="bool">true</annunciation-enabled>
       </sound>
       <damage>
         <enabled type="bool">true</enabled>
@@ -1075,7 +1091,16 @@
       <full-init type="bool">false</full-init>
     </time>
   </sim>
-
+ <ai>
+  <submodels>
+    <submodel n="2">
+      <random userarchive="y" type="bool">false</random>
+    </submodel>
+    <submodel n="3">
+      <random userarchive="y" type="bool">false</random>
+    </submodel>
+  </submodels>
+ </ai>
  <fdm>
   <jsbsim>
     <structural>
@@ -1127,7 +1152,8 @@
         <serviceable alias="/sim/failure-manager/controls/flight/elevator/serviceable"/>
       </elevator>
       <flaps>
-        <pos-cmd type="double"/>
+        <pos-cmd type="double">0</pos-cmd>
+        <tmp-norm type="double">0.11765</tmp-norm>
         <serviceable alias="/sim/failure-manager/controls/flight/flaps/serviceable"/>
       </flaps>
       <mouse-optimized type="bool">false</mouse-optimized>
@@ -1161,7 +1187,7 @@
         <tailhook-cmd-norm type="bool">false</tailhook-cmd-norm>
       </hook>
       <hydraulics>
-        <normal-pressure type="double">3022</normal-pressure>
+        <normal-pressure type="double">2987.7775</normal-pressure>
         <flight-system>
           <pump>
             <serviceable type="bool">true</serviceable>
@@ -1172,7 +1198,7 @@
     </systems>
     <aero>
       <factor-axial-mach type="double">1.0</factor-axial-mach>
-      <factor-axial type="double">0.625</factor-axial>
+      <factor-axial type="double">0.55</factor-axial>
       <function>
         <vortex type="double">1.0</vortex>
       </function>
@@ -1195,6 +1221,13 @@
     <autopilot>
       <one type="double">0.01667</one>
     </autopilot>
+    <propulsion>
+      <engine>
+        <augmentation type="double">0</augmentation>
+        <zone type="double">0</zone>
+        <zone-factor type="double">1</zone-factor>
+      </engine>
+    </propulsion>
     <launchbar>
       <launch-bar-pos-norm type="double">0</launch-bar-pos-norm>
     </launchbar>
@@ -1906,9 +1939,13 @@
       <file>Aircraft/JA37/Nasal/hud.nas</file>
     </canvas_HUD>
     <monitor>
-      <file>Aircraft/JA37/Nasal/dialog.nas</file>
+      <file>Aircraft/JA37/Nasal/dialog-perf.nas</file>
       <file>Aircraft/JA37/Nasal/performance.nas</file>
     </monitor>
+    <monitor2>
+      <file>Aircraft/JA37/Nasal/dialog-sys.nas</file>
+      <file>Aircraft/JA37/Nasal/systems.nas</file>
+    </monitor2>    
     <limits>
       <file>Aircraft/Generic/limits.nas</file>
     </limits>

@@ -646,7 +646,7 @@
           <independentVar>velocities/vg-fps</independentVar>
           <tableData><!-- note that this is positive also when moving in reverse -->
                10.0       80.00
-               20.0       35.00
+               20.0       25.00
                50.0        5.00
               100.0        1.50
               150.0        0.75
@@ -711,7 +711,99 @@
 
     </channel>
 
-    <!--<channel name="Throttle">
+    <channel name="Throttle">
+
+      <aerosurface_scale name="names/throttle/pos-norm-scale">
+        <input>fcs/throttle-cmd-norm</input>
+        <zero_centered> false </zero_centered>
+        <domain>
+          <min>  0.0 </min>
+          <max>  0.90 </max>
+        </domain>
+        <range>
+          <min>  0.0 </min>
+          <max>  1.0 </max>
+        </range>
+        <output>fcs/throttle-pos-norm-scale</output>
+      </aerosurface_scale>
+
+      <!-- factor for augmentation power -->
+      <aerosurface_scale name="names/throttle/zone-factor">
+        <input>fcs/throttle-cmd-norm</input>
+        <zero_centered> false </zero_centered>
+        <domain>
+          <min>  0.94 </min>
+          <max>  1.00 </max>
+        </domain>
+        <range>
+          <min>  0.70 </min>
+          <max>  1.00 </max>
+        </range>
+        <output>propulsion/engine/zone-factor</output>
+      </aerosurface_scale>
+
+      <!-- augmentation zone -->
+      <switch name="names/throttle/zone">
+          <default value="0"/>
+          <test logic="AND" value="0">
+              fcs/throttle-cmd-norm lt 0.94
+          </test>
+          <test logic="AND" value="1">
+              fcs/throttle-cmd-norm lt 0.96
+          </test>
+          <test logic="AND" value="2">
+              fcs/throttle-cmd-norm lt 0.98
+          </test>
+          <test logic="AND" value="3">
+              fcs/throttle-cmd-norm gt 0.98
+          </test>
+          <output>propulsion/engine/zone</output>
+      </switch>
+
+      <!-- used for animating nozzle indicator and afterburner flame -->
+      <aerosurface_scale name="names/throttle/zone-scaled">
+        <input>fcs/throttle-cmd-norm</input>
+        <zero_centered> false </zero_centered>
+        <domain>
+          <min>  0.94 </min>
+          <max>  1.00 </max>
+        </domain>
+        <range>
+          <min>  0.00 </min>
+          <max>  1.00 </max>
+        </range>
+        <output>propulsion/engine/zone-scaled</output>
+      </aerosurface_scale>
+
+      <!-- used for animating nozzle indicator -->
+      <switch name="names/throttle/nozzle">
+          <default value="propulsion/engine/zone-scaled"/>
+          <test logic="OR" value="/engines/engine/nozzle-pos-norm">
+              propulsion/engine/zone == 0
+              propulsion/engine/augmentation == 0
+          </test>
+          <output>propulsion/engine/nozzle</output>
+      </switch>      
+
+      <!-- pure_gain is the only component that can overwrite fcs/throttle-pos-norm -->
+      <pure_gain name="names/throttle/pos-norm">
+        <input>fcs/throttle-pos-norm-scale</input>
+        <gain>1.0</gain>
+        <output>fcs/throttle-pos-norm</output>
+      </pure_gain>
+
+      <switch name="names/throttle/augmentation">
+          <default value="0"/>
+          <test logic="AND" value="1">
+              fcs/throttle-cmd-norm ge 0.940
+              propulsion/engine/n1 ge 84
+              /engines/engine/reversed == 0
+              /engines/engine/running == 1
+          </test>
+          <output>propulsion/engine/augmentation</output>
+      </switch>
+ 
+      <!--
       <kinematic name="fcs/throttle-pos-norm-kinematic">
         <input>fcs/throttle-cmd-norm</input>
         <traverse>
@@ -726,13 +818,8 @@
         </traverse>
       </kinematic>
 
-        pure_gain is the only component that can overwrite fcs/throttle-pos-norm
-      <pure_gain name="names/throttle-pos-norm">
-        <input>fcs/throttle-pos-norm-kinematic</input>
-        <gain>1.0</gain>
-        <output>fcs/throttle-pos-norm</output>
-      </pure_gain>
-    </channel>-->
+        -->
+    </channel>
 
     <channel name="Autopilot">
       <scheduled_gain name="names/autopilot/Autopilot-max-climb">
@@ -740,10 +827,12 @@
         <table>
           <independentVar lookup="row">velocities/mach</independentVar>
           <tableData>
-              0.25            5        
+              0.0             0
+              0.25            0
+              0.3            50        
               0.5          5000        
-              1.0         30000       
-          </tableData>
+              1.0         60000       
+          </tableData><!-- feet/sec -->
         </table>
         <output>autopilot/climb</output>
       </scheduled_gain>
