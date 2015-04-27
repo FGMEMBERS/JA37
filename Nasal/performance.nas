@@ -384,6 +384,12 @@ MiscMonitor.properties = func() {
     { property : "turn-rate",    name : "Turn rate",             format : "%3.1f", unit : "deg/s",  halign : "right", red: 0.75, green: 0.75, blue: 1.0 },
     { property : "turn-radius",  name : "Turn radius",           format : "%3.1f", unit : "nm",     halign : "right", red: 0.75, green: 0.75, blue: 1.0 },
     { property : "sink-rate",    name : "Sink rate",             format : "%3.1f", unit : "m/s",    halign : "right", red: 0.75, green: 0.75, blue: 1.0 },
+    { property : "wind-dir",     name : "Wind direction",        format : "%3.1f", unit : "deg",    halign : "right", red: 0.0, green: 1.0, blue: 0.0 },
+    { property : "wind-kt",      name : "Wind speed",            format : "%3.1f", unit : "kt",     halign : "right", red: 0.0, green: 1.0, blue: 0.0 },
+    { property : "temp",         name : "Ambient temperature",   format : "%3.1f", unit : "deg C",  halign : "right", red: 0.0, green: 1.0, blue: 0.0 },
+    { property : "alt",          name : "Altitude above sealvl", format : "%3.1f", unit : "ft",     halign : "right", red: 0.0, green: 1.0, blue: 0.0 },
+    { property : "inhg",         name : "Static pressure",       format : "%3.2f", unit : "inhg",   halign : "right", red: 0.0, green: 1.0, blue: 0.0 },
+    { property : "density",      name : "Density",               format : "%1.4f", unit : "slugs/ft3",halign : "right", red: 0.0, green: 1.0, blue: 0.0 },
   ]
 }
 
@@ -400,6 +406,12 @@ MiscMonitor.update = func()
   setprop("/sim/gui/dialogs/performance-monitor/turn-rate", getprop("/fdm/jsbsim/velocities/psidot-rad_sec")*57.296);
   setprop("/sim/gui/dialogs/performance-monitor/turn-radius", getprop("/fdm/jsbsim/systems/flight/turning-radius-nm"));
   setprop("/sim/gui/dialogs/performance-monitor/sink-rate", getprop("/fdm/jsbsim/velocities/v-down-fps") * 0.3048);
+  setprop("/sim/gui/dialogs/performance-monitor/wind-dir", getprop("/environment/wind-from-heading-deg"));
+  setprop("/sim/gui/dialogs/performance-monitor/wind-kt", getprop("/environment/wind-speed-kt"));
+  setprop("/sim/gui/dialogs/performance-monitor/temp", getprop("/environment/temperature-degc"));
+  setprop("/sim/gui/dialogs/performance-monitor/alt", getprop("/position/altitude-ft"));
+  setprop("/sim/gui/dialogs/performance-monitor/inhg", getprop("/environment/pressure-inhg"));
+  setprop("/sim/gui/dialogs/performance-monitor/density", getprop("/environment/density-slugft3"));
 }
 
 MiscMonitor.reinit = func() {
@@ -423,7 +435,7 @@ AeroMonitor.properties = func() {
     { property : "ratio-lift-weight",   name : "Lift/Weight Ratio",   format : "%3.2f", unit : "",    halign : "right", red: 1.0, green: 0.65, blue: 0.65 },
     { property : "ratio-thrust-weight", name : "Thrust/weight Ratio", format : "%3.2f", unit : "",    halign : "right", red: 1.0, green: 0.65, blue: 0.65 },
     { property : "ratio-thrust-drag",   name : "Thrust/Drag Ratio",   format : "%3.2f", unit : "",    halign : "right", red: 1.0, green: 0.65, blue: 0.65 },
-    { property : "excess-thrust",       name : "Excess Thrust",       format : "%5d",   unit : "lb",  halign : "right", red: 1.0, green: 0.65, blue: 0.65 },
+    { property : "excess-thrust",       name : "Excess Thrust",       format : "%5d",   unit : "lbf", halign : "right", red: 1.0, green: 0.65, blue: 0.65 },
   ]
 }
 

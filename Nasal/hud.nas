@@ -1022,7 +1022,7 @@ var HUDnasal = {
 
   displayGroundCollisionArrow: func (mode) {
     var rad_alt = me.input.rad_alt.getValue();
-    if (mode != TAKEOFF and ((mode == LANDING and rad_alt > (50/feet2meter)) or mode != LANDING)) {
+    if (mode != TAKEOFF and ( (mode == LANDING and rad_alt > (50/feet2meter)) or mode != LANDING )) {
       #var x = mp.getNode("position/global-x").getValue();# meters probably
       #var y = mp.getNode("position/global-y").getValue();
       #var z = mp.getNode("position/global-z").getValue();
@@ -2142,12 +2142,11 @@ var HUDnasal = {
           me.diamond_name.setText(selection[5]);
           
           if(blink == TRUE and me.input.fiveHz.getValue() == FALSE) {
-            me.diamond_group.hide();
             me.target_circle[me.selection_index].hide();
           } else {
-            me.diamond_group.show();
             me.target_circle[me.selection_index].show();
           }
+          me.diamond_group.show();
           me.diamond.hide();
           me.target.hide();
         }

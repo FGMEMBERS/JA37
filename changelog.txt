@@ -1485,3 +1485,37 @@ GUI: Added colors to different sections of performance monitor.
 Aero: Adjusted the steering limit in regard to ground speed for the new friction values. It now steer significant less.
 Model: Added Flightgear livery.
 HUD: Set default brightness to brightest.
+
+3.023 - 2015 April 27
+=====
+HUD: Possible fix for track type not matching.
+Sim: Fixed roll and heading A/P.
+Aero: Added recoil from cannon to the plane.
+HUD: Fixed that selection distance and callsign would blink if it was not target or diamond.
+Engine: Full thrust will now kick in at 90.0% throttle.
+Engine: Afterburner will now kick in at 94.0% throttle.
+Sim: Doubled max climb rate for A/P around Mach 1.
+Engine: Set the thrust levels in newton as per JA-37Di manual as that is primary source.
+GUI: Fixed a calc error regression in turn radius calculation for monitor.
+Sim: Made a n2 below 15 give less pressure per rpm as opposed to 18. Will help to give control of plane if engine cuts out.
+Sim: Set normal hydraulic pressure to 2987.7775 PSI, and minimum to 1131.2944 PSI as per manual.
+Sim: The fuel gauge will now go over 100% if droptank is full in addition to internal tanks.
+Sound: Made low speed warning.
+GUI: Added option for cannon spread or not.
+GUI: Added option for annunciation.
+Sound: Added master warning.
+Sim: Made master warning work properly with button that silence.
+Aero: Lowered static friction on all gears to help with crosswind landings.
+Aero: Lowered maximum nosewheel steering at 20 fps to help with turning stability.
+Engine: The afterburner now has 3 zones as per manual. Throttle position 94% = stage 1, 96% = stage 2, 98% = stage 3
+Model: The nozzle indicator now switch to show zone of afterburner when that is enabled.
+Model: Added augmentation zone indicator.
+Effect: Made afterburner flame size reflect afterburner zone.
+Engine: Changed idle rpm to 57% as per manual.
+Engine: Changed idle thrust to 3kN as per manual.
+GUI: Made a systems monitor.
+GUI: Added density, wind, alt, temp, pressure to performance monitor.
+Sim: Fixed the shaking when using heading or wing leveler A/P.
+Sim: A/P speed now use indicated airspeed instead of real airspeed. And minor chnages to how it works.
+Sim: Allowed A/P to climb faster at 0.30 mach.
+Sound: Made sound reflect the new afterburner zones.
