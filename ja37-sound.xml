@@ -298,7 +298,7 @@
     <outer-gain>0.2</outer-gain>
    </orientation>
    <volume>
-    <property>engines/engine/nozzle-pos-norm</property>
+    <property>fdm/jsbsim/propulsion/engine/zone-scaled</property>
     <offset>0.05</offset>
     <factor>0.2</factor>
    </volume>
@@ -481,7 +481,7 @@
     <outer-gain>0.2</outer-gain>
    </orientation>
    <volume>
-    <property>engines/engine/nozzle-pos-norm</property>
+    <property>fdm/jsbsim/propulsion/engine/zone-scaled</property>
     <factor>1.0</factor>
     <min>0.1</min>
     <max>1.0</max>
@@ -781,6 +781,38 @@
     </condition>
     <volume><factor>4</factor></volume>
   </pullup>
+
+  <lowspeed>
+    <name>low-speed</name>
+    <mode>looped</mode>
+    <path>Aircraft/JA37/Sounds/warning-low-speed.wav</path>
+    <type>avionics</type>
+    <condition>
+      <property>sim/ja37/sound/speed-on</property>
+      <property>sim/current-view/internal</property>
+      <greater-than>
+          <property>systems/electrical/outputs/annunciator</property>
+          <value>23</value>
+      </greater-than>
+    </condition>
+    <volume><factor>4</factor></volume>
+  </lowspeed>
+
+  <master>
+    <name>master warning</name>
+    <mode>single</mode>
+    <path>Aircraft/JA37/Sounds/warning-master.wav</path>
+    <type>avionics</type>
+    <condition>
+      <property>sim/ja37/sound/master-on</property>
+      <property>sim/current-view/internal</property>
+      <greater-than>
+          <property>systems/electrical/outputs/annunciator</property>
+          <value>23</value>
+      </greater-than>
+    </condition>
+    <volume><factor>4</factor></volume>
+  </master>
 
   <!-- old stall warnings:-->
   
