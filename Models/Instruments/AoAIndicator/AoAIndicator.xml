@@ -34,7 +34,7 @@
   <object-name>Needle</object-name>
   <condition>
     <greater-than>
-      <property>systems/electrical/outputs/alpha-meter</property>
+      <property>systems/electrical/outputs/dc-voltage</property>
       <value>23</value>
     </greater-than>
   </condition>

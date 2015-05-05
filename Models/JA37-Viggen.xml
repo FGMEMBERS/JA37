@@ -2,22 +2,23 @@
 
 <PropertyList include="ja37-bombable.xml">
 
- <path>ja37.ac</path>
+  <path>ja37.ac</path>
 
- <!-- Multiplay sound -->
- <sound>
-  <path>Aircraft/JA37/ja37-mp-sound.xml</path>
- </sound>
+  <!-- Multiplay sound -->
+  <sound>
+    <path>Aircraft/JA37/ja37-mp-sound.xml</path>
+  </sound>
 
 
- <!--        Interior    -->
-  <model>  
+  <!--        Interior    -->
+  <model>
+    <name>interior</name>
     <usage>interior</usage>
     <path>Aircraft/JA37/Models/ja37-interior.xml</path>
   </model>
 
   <model>
-    <usage>pilot</usage>
+    <name>pilot</name>
     <path>Aircraft/JA37/Models/Cockpit/pilot/pilot.xml</path>
     <offsets>
       <x-m>-3.650</x-m>
@@ -86,8 +87,26 @@
 	  <object-name>gearRightDoorsOpen</object-name>
 	  <object-name>gearRightDoorsClosed</object-name>
     <object-name>dropTank</object-name>
-    <!--<object-name>dashPanel</object-name>
-    <object-name>dashPanelTap</object-name>-->
+  </effect>
+
+  <effect>
+    <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-shader</inherits-from>
+    <object-name>dashPanel</object-name>
+    <object-name>dashPanelTap</object-name>
+    <object-name>sidepanelLeft</object-name>
+    <object-name>sidepanelRight</object-name>
+    <object-name>interior</object-name>
+    <object-name>hudRestBack</object-name>
+    <object-name>hudStruts</object-name>
+    <object-name>plaqueLeftMount</object-name>
+    <object-name>plaqueRightMount</object-name>
+    <object-name>radarMount</object-name>
+    <object-name>hudRestBack</object-name>
+    <object-name>hudRestPlaque</object-name>
+    <object-name>plaqueLeft</object-name>
+    <object-name>plaqueRight</object-name>
+    <object-name>radarHeading</object-name>
+    <object-name>radarScreen</object-name>
   </effect>
 
   <effect>  
@@ -129,6 +148,39 @@
 
 <!-- Fuselage animations -->
 
+  <model>
+    <name>ext-power</name>
+    <path>Aircraft/JA37/Models/ext-power.xml</path>
+    <offsets>
+      <x-m> 0.0</x-m>
+      <y-m> 9.0</y-m>
+      <z-m> 0.0</z-m>
+    </offsets>
+  </model>
+
+  <animation>
+     <type>translate</type>
+     <object-name>ext-power</object-name>
+     <property>fdm/jsbsim/systems/electrical/ext-power-z-m</property>
+     <factor>1</factor>
+     <axis>
+       <z>1</z>
+     </axis>
+     <center>
+          <x-m>0</x-m>
+          <y-m>0.0</y-m>
+          <z-m>0</z-m>
+      </center>
+  </animation>
+
+  <animation>
+  <type>select</type>
+  <object-name>ext-power</object-name>
+  <condition>
+    <property>fdm/jsbsim/systems/electrical/external/available</property>
+  </condition>
+ </animation>
+
 <animation>
   <type>rotate</type>
   <object-name>glass</object-name>
@@ -162,6 +214,12 @@
  <animation>
   <type>rotate</type>
   <object-name>radarHeading</object-name>
+  <condition>   
+    <greater-than>
+    <property>systems/electrical/outputs/dc-voltage</property>
+    <value>23</value>
+   </greater-than>
+  </condition>
   <property>orientation/heading-magnetic-deg</property>
   <factor>-1.0</factor>
   <center>
@@ -197,7 +255,7 @@
    <red>0.7</red> 
    <green>0.7</green> 
    <blue>0.7</blue>
-   <factor-prop>systems/electrical/generator_on</factor-prop>
+   <factor-prop>systems/electrical/dc-light</factor-prop>
   </emission>
  </animation>
 
@@ -1108,23 +1166,23 @@
   <object-name>landingLight</object-name>
   <object-name>landingLightLeft</object-name>
   <object-name>landingLightRight</object-name>
-  <condition>
-    <property>sim/multiplay/generic/int[6]</property><!--  sim/ja37/effect/landing-light  -->
-  </condition>
   <emission>
    <red>1.0</red>
    <green>1.0</green>
    <blue>1.0</blue>
+   <factor-prop>sim/multiplay/generic/float[4]</factor-prop><!--  sim/ja37/effect/landing-light  -->
   </emission>
   <diffuse>
    <red>1.0</red>
    <green>1.0</green>
    <blue>1.0</blue>
+   <factor-prop>sim/multiplay/generic/float[4]</factor-prop><!--  sim/ja37/effect/landing-light  -->
   </diffuse>
   <ambient>
    <red>1.0</red>
    <green>1.0</green>
    <blue>1.0</blue>
+   <factor-prop>sim/multiplay/generic/float[4]</factor-prop><!--  sim/ja37/effect/landing-light  -->
   </ambient>
  </animation>
 
