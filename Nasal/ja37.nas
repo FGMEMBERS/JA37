@@ -17,7 +17,8 @@ var bingoFuel = FALSE;
 var warnEngineOff = TRUE;
 var warnCanopy = TRUE;
 var warnGenerator = TRUE;
-var warnHydr = TRUE;
+var warnHydr1 = TRUE;
+var warnHydr2 = TRUE;
 
 var MISSILE_STANDBY = -1;
 var MISSILE_SEARCH = 0;
@@ -34,6 +35,7 @@ input = {
   elapsed:          "sim/time/elapsed-sec",
   elapsedInit:      "sim/time/elapsed-at-init-sec",
   fullInit:         "sim/time/full-init",
+  tank0LvlNorm:     "/consumables/fuel/tank[0]/level-norm",
   tank8LvlNorm:     "/consumables/fuel/tank[8]/level-norm",
   tank0LvlGal:      "/consumables/fuel/tank[0]/level-gal_us",
   tank1LvlGal:      "/consumables/fuel/tank[1]/level-gal_us",
@@ -53,10 +55,10 @@ input = {
   augmentation:     "/controls/engines/engine[0]/augmentation",
   gearCmdNorm:      "/fdm/jsbsim/gear/gear-cmd-norm",
   gearsPos:         "gear/gear/position-norm",
-  batteryOutput:    "systems/electrical/outputs/battery",
-  flapPosCmd:       "/fdm/jsbsim/fcs/flaps/pos-cmd",
+  dcVolt:           "systems/electrical/outputs/dc-voltage",
+  acInstrVolt:      "systems/electrical/outputs/ac-instr-voltage",
   serviceElec:      "systems/electrical/serviceable",
-  canopyPower:      "/fdm/jsbsim/fcs/canopy/has-power",
+  flapPosCmd:       "/fdm/jsbsim/fcs/flaps/pos-cmd",
   vgFps:            "/fdm/jsbsim/velocities/vg-fps",
   downFps:          "/velocities/down-relground-fps",
   thrustLb:         "engines/engine/thrust_lb",
@@ -75,7 +77,6 @@ input = {
   hz05:             "sim/ja37/blink/five-Hz/state",
   hzThird:          "sim/ja37/blink/third-Hz/state",
   flame:            "engines/engine/flame",
-  generatorOn:      "/systems/electrical/generator_on",
   mass1:            "fdm/jsbsim/inertia/pointmass-weight-lbs[1]",
   mass3:            "fdm/jsbsim/inertia/pointmass-weight-lbs[3]",
   asymLoad:         "fdm/jsbsim/inertia/asymmetric-wing-load",
@@ -163,12 +164,18 @@ var update_loop = func {
       bingoFuel = TRUE;
     }
 
+    if (input.tank0LvlNorm.getValue() == 0) {
+      # a bug in JSB makes NaN on fuel temp if tank has been empty.
+      setprop("sim/ja37/supported/fuel-temp", FALSE);
+    }
+
+
     ## control flaps ##
 
     var flapsCommand = 0;
-    var battery = input.batteryOutput.getValue();
+    var battery = input.dcVolt.getValue();
 
-    if (battery > 25) {
+    if (battery > 23) {
       flapsCommand = 1;
     } else {
       flapsCommand = 0;
@@ -178,16 +185,6 @@ var update_loop = func {
       input.flapPosCmd.setValue(flapsCommand);
     }
     
-    if (input.serviceElec.getValue() < 1) {
-      if (input.canopyPower.getValue() != FALSE) {
-        input.canopyPower.setValue(FALSE);
-      }
-    } else {
-      if (input.canopyPower.getValue() != TRUE) {
-        input.canopyPower.setValue(TRUE);
-      }
-    }
-
     #if(getprop("/sim/failure-manager/controls/flight/rudder/serviceable") == 1) {
     #  setprop("fdm/jsbsim/fcs/rudder/serviceable", 1);
     #} elsif (getprop("fdm/jsbsim/fcs/rudder/serviceable") == 1) {
@@ -204,9 +201,9 @@ var update_loop = func {
     var rev = FALSE;
 
     # joystick indicator
-    if(input.generatorOn.getValue() == TRUE) {
+    if(input.acInstrVolt.getValue() > 50) {
       if (((input.lockHeading.getValue() != '' and input.lockHeading.getValue() != nil) and (input.lockAltitude.getValue() != ''
-       and input.lockAltitude.getValue() != nil)) or input.lockPassive.getValue() == TRUE and input.batteryOutput.getValue() > 23) {
+       and input.lockAltitude.getValue() != nil)) or input.lockPassive.getValue() == TRUE and input.dcVolt.getValue() > 23) {
         joystick = FALSE;
       } else {
         joystick = TRUE;
@@ -217,7 +214,7 @@ var update_loop = func {
 
     # attitude indicator
     if(input.lockPassive.getValue() == TRUE or (input.lockHeading.getValue() != '' and input.lockHeading.getValue() != nil)
-     and input.batteryOutput.getValue() > 23) {
+     and input.dcVolt.getValue() > 23) {
       if (input.roll.getValue() > 70 or input.roll.getValue() < -70) {
         attitude = input.hz05.getValue();
       } else {
@@ -229,7 +226,7 @@ var update_loop = func {
 
     # altitude indicator
     if(input.lockPassive.getValue() == TRUE or (input.lockAltitude.getValue() != '' and input.lockAltitude.getValue() != nil)
-     and input.batteryOutput.getValue() > 23) {
+     and input.dcVolt.getValue() > 23) {
       if (input.speedMach.getValue() > 0.97 and input.speedMach.getValue() < 1.05) {
         altitude = input.hz05.getValue();
       } else {
@@ -241,10 +238,10 @@ var update_loop = func {
 
     #transonic indicator
     if (input.speedMach.getValue() > 0.97 and input.speedMach.getValue() < 1.05
-     and input.batteryOutput.getValue() > 23) {
+     and input.dcVolt.getValue() > 23) {
       transonic = TRUE;
     } else {
-      if(input.reversed.getValue() == TRUE and input.speedKt.getValue() < 64.8 and input.batteryOutput.getValue() > 23) {
+      if(input.reversed.getValue() == TRUE and input.speedKt.getValue() < 64.8 and input.dcVolt.getValue() > 23) {
         # warning that speed is so low that its risky to continue reverse thrust
           transonic = TRUE;
         } else {
@@ -253,7 +250,7 @@ var update_loop = func {
     }
 
     # reverse indicator
-    if(input.reversed.getValue() == TRUE and input.batteryOutput.getValue() > 23) {
+    if(input.reversed.getValue() == TRUE and input.dcVolt.getValue() > 23) {
       rev = TRUE;
     } else {
       rev = FALSE;
@@ -427,7 +424,7 @@ var update_loop = func {
     # setprop("gear/gear/compression-wheel", (getprop("gear/gear/compression-ft")*0.3048-1.84812));
 
     # Master warning
-    if(input.batteryOutput.getValue() > 23 ) {
+    if(input.dcVolt.getValue() > 23 ) {
       var warning_sound = FALSE;
       var warning = FALSE;
       if (input.wow0.getValue() == FALSE) {
@@ -453,7 +450,7 @@ var update_loop = func {
         } else {
           warnCanopy = TRUE;
         }
-        if (input.generatorOn.getValue() == FALSE) {
+        if (input.acInstrVolt.getValue() < 50) {
           warning = TRUE;
           if (input.warnButton.getValue() == TRUE) {
             warnGenerator = FALSE;
@@ -464,16 +461,27 @@ var update_loop = func {
         } else {
           warnGenerator = TRUE;
         }
-        if (getprop("fdm/jsbsim/systems/hydraulics/flight-system/pressure") != 1) {
+        if (getprop("fdm/jsbsim/systems/hydraulics/system1/pressure") != 1) {
           warning = TRUE;
           if (input.warnButton.getValue() == TRUE) {
-            warnHydr = FALSE;
+            warnHydr1 = FALSE;
           }
-          if (warnHydr == TRUE) {
+          if (warnHydr1 == TRUE) {
             warning_sound = TRUE;
           }
         } else {
-          warnHydr = TRUE;
+          warnHydr1 = TRUE;
+        }
+        if (getprop("fdm/jsbsim/systems/hydraulics/system2/pressure-main") != 1) {
+          warning = TRUE;
+          if (input.warnButton.getValue() == TRUE) {
+            warnHydr2 = FALSE;
+          }
+          if (warnHydr2 == TRUE) {
+            warning_sound = TRUE;
+          }
+        } else {
+          warnHydr2 = TRUE;
         }
       }
         
@@ -531,7 +539,7 @@ var TILSprev = FALSE;
 # slow updating loop
 var slow_loop = func () {
   #TILS
-  if(input.TILS.getValue() == TRUE and input.batteryOutput.getValue() > 23) {#  and canvas_HUD != nil and canvas_HUD.mode == canvas_HUD.LANDING
+  if(input.TILS.getValue() == TRUE and input.acInstrVolt.getValue() > 100) {#  and canvas_HUD != nil and canvas_HUD.mode == canvas_HUD.LANDING
     var icao = getprop("sim/tower/airport-id");
     var runways = airportinfo(icao).runways;
     var closestRunway = -1;
@@ -605,7 +613,7 @@ var slow_loop = func () {
   # calc inside temp
   if (getprop("canopy/position-norm") > 0) {
     tempInside = tempOutside;
-  } elsif(getprop("systems/electrical/generator_on") == 1) {
+  } elsif(input.dcVolt.getValue() > 23) {
     if (tempInside < tempAC) {
       tempInside = clamp(tempInside+0.5, -1000, tempAC);
     } elsif (tempInside > tempAC) {
@@ -651,16 +659,14 @@ var slow_loop = func () {
 # fast updating loop
 var speed_loop = func () {
 
-  # switch on and off landing lights
-  if(input.batteryOutput.getValue() > 24 and input.landLightSwitch.getValue() == TRUE and input.gearsPos.getValue() != 0) {
-    input.landLight.setValue(TRUE);
+  # switch on and off ALS landing lights
+  if(input.landLight.getValue() > 0) {    
     if(input.viewInternal.getValue() == TRUE and input.landLightSupport.getValue() == TRUE) {
         input.landLightALS.setValue(TRUE);
       } else {
         input.landLightALS.setValue(FALSE);
       }
   } else {
-    input.landLight.setValue(FALSE);
     input.landLightALS.setValue(FALSE);
   }
 
@@ -709,7 +715,7 @@ var trigger_listener = func {
     var armSelect = input.stationSelect.getValue();
 
     #if masterarm is on and HUD in tactical mode, propagate trigger to station
-    if(input.combat.getValue() == 2) {
+    if(input.combat.getValue() == 2 and input.dcVolt.getValue() > 23 and !(armSelect == 0 and input.acInstrVolt.getValue() < 100)) {
       setprop("/controls/armament/station["~armSelect~"]/trigger", trigger);
       var str = "payload/weight["~(armSelect-1)~"]/selected";
       if (armSelect != 0 and getprop(str) == "M70") {
@@ -780,17 +786,26 @@ var cycle_weapons = func {
 }
 
 ###########  loop for handling the battery signal for cockpit sound #########
-
+var voltage = 0;
+var signalInProgress = FALSE;
 var battery_listener = func {
-    if (getprop("controls/electric/battery-switch") == TRUE) {
-      setprop("/systems/electrical/batterysignal", TRUE);
 
+    if (signalInProgress == FALSE and voltage <= 23 and input.dcVolt.getValue() > 23) {
+      setprop("/systems/electrical/batterysignal", TRUE);
+      signalInProgress = TRUE;
       settimer(func {
         setprop("/systems/electrical/batterysignal", FALSE);
+        signalInProgress = FALSE;
         }, 6);
     }
+    voltage = input.dcVolt.getValue();
+    settimer(battery_listener, 0.5);
 }
-setlistener("controls/electric/battery-switch", battery_listener, 0, 0);
+
+#setlistener("controls/electric/main", battery_listener, 0, 0);
+#setlistener("controls/electric/battery", battery_listener, 0, 0);
+#setlistener("fdm/jsbsim/systems/electrical/external/switch", battery_listener, 0, 0);
+#setlistener("fdm/jsbsim/systems/electrical/external/enable-cmd", battery_listener, 0, 0);
                 
 ###############  Test which system the flightgear version support.  ###########
 
@@ -945,6 +960,8 @@ var main_init = func {
   # start minor loops
   speed_loop();
   slow_loop();
+  battery_listener();
+  hydr1Lost();
 
   # start beacon loop
   #beaconTimer.start();
@@ -1049,9 +1066,9 @@ var beaconLoop = func () {
 
 ############ blinkers ####################
 
-aircraft.light.new("sim/ja37/blink/five-Hz", [0.2, 0.2], "controls/electric/battery-switch");
-aircraft.light.new("sim/ja37/blink/ten-Hz", [0.1, 0.1], "controls/electric/battery-switch");
-aircraft.light.new("sim/ja37/blink/third-Hz", [2, 1], "controls/electric/battery-switch");
+aircraft.light.new("sim/ja37/blink/five-Hz", [0.2, 0.2], "controls/electric/main");
+aircraft.light.new("sim/ja37/blink/ten-Hz", [0.1, 0.1], "controls/electric/main");
+aircraft.light.new("sim/ja37/blink/third-Hz", [2, 1], "controls/electric/main");
 
 ############# workaround for removing default HUD   ##############
 
@@ -1064,30 +1081,59 @@ aircraft.light.new("sim/ja37/blink/third-Hz", [2, 1], "controls/electric/battery
 var autostarting = FALSE;
 var start_count = 0;
 
-#Default 's' button will set starter to false, so will start delayed.
 var autostarttimer = func {
   if (autostarting == FALSE) {
     autostarting = TRUE;
     if (getprop("/engines/engine[0]/running") > 0) {
-     popupTip("Stopping engine. Turning off battery.");
+     popupTip("Stopping engine. Turning off electrical system.");
      click();
-     setprop("/controls/engines/engine[0]/cutoff", TRUE);
-  	 setprop("/controls/engines/engine[0]/starter", FALSE);
-     setprop("/controls/electric/engine[0]/generator", FALSE);
-  	 setprop("/controls/electric/battery-switch", FALSE);
-     autostarting = FALSE;
+     stopAutostart();
     } else {
       #print("autostarting");
-      #if (getprop("sim/ja37/damage/crashed") < 1) {
-        setprop("/controls/electric/battery-switch", TRUE);
-        click();
-        popupTip("Battery switch on. Check.");
-    	  settimer(autostart, 2, 1);
-      #} else {
-      #  popupTip("Engine not reacting. Consider ejecting yourself.");
-      #  autostarting = FALSE;
-      #}
+      setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", TRUE);
+      popupTip("Autostarting..");
+  	  settimer(startSupply, 1.5, 1);
     }
+  }
+}
+
+var stopAutostart = func {
+  setprop("/controls/engines/engine[0]/cutoff", TRUE);
+  setprop("/controls/engines/engine[0]/starter-cmd", FALSE);
+  setprop("/controls/electric/engine[0]/generator", FALSE);
+  setprop("/controls/electric/main", FALSE);
+  setprop("/controls/electric/battery", FALSE);
+  setprop("fdm/jsbsim/systems/electrical/external/switch", FALSE);
+  setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", FALSE);
+  autostarting = FALSE;
+}
+
+var startSupply = func {
+  if (getprop("fdm/jsbsim/systems/electrical/external/available") == TRUE) {
+    # using ext. power
+    click();
+    setprop("fdm/jsbsim/systems/electrical/external/switch", TRUE);
+    setprop("/controls/electric/main", TRUE);
+    popupTip("Enabling power using external supply.");
+  } else {
+    # using battery
+    click();
+    setprop("/controls/electric/battery", TRUE);
+    setprop("/controls/electric/main", TRUE);
+    popupTip("Enabling power using battery.");
+  }
+  settimer(endSupply, 1.5, 1);
+}
+
+var endSupply = func {
+  if (getprop("systems/electrical/outputs/dc-voltage") > 23) {
+    # have power to start
+    settimer(autostart, 1.5, 1);
+  } else {
+    # not enough power to start
+    click();
+    stopAutostart();
+    popupTip("Not enough power to autostart, aborting.");
   }
 }
 
@@ -1095,10 +1141,10 @@ var autostarttimer = func {
 var autostart = func {
   setprop("/controls/electric/engine[0]/generator", FALSE);
   if (getprop("controls/electric/engine[0]/generator") == FALSE) {
-    popupTip("Starting engine.");
+    popupTip("Starting engine..");
     click();
     setprop("/controls/engines/engine[0]/cutoff", TRUE);
-    setprop("/controls/engines/engine[0]/starter", TRUE);
+    setprop("/controls/engines/engine[0]/starter-cmd", TRUE);
     start_count = 0;
     settimer(waiting_n1, 0.5, 1);
   } else {
@@ -1117,12 +1163,8 @@ var waiting_n1 = func {
     } else {
       popupTip("Engine start failed. Check fuel.");
     }
-    print("Autostart failed. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/battery-switch")~" fuel="~bingoFuel);
-    setprop("/controls/engines/engine[0]/cutoff", TRUE);
-    setprop("/controls/engines/engine[0]/starter", FALSE);
-    setprop("/controls/electric/engine[0]/generator", FALSE);
-    setprop("/controls/electric/battery-switch", FALSE);
-    autostarting = FALSE;
+    print("Autostart failed. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
+    stopAutostart();
   } elsif (getprop("/engines/engine[0]/n1") > 4.9) {
     if (getprop("/engines/engine[0]/n1") < 20) {
       if (getprop("/controls/engines/engine[0]/cutoff") == TRUE) {
@@ -1132,16 +1174,15 @@ var waiting_n1 = func {
           popupTip("Engine igniting.");
           settimer(waiting_n1, 0.5, 1);
         } else {
-          print("Autostart failed 2. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/battery-switch")~" fuel="~bingoFuel);
-          setprop("/controls/engines/engine[0]/starter", FALSE);
+          print("Autostart failed 2. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
+          stopAutostart();
           popupTip("Engine not igniting. Aborting engine start.");
-          autostarting = FALSE;
         }
       } else {
         settimer(waiting_n1, 0.5, 1);
       }
-    }  elsif (getprop("/engines/engine[0]/n1") > 15 and getprop("/controls/engines/engine[0]/cutoff") == FALSE) {
-      #print("Autostart success. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/battery-switch"));
+    }  elsif (getprop("/engines/engine[0]/n1") > 10 and getprop("/controls/engines/engine[0]/cutoff") == FALSE) {
+      #print("Autostart success. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main"));
       click();
       setprop("controls/electric/engine[0]/generator", TRUE);
       popupTip("Generator on.");
@@ -1162,14 +1203,13 @@ var final_engine = func () {
     } else {
       popupTip("Engine start failed. Check fuel.");
     }    
-    print("Autostart failed 3. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/battery-switch")~" fuel="~bingoFuel);
-    setprop("/controls/engines/engine[0]/cutoff", TRUE);
-    setprop("/controls/engines/engine[0]/starter", FALSE);
-    setprop("/controls/electric/engine[0]/generator", FALSE);
-    setprop("/controls/electric/battery-switch", FALSE);
-    autostarting = FALSE;    
+    print("Autostart failed 3. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
+    stopAutostart();  
   } elsif (getprop("/engines/engine[0]/running") > FALSE) {
     popupTip("Engine ready.");
+    setprop("/controls/engines/engine[0]/starter-cmd", FALSE);
+    setprop("fdm/jsbsim/systems/electrical/external/switch", FALSE);
+    setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", FALSE);
     autostarting = FALSE;    
   } else {
     settimer(final_engine, 0.5, 1);
@@ -1254,9 +1294,9 @@ var toggleTracks = func {
   var enabled = getprop("sim/ja37/hud/tracks-enabled");
   setprop("sim/ja37/hud/tracks-enabled", !enabled);
   if(enabled == FALSE) {
-    popupTip("HUD: Radar tracks ON");
+    popupTip("Radar ON");
   } else {
-    popupTip("HUD: Radar tracks OFF");
+    popupTip("Radar OFF");
   }
 }
 
@@ -1287,20 +1327,42 @@ var follow = func () {
   }
 }
 
+var hydr1Lost = func {
+  #if hydraulic system1 loses pressure or too low voltage then disengage A/P.
+  if (getprop("fdm/jsbsim/systems/hydraulics/system1/pressure") == 0 or input.dcVolt.getValue() < 23) {
+    stopAP();
+  }
+  settimer(hydr1Lost, 1);
+}
+
 var unfollow = func () {
-  setprop("/autopilot/target-tracking-ja37/enable", FALSE);
   popupTip("A/P follow: OFF");
+  stopAP();
+}
+
+var stopAP = func {
+  setprop("/autopilot/target-tracking-ja37/enable", FALSE);
   setprop("/autopilot/locks/speed", "");
   setprop("/autopilot/locks/altitude", "");
   setprop("/autopilot/locks/heading", "");
 }
 
 var lostfollow = func () {
-  setprop("/autopilot/target-tracking-ja37/enable", FALSE);
   popupTip("A/P follow: lost target.");
-  setprop("/autopilot/locks/speed", "");
-  setprop("/autopilot/locks/altitude", "");
-  setprop("/autopilot/locks/heading", "");
+  stopAP();
+}
+
+var apCont = func {
+  unfollow();
+  setprop("autopilot/settings/target-altitude-ft", getprop("instrumentation/altimeter/indicated-altitude-ft"));
+  setprop("autopilot/settings/heading-bug-deg", getprop("orientation/heading-magnetic-deg"));
+  setprop("autopilot/settings/target-speed-kt", getprop("instrumentation/airspeed-indicator/indicated-speed-kt"));
+
+  setprop("/autopilot/locks/speed", "speed-with-throttle");
+  setprop("/autopilot/locks/altitude", "altitude-hold");
+  setprop("/autopilot/locks/heading", "dg-heading-hold");
+
+  screen.log.write("A/P continuing on current heading, speed and altitude.", 0.0, 1.0, 0.0);
 }
 
 var applyParkingBrake = func(v) {

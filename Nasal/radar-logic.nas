@@ -27,8 +27,8 @@ input = {
         tracks_enabled:   "sim/ja37/hud/tracks-enabled",
         callsign:         "/sim/ja37/hud/callsign",
         carrierNear:      "fdm/jsbsim/ground/carrier-near",
-        voltage:          "systems/electrical/outputs/radar",
-        hydrPressure:     "fdm/jsbsim/systems/hydraulics/flight-system/pressure",
+        voltage:          "systems/electrical/outputs/ac-main-voltage",
+        hydrPressure:     "fdm/jsbsim/systems/hydraulics/system1/pressure",
 };
 
 var findRadarTracks = func () {
@@ -42,7 +42,7 @@ var findRadarTracks = func () {
 
   var node_ai = props.globals.getNode("/ai/models");
 
-  if(input.tracks_enabled.getValue() == 1 and input.radar_serv.getValue() > 0 and input.voltage.getValue() == 200 and input.hydrPressure.getValue() == 1) {
+  if(input.tracks_enabled.getValue() == 1 and input.radar_serv.getValue() > 0 and input.voltage.getValue() > 170 and input.hydrPressure.getValue() == 1) {
 
     #do the MP planes
     var players = [];
@@ -314,6 +314,29 @@ var nextTarget = func () {
     lookatSelection();
   } else {
     tracks_index = -1;
+  }
+}
+
+var centerTarget = func () {
+  var centerMost = nil;
+  var centerDist = 99999;
+  var centerIndex = -1;
+  var i = -1;
+  foreach(var track; tracks) {
+    i += 1;
+    if(track[0] != 90000) {
+      var dist = math.abs(track[0]) + math.abs(track[1]);
+      if(dist < centerDist) {
+        centerDist = dist;
+        centerMost = track;
+        centerIndex = i;
+      }
+    }
+  }
+  if (centerMost != nil) {
+    selection = centerMost;
+    lookatSelection();
+    tracks_index = centerIndex;
   }
 }
 
