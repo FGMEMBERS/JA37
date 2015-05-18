@@ -899,10 +899,12 @@ var test_support = func {
   }
   setprop("sim/ja37/supported/initialized", TRUE);
 
-  print("*********************************************************************************");
-  print("**  Initializing Saab JA-37 Viggen systems. Version "~getprop("sim/aircraft-version")~" on Flightgear "~version[0]~"."~version[1]~"."~version[2]~"  **");
-  print("*********************************************************************************");
-
+  print();
+  print("***************************************************************");
+  print("**         Initializing Saab JA-37 Viggen systems.           **");
+  print("**           Version "~getprop("sim/aircraft-version")~" on Flightgear "~version[0]~"."~version[1]~"."~version[2]~"               **");
+  print("***************************************************************");
+  print();
 }
 
 ############################# main init ###############
@@ -1307,7 +1309,7 @@ var follow = func () {
     setprop("/autopilot/target-tracking-ja37/target-root", target.getPath());
     #this is done in -set file: /autopilot/target-tracking-ja37/min-speed-kt
     setprop("/autopilot/target-tracking-ja37/enable", TRUE);
-    var range = 0.025;
+    var range = 0.075;
     setprop("/autopilot/target-tracking-ja37/goal-range-nm", range);
     popupTip("A/P follow: ON");
 
