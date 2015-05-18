@@ -12,7 +12,7 @@
     <author>Anders Lejczak (3D Model and Textures), Nikolai V. Chr. (rest)</author>
     <status>Beta</status>
     <long-description>The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards.</long-description>
-    <aircraft-version>3.025</aircraft-version>
+    <aircraft-version>3.026</aircraft-version>
 
     <rating>
       <FDM type="int">4</FDM>
@@ -67,7 +67,7 @@
 
     <submodels>
      <serviceable type="bool">1</serviceable>
-     <path>Aircraft/JA37/ja37-submodels.xml</path>
+     <path>Aircraft/JA37/Systems/ja37-submodels.xml</path>
     </submodels>
 
 
@@ -350,18 +350,18 @@
           <property type="string">payload/weight[3]/weight-lb</property>
         </signal>
         <!-- Gears -->
-        <signal>
+        <!--<signal>
           <type>float</type>
-          <property type="string">gear/gear/compression-ft</property>
+          <property type="string">gear/gear/compression-norm</property>
         </signal>
         <signal>
           <type>float</type>
-          <property type="string">gear/gear[1]/compression-ft</property>
+          <property type="string">gear/gear[1]/compression-norm</property>
         </signal>
         <signal>
           <type>float</type>
-          <property type="string">gear/gear[2]/compression-ft</property>
-        </signal>            
+          <property type="string">gear/gear[2]/compression-norm</property>
+        </signal>-->
         <signal>
             <type>float</type>
             <property type="string">surface-positions/nose-wheel-pos-norm</property>
@@ -377,7 +377,7 @@
     </flight-recorder>  <!-- remember string types are unsupported -->
     
     <sound>
-     <path>Aircraft/JA37/ja37-sound.xml</path>
+     <path>Aircraft/JA37/Systems/ja37-sound.xml</path>
     </sound>
 
     <virtual-cockpit archive="y">true</virtual-cockpit> <!-- no clue what this does -->
@@ -649,9 +649,9 @@
       <float n="14" alias="/payload/weight[3]/weight-lb"/><!-- used to show missiles -->
       <int n="16" alias="/consumables/fuel/tank[8]/jettisoned"/><!-- used for drop tank -->
       <!-- gears -->
-      <float n="8" alias="/gear/gear/compression-ft"/><!-- used for gear anim -->
-      <float n="9" alias="/gear/gear[1]/compression-ft"/><!-- used for gear anim -->
-      <float n="10" alias="/gear/gear[2]/compression-ft"/><!-- used for gear anim -->
+      <float n="8" alias="/gear/gear/compression-ft"/><!-- used for gear anim, deprecated -->
+      <float n="9" alias="/gear/gear[1]/compression-ft"/><!-- used for gear anim, deprecated -->
+      <float n="10" alias="/gear/gear[2]/compression-ft"/><!-- used for gear anim, deprecated -->
       <int n="17" alias="/gear/gear[0]/wow"/><!-- used in MP sound -->
       <int n="18" alias="/gear/gear[1]/wow"/><!-- used in MP sound -->
       <int n="19" alias="/gear/gear[2]/wow"/><!-- used in MP sound -->
@@ -747,7 +747,7 @@
       <desc>Toggle custom/FG HUD</desc>
      </key>
      <key>
-      <name>m</name>
+      <name>M</name>
       <desc>Toggle nose wheel steering</desc>
      </key>
      <key>
@@ -797,6 +797,10 @@
      <key>
       <name>Shift-backspace</name>
       <desc>Reload A/P</desc>
+     </key>
+     <key>
+      <name>m</name>
+      <desc>Toggle configure HUD for final approach</desc>
      </key> -->
      <text>
       Startup
@@ -1368,11 +1372,11 @@
 </environment>
 <autopilot>
   <target-tracking-ja37>
-    <min-speed-kt type="double">200</min-speed-kt>
+    <min-speed-kt type="double">190</min-speed-kt>
     <enable type="bool">false</enable>
   </target-tracking-ja37>
   <target-tracking>
-    <min-speed-kt type="double">200</min-speed-kt>
+    <min-speed-kt type="double">190</min-speed-kt>
   </target-tracking>
 </autopilot>
 <systems>
@@ -1856,20 +1860,24 @@
         <script>ja37.drop();</script>
       </binding>
      </key>
-    <key n="109">
-     <name>m</name>
+    <key n="77">
+     <name>M</name>
      <desc>Toggle nose wheel steering</desc>
      <binding>
         <command>nasal</command>
         <script>ja37.toggleNosewheelSteer();</script>
      </binding>
     </key>
-    <key n="77">
-      <name>M</name>
+    <key n="109">
+      <name>m</name>
       <desc>Final approach</desc>
       <binding>
        <command>property-toggle</command>
        <property>sim/ja37/hud/final</property>
+      </binding>
+      <binding>
+        <command>nasal</command>
+        <script>ja37.click();ja37.popupTip("Toggled configure HUD for final approach.");</script>
       </binding>
     </key>
    </keyboard>
@@ -1953,7 +1961,7 @@
   </instrumentation-light>
   <switches>
     <generator>
-    <pos type="int">0</pos>
+      <pos type="int">0</pos>
     </generator>
     <inst-light-knob>
       <pos alias="/instrumentation/instrumentation-light/serviceable"/>
@@ -1975,7 +1983,8 @@
     </inputs>
   </transponder>
   <radar>
-    <range>4000</range>
+    <debug-mode type="bool">true</debug-mode><!--forced radar calculations even if no radar instrument and ai aircraft are out of range-->
+    <range>4000</range><!-- meter -->
     <serviceable type="bool">true</serviceable>
   </radar>
   <head-up-display>

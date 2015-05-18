@@ -15,16 +15,15 @@ Model: Adjust instrument materials, and make the gauges look more similar.
 Model: Proper pilot seat.
 Model: Throttle.
 Model: Make minimal polygon model for multiplayer LOD.
-Model: Gauges that share mount design should also share geometry and textures.
 Model: Make liveries that is not 59, able to not have to use base texture.
 Model: Elevons should be double sided or have geometry on all edges.
-Model: Remove numbers and insignia from specular übershader texture.
+Model: Ext. power truck more mil style textures.
 Sim: Improve autopilot further. (alt-hold should use pitch not v-speed)
-Sim: Make autopilot depend fully on instrument properties not sim properties.
+Sim: Make autopilot depend fully on instrument properties not true properties.
 Sim: Implement ejection seat. (with parachute?)
 Sim: Make braking parachute.
 Sim: Reset controls after A/P let go of them.
-Sim: Stop using integers in xml where floating point is expected?
+Sim: Stop using integers in xml where floating point is expected? (really not needed)
 Sim: Check that all instruments and instr. lights rely on battery/generator power. Plus on instrument properties, not sim properties.
 Sim: Make verbose property to be used in all nasal scripts. (possible include in options)
 Sim: Air to ground guided missiles.
@@ -40,7 +39,9 @@ Sim: Missiles should lock onto flares.
 Sim: Lock warning when another plane get radar lock. (ja37, m2000-5, f-14b)
 Sim: Warning at incoming missile. (ja37, m2000-5, f-14b)
 Sim: Damage from missile explosion.
-Sim: Complete hydraulic dependencies. Brakes and reverser.
+Sim: Complete hydraulic dependencies. Brakes.
+Sim: Hydraulic drain.
+Sim: Shift-m should be a key without shift instead for convinience.
 Effect: Rembrandt landing lightcone.
 Effect: Check contrail effect is properly installed.
 Effect: Make pilot faint/die due to G-forces.
@@ -55,7 +56,6 @@ HUD: Make boxes for desired pitch.
 HUD: Alt scale follow pitch lines at more than 1 degree roll from level flight. (swedish pilots seems able to read upside down, not sure I will make this)
 HUD: Make too low reference speed change reticle vertical tail down.
 HUD: All track semi circles and semi box should have a line in them. (might degrade performance)
-HUD: Adjust pilots eyes so that HUD is viewed as in the real (angle and distance). Also key to zoom in on HUD.
 HUD: Sidewind indicator should really be 10 degs below plane axis line.
 HUD: Fix that HUD selects diamond_node, not radar logic, so HUD can be turned off in external view.
 
@@ -82,11 +82,14 @@ GUI: The performance monitor can duplicate itself when selecting airport. [repro
 Model: sim load-lag when coming near other ja37. [reproduced, select anims are probably to blame]
 Model: Sim lag at final retraction of gear. [reproduced, select anims are to blame]
 Model: CTRL-X in HUD view will not zoom to correct level.
-Animation: Selection view does not follow carriers till they move. (they lack radar properties)
+Animation: Selection view does not follow carriers or other ships till they move. (they lack radar properties)
 Model: In FG 2.12 radar screen does not work as it should. (no canvas replacement)
 Sim: Sometimes when exploding, the sim freezes, typically at redout.
 Sim: {JazzTP} Replay did not replay explosion.
 Sound: Could hear aim-9 buzz even though not in tact mode, in external view.
+HUD: In landing mode when horizont is out of view, heading scale does not show commanded heading.
+HUD: In landing mode, commanded altitude lines can be confused with ILS guidance.
+Sim: If track type is selected in HUD, when missile hit the message will display the type, not callsign.
 
 
 Issues with FG: (or my limited understanding of it)
@@ -123,7 +126,6 @@ Require modeling/texture skills (above my level):
 -------------------------------------------------
 Model: Model proper panels and cockpit layout.
 Model: Put in more working instruments and controls. (semi doable if can find similar instrument in other plane, but too many to look through)
-Animation: Animate scissor gear compression. The gears are currently modelled wrong for this.
 Animation: Proper animation of gear doors.
 Model: Model the reverser for reverse thrust.
 Model: Make gunpod, between the fuselage and droptank.
