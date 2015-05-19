@@ -40,7 +40,7 @@ System
 External power supply truck or generator produces AC voltages.
 DC voltage converted from AC or from battery.
 Battery drain and recharge.
-Intrument and landing light dims when not getting enough power and various systems shut down.
+Instrument and landing light dims when not getting enough power and various systems shut down.
 Two hydraulic system modeled. The second having a reserve pump.
 Terrain warning system, with HUD indication and annuciator.
 Canopy can be torn off from high wind speeds.
@@ -98,6 +98,7 @@ Selection view, with camera pointing to the aircraft from outside and towards th
 Ubershaded exterior model and cockpit panels.
 Nomal mapped exterior model.
 Fully ALS ready and also Rembrandt compatible, but with no light influences.
+Animated gear scissors, compressions and spinning wheels.
 Pilot eye view is tuned for getting good view of runways at landings, while at the same time give good view of HUD and instrument panel.
 Preloaded exterior view, for fast switching to exterior view.
 

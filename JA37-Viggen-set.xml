@@ -12,7 +12,7 @@
     <author>Anders Lejczak (3D Model and Textures), Nikolai V. Chr. (rest)</author>
     <status>Beta</status>
     <long-description>The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards.</long-description>
-    <aircraft-version>3.025</aircraft-version>
+    <aircraft-version>3.026</aircraft-version>
 
     <rating>
       <FDM type="int">4</FDM>
@@ -350,18 +350,18 @@
           <property type="string">payload/weight[3]/weight-lb</property>
         </signal>
         <!-- Gears -->
-        <signal>
+        <!--<signal>
           <type>float</type>
-          <property type="string">gear/gear/compression-ft</property>
+          <property type="string">gear/gear/compression-norm</property>
         </signal>
         <signal>
           <type>float</type>
-          <property type="string">gear/gear[1]/compression-ft</property>
+          <property type="string">gear/gear[1]/compression-norm</property>
         </signal>
         <signal>
           <type>float</type>
-          <property type="string">gear/gear[2]/compression-ft</property>
-        </signal>            
+          <property type="string">gear/gear[2]/compression-norm</property>
+        </signal>-->
         <signal>
             <type>float</type>
             <property type="string">surface-positions/nose-wheel-pos-norm</property>
@@ -747,7 +747,7 @@
       <desc>Toggle custom/FG HUD</desc>
      </key>
      <key>
-      <name>m</name>
+      <name>M</name>
       <desc>Toggle nose wheel steering</desc>
      </key>
      <key>
@@ -797,6 +797,10 @@
      <key>
       <name>Shift-backspace</name>
       <desc>Reload A/P</desc>
+     </key>
+     <key>
+      <name>m</name>
+      <desc>Toggle configure HUD for final approach</desc>
      </key> -->
      <text>
       Startup
@@ -1856,20 +1860,24 @@
         <script>ja37.drop();</script>
       </binding>
      </key>
-    <key n="109">
-     <name>m</name>
+    <key n="77">
+     <name>M</name>
      <desc>Toggle nose wheel steering</desc>
      <binding>
         <command>nasal</command>
         <script>ja37.toggleNosewheelSteer();</script>
      </binding>
     </key>
-    <key n="77">
-      <name>M</name>
+    <key n="109">
+      <name>m</name>
       <desc>Final approach</desc>
       <binding>
        <command>property-toggle</command>
        <property>sim/ja37/hud/final</property>
+      </binding>
+      <binding>
+        <command>nasal</command>
+        <script>ja37.click();ja37.popupTip("Toggled configure HUD for final approach.");</script>
       </binding>
     </key>
    </keyboard>
