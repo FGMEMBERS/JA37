@@ -4,19 +4,16 @@
 
  <path>altimeter.ac</path>
 
+    <effect>  
+      <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-transparent-shader</inherits-from>
+      <object-name>glassAlt1</object-name>
+    </effect>
 
 <animation>
   <type>pick</type> 
-  <object-name>Hundred_meter_hand</object-name>
-  <object-name>km_hand</object-name>
-  <object-name>Dig1000</object-name>
-  <object-name>Dig100</object-name>
-  <object-name>Dig10</object-name>
-  <object-name>Dig1</object-name>
-  <object-name>Dig0.1</object-name>
-  <object-name>Face</object-name>
   <object-name>knob</object-name>
   <object-name>Cube</object-name>
+  <object-name>glassAlt1</object-name>
   <condition>   
     <greater-than>
     <property>systems/electrical/outputs/dc-voltage</property>
@@ -82,7 +79,7 @@
   <factor>0.1098</factor>
   <center>
    <x-m>0.0</x-m>
-   <y-m>0.00</y-m>
+   <y-m>-0.00316</y-m>
    <z-m>0.0139</z-m>
   </center>
   <axis>
@@ -105,7 +102,7 @@
   <factor>0.01098</factor>
   <center>
    <x-m>0.0</x-m>
-   <y-m>0.00</y-m>
+   <y-m>-0.00316</y-m>
    <z-m>0.0139</z-m>
   </center>
   <axis>
