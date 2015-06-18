@@ -19,6 +19,10 @@ var warnCanopy = TRUE;
 var warnGenerator = TRUE;
 var warnHydr1 = TRUE;
 var warnHydr2 = TRUE;
+var warnCabin = TRUE;
+
+var mainOn = FALSE;
+var mainTimer = -1;
 
 var MISSILE_STANDBY = -1;
 var MISSILE_SEARCH = 0;
@@ -110,6 +114,26 @@ input = {
   subAmmo3:         "ai/submodels/submodel[3]/count", 
   breathVol:        "sim/ja37/sound/breath-volume",
   impact:           "/ai/models/model-impact",
+  fdmAug:           "fdm/jsbsim/propulsion/engine/augmentation",
+  hydr1On:          "fdm/jsbsim/systems/hydraulics/system1/pressure",
+  hydr2On:          "fdm/jsbsim/systems/hydraulics/system2/pressure-main",
+  hydrCombined:     "fdm/jsbsim/systems/hydraulics/flight-surface-actuation",
+  lampFuelDistr:    "sim/ja37/avionics/uppf",
+  canopyPos:        "canopy/position-norm",
+  speedWarn:        "sim/ja37/sound/speed-on",
+  cabinPressure:    "fdm/jsbsim/systems/flight/cabin-pressure-kpm2",
+  elecMain:         "controls/electric/main",
+  lampData:         "sim/ja37/avionics/primaryData",
+  lampInertiaNav:   "sim/ja37/avionics/TN",
+  lampStart:        "sim/ja37/avionics/startSys",
+  cutoff:           "controls/engines/engine[0]/cutoff",
+  lampIgnition:     "sim/ja37/avionics/ignitionSys",
+  starter:          "controls/engines/engine[0]/starter-cmd",
+  lampXTank:        "sim/ja37/avionics/xtank",
+  lampStick:        "sim/ja37/avionics/joystick",
+  lampOxygen:       "sim/ja37/avionics/oxygen",
+  generatorOn:      "fdm/jsbsim/systems/electrical/generator-running-norm",
+  lampCanopy:       "sim/ja37/avionics/canopyAndSeat",
 };
    
 var update_loop = func {
@@ -156,6 +180,13 @@ var update_loop = func {
       input.fuelWarning.setValue(TRUE);
     } else {
       input.fuelWarning.setValue(FALSE);
+    }
+
+    if((current / total_fuel) > 0.40 and input.hydr1On.getValue() == 0) {
+      # fuel flow distributor lamp
+      input.lampFuelDistr.setValue(TRUE);
+    } else {
+      input.lampFuelDistr.setValue(FALSE);
     }
 
     if (current > 0 and input.tank8LvlNorm.getValue() > 0) {
@@ -439,7 +470,7 @@ var update_loop = func {
         } else {
           warnEngineOff = TRUE;
         }
-        if (getprop("canopy/position-norm") > 0) {
+        if (input.canopyPos.getValue() > 0) {
           warning = TRUE;
           if (input.warnButton.getValue() == TRUE) {
             warnCanopy = FALSE;
@@ -461,7 +492,7 @@ var update_loop = func {
         } else {
           warnGenerator = TRUE;
         }
-        if (getprop("fdm/jsbsim/systems/hydraulics/system1/pressure") != 1) {
+        if (input.hydr1On.getValue() != 1) {
           warning = TRUE;
           if (input.warnButton.getValue() == TRUE) {
             warnHydr1 = FALSE;
@@ -472,7 +503,7 @@ var update_loop = func {
         } else {
           warnHydr1 = TRUE;
         }
-        if (getprop("fdm/jsbsim/systems/hydraulics/system2/pressure-main") != 1) {
+        if (input.hydr2On.getValue() != 1) {
           warning = TRUE;
           if (input.warnButton.getValue() == TRUE) {
             warnHydr2 = FALSE;
@@ -482,6 +513,17 @@ var update_loop = func {
           }
         } else {
           warnHydr2 = TRUE;
+        }
+        if (input.cabinPressure.getValue() < .15) {
+          warning = TRUE;
+          if (input.warnButton.getValue() == TRUE) {
+            warnCabin = FALSE;
+          }
+          if (warnCabin == TRUE) {
+            warning_sound = TRUE;
+          }
+        } else {
+          warnCabin = TRUE;
         }
       }
         
@@ -524,7 +566,64 @@ var update_loop = func {
         }
       }
     }
-    setprop("sim/ja37/sound/speed-on", lowSpeed);
+    input.speedWarn.setValue(lowSpeed);
+
+    # main electrical turned on
+    var timer = input.elapsed.getValue();
+    var main = input.elecMain.getValue();
+    if(main == TRUE and mainOn == FALSE) {
+      #main has been switched on
+      mainTimer = timer;
+      mainOn = TRUE;
+      input.lampData.setValue(TRUE);
+      input.lampInertiaNav.setValue(TRUE);
+    } elsif (main == TRUE) {
+      if (timer > (mainTimer + 20)) {
+        input.lampData.setValue(FALSE);
+      }
+      if (timer > (mainTimer + 140)) {
+        input.lampInertiaNav.setValue(FALSE);
+      }
+    } elsif (main == FALSE) {
+      mainOn = FALSE;
+    }
+    # engine start
+    var n2 = input.n2.getValue();
+    if (input.starter.getValue() == TRUE and n2 < 57 and input.thrustLb.getValue() == 0) {
+      input.lampStart.setValue(TRUE);
+    } else {
+      input.lampStart.setValue(FALSE);
+    }
+    if (input.cutoff.getValue() == FALSE and n2 < 57 and n2 > 16 and input.thrustLb.getValue() == 0) {
+      # manual says between 11-16% it goes on
+      input.lampIgnition.setValue(TRUE);
+    } else {
+      input.lampIgnition.setValue(FALSE);
+    }
+    if (input.tank8Jettison.getValue() == FALSE and input.tank8LvlGal.getValue() > 45 and (input.starter.getValue() == TRUE or input.engineRunning.getValue() == 1) and n2 < 70) {
+      input.lampXTank.setValue(TRUE);
+    } else {
+      input.lampXTank.setValue(FALSE);
+    }
+
+    # joystick on indicator panel
+    if ((main == TRUE and input.generatorOn.getValue() < 1) or input.hydrCombined.getValue() != 1) {
+      input.lampStick.setValue(TRUE);
+    } else {
+      input.lampStick.setValue(FALSE);
+    }
+
+    if (main == TRUE and input.generatorOn.getValue() < 1) {
+      input.lampOxygen.setValue(TRUE);
+    } else {
+      input.lampOxygen.setValue(FALSE);
+    }
+
+    if (main == TRUE and input.generatorOn.getValue() < 1) {
+      input.lampCanopy.setValue(TRUE);
+    } else {
+      input.lampCanopy.setValue(FALSE);
+    }
 
     settimer(
       #func debug.benchmark("j37 loop", 
@@ -611,7 +710,7 @@ var slow_loop = func () {
   var tempACDew = 5;#aircondition dew point. 5 = dry
 
   # calc inside temp
-  if (getprop("canopy/position-norm") > 0) {
+  if (input.canopyPos.getValue() > 0) {
     tempInside = tempOutside;
   } elsif(input.dcVolt.getValue() > 23) {
     if (tempInside < tempAC) {
@@ -688,7 +787,7 @@ var speed_loop = func () {
   var n2 = input.n2.getValue();
   var reversed = input.reversed.getValue();
 
-  if ( getprop("fdm/jsbsim/propulsion/engine/augmentation") == TRUE) { #was 99 and 97
+  if ( input.fdmAug.getValue() == TRUE) { #was 99 and 97
     input.augmentation.setValue(TRUE);
   } else {
     input.augmentation.setValue(FALSE);
@@ -1142,17 +1241,12 @@ var endSupply = func {
 #Simulating autostart function
 var autostart = func {
   setprop("/controls/electric/engine[0]/generator", FALSE);
-  if (getprop("controls/electric/engine[0]/generator") == FALSE) {
-    popupTip("Starting engine..");
-    click();
-    setprop("/controls/engines/engine[0]/cutoff", TRUE);
-    setprop("/controls/engines/engine[0]/starter-cmd", TRUE);
-    start_count = 0;
-    settimer(waiting_n1, 0.5, 1);
-  } else {
-    popupTip("Generator switch turned on. Engine restart aborted.");
-    autostarting = FALSE;
-  }
+  popupTip("Starting engine..");
+  click();
+  setprop("/controls/engines/engine[0]/cutoff", TRUE);
+  setprop("/controls/engines/engine[0]/starter-cmd", TRUE);
+  start_count = 0;
+  settimer(waiting_n1, 0.5, 1);
 }
 
 # Opens fuel valve in autostart
@@ -1160,10 +1254,12 @@ var waiting_n1 = func {
   start_count += 1* getprop("sim/speed-up");
   #print(start_count);
   if (start_count > 45) {
-    if(bingoFuel == FALSE) {
-      popupTip("Autostart failed. Report bug to aircraft developer.");
-    } else {
+    if(bingoFuel == TRUE) {
       popupTip("Engine start failed. Check fuel.");
+    } elsif (getprop("systems/electrical/outputs/dc-voltage") < 23) {
+      popupTip("Engine start failed. Check battery.");
+    } else {
+      popupTip("Autostart failed. If engine has not reported failure, report bug to aircraft developer.");
     }
     print("Autostart failed. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
     stopAutostart();
@@ -1200,10 +1296,12 @@ var waiting_n1 = func {
 var final_engine = func () {
   start_count += 1* getprop("sim/speed-up");
   if (start_count > 70) {
-    if(bingoFuel == FALSE) {
-      popupTip("Autostart failed. If engine has not reported failure, report bug to aircraft developer.");
-    } else {
+    if(bingoFuel == TRUE) {
       popupTip("Engine start failed. Check fuel.");
+    } elsif (getprop("systems/electrical/outputs/dc-voltage") < 23) {
+      popupTip("Engine start failed. Check battery.");
+    } else {
+      popupTip("Autostart failed. If engine has not reported failure, report bug to aircraft developer.");
     }    
     print("Autostart failed 3. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
     stopAutostart();  
@@ -1212,6 +1310,7 @@ var final_engine = func () {
     setprop("/controls/engines/engine[0]/starter-cmd", FALSE);
     setprop("fdm/jsbsim/systems/electrical/external/switch", FALSE);
     setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", FALSE);
+    setprop("/controls/electric/battery", TRUE);
     autostarting = FALSE;    
   } else {
     settimer(final_engine, 0.5, 1);
@@ -1331,8 +1430,11 @@ var follow = func () {
 
 var hydr1Lost = func {
   #if hydraulic system1 loses pressure or too low voltage then disengage A/P.
-  if (getprop("fdm/jsbsim/systems/hydraulics/system1/pressure") == 0 or input.dcVolt.getValue() < 23) {
+  if (input.hydr1On.getValue() == 0 or input.dcVolt.getValue() < 23) {
+    setprop("sim/ja37/avionics/autopilot", TRUE);
     stopAP();
+  } else {
+    setprop("sim/ja37/avionics/autopilot", FALSE);
   }
   settimer(hydr1Lost, 1);
 }

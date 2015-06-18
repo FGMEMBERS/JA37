@@ -4,8 +4,8 @@
 
 <animation>
   <type>pick</type> 
- <object-name>Face</object-name>
- <object-name>Needle</object-name>
+ <object-name>glassAoA</object-name>
+ <object-name>Cylinder</object-name>
   <hovered>
        <binding>
          <command>set-tooltip</command>
@@ -16,6 +16,10 @@
    </hovered>
  </animation>
 
+<effect>  
+  <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-transparent-shader</inherits-from>
+  <object-name>glassAoA</object-name>
+</effect>
  
 <animation>
  <type>material</type> 

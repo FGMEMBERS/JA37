@@ -4,6 +4,11 @@
 
  <path>chronometer.ac</path>
 
+  <effect>  
+    <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-transparent-shader</inherits-from>
+    <object-name>ChronoGlass</object-name>
+  </effect>
+
  <!-- START CLOCK -->
     <animation>
             <type>rotate</type>
@@ -16,9 +21,9 @@
              <z-m>0</z-m>
             </center>
             <axis>
-                    <x>0</x>
+                    <x>-1</x>
                     <y>0</y>
-                    <z>-1</z>
+                    <z>0</z>
             </axis>
     </animation>
 
@@ -33,9 +38,9 @@
              <z-m>0</z-m>
             </center>
             <axis>
-                    <x>0</x>
+                    <x>-1</x>
                     <y>0</y>
-                    <z>-1</z>
+                    <z>0</z>
             </axis>
     </animation>
 
@@ -50,9 +55,9 @@
              <z-m>0</z-m>
             </center>
             <axis>
-                    <x>0</x>
+                    <x>-1</x>
                     <y>0</y>
-                    <z>-1</z>
+                    <z>0</z>
             </axis>
     </animation>
     <animation>
@@ -67,9 +72,9 @@
              <z-m>0</z-m>
             </center>
             <axis>
-                    <x>0</x>
+                    <x>-1</x>
                     <y>0</y>
-                    <z>-1</z>
+                    <z>0</z>
             </axis>
     </animation>
 
@@ -180,17 +185,8 @@
 
 <animation>
   <type>pick</type> 
-  <object-name>CLOCK_face</object-name>
-  <object-name>Mesh.002</object-name>
-  <object-name>Mesh.003</object-name>
-  <object-name>Mesh.004</object-name>
-  <object-name>Mesh.005</object-name>
-  <object-name>Mesh.006</object-name>
-  <object-name>Mesh.007</object-name>
-  <object-name>Mesh.011</object-name>
-  <object-name>Mesh.012</object-name>
-  <object-name>ElapsedMinutesHand_0</object-name>
-  <object-name>ElapsedMinutesHand_1</object-name>
+  <object-name>CLOCK_mount</object-name>
+  <object-name>ChronoGlass</object-name>
   <hovered>
        <binding>
          <command>set-tooltip</command>

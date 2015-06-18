@@ -1,15 +1,25 @@
 <?xml version="1.0"?>
-<!-- 
-Airspeed Indicator
-Syd Adams
--->
+
 <PropertyList>
 
-    <path>airspeed.ac</path>
-    
+  <path>../gauge.ac</path>
+
+  <effect>  
+    <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-transparent-shader</inherits-from>
+    <object-name>glass</object-name>
+  </effect>
+
+  <animation>
+    <type>material</type>
+     <object-name>dial</object-name>
+     <property-base>sim/ja37/texture</property-base>
+     <texture-prop>gauge-airspeed</texture-prop>
+     <texture>airspeed-face.png</texture>
+   </animation>
+
     <animation>
         <type>rotate</type>
-        <object-name>ASIneedle</object-name>
+        <object-name>needle</object-name>
         <condition>
           <greater-than>
             <property>systems/electrical/outputs/ac-instr-voltage</property>
@@ -29,8 +39,8 @@ Syd Adams
 
     <animation>
       <type>pick</type> 
-      <object-name>ASIneedle</object-name>
-      <object-name>ASIface</object-name>
+      <object-name>glass</object-name>
+      <object-name>mount</object-name>
       <condition>   
         <greater-than>
         <property>systems/electrical/outputs/dc-voltage</property>
@@ -49,8 +59,8 @@ Syd Adams
 
 <!-- lighting -->
  <animation>
-  <object-name>ASIneedle</object-name>
-  <object-name>ASIface</object-name>
+  <object-name>needle</object-name>
+  <object-name>dial</object-name>
   <type>material</type>
   <emission>
    <red-prop>instrumentation/instrumentation-light/r</red-prop> 
