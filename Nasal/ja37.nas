@@ -1,5 +1,11 @@
 # $Id$
 var clamp = func(v, min, max) { v < min ? min : v > max ? max : v }
+var encode3bits = func(first, second, third) {
+  var integer = first;
+  integer = integer + 2 * second;
+  integer = integer + 4 * third;
+  return integer;
+}
 
 var UPDATE_PERIOD = 0.1;
 
@@ -109,7 +115,11 @@ input = {
   landLightALS:     "sim/rendering/als-secondary-lights/use-landing-light",
   viewInternal:     "sim/current-view/internal",
   sunAngle:         "sim/time/sun-angle-rad",
-  MPfloat2:         "sim/multiplay/generic/float[2]", 
+  MPfloat2:         "sim/multiplay/generic/float[2]",
+  MPfloat9:         "sim/multiplay/generic/float[9]",
+  MPint9:           "sim/multiplay/generic/int[9]",
+  MPint17:          "sim/multiplay/generic/int[17]",
+  MPint18:          "sim/multiplay/generic/int[18]",
   subAmmo2:         "ai/submodels/submodel[2]/count", 
   subAmmo3:         "ai/submodels/submodel[3]/count", 
   breathVol:        "sim/ja37/sound/breath-volume",
@@ -134,6 +144,10 @@ input = {
   lampOxygen:       "sim/ja37/avionics/oxygen",
   generatorOn:      "fdm/jsbsim/systems/electrical/generator-running-norm",
   lampCanopy:       "sim/ja37/avionics/canopyAndSeat",
+  pneumatic:        "fdm/jsbsim/systems/fuel/pneumatics/serviceable",
+  switchFlash:      "controls/electric/lights-ext-flash",
+  switchBeacon:     "controls/electric/lights-ext-beacon",
+  switchNav:        "controls/electric/lights-ext-nav",
 };
    
 var update_loop = func {
@@ -142,6 +156,19 @@ var update_loop = func {
 
   # breath sound volume
   input.breathVol.setValue(input.viewInternal.getValue() and input.fullInit.getValue());
+
+  #augmented flame translucency
+  var red = getprop("/rendering/scene/diffuse/red");
+  # normal effect
+  #var angle = input.sunAngle.getValue();# 1.25 - 2.45
+  #var newAngle = (1.2 -(angle-1.25))*0.8333;
+  #input.MPfloat2.setValue(newAngle);
+  var translucency = clamp(red, 0.35, 1);
+  input.MPfloat2.setValue(translucency);
+
+  # ALS effect
+  red = clamp(1 - red, 0.25, 1);
+  input.MPfloat9.setValue(red);
 
   # End stuff
 
@@ -182,7 +209,7 @@ var update_loop = func {
       input.fuelWarning.setValue(FALSE);
     }
 
-    if((current / total_fuel) > 0.40 and input.hydr1On.getValue() == 0) {
+    if((current / total_fuel) > 0.40) {
       # fuel flow distributor lamp
       input.lampFuelDistr.setValue(TRUE);
     } else {
@@ -352,9 +379,6 @@ var update_loop = func {
         }
         if(i==4) {
           # no drop tank attached
-          if (input.tank8Flow.getValue() != -1500) {
-            input.tank8Flow.setValue(-1500);
-          }
           input.tank8Selected.setValue(FALSE);
           input.tank8Jettison.setValue(TRUE);
           input.tank8LvlNorm.setValue(0);
@@ -371,9 +395,8 @@ var update_loop = func {
         }
       } elsif (selected == "Drop tank") {
         # the pylon has a drop tank, give it a pointmass
-        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") == 0 or input.tank8Flow.getValue() != 0) {
+        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") == 0) {
           setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 224.87);#if change this also change it in jsbsim
-          input.tank8Flow.setValue(0);
         }
         input.tank8Selected.setValue(TRUE);
         input.tank8Jettison.setValue(FALSE);
@@ -543,11 +566,6 @@ var update_loop = func {
       input.master.setValue(FALSE);
     }
 
-    #augmented flame translucency
-    var angle = input.sunAngle.getValue();# 1.25 - 2.45
-    var newAngle = (1.2 -(angle-1.25))*0.8333;
-    input.MPfloat2.setValue(newAngle);
-
     #tracer ammo, due to it might run out faster than cannon rounds due to submodel delay not being precise
     if(input.subAmmo3.getValue() > 0) {
       input.subAmmo2.setValue(-1);
@@ -600,7 +618,7 @@ var update_loop = func {
     } else {
       input.lampIgnition.setValue(FALSE);
     }
-    if (input.tank8Jettison.getValue() == FALSE and input.tank8LvlGal.getValue() > 45 and (input.starter.getValue() == TRUE or input.engineRunning.getValue() == 1) and n2 < 70) {
+    if (input.tank8Jettison.getValue() == FALSE and input.tank8LvlGal.getValue() > 45 and (input.starter.getValue() == TRUE or input.engineRunning.getValue() == 1) and (n2 < 70 or input.pneumatic.getValue() == 0)) {
       input.lampXTank.setValue(TRUE);
     } else {
       input.lampXTank.setValue(FALSE);
@@ -624,6 +642,16 @@ var update_loop = func {
     } else {
       input.lampCanopy.setValue(FALSE);
     }
+
+    # exterior lights
+    var flash = input.dcVolt.getValue() > 20 and input.switchFlash.getValue() == 1;
+    var beacon = input.dcVolt.getValue() > 20 and input.switchBeacon.getValue() == 1;
+    var nav = input.dcVolt.getValue() > 20 and input.switchNav.getValue() == 1;
+    input.MPint9.setValue(encode3bits(flash, beacon, nav));
+
+    # contrails
+    var contrails = getprop("environment/temperature-degc") < -40 and getprop("position/altitude-ft") > 19000 and input.n2.getValue() > 50;
+    input.MPint18.setValue(encode3bits(contrails, 0, 0));
 
     settimer(
       #func debug.benchmark("j37 loop", 
@@ -805,6 +833,12 @@ var speed_loop = func () {
   real_speed = real_speed * 0.5924838;#ft/s to kt
   input.g3d.setValue(real_speed);
 
+  # MP gear wow
+  var wow0 = input.wow0.getValue();
+  var wow1 = input.wow1.getValue();
+  var wow2 = input.wow2.getValue();
+  input.MPint17.setValue(encode3bits(wow0, wow1, wow2));
+
   settimer(speed_loop, 0.05);
 }
 
@@ -834,6 +868,12 @@ var trigger_listener = func {
           #print("firing missile: "~armSelect~" "~getprop("controls/armament/station["~armSelect~"]/released"));
         
           armament.AIM9.active[armSelect-1].release();#print("release "~(armSelect-1));
+          var phrase = "RB-24J fired at: " ~ radar_logic.selection[5];
+          if (getprop("sim/ja37/armament/msg")) {
+            setprop("/sim/multiplay/chat", phrase);
+          } else {
+            setprop("/sim/messages/atc", phrase);
+          }
         }
       }
     }
@@ -872,6 +912,94 @@ var impact_listener = func {
       }
     }
   }
+}
+
+var incoming_listener = func {
+  var history = getprop("/sim/multiplay/chat-history");
+  var hist_vector = split("\n", history);
+  if (size(hist_vector) > 0) {
+    var last = hist_vector[size(hist_vector)-1];
+    var last_vector = split(":", last);
+    var author = last_vector[0];
+    var callsign = getprop("sim/multiplay/callsign");
+    if (size(last_vector) > 1 and author != callsign) {
+      # not myself
+      var m2000 = FALSE;
+      if (find(" at " ~ callsign ~ ". Release ", last_vector[1]) != -1) {
+        # a m2000 is firing at us
+        m2000 = TRUE;
+      }
+      if (last_vector[1] == " FOX2 at" or last_vector[1] == " RB-24J fired at" or m2000 == TRUE) {
+        # air2air being fired
+        if (size(last_vector) > 2 or m2000 == TRUE) {
+          #print("Missile launch detected at"~last_vector[2]~" from "~author);
+          if (m2000 == TRUE or last_vector[2] == " "~callsign) {
+            # its being fired at me
+            #print("Incoming!");
+            var enemy = radar_logic.getCallsign(author);
+            if (enemy != nil) {
+              #print("enemy identified");
+              var bearingNode = enemy.getNode("radar/bearing-deg");
+              if (bearingNode != nil) {
+                #print("bearing to enemy found");
+                var bearing = bearingNode.getValue();
+                var heading = getprop("orientation/heading-deg");
+                var clock = bearing - heading;
+                while(clock < 0) {
+                  clock = clock + 360;
+                }
+                while(clock > 360) {
+                  clock = clock - 360;
+                }
+                #print("incoming from "~clock);
+                if (clock >= 345 or clock < 15) {
+                  setprop("sim/ja37/sound/incoming12", 1);
+                } elsif (clock >= 15 and clock < 45) {
+                  setprop("sim/ja37/sound/incoming1", 1);
+                } elsif (clock >= 45 and clock < 75) {
+                  setprop("sim/ja37/sound/incoming2", 1);
+                } elsif (clock >= 75 and clock < 105) {
+                  setprop("sim/ja37/sound/incoming3", 1);
+                } elsif (clock >= 105 and clock < 135) {
+                  setprop("sim/ja37/sound/incoming4", 1);
+                } elsif (clock >= 135 and clock < 165) {
+                  setprop("sim/ja37/sound/incoming5", 1);
+                } elsif (clock >= 165 and clock < 195) {
+                  setprop("sim/ja37/sound/incoming6", 1);
+                } elsif (clock >= 195 and clock < 225) {
+                  setprop("sim/ja37/sound/incoming7", 1);
+                } elsif (clock >= 225 and clock < 255) {
+                  setprop("sim/ja37/sound/incoming8", 1);
+                } elsif (clock >= 255 and clock < 285) {
+                  setprop("sim/ja37/sound/incoming9", 1);
+                } elsif (clock >= 285 and clock < 315) {
+                  setprop("sim/ja37/sound/incoming10", 1);
+                } elsif (clock >= 315 and clock < 345) {
+                  setprop("sim/ja37/sound/incoming11", 1);
+                } else {
+                  setprop("sim/ja37/sound/incoming", 1);
+                }
+                return;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  setprop("sim/ja37/sound/incoming", 0);
+  setprop("sim/ja37/sound/incoming1", 0);
+  setprop("sim/ja37/sound/incoming2", 0);
+  setprop("sim/ja37/sound/incoming3", 0);
+  setprop("sim/ja37/sound/incoming4", 0);
+  setprop("sim/ja37/sound/incoming5", 0);
+  setprop("sim/ja37/sound/incoming6", 0);
+  setprop("sim/ja37/sound/incoming7", 0);
+  setprop("sim/ja37/sound/incoming8", 0);
+  setprop("sim/ja37/sound/incoming9", 0);
+  setprop("sim/ja37/sound/incoming10", 0);
+  setprop("sim/ja37/sound/incoming11", 0);
+  setprop("sim/ja37/sound/incoming12", 0);
 }
 
 var cycle_weapons = func {
@@ -1058,6 +1186,9 @@ var main_init = func {
   # init cockpit temperature
   setprop("environment/temperature-inside-degc", getprop("environment/temperature-degc"));
 
+  # init oxygen bottle pressure
+  setprop("sim/ja37/systems/oxygen-bottle-pressure", rand()*75+50);#todo: start high, and lower slowly during flight
+
   # start minor loops
   speed_loop();
   slow_loop();
@@ -1076,6 +1207,9 @@ var main_init = func {
 
   # setup impact listener
   setlistener("/ai/models/model-impact", impact_listener, 0, 0);
+
+  # setup incoming listener
+  setlistener("/sim/multiplay/chat-history", incoming_listener, 0, 0);
 
   # start the main loop
 	settimer(func { update_loop() }, 0.1);
@@ -1125,7 +1259,15 @@ var drop = func {
     if (getprop("/gear/gear[0]/wow") > 0.05) {
        popupTip("Can not eject drop tank while on ground!"); 
        return;
-    }  
+    }
+    if (input.combat.getValue() == 2) {
+       popupTip("Can not eject drop tank when masterarm on!");
+       return;
+    }
+    if (getprop("systems/electrical/outputs/dc-voltage") < 23) {
+       popupTip("Too little DC power to eject drop tank!");
+       return;
+    }
     click();
     setprop("payload/weight[4]/selected", "none");# empty the pylon
     popupTip("Drop tank shut off and ejected. Using internal fuel.");
