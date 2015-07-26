@@ -31,7 +31,7 @@
     </offsets>
   </model> -->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Instruments/Indicators/recharging.xml</path>
     <name>ChargeBattery</name>
     <offsets>
@@ -41,9 +41,21 @@
       <y-m> -0.27</y-m>
       <z-m>  0.1550</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
+    <path>Aircraft/JA37/Models/Instruments/Indicators/cutoff-indicator.xml</path>
+    <name>cutoffReady</name>
+    <offsets>
+      <pitch-deg>-90.0</pitch-deg>
+      <roll-deg>3.5</roll-deg>
+      <x-m> -3.49</x-m>
+      <y-m> -0.27</y-m>
+      <z-m>  0.1550</z-m>
+    </offsets>
+  </model>-->
+
+  <!--<model>
     <path>Aircraft/JA37/Models/Instruments/Indicators/external.xml</path>
     <name>externalAvailable</name>
     <offsets>
@@ -53,9 +65,9 @@
       <y-m> -0.27</y-m>
       <z-m>  0.1550</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-elec-ext.xml</path>
     <name>SwitchExt</name>
     <offsets>
@@ -65,9 +77,9 @@
       <y-m> -0.30</y-m>
       <z-m>  0.1400</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-elec-main.xml</path>
     <name>SwitchMain</name>
     <offsets>
@@ -77,9 +89,9 @@
       <y-m> -0.30</y-m>
       <z-m>  0.1400</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-battery.xml</path>
     <name>SwitchBattery</name>
     <offsets>
@@ -89,9 +101,9 @@
       <y-m> -0.30</y-m>
       <z-m>  0.1400</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-cutoff.xml</path>
     <name>SwitchCutoff</name>
     <offsets>
@@ -101,9 +113,9 @@
       <y-m> -0.30</y-m>
       <z-m>  0.1400</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-starter.xml</path>
     <name>SwitchStarter</name>
     <offsets>
@@ -113,9 +125,9 @@
       <y-m> -0.30</y-m>
       <z-m>  0.1400</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-generator.xml</path>
     <name>SwitchGenerator</name>
     <offsets>
@@ -173,9 +185,9 @@
       <y-m> -0.30</y-m>
       <z-m>  0.1400</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-gears.xml</path>
     <name>SwitchGears</name>
     <offsets>
@@ -185,9 +197,9 @@
       <y-m> -0.30</y-m>
       <z-m>  0.1410</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-smoke.xml</path>
     <name>SwitchSmoke</name>
     <offsets>
@@ -196,9 +208,9 @@
       <y-m>  0.30</y-m>
       <z-m>  0.1700</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-yaw-damper.xml</path>
     <name>SwitchYawDamper</name>
     <offsets>
@@ -229,9 +241,9 @@
       <y-m>  0.30</y-m>
       <z-m>  0.1700</z-m>      
     </offsets>
-  </model>  
+  </model>  -->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-canopy.xml</path>
     <name>SwitchCanopy</name>
     <offsets>
@@ -240,9 +252,9 @@
       <y-m>  0.30</y-m>
       <z-m>  0.1700</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-parking-brakes.xml</path>
     <name>SwitchParkingBrakes</name>
     <offsets>
@@ -262,9 +274,9 @@
       <y-m>  0.30</y-m>
       <z-m>  0.1700</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/buttons/button-next-selection.xml</path>
     <name>ButtonNext</name>
     <offsets>
@@ -334,9 +346,9 @@
       <y-m>  0.24</y-m>
       <z-m>  0.178</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/buttons/button-flare.xml</path>
     <name>ButtonFlare</name>
     <offsets>
@@ -346,9 +358,9 @@
       <y-m>  0.24</y-m>
       <z-m>  0.178</z-m>
     </offsets>
-  </model>          
+  </model>     -->     
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/buttons/button-follow.xml</path>
     <name>ButtonFollow</name>
     <offsets>
@@ -370,5 +382,5 @@
       <y-m>  0.22</y-m>
       <z-m>  0.182</z-m>
     </offsets>
-  </model>
+  </model>-->
 </PropertyList>
