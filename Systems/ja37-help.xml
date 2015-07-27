@@ -1,115 +1,115 @@
 <?xml version="1.0"?>
 <PropertyList>
 
-	
-	<!--**********************************************************************
+
+    <!--**********************************************************************
 
                                           Help
 
 
 *************************************************************************-->
-     <title>Saab JA-37 Viggen</title>
-     <key>
-      <name>s</name>
-      <desc>Startup / shutdown (if walker is enabled use menu instead)</desc>
-     </key>
-     <key>
-      <name>Backspace</name>
-      <desc>Toggle thrust reverser</desc>
-     </key>
-     <key>
-      <name>Ctrl-f</name>
-      <desc>Hold down to trigger flare release</desc>
-     </key>
-     <key>
-      <name>e</name>
-      <desc>Fire selected weapon</desc>
-     </key>
-     <key>
-      <name>CTRL-5</name>
-      <desc>Select cannon</desc>
-     </key>
-     <key>
-      <name>CTRL-1..4</name>
-      <desc>Select missiles</desc>
-     </key>
-     <key>
-      <name>J</name>
-      <desc>Jettison Drop tank in flight</desc>
-     </key>
-     <key>
-      <name>Del</name>
-      <desc>Yaw damper on/off</desc>
-     </key>
-     <key>
-      <name>Shift Del</name>
-      <desc>Pitch damper on/off</desc>
-     </key>
-     <key>
-      <name>Ctrl Del</name>
-      <desc>Roll damper on/off</desc>
-     </key>
-     <key>
-      <name>o</name>
-      <desc>Toggle canopy</desc>
-     </key>
-     <key>
-      <name>H</name>
-      <desc>HUD Brightness</desc>
-     </key>
-     <key>
-      <name>h</name>
-      <desc>Toggle masterarm</desc>
-     </key>
-     <key>
-      <name>I</name>
-      <desc>Toggle HUD units. Metric/imperial.</desc>
-     </key>
-     <key>
-      <name>c</name>
-      <desc>Cycle weapons</desc>
-     </key>
-     <key>
-      <name>P</name>
-      <desc>Toggle custom/FG HUD</desc>
-     </key>
-     <key>
-      <name>M</name>
-      <desc>Toggle nose wheel steering</desc>
-     </key>
-     <key>
-      <name>r</name>
-      <desc>Toggle radar</desc>
-     </key>
-     <key>
-      <name>f</name>
-      <desc>Set autopilot to follow current selection</desc>
-     </key>
-     <key>
-      <name>F</name>
-      <desc>Set autopilot to stop follow</desc>
-     </key>
-     <key>
-      <name>S</name>
-      <desc>Cycle smoke. Off, Yellow or Blue</desc>
-     </key>
-     <key>
-      <name>i</name>
-      <desc>Toggle HUD to show type or callsign on radar tracks</desc>
-     </key>
-     <key>
-      <name>n</name>
-      <desc>Cycle next radar track selection</desc>
-     </key>
-     <key>
-      <name>N</name>
-      <desc>Select radar track center most in HUD</desc>
-     </key>
-     <key>
-      <name>Ctrl Shift a</name>
-      <desc>Continue on current heading, speed and altitude with A/P</desc>
-     </key>
-     <!--<key>  as the real Viggen does not have carrier capacity, these functions are not officially documented. It works though.
+    <title>Saab JA-37 Viggen</title>
+    <key>
+        <name>s</name>
+        <desc>Startup / shutdown (if walker is enabled use menu instead)</desc>
+    </key>
+    <key>
+        <name>Backspace</name>
+        <desc>Toggle thrust reverser</desc>
+    </key>
+    <key>
+        <name>Ctrl-f</name>
+        <desc>Hold down to trigger flare release</desc>
+    </key>
+    <key>
+        <name>e</name>
+        <desc>Fire selected weapon</desc>
+    </key>
+    <key>
+        <name>CTRL-5</name>
+        <desc>Select cannon</desc>
+    </key>
+    <key>
+        <name>CTRL-1..4</name>
+        <desc>Select missiles</desc>
+    </key>
+    <key>
+        <name>J</name>
+        <desc>Jettison Drop tank in flight</desc>
+    </key>
+    <key>
+        <name>Del</name>
+        <desc>Yaw damper on/off</desc>
+    </key>
+    <key>
+        <name>Shift Del</name>
+        <desc>Pitch damper on/off</desc>
+    </key>
+    <key>
+        <name>Ctrl Del</name>
+        <desc>Roll damper on/off</desc>
+    </key>
+    <key>
+        <name>o</name>
+        <desc>Toggle canopy</desc>
+    </key>
+    <key>
+        <name>H</name>
+        <desc>HUD Brightness</desc>
+    </key>
+    <key>
+        <name>h</name>
+        <desc>Toggle masterarm</desc>
+    </key>
+    <key>
+        <name>I</name>
+        <desc>Toggle HUD units. Metric/imperial.</desc>
+    </key>
+    <key>
+        <name>c</name>
+        <desc>Cycle weapons</desc>
+    </key>
+    <key>
+        <name>P</name>
+        <desc>Toggle custom/FG HUD</desc>
+    </key>
+    <key>
+        <name>M</name>
+        <desc>Toggle nose wheel steering</desc>
+    </key>
+    <key>
+        <name>r</name>
+        <desc>Toggle radar</desc>
+    </key>
+    <key>
+        <name>f</name>
+        <desc>Set autopilot to follow current selection</desc>
+    </key>
+    <key>
+        <name>F</name>
+        <desc>Set autopilot to stop follow</desc>
+    </key>
+    <key>
+        <name>S</name>
+        <desc>Cycle smoke. Off, Yellow or Blue</desc>
+    </key>
+    <key>
+        <name>i</name>
+        <desc>Toggle HUD to show type or callsign on radar tracks</desc>
+    </key>
+    <key>
+        <name>n</name>
+        <desc>Cycle next radar track selection</desc>
+    </key>
+    <key>
+        <name>N</name>
+        <desc>Select radar track center most in HUD</desc>
+    </key>
+    <key>
+        <name>Ctrl Shift a</name>
+        <desc>Continue on current heading, speed and altitude with A/P</desc>
+    </key>
+    <!--<key>  as the real Viggen does not have carrier capacity, these functions are not officially documented. It works though.
       <name>L</name>
       <desc>Carrier launch-bar engage (hold for 10 seconds)</desc>
      </key>
@@ -129,7 +129,7 @@
       <name>m</name>
       <desc>Toggle configure HUD for final approach</desc>
      </key> -->
-     <text>
+    <text>
       Startup
       _______
       Start up engine and systems
@@ -174,7 +174,7 @@
       The vertical tail on the flight path indicator will move/blink according to AoA.
       In tactical mode when the cannon is selected, a fixed crosshair will appear.
       In tactical mode the reticle change if out of ammo.
-      The digital altimeter to the left will use rader below 100 meters (328 ft), a 'R' is shown. when this happens, and regular altimeter above, up till 9999.
+      The digital altimeter to the left will use rader (if radar altimeter enabled) below 100 meters (328 ft), a 'R' is shown. when this happens, and regular altimeter above, up till 9999.
       If the radar-altimeter detects that the altimeter is not calibrated correct, it will blink QFE (happens only below 100 meters (328 ft) above terrain).
       If QFE is displayed, but not blinking, the altimeter have been calibrated correctly.
       The digital airspeed indicator at the bottom, will use Km/h until mach 0.5, after that it will show mach number. If using imperial units, it will show mach number and knots at same time.
@@ -196,15 +196,15 @@
 
       Automatic Thrust reversing
       __________________________
-      This can be enabled in the JA37-Options menu. It will enable the reverse thrust when you touch down with all 3 gears.
-      If you take off from a rough strip or without runway, the ground bumpiness will enable this and prevent you from taking off. So in that case I recommend switching it off.
+      This will enable the reverse thrust when you touch down with all 3 gears.
+      If you take off from a rough strip or without runway, the ground bumpiness will trigger this and prevent you from taking off. So in that case I recommend switching it off.
 
       Using autopilot to follow target
       ________________________________
       The HUD must turned on and a something selected.
       Press 'f'. Then the auto-pilot will enable automatic thrust, pitch and heading control. The plane will now intercept and closely follow the target.
       If the target changes during the intercept, it will not switch to the new target.
-      To stop, press 'F' and disable autopilot control. Or select another and press 'f' again to follow that instead.
+      To stop, press 'F'. Or select another and press 'f' again to follow that instead.
 
       Using the Selection View
       ________________________
@@ -214,6 +214,15 @@
       Repairing
       _________
       In FG 3.2+ you can repair failed systems in the old failure dialogs, but there are many systems that the dialogs does not show. To be sure the aircraft is fully repaired you should select the menu option Repair under the JA37 menu.
+
+      Air-conditioning
+      ________________
+      When using ALS, the windshield can fog up under certain conditions. Be sure to remember to enable hot air on windshield to be able to see.
+      The cockpit windshield and canopy might ice up when using ALS. Be sure to set the aircondition right for removing ice and for pilot comfort.
+
+      Unstable fuel configurations
+      ____________________________
+      It is entirely possible to fill the fuel tanks in such a way that the plane become too longitudal unstable. I recommend filling up the internal tanks (except the first) evenly to avoid this. Bringing up the performance monitor you can check the static-margin, if below 0.30 meter the plane is dangerous unstable. Most of the time the automatic fuel system will keep the plane stable but under some conditions it can fail to do that, for example with prolonged aerobatic manouvres. Flying level for some time would remedy this in many cases.
 
       Liveries
       ________

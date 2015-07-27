@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<PropertyList>
+
+
+    <model>
+        <path>Aircraft/JA37/Models/Cockpit/switch-a/air-conditioner.xml</path>
+        <name>switch-air-cond</name>
+        <offsets>
+            <heading-deg>180</heading-deg>
+            <x-m> -0.285</x-m>
+            <y-m> -0.100</y-m>
+            <z-m>  0</z-m>
+        </offsets>
+    </model>  
+
+
+    <model>
+        <path>Aircraft/JA37/Models/Cockpit/switch-d/air-conditioner-type.xml</path>
+        <name>switch-air-cond-type</name>
+        <offsets>
+            <heading-deg>180</heading-deg>
+            <x-m> -0.240</x-m>
+            <y-m> -0.100</y-m>
+            <z-m>  0</z-m>
+        </offsets>
+    </model>
+
+    <model>
+        <path>Aircraft/JA37/Models/Cockpit/knob-a/air-cond-temp.xml</path>
+        <name>switch-air-cond-temp</name>
+        <offsets>
+            <heading-deg>180</heading-deg>
+            <x-m> -0.285</x-m>
+            <y-m> -0.180</y-m>
+            <z-m>  0</z-m>
+        </offsets>
+    </model>
+
+</PropertyList>

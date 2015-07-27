@@ -345,7 +345,7 @@ var HUDnasal = {
     HUDnasal.main.qfe.hide();
     HUDnasal.main.qfe.setColor(r,g,b, a);
     HUDnasal.main.qfe.setAlignment("center-center");
-    HUDnasal.main.qfe.setTranslation(-375, centerOffset+(5.5*pixelPerDegreeY));
+    HUDnasal.main.qfe.setTranslation(-365, centerOffset+(5.5*pixelPerDegreeY));
     HUDnasal.main.qfe.setFontSize(80*fs, ar);
 
     # Altitude number (Not shown in landing/takeoff mode. Radar at less than 100 feet)
@@ -757,7 +757,13 @@ var HUDnasal = {
                             .lineTo(   0,  20)
                             .lineTo( -20,  20)
                             .setStrokeLineWidth(w)
-                            .setColor(r,g,b, a);                            
+                            .setColor(r,g,b, a);
+    HUDnasal.main.distanceText = HUDnasal.main.dist_scale_group.createChild("text")
+                            .setText("")
+                            .setColor(r,g,b, a)
+                            .setAlignment("left-top")
+                            .setTranslation(200, 10)
+                            .setFontSize(60*fs, ar);
     var distanceScale = HUDnasal.main.dist_scale_group.createChild("path")
                             .moveTo(   0, 0)
                             .lineTo( 200, 0)
@@ -790,7 +796,7 @@ var HUDnasal = {
     artifactsText0 = [HUDnasal.main.airspeedInt, HUDnasal.main.airspeed, HUDnasal.main.hdgM, HUDnasal.main.hdgL, HUDnasal.main.hdgR, HUDnasal.main.qfe,
                       HUDnasal.main.diamond_dist, HUDnasal.main.tower_symbol_dist, HUDnasal.main.tower_symbol_icao, HUDnasal.main.diamond_name,
                       HUDnasal.main.alt_low, HUDnasal.main.alt_med, HUDnasal.main.alt_high, HUDnasal.main.alt_higher, HUDnasal.main.alt,
-                      HUDnasal.main.hdgMH, HUDnasal.main.hdgLH, HUDnasal.main.hdgRH];
+                      HUDnasal.main.hdgMH, HUDnasal.main.hdgLH, HUDnasal.main.hdgRH, HUDnasal.main.distanceText];
 
 
   },
@@ -1021,8 +1027,8 @@ var HUDnasal = {
   },#end of update
 
   displayGroundCollisionArrow: func (mode) {
-    var rad_alt = me.input.rad_alt.getValue();
-    if (mode != TAKEOFF and ( (mode == LANDING and rad_alt > (50/feet2meter)) or mode != LANDING )) {
+    var rad_alt = getprop("controls/altimeter-radar") == 1?me.input.rad_alt.getValue():nil;
+    if (mode != TAKEOFF and ( (mode == LANDING and rad_alt != nil and rad_alt > (50/feet2meter)) or mode != LANDING )) {
       #var x = mp.getNode("position/global-x").getValue();# meters probably
       #var y = mp.getNode("position/global-y").getValue();
       #var z = mp.getNode("position/global-z").getValue();
@@ -1048,6 +1054,9 @@ var HUDnasal = {
           me.input.terrainOn.setValue(FALSE);
           me.arrow.hide();
         }
+      } else {
+        me.input.terrainOn.setValue(FALSE);
+        me.arrow.hide();
       }
     } else {
       me.input.terrainOn.setValue(FALSE);
@@ -1226,7 +1235,7 @@ var HUDnasal = {
   displayAltitude: func () {
     var metric = me.input.units.getValue();
     var alt = metric == TRUE ? me.input.alt_ft.getValue() * feet2meter : me.input.alt_ft.getValue();
-    var radAlt = metric == TRUE ? me.input.rad_alt.getValue() * feet2meter : me.input.rad_alt.getValue();
+    var radAlt = getprop("controls/altimeter-radar") == 1?(metric == TRUE ? me.input.rad_alt.getValue() * feet2meter : me.input.rad_alt.getValue()):nil;
 
     me.displayAltitudeScale(alt, radAlt);
     me.displayDigitalAltitude(alt, radAlt);
@@ -1337,19 +1346,24 @@ var HUDnasal = {
         me.alt_med.setText("200");
         me.alt_high.setText("400");
       }
-      if (radAlt < alt) {
+      if (radAlt != nil and radAlt < alt) {
         me.alt_scale_line.show();
       } else {
         me.alt_scale_line.hide();
       }
       # Show radar altimeter ground height
-      var rad_offset = altimeterScaleHeight/alt_scale_factor * radAlt;
-      me.rad_alt_pointer.setTranslation(indicatorOffset, rad_offset - offset);
-      me.rad_alt_pointer.show();
-      if ((-radPointerProxim) < rad_offset and rad_offset < radPointerProxim) {
-        me.alt_pointer.hide();
+      if (radAlt != nil) {
+        var rad_offset = altimeterScaleHeight/alt_scale_factor * radAlt;
+        me.rad_alt_pointer.setTranslation(indicatorOffset, rad_offset - offset);
+        me.rad_alt_pointer.show();
+        if ((-radPointerProxim) < rad_offset and rad_offset < radPointerProxim) {
+          me.alt_pointer.hide();
+        } else {
+          me.alt_pointer.show();
+        }
       } else {
         me.alt_pointer.show();
+        me.rad_alt_pointer.hide();
       }
       me.alt_scale_grp.update();
       if(me.verbose > 2) print("alt " ~ sprintf("%3d", alt) ~ " radAlt:" ~ sprintf("%3d", radAlt) ~ " rad_offset:" ~ sprintf("%3d", rad_offset));
@@ -1378,18 +1392,23 @@ var HUDnasal = {
         me.alt_high.setText("400");
       }
       # Show radar altimeter ground height
-      var rad_offset = 2*altimeterScaleHeight/alt_scale_factor * radAlt;
-      me.rad_alt_pointer.setTranslation(indicatorOffset, rad_offset - offset);
-      me.rad_alt_pointer.show();
-      if (radAlt < alt) {
-        me.alt_scale_line.show();
-      } else {
-        me.alt_scale_line.hide();
-      }
-      if ((-radPointerProxim) < rad_offset and rad_offset < radPointerProxim) {
-        me.alt_pointer.hide();
+      if (radAlt != nil) {
+        var rad_offset = 2*altimeterScaleHeight/alt_scale_factor * radAlt;
+        me.rad_alt_pointer.setTranslation(indicatorOffset, rad_offset - offset);
+        me.rad_alt_pointer.show();
+        if (radAlt < alt) {
+          me.alt_scale_line.show();
+        } else {
+          me.alt_scale_line.hide();
+        }
+        if ((-radPointerProxim) < rad_offset and rad_offset < radPointerProxim) {
+          me.alt_pointer.hide();
+        } else {
+          me.alt_pointer.show();
+        }
       } else {
         me.alt_pointer.show();
+        me.rad_alt_pointer.hide();
       }
       me.alt_scale_grp.update();
       #print("alt " ~ sprintf("%3d", alt) ~ " placing med " ~ sprintf("%3d", offset));
@@ -1438,14 +1457,19 @@ var HUDnasal = {
       } else {
         me.alt_higher.setText(sprintf("%d", higher));
       }
-      # Show radar altimeter ground height
-      var rad_offset = 2*altimeterScaleHeight/alt_scale_factor * (radAlt);
-      me.rad_alt_pointer.setTranslation(indicatorOffset, rad_offset - offset);
-      me.rad_alt_pointer.show();
-      if ((-radPointerProxim) < rad_offset and rad_offset < radPointerProxim) {
-        me.alt_pointer.hide();
+      if (radAlt != nil) {
+        # Show radar altimeter ground height
+        var rad_offset = 2*altimeterScaleHeight/alt_scale_factor * (radAlt);
+        me.rad_alt_pointer.setTranslation(indicatorOffset, rad_offset - offset);
+        me.rad_alt_pointer.show();
+        if ((-radPointerProxim) < rad_offset and rad_offset < radPointerProxim) {
+          me.alt_pointer.hide();
+        } else {
+          me.alt_pointer.show();
+        }
       } else {
         me.alt_pointer.show();
+        me.rad_alt_pointer.hide();
       }
       me.alt_scale_grp.update();
       #print("alt " ~ sprintf("%3d", alt) ~ " radAlt:" ~ sprintf("%3d", radAlt) ~ " rad_offset:" ~ sprintf("%3d", rad_offset));
@@ -1461,13 +1485,13 @@ var HUDnasal = {
       # determine max radar alt in current unit
       var radar_clamp = me.input.units.getValue() ==1 ? 100 : 100/feet2meter;
       var alt_diff = me.input.units.getValue() ==1 ? 7 : 7/feet2meter;
-      if (radAlt == nil) {
-        # Radar alt instrument not initialized yet.
+      if (radAlt == nil and getprop("controls/altimeter-radar") == 1) {
+        # Radar alt instrument not initialized yet
         me.alt.setText("");
         countQFE = 0;
         QFEcalibrated = FALSE;
         me.input.altCalibrated.setValue(FALSE);
-      } elsif (radAlt < radar_clamp) {
+      } elsif (radAlt != nil and radAlt < radar_clamp) {
         # in radar alt range
         me.alt.setText("R " ~ sprintf("%3d", clamp(radAlt, 0, radar_clamp)));
         # check for QFE warning
@@ -1634,12 +1658,23 @@ var HUDnasal = {
   displayQFE: func (mode) {
     if (mode == LANDING and me.input.nav0InRange.getValue() == TRUE) {
       if (me.input.TILS.getValue() == TRUE) {
-        me.qfe.setText("TILS");
+        if (getprop("instrumentation/dme/KDI572-574/nm") != "---" and getprop("instrumentation/dme/KDI572-574/nm") != "") {
+          me.qfe.setText("TILS/DME");
+        } else {
+          me.qfe.setText("TILS");
+        }
         me.qfe.show();
       } else {
-        me.qfe.setText("ILS");
+        if (getprop("instrumentation/dme/KDI572-574/nm") != "---" and getprop("instrumentation/dme/KDI572-574/nm") != "") {
+          me.qfe.setText("ILS/DME");
+        } else {
+          me.qfe.setText("ILS");
+        }
         me.qfe.show();
       }
+    } elsif ((mode == LANDING or mode == NAV) and getprop("instrumentation/dme/KDI572-574/nm") != "---" and getprop("instrumentation/dme/KDI572-574/nm") != "") {
+      me.qfe.setText("DME");
+      me.qfe.show();
     } elsif (mode == COMBAT) {
       var armSelect = me.input.station.getValue();
       if(armSelect == 0) {
@@ -1845,6 +1880,7 @@ var HUDnasal = {
       me.mySpeed.show();
       me.targetDistance1.hide();
       me.targetDistance2.hide();
+      me.distanceText.hide();
       me.dist_scale_group.show();
     } elsif (mode == COMBAT and radar_logic.selection != nil) {
       var line = 200;
@@ -1881,6 +1917,25 @@ var HUDnasal = {
       me.targetSpeed.hide();
       me.targetDistance1.show();
       me.targetDistance2.show();
+      me.distanceText.hide();
+      me.dist_scale_group.show();
+    } elsif (getprop("instrumentation/dme/KDI572-574/nm") != "---" and getprop("instrumentation/dme/KDI572-574/nm") != "") {
+      var distance = getprop("instrumentation/dme/indicated-distance-nm");
+      var line = 200;
+      var maxDist = 20;
+      var pixelPerMeter = (line)/(maxDist);
+      var pos = pixelPerMeter*distance;
+      pos = clamp(pos, 0, line);
+      me.mySpeed.setTranslation(pos, 0);
+      me.mySpeed.show();
+
+      me.targetDistance1.setTranslation(0, 0);
+      me.distanceText.setText(sprintf("%.1f", me.input.units.getValue() == 1  ? distance*kts2kmh : distance));
+
+      me.targetSpeed.hide();
+      me.targetDistance1.show();
+      me.targetDistance2.hide();
+      me.distanceText.show();
       me.dist_scale_group.show();
     } else {
       me.dist_scale_group.hide();

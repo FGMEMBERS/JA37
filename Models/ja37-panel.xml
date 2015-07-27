@@ -363,7 +363,17 @@
     <offsets>
       <x-m>  0.000 </x-m>
       <y-m> -0.145 </y-m>
-      <z-m>  0.115 </z-m>
+      <z-m>  0.125 </z-m>
+    </offsets>
+  </model>
+
+  <model>
+    <path>Aircraft/JA37/Models/Cockpit/callsign.xml</path>
+    <name>callsign</name>
+    <offsets>
+      <x-m> 0.002</x-m>
+      <y-m>-0.20</y-m>
+      <z-m> 0.135</z-m>
     </offsets>
   </model>
 
@@ -411,7 +421,7 @@
     <offsets>
       <x-m>  0.00</x-m>
       <y-m> -0.26</y-m>
-      <z-m>  0.065</z-m>
+      <z-m>  0.085</z-m>
     </offsets>
   </model>
 
@@ -421,19 +431,11 @@
     <offsets>
       <x-m>  0.00</x-m>
       <y-m> -0.26</y-m>
-      <z-m>  0.015</z-m>
+      <z-m>  0.035</z-m>
     </offsets>
   </model>
 
-<model>
-    <path>Aircraft/JA37/Models/Instruments/Transponder/kt76a.xml</path>
-    <name>Transponder</name>
-    <offsets>
-      <x-m>  0.005</x-m>
-      <y-m> -0.26</y-m>
-      <z-m> -0.030</z-m>
-    </offsets>
-  </model>
+
 
  <!--<model>
     <path>Aircraft/JA37/Models/Instruments/CenterPlaque/center-plaque.xml</path>
@@ -537,15 +539,15 @@
     </offsets>
   </model>
 
- <model>
+ <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-reverser-auto.xml</path>
     <name>SwitchReverserAuto</name>
     <offsets>
       <x-m>  0.00</x-m>
-      <y-m> -0.26</y-m>
-      <z-m>  0.11</z-m>
+      <y-m> -0.23</y-m>
+      <z-m>  0.145</z-m>
     </offsets>
-  </model>
+  </model>-->
 
   <model>
     <path>Aircraft/JA37/Models/Cockpit/reverseHandle.xml</path>
@@ -557,7 +559,7 @@
     </offsets>
   </model>
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-landing-mode.xml</path>
     <name>SwitchLanding</name>
     <offsets>
@@ -586,9 +588,9 @@
       <y-m>  0.31</y-m>
       <z-m>  0.07</z-m>
     </offsets>
-  </model>  
+  </model>  -->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-hud-tracks.xml</path>
     <name>SwitchHudTracks</name>
     <offsets>
@@ -596,9 +598,9 @@
       <y-m>  0.33</y-m>
       <z-m>  0.07</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-sideslip.xml</path>
     <name>SwitchSideslip</name>
     <offsets>
@@ -606,9 +608,9 @@
       <y-m>  0.33</y-m>
       <z-m>  0.03</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switches/switch-radar.xml</path>
     <name>SwitchRadar</name>
     <offsets>
@@ -616,15 +618,6 @@
       <y-m>  0.31</y-m>
       <z-m>  0.03</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
-    <path>Aircraft/JA37/Models/Cockpit/callsign.xml</path>
-    <name>callsign</name>
-    <offsets>
-      <x-m> 0.002</x-m>
-      <y-m>-0.21</y-m>
-      <z-m> 0.12</z-m>
-    </offsets>
-  </model>
 </PropertyList>

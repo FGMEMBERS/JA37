@@ -67,6 +67,7 @@ input = {
   gearsPos:         "gear/gear/position-norm",
   dcVolt:           "systems/electrical/outputs/dc-voltage",
   acInstrVolt:      "systems/electrical/outputs/ac-instr-voltage",
+  acMainVolt:       "systems/electrical/outputs/ac-main-voltage",
   serviceElec:      "systems/electrical/serviceable",
   flapPosCmd:       "/fdm/jsbsim/fcs/flaps/pos-cmd",
   vgFps:            "/fdm/jsbsim/velocities/vg-fps",
@@ -588,21 +589,21 @@ var update_loop = func {
 
     # main electrical turned on
     var timer = input.elapsed.getValue();
-    var main = input.elecMain.getValue();
-    if(main == TRUE and mainOn == FALSE) {
+    var main = input.dcVolt.getValue();
+    if(main > 20 and mainOn == FALSE) {
       #main has been switched on
       mainTimer = timer;
       mainOn = TRUE;
       input.lampData.setValue(TRUE);
       input.lampInertiaNav.setValue(TRUE);
-    } elsif (main == TRUE) {
+    } elsif (main > 20) {
       if (timer > (mainTimer + 20)) {
         input.lampData.setValue(FALSE);
       }
       if (timer > (mainTimer + 140)) {
         input.lampInertiaNav.setValue(FALSE);
       }
-    } elsif (main == FALSE) {
+    } elsif (main <= 20) {
       mainOn = FALSE;
     }
     # engine start
@@ -625,19 +626,19 @@ var update_loop = func {
     }
 
     # joystick on indicator panel
-    if ((main == TRUE and input.generatorOn.getValue() < 1) or input.hydrCombined.getValue() != 1) {
+    if ((main > 20 and input.acMainVolt.getValue() < 150) or input.hydrCombined.getValue() != 1) {
       input.lampStick.setValue(TRUE);
     } else {
       input.lampStick.setValue(FALSE);
     }
 
-    if (main == TRUE and input.generatorOn.getValue() < 1) {
+    if (main > 20 and getprop("controls/oxygen") == FALSE) {
       input.lampOxygen.setValue(TRUE);
     } else {
       input.lampOxygen.setValue(FALSE);
     }
 
-    if (main == TRUE and input.generatorOn.getValue() < 1) {
+    if (main > 20 and input.acMainVolt.getValue() < 150) {
       input.lampCanopy.setValue(TRUE);
     } else {
       input.lampCanopy.setValue(FALSE);
@@ -647,11 +648,18 @@ var update_loop = func {
     var flash = input.dcVolt.getValue() > 20 and input.switchFlash.getValue() == 1;
     var beacon = input.dcVolt.getValue() > 20 and input.switchBeacon.getValue() == 1;
     var nav = input.dcVolt.getValue() > 20 and input.switchNav.getValue() == 1;
-    input.MPint9.setValue(encode3bits(flash, beacon, nav));
+    input.MPint9.setIntValue(encode3bits(flash, beacon, nav));
 
     # contrails
     var contrails = getprop("environment/temperature-degc") < -40 and getprop("position/altitude-ft") > 19000 and input.n2.getValue() > 50;
-    input.MPint18.setValue(encode3bits(contrails, 0, 0));
+    input.MPint18.setIntValue(encode3bits(contrails, 0, 0));
+
+    # smoke
+    if (input.dcVolt.getValue() > 20) {
+      setprop("/sim/ja37/effect/smoke", getprop("/sim/ja37/effect/smoke-cmd"));
+    } else {
+      setprop("/sim/ja37/effect/smoke", 1);
+    }
 
     settimer(
       #func debug.benchmark("j37 loop", 
@@ -662,6 +670,8 @@ var update_loop = func {
 }
 
 var TILSprev = FALSE;
+var acPrev = 0;
+var acTimer = 0;
 
 # slow updating loop
 var slow_loop = func () {
@@ -717,6 +727,23 @@ var slow_loop = func () {
   }
 
   #frost and rain
+  var acSetting = getprop("controls/ventilation/airconditioning-type");
+  if (acSetting != 0) {
+    if (acPrev != acSetting) {
+      acTimer = input.elapsed.getValue();
+    } elsif (acTimer+12 < input.elapsed.getValue()) {
+      setprop("controls/ventilation/airconditioning-type", 0);
+      acSetting = 0;
+    }
+  }
+  acPrev = acSetting;
+  var tempAC = getprop("controls/ventilation/airconditioning-temperature");
+  if (acSetting == -1) {
+    tempAC = -200;
+  } elsif (acSetting == 1) {
+    tempAC = 200;
+  }
+
   var airspeed = getprop("/velocities/airspeed-kt");
   # ja37
   #var airspeed_max = 250; 
@@ -734,17 +761,16 @@ var slow_loop = func () {
   var tempOutside = getprop("environment/temperature-degc");
   var tempInside = getprop("environment/temperature-inside-degc");
   var tempOutsideDew = getprop("environment/dewpoint-degc");
-  var tempAC = 20;#aircondition temp
   var tempACDew = 5;#aircondition dew point. 5 = dry
 
   # calc inside temp
   if (input.canopyPos.getValue() > 0) {
     tempInside = tempOutside;
-  } elsif(input.dcVolt.getValue() > 23) {
+  } elsif(input.dcVolt.getValue() > 23 and getprop("controls/ventilation/airconditioning-enabled") == TRUE) {
     if (tempInside < tempAC) {
-      tempInside = clamp(tempInside+0.5, -1000, tempAC);
+      tempInside = clamp(tempInside+0.15, -1000, tempAC);
     } elsif (tempInside > tempAC) {
-      tempInside = clamp(tempInside-0.5, tempAC, 1000);
+      tempInside = clamp(tempInside-0.15, tempAC, 1000);
     }
   } else {
     if (tempInside < tempOutside) {
@@ -772,6 +798,13 @@ var slow_loop = func () {
   var fogNorm = fogNormOutside>fogNormInside?fogNormOutside:fogNormInside;
   var frostNorm = clamp((tempGlass-0)*-0.05, 0, 1);# will freeze below 0
 
+  var mask = FALSE;
+  var knob = getprop("controls/ventilation/windshield-hot-air-knob");
+  if (frostNorm <= knob and knob != 0 and input.dcVolt.getValue() > 23) {
+    mask = TRUE;
+  }
+
+  setprop("/environment/aircraft-effects/use-mask", mask);
   setprop("/environment/aircraft-effects/fog-inside", fogNormInside);
   setprop("/environment/aircraft-effects/fog-outside", fogNormOutside);
   setprop("/environment/aircraft-effects/temperature-glass-degc", tempGlass);
@@ -837,7 +870,7 @@ var speed_loop = func () {
   var wow0 = input.wow0.getValue();
   var wow1 = input.wow1.getValue();
   var wow2 = input.wow2.getValue();
-  input.MPint17.setValue(encode3bits(wow0, wow1, wow2));
+  input.MPint17.setIntValue(encode3bits(wow0, wow1, wow2));
 
   settimer(speed_loop, 0.05);
 }
@@ -929,7 +962,7 @@ var incoming_listener = func {
         # a m2000 is firing at us
         m2000 = TRUE;
       }
-      if (last_vector[1] == " FOX2 at" or last_vector[1] == " RB-24J fired at" or m2000 == TRUE) {
+      if (last_vector[1] == " FOX2 at" or last_vector[1] == " aim7 at" or last_vector[1] == " aim9 at" or last_vector[1] == " aim120 at" or last_vector[1] == " RB-24J fired at" or m2000 == TRUE) {
         # air2air being fired
         if (size(last_vector) > 2 or m2000 == TRUE) {
           #print("Missile launch detected at"~last_vector[2]~" from "~author);
@@ -1309,9 +1342,12 @@ var beaconLoop = func () {
 
 ############ blinkers ####################
 
-aircraft.light.new("sim/ja37/blink/five-Hz", [0.2, 0.2], "controls/electric/main");
-aircraft.light.new("sim/ja37/blink/ten-Hz", [0.1, 0.1], "controls/electric/main");
-aircraft.light.new("sim/ja37/blink/third-Hz", [2, 1], "controls/electric/main");
+var blinker = aircraft.light.new("sim/ja37/blink/five-Hz", [0.2, 0.2]);
+blinker.switch(1);
+blinker = aircraft.light.new("sim/ja37/blink/ten-Hz", [0.1, 0.1]);
+blinker.switch(1);
+blinker = aircraft.light.new("sim/ja37/blink/third-Hz", [2, 1]);
+blinker.switch(1);
 
 ############# workaround for removing default HUD   ##############
 
@@ -1501,8 +1537,8 @@ var togglePitchDamper = func {
 
 var toggleRollDamper = func {
   ja37.click();
-  var enabled = getprop("fdm/jsbsim/fcs/roll-limiter/enable");
-  setprop("fdm/jsbsim/fcs/roll-limiter/enable", !enabled);
+  var enabled = getprop("fdm/jsbsim/fcs/roll-damper/enable");
+  setprop("fdm/jsbsim/fcs/roll-damper/enable", !enabled);
   if(enabled == FALSE) {
     popupTip("Roll damper: ON");
   } else {
@@ -1624,14 +1660,14 @@ var applyParkingBrake = func(v) {
 
 var cycleSmoke = func() {
     ja37.click();
-    if (getprop("/sim/ja37/effect/smoke") == 1) {
-      setprop("/sim/ja37/effect/smoke", 2);
+    if (getprop("/sim/ja37/effect/smoke-cmd") == 1) {
+      setprop("/sim/ja37/effect/smoke-cmd", 2);
       popupTip("Smoke: Yellow");
-    } elsif (getprop("/sim/ja37/effect/smoke") == 2) {
-      setprop("/sim/ja37/effect/smoke", 3);
+    } elsif (getprop("/sim/ja37/effect/smoke-cmd") == 2) {
+      setprop("/sim/ja37/effect/smoke-cmd", 3);
       popupTip("Smoke: Blue");
     } else {
-      setprop("/sim/ja37/effect/smoke", 1);#1 for backward compatibility to be off per default
+      setprop("/sim/ja37/effect/smoke-cmd", 1);#1 for backward compatibility to be off per default
       popupTip("Smoke: OFF");
     }
 }
@@ -1722,4 +1758,51 @@ var repair = func () {
     crash1.repair();
     failureSys.armAllTriggers();
   }
+}
+
+var refuelTest = func () {
+  setprop("consumables/fuel/tank[0]/level-norm", 0.5);
+  setprop("consumables/fuel/tank[1]/level-norm", 0.5);
+  setprop("consumables/fuel/tank[2]/level-norm", 0.5);
+  setprop("consumables/fuel/tank[3]/level-norm", 0.5);
+  setprop("consumables/fuel/tank[4]/level-norm", 0.5);
+  setprop("consumables/fuel/tank[5]/level-norm", 0.5);
+  setprop("consumables/fuel/tank[6]/level-norm", 0.5);
+  setprop("consumables/fuel/tank[7]/level-norm", 0.5);
+  setprop("consumables/fuel/tank[8]/level-norm", 0.0);
+
+  screen.log.write("Fuel configured for flight testing.", 1.0, 0.0, 0.0);
+}
+
+var refuelNorm = func () {
+  setprop("consumables/fuel/tank[0]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[1]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[2]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[3]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[4]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[5]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[6]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[7]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[8]/level-norm", 0.0);
+
+  screen.log.write("Fuel configured for standard flight.", 0.0, 1.0, 0.0);
+}
+
+var refuelRange = func () {
+  setprop("consumables/fuel/tank[0]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[1]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[2]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[3]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[4]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[5]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[6]/level-norm", 1.0);
+  setprop("consumables/fuel/tank[7]/level-norm", 1.0);
+
+  # Mount drop tank and fill it up.
+  setprop("payload/weight[4]/selected", "Drop Tank");
+  input.tank8Selected.setValue(TRUE);
+  input.tank8Jettison.setValue(FALSE);
+  setprop("consumables/fuel/tank[8]/level-norm", 1.0);
+
+  screen.log.write("Fuel configured for long range flight.", 0.0, 1.0, 0.0);
 }

@@ -1667,3 +1667,105 @@ Model: Added a knob for HUD brightness.
 Model: Made the oxygen manometer show the bottle pressure, not the mask pressure.
 Animation: Fixed that gauge glasses would be rotated when canopy was opened.
 GUI: Added mask oxygen pressure to systems monitor.
+
+3.029 - 2015 July 25
+=====
+Sim: Fixed that autopilot could break off wings by pitching too hard.
+Sim: Made improvement to logic of indicator panels.
+Sim: Made a reserve generator.
+Sim: The aircondition simulation now works like in the real Viggen.
+Sim: Added logic for disabling radar altimeter.
+Sim: Added control logic for fuel system controls.
+Sim: Improved fuel tank relative contents and their position.
+Sim: Adjusted pneumatic and hydraulic fuel flow to get some tanks emptied more evenly when collecter tank isn't full.
+Sim: Fuel system is now controlable manually if enabled.
+Sim: Adjusted how autopilot know max ascent rate.
+Sim: Can now also detect incoming missiles from the new F-15.
+Sim: Selection view is no longer experimental.
+Sim: Added more data to performance document.
+Sim: All internal fuel tanks are now filled up at start of sim.
+Sim: Throttle position is now also recorded for replay.
+Sim: Autopilot now also uses rudder for heading locks.
+Model: Added a cutoff indicator.
+Model: Fixed edges along radar heading texture would be messed up during rotation.
+Model: Made all gauges mounts have similar material settings.
+Model: Replaced the seat.
+Model: {JazzTp} Remodeled sidepanels. And added minor sidepanels.
+Model: Adapted controls to new sidepanels.
+Model: Fixed radar heading was not rotated along a precise enough axis.
+Model: Added button that tests the indicator panels.
+Model: Added button that resets trim.
+Model: Replaced the buttons for controlling auto-follow.
+Model: {JazzTp} Added a air condition temperature knob.
+Model: {JazzTp} Added weapon selector.
+Model: {JazzTp} Added a (still non-working) weapon mode switch.
+Model: Fixed UV and geometry problems in inlets.
+Model: Fixed most UV mappings that made black stripes in fixed pipeline with ubershader.
+Model: Unified material properties across different cockpit models.
+Model: Removed all LOD for FG 3.6.
+Model: Added black texture to augementation zone indicator.
+Model: Fixed that part of fuel gauge was flat shaded.
+Model: {JazzTp} Added throttle handle with animation.
+Model: {JazzTp} Added radar handle, no animation.
+Model: {JazzTp} Moved radar switches on left panel more aft and aligned with radar handle.
+Model: Removed redness from what is now textured red area of switch A/D.
+Model: Moved callsign and left handle on front cockpit panel.
+Animation: Removed gears depency on select animations as much as possible. This should reduce the lag when gears retract.
+Animation: Fixed regression that rear wheels would not spin.
+Animation: Fixed regression that nosewheel steering was broken in MP.
+Effect: Added floodlight to cockpit panels, and also a knob to control it. Only works with model shader on.
+Effect: Added knob that will put hot air on windshield to remove fog, it has 5 settings. Only works in ALS.
+Effect: {JazzTp} Fixed shader problem by removing alpha channel in textures.
+Effect: Made aerobatic smoke require DC voltage.
+Effect: Put cockpit shading on all controls and instruments, to enable floodlight on them.
+Effect: Floodlight is now dimmed in daylight, only become fully activated in the dark.
+Effect: Fixed that afterburner flame size in replay would not reflect zones.
+Effect: Fixed regression that all lights were broken in MP.
+Effect: Removed normal mapping on rocket pods by applying a different shader to them.
+HUD: Added DME support to HUD.
+HUD: Fixed switching off radar altimeter could freeze HUD.
+Sound: Added stall warning and added switch for it.
+Sound: Very high alpha warning should now no longer play when stall warning is playing.
+Aero: Moved aerodynamic center to 25.7% chord of leading edge.
+Aero: Keeping static margin at empty fuel tanks, but with pilot, at 0.3 meter.
+Aero: Implemented mach tuck in transonic/supersonic regime.
+Aero: Updated inertia with values computed by Datcom+ Pro.
+Aero: Much more complete axial force due to flaps and elevons.
+Aero: Improvement to length of tail force arms.
+Aero: Moved the aerodynamical center forward from the quarter chord due to landing gear being placed too much forward on the model.
+Aero: Better data for transonic shift of aerodynamic center. Will result in less mach-tuck.
+Aero: Extrapolated the mach tuck, based on graph for other configuration.
+Aero: Reduced mach tuck to avoid pitch oscillations at full elevator deflection from pitch damper.
+Aero: Adjusted pitch limiter, its now based on IAS instead of Mach.
+Aero: Fixed positive elevator deflection was not anymore double limited.
+Aero: Fixed IAS was not available, which would result in null pointer exception.
+Aero: Adjusted stall detection parameters.
+Aero: Adjusted alpha regime, and did some indenting.
+Aero: Changed drag of elevons to reflect that they have rounded nose.
+Aero: Used Datcom+ pro to get better droptank axial force.
+Aero: Changed twist and incidence of main wing and canards for axial force computations.
+Aero: When gear is down and speed low, more positive elevator deflection is allowed.
+Aero: Updated area of exposed part of vertical tail.
+Aero: Added wave drag to be summed up as lift and drag in performance monitor.
+Aero: Further tuning of wave drag.
+Aero: Tuned FCS to new aerodynamic.
+Aero: Above 300 kt, the pitch damper will now have less influence if the pilot yank hard on the stick.
+Aero: The flight control input is now geared. The transfer functions means small input deflect less than before.
+Aero: Roll damper will now damp more than before, and is now seperate from roll limiter.
+Engine: Improved the extrapolation of thrust tables. This has resulted in more thrust at very high altitudes.
+GUI: Added static margin to performance monitor.
+GUI: Added 3 refueling options to menu.
+GUI: Added Nicola (JazzTp) to authors of aircraft.
+GUI: Refuel menu for long distance will now attach the drop tank, if it was jettisoned.
+GUI: Removed mouse control from options.
+GUI: Added stall and spin detection to performance monitor.
+GUI: Faster access to property tree for perf. monitor.
+GUI: Updated aircraft help.
+GUI: Updated checklists to the new cockpit.
+
+3.100 - 2015 July 26
+=====
+GUI: Replaced the thumbnail picture used in the new Qt launcher.
+Engine: Increased fuel consumption numbers precision and validated their correctness.
+Sim: Increased version number to 3.100 due to new cockpit and many recent changes to FDM and systems.
+Sim: Bumped systems rating to 3 and status from Beta to Early production.
