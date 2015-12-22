@@ -20,13 +20,6 @@ var touchdown2 = FALSE;
 var total_fuel = 0;
 var bingoFuel = FALSE;
 
-var warnEngineOff = TRUE;
-var warnCanopy = TRUE;
-var warnGenerator = TRUE;
-var warnHydr1 = TRUE;
-var warnHydr2 = TRUE;
-var warnCabin = TRUE;
-
 var mainOn = FALSE;
 var mainTimer = -1;
 
@@ -82,8 +75,6 @@ input = {
   stationSelect:    "controls/armament/station-select",
   combat:           "/sim/ja37/hud/current-mode",
   warnButton:       "sim/ja37/avionics/master-warning-button",
-  warn:             "/instrumentation/master-warning",
-  master:           "sim/ja37/sound/master-on",
   engineRunning:    "engines/engine/running",
   hz10:             "sim/ja37/blink/ten-Hz/state",
   hz05:             "sim/ja37/blink/five-Hz/state",
@@ -130,7 +121,7 @@ input = {
   hydr1On:          "fdm/jsbsim/systems/hydraulics/system1/pressure",
   hydr2On:          "fdm/jsbsim/systems/hydraulics/system2/pressure-main",
   hydrCombined:     "fdm/jsbsim/systems/hydraulics/flight-surface-actuation",
-  lampFuelDistr:    "sim/ja37/avionics/uppf",
+  fuelInternalRatio:"sim/ja37/avionics/fuel-internal-ratio",
   canopyPos:        "canopy/position-norm",
   speedWarn:        "sim/ja37/sound/speed-on",
   cabinPressure:    "fdm/jsbsim/systems/flight/cabin-pressure-kpm2",
@@ -212,13 +203,8 @@ var update_loop = func {
       input.fuelWarning.setValue(FALSE);
     }
 
-    if((current / total_fuel) > 0.40) {
-      # fuel flow distributor lamp
-      input.lampFuelDistr.setValue(TRUE);
-    } else {
-      input.lampFuelDistr.setValue(FALSE);
-    }
-
+    input.fuelInternalRatio.setValue(current / total_fuel);
+    
     if (current > 0 and input.tank8LvlNorm.getValue() > 0) {
       bingoFuel = FALSE;
     } else {
@@ -254,74 +240,7 @@ var update_loop = func {
     #}
 
     
-    # indicators
-    var joystick = FALSE;
-    var attitude = FALSE;
-    var altitude = FALSE;
-    var transonic = FALSE;
-    var rev = FALSE;
 
-    # joystick indicator
-    if(input.acInstrVolt.getValue() > 50) {
-      if (((input.lockHeading.getValue() != '' and input.lockHeading.getValue() != nil) and (input.lockAltitude.getValue() != ''
-       and input.lockAltitude.getValue() != nil)) or input.lockPassive.getValue() == TRUE and input.dcVolt.getValue() > 23) {
-        joystick = FALSE;
-      } else {
-        joystick = TRUE;
-      }
-    } else {
-      joystick = FALSE;
-    }
-
-    # attitude indicator
-    if(input.lockPassive.getValue() == TRUE or (input.lockHeading.getValue() != '' and input.lockHeading.getValue() != nil)
-     and input.dcVolt.getValue() > 23) {
-      if (input.roll.getValue() > 70 or input.roll.getValue() < -70) {
-        attitude = input.hz05.getValue();
-      } else {
-        attitude = TRUE;
-      }
-    } else {
-      attitude = FALSE;
-    }
-
-    # altitude indicator
-    if(input.lockPassive.getValue() == TRUE or (input.lockAltitude.getValue() != '' and input.lockAltitude.getValue() != nil)
-     and input.dcVolt.getValue() > 23) {
-      if (input.speedMach.getValue() > 0.97 and input.speedMach.getValue() < 1.05) {
-        altitude = input.hz05.getValue();
-      } else {
-        altitude = TRUE;
-      }
-    } else {
-      altitude = FALSE;
-    }
-
-    #transonic indicator
-    if (input.speedMach.getValue() > 0.97 and input.speedMach.getValue() < 1.05
-     and input.dcVolt.getValue() > 23) {
-      transonic = TRUE;
-    } else {
-      if(input.reversed.getValue() == TRUE and input.speedKt.getValue() < 64.8 and input.dcVolt.getValue() > 23) {
-        # warning that speed is so low that its risky to continue reverse thrust
-          transonic = TRUE;
-        } else {
-          transonic = FALSE;
-        }
-    }
-
-    # reverse indicator
-    if(input.reversed.getValue() == TRUE and input.dcVolt.getValue() > 23) {
-      rev = TRUE;
-    } else {
-      rev = FALSE;
-    }
-
-    input.indJoy.setValue(joystick);
-    input.indAtt.setValue(attitude);
-    input.indAlt.setValue(altitude);
-    input.indTrn.setValue(transonic);
-    input.indRev.setValue(rev);
 
     # pylon payloads
     for(var i=0; i<=4; i=i+1) {
@@ -480,94 +399,6 @@ var update_loop = func {
     # front gear compression calc for spinning of wheel
     # setprop("gear/gear/compression-wheel", (getprop("gear/gear/compression-ft")*0.3048-1.84812));
 
-    # Master warning
-    if(input.dcVolt.getValue() > 23 ) {
-      var warning_sound = FALSE;
-      var warning = FALSE;
-      if (input.wow0.getValue() == FALSE) {
-        if (input.engineRunning.getValue() == FALSE and autostarting == FALSE) {
-          warning = TRUE;
-          if (input.warnButton.getValue() == TRUE) {
-            warnEngineOff = FALSE;
-          }
-          if (warnEngineOff == TRUE) {
-            warning_sound = TRUE;
-          }
-        } else {
-          warnEngineOff = TRUE;
-        }
-        if (input.canopyPos.getValue() > 0) {
-          warning = TRUE;
-          if (input.warnButton.getValue() == TRUE) {
-            warnCanopy = FALSE;
-          }
-          if (warnCanopy == TRUE) {
-            warning_sound = TRUE;
-          }
-        } else {
-          warnCanopy = TRUE;
-        }
-        if (input.acInstrVolt.getValue() < 50) {
-          warning = TRUE;
-          if (input.warnButton.getValue() == TRUE) {
-            warnGenerator = FALSE;
-          }
-          if (warnGenerator == TRUE) {
-            warning_sound = TRUE;
-          }
-        } else {
-          warnGenerator = TRUE;
-        }
-        if (input.hydr1On.getValue() != 1) {
-          warning = TRUE;
-          if (input.warnButton.getValue() == TRUE) {
-            warnHydr1 = FALSE;
-          }
-          if (warnHydr1 == TRUE) {
-            warning_sound = TRUE;
-          }
-        } else {
-          warnHydr1 = TRUE;
-        }
-        if (input.hydr2On.getValue() != 1) {
-          warning = TRUE;
-          if (input.warnButton.getValue() == TRUE) {
-            warnHydr2 = FALSE;
-          }
-          if (warnHydr2 == TRUE) {
-            warning_sound = TRUE;
-          }
-        } else {
-          warnHydr2 = TRUE;
-        }
-        if (input.cabinPressure.getValue() < .15) {
-          warning = TRUE;
-          if (input.warnButton.getValue() == TRUE) {
-            warnCabin = FALSE;
-          }
-          if (warnCabin == TRUE) {
-            warning_sound = TRUE;
-          }
-        } else {
-          warnCabin = TRUE;
-        }
-      }
-        
-      # Master warning
-      if(warning == TRUE and input.hz10.getValue() == TRUE) {
-        input.warn.setValue(TRUE);
-      } else {
-        input.warn.setValue(FALSE);
-      }
-      if(warning_sound == TRUE and input.hzThird.getValue() == TRUE) {
-        input.master.setValue(TRUE);
-      } else {
-        input.master.setValue(FALSE);
-      }
-    } else {
-      input.warn.setValue(FALSE);
-      input.master.setValue(FALSE);
-    }
 
     #tracer ammo, due to it might run out faster than cannon rounds due to submodel delay not being precise
     if(input.subAmmo3.getValue() > 0) {
@@ -608,43 +439,6 @@ var update_loop = func {
     } elsif (main <= 20) {
       mainOn = FALSE;
     }
-    # engine start
-    var n2 = input.n2.getValue();
-    if (input.starter.getValue() == TRUE and n2 < 57 and input.thrustLb.getValue() == 0) {
-      input.lampStart.setValue(TRUE);
-    } else {
-      input.lampStart.setValue(FALSE);
-    }
-    if (input.cutoff.getValue() == FALSE and n2 < 57 and n2 > 16 and input.thrustLb.getValue() == 0) {
-      # manual says between 11-16% it goes on
-      input.lampIgnition.setValue(TRUE);
-    } else {
-      input.lampIgnition.setValue(FALSE);
-    }
-    if (input.tank8Jettison.getValue() == FALSE and input.tank8LvlGal.getValue() > 45 and (input.starter.getValue() == TRUE or input.engineRunning.getValue() == 1) and (n2 < 70 or input.pneumatic.getValue() == 0)) {
-      input.lampXTank.setValue(TRUE);
-    } else {
-      input.lampXTank.setValue(FALSE);
-    }
-
-    # joystick on indicator panel
-    if ((main > 20 and input.acMainVolt.getValue() < 150) or input.hydrCombined.getValue() != 1) {
-      input.lampStick.setValue(TRUE);
-    } else {
-      input.lampStick.setValue(FALSE);
-    }
-
-    if (main > 20 and getprop("controls/oxygen") == FALSE) {
-      input.lampOxygen.setValue(TRUE);
-    } else {
-      input.lampOxygen.setValue(FALSE);
-    }
-
-    if (main > 20 and input.acMainVolt.getValue() < 150) {
-      input.lampCanopy.setValue(TRUE);
-    } else {
-      input.lampCanopy.setValue(FALSE);
-    }
 
     # exterior lights
     var flash = input.dcVolt.getValue() > 20 and input.switchFlash.getValue() == 1;
@@ -661,6 +455,26 @@ var update_loop = func {
       setprop("/sim/ja37/effect/smoke", getprop("/sim/ja37/effect/smoke-cmd"));
     } else {
       setprop("/sim/ja37/effect/smoke", 1);
+    }
+
+    # auto-pilot engaged
+
+    if (size(getprop("/autopilot/locks/speed")) == 0) {
+      setprop("sim/ja37/avionics/auto-throttle-on", FALSE);
+    } else {
+      setprop("sim/ja37/avionics/auto-throttle-on", TRUE);
+    }
+
+    if (getprop("/autopilot/locks/heading") == "") {
+      setprop("sim/ja37/avionics/auto-attitude-on", FALSE);
+    } else {
+      setprop("sim/ja37/avionics/auto-attitude-on", TRUE);
+    }
+
+    if (getprop("/autopilot/locks/altitude") == "") {
+      setprop("sim/ja37/avionics/auto-altitude-on", FALSE);
+    } else {
+      setprop("sim/ja37/avionics/auto-altitude-on", TRUE);
     }
 
     settimer(
@@ -728,7 +542,12 @@ var slow_loop = func () {
     TILSprev = FALSE;
   }
 
-  #frost and rain
+  ###########################################################
+  #               Aircondition, frost, fog and rain         #
+  ###########################################################
+
+  # If AC is set to warm or cold, then it will put warm/cold air into the cockpit for 12 seconds, and then revert to auto setting.
+
   var acSetting = getprop("controls/ventilation/airconditioning-type");
   if (acSetting != 0) {
     if (acPrev != acSetting) {
@@ -746,77 +565,131 @@ var slow_loop = func () {
     tempAC = 200;
   }
 
+  # Here is calculated how raindrop move over the surface of the glass
+
   var airspeed = getprop("/velocities/airspeed-kt");
   # ja37
   #var airspeed_max = 250; 
   var airspeed_max = 120;
-  if (airspeed > airspeed_max) {airspeed = airspeed_max;}
+  if (airspeed > airspeed_max) {
+    airspeed = airspeed_max;
+  }
   airspeed = math.sqrt(airspeed/airspeed_max);
-  # f-16
-  var splash_x = -0.1 - 2.0 * airspeed;
+  # Reverted the vector from what is used on the f-16
+  var splash_x = -(-0.1 - 2.0 * airspeed);
   var splash_y = 0.0;
-  var splash_z = 1.0 - 1.35 * airspeed;
+  var splash_z = -(1.0 - 1.35 * airspeed);
   setprop("/environment/aircraft-effects/splash-vector-x", splash_x);
   setprop("/environment/aircraft-effects/splash-vector-y", splash_y);
   setprop("/environment/aircraft-effects/splash-vector-z", splash_z);
 
+  # If the AC is turned on and on auto setting, it will slowly move the cockpit temperature toward its temperature setting.
+  # The dewpoint inside the cockpit depends on the outside dewpoint and how the AC is working.
   var tempOutside = getprop("environment/temperature-degc");
-  var tempInside = getprop("environment/temperature-inside-degc");
+  var tempInside = getprop("environment/aircraft-effects/temperature-inside-degC");
   var tempOutsideDew = getprop("environment/dewpoint-degc");
-  var tempACDew = 5;#aircondition dew point. 5 = dry
+  var tempInsideDew = getprop("/environment/aircraft-effects/dewpoint-inside-degC");
+  var tempACDew = 5;# aircondition dew point target. 5 = dry
+  var ACRunning = input.dcVolt.getValue() > 23 and getprop("controls/ventilation/airconditioning-enabled") == TRUE;
 
   # calc inside temp
+  var knob = getprop("controls/ventilation/windshield-hot-air-knob");
+  var hotAirOnWindshield = input.dcVolt.getValue() > 23?knob:0;
   if (input.canopyPos.getValue() > 0) {
     tempInside = tempOutside;
-  } elsif(input.dcVolt.getValue() > 23 and getprop("controls/ventilation/airconditioning-enabled") == TRUE) {
-    if (tempInside < tempAC) {
-      tempInside = clamp(tempInside+0.15, -1000, tempAC);
-    } elsif (tempInside > tempAC) {
-      tempInside = clamp(tempInside-0.15, tempAC, 1000);
-    }
   } else {
+    tempInside = tempInside + hotAirOnWindshield * 0.05; # having hot air on windshield will also heat cockpit
+    if (tempInside < 37) {
+      tempInside = tempInside + 0.005; # pilot will also heat cockpit with 1 deg per 5 mins
+    }
+    # outside temp will influence inside temp:
+    var coolingFactor = clamp(abs(tempInside - tempOutside)*0.005, 0, 0.10);# 20 degrees difference will cool/warm with 0.10 Deg C every 1.5 second
     if (tempInside < tempOutside) {
-      tempInside = clamp(tempInside+1, -1000, tempOutside);
+      tempInside = clamp(tempInside+coolingFactor, -1000, tempOutside);
     } elsif (tempInside > tempOutside) {
-      tempInside = clamp(tempInside-1, tempOutside, 1000);
+      tempInside = clamp(tempInside-coolingFactor, tempOutside, 1000);
+    }
+    if (ACRunning == TRUE) {
+      # AC is running and will work to adjust to influence the inside temperature
+      if (tempInside < tempAC) {
+        tempInside = clamp(tempInside+0.15, -1000, tempAC);
+      } elsif (tempInside > tempAC) {
+        tempInside = clamp(tempInside-0.15, tempAC, 1000);
+      }
+    }
+  }
+
+  # calc temp of glass itself
+  var tempIndex = getprop("/environment/aircraft-effects/glass-temperature-index"); # 0.80 = good window   0.45 = bad window
+  var tempGlass = tempIndex*(tempInside - tempOutside)+tempOutside;
+  
+  # calc dewpoint inside
+  if (input.canopyPos.getValue() > 0) {
+    # canopy is open, inside dewpoint aligns to outside dewpoint instead
+    tempInsideDew = tempOutsideDew;
+  } else {
+    var tempInsideDewTarget = 0;
+    if (ACRunning == TRUE) {
+      # calculate dew point for inside air. When full airconditioning is achieved at tempAC dewpoint will be tempACdew.
+      # slope = (outsideDew - desiredInsideDew)/(outside-desiredInside)
+      # insideDew = slope*(inside-desiredInside)+desiredInsideDew
+      var slope = (tempOutsideDew - tempACDew)/(tempOutside-tempAC);
+      tempInsideDewTarget = slope*(tempInside-tempAC)+tempACDew;
+    } else {
+      tempInsideDewTarget = tempOutsideDew;
+    }
+    if (tempInsideDewTarget > tempInsideDew) {
+      tempInsideDew = clamp(tempInsideDew + 0.15, -1000, tempInsideDewTarget);
+    } else {
+      tempInsideDew = clamp(tempInsideDew - 0.15, tempInsideDewTarget, 1000);
     }
   }
   
-  # calc temp of glass itself
-  var tempIndex = 0.70; # 0.80 = good window   0.45 = bad window
-  var tempGlass = tempIndex*(tempInside - tempOutside)+tempOutside;
-  
-  # calculate dew point for inside air. When full airconditioning is achieved at tempAC dewpoint will be tempACdew.
-  # slope = (outsideDew - desiredInsideDew)/(outside-desiredInside)
-  # insideDew = slope*(inside-desiredInside)+desiredInsideDew
-
-  var slope = (tempOutsideDew - tempACDew)/(tempOutside-tempAC);
-  var tempInsideDew = slope*(tempInside-tempAC)+tempACDew;
 
   # calc fogging outside and inside on glass
   var fogNormOutside = clamp((tempOutsideDew-tempGlass)*0.05, 0, 1);
   var fogNormInside = clamp((tempInsideDew-tempGlass)*0.05, 0, 1);
+  
+  # calc frost
+  var frostNormOutside = getprop("/environment/aircraft-effects/frost-outside");
+  var frostNormInside = getprop("/environment/aircraft-effects/frost-inside");
+  var rain = getprop("/environment/rain-norm");
+  var frostSpeedInside = clamp(-tempGlass, -60, 60)/600 + (tempGlass<0?fogNormInside/50:0);
+  var frostSpeedOutside = clamp(-tempGlass, -60, 60)/600 + (tempGlass<0?(fogNormOutside/50 + rain/50):0);
+  frostNormOutside = clamp(frostNormOutside + frostSpeedOutside, 0, 1);
+  frostNormInside = clamp(frostNormInside + frostSpeedInside, 0, 1);
+  var frostNorm = frostNormOutside>frostNormInside?frostNormOutside:frostNormInside;
+  #var frostNorm = clamp((tempGlass-0)*-0.05, 0, 1);# will freeze below 0
 
+  # recalc fogging from frost levels, frost will lower the fogging
+  fogNormOutside = clamp(fogNormOutside - frostNormOutside / 4, 0, 1);
+  fogNormInside = clamp(fogNormInside - frostNormInside / 4, 0, 1);
   var fogNorm = fogNormOutside>fogNormInside?fogNormOutside:fogNormInside;
-  var frostNorm = clamp((tempGlass-0)*-0.05, 0, 1);# will freeze below 0
 
+  # If the hot air on windshield is enabled and its setting is high enough, then apply the mask which will defog the windshield.
   var mask = FALSE;
-  var knob = getprop("controls/ventilation/windshield-hot-air-knob");
-  if (frostNorm <= knob and knob != 0 and input.dcVolt.getValue() > 23) {
+  if (frostNorm <= hotAirOnWindshield and hotAirOnWindshield != 0) {
     mask = TRUE;
   }
 
-  setprop("/environment/aircraft-effects/use-mask", mask);
+  # internal environment
   setprop("/environment/aircraft-effects/fog-inside", fogNormInside);
   setprop("/environment/aircraft-effects/fog-outside", fogNormOutside);
-  setprop("/environment/aircraft-effects/temperature-glass-degc", tempGlass);
-
-  setprop("environment/temperature-inside-degc", tempInside);
+  setprop("/environment/aircraft-effects/frost-inside", frostNormInside);
+  setprop("/environment/aircraft-effects/frost-outside", frostNormOutside);
+  setprop("/environment/aircraft-effects/temperature-glass-degC", tempGlass);
+  setprop("/environment/aircraft-effects/dewpoint-inside-degC", tempInsideDew);
+  setprop("/environment/aircraft-effects/temperature-inside-degC", tempInside);
+  # effects
   setprop("/environment/aircraft-effects/frost-level", frostNorm);
   setprop("/environment/aircraft-effects/fog-level", fogNorm);
+  setprop("/environment/aircraft-effects/use-mask", mask);
 
   settimer(slow_loop, 1.5);
 }
+
+var flareCount = -1;
+var flareStart = -1;
 
 # fast updating loop
 var speed_loop = func () {
@@ -873,6 +746,52 @@ var speed_loop = func () {
   var wow1 = input.wow1.getValue();
   var wow2 = input.wow2.getValue();
   input.MPint17.setIntValue(encode3bits(wow0, wow1, wow2));
+
+  # Flare release
+  if (getprop("ai/submodels/submodel[0]/flare-release-snd") == nil) {
+    setprop("ai/submodels/submodel[0]/flare-release-snd", FALSE);
+    setprop("ai/submodels/submodel[0]/flare-release-out-snd", FALSE);
+  }
+  var flareOn = getprop("ai/submodels/submodel[0]/flare-release-cmd");
+  if (flareOn == TRUE and getprop("ai/submodels/submodel[0]/flare-release") == FALSE
+      and getprop("ai/submodels/submodel[0]/flare-release-out-snd") == FALSE
+      and getprop("ai/submodels/submodel[0]/flare-release-snd") == FALSE) {
+    flareCount = getprop("ai/submodels/submodel[0]/count");
+    flareStart = input.elapsed.getValue();
+    setprop("ai/submodels/submodel[0]/flare-release-cmd", FALSE);
+    if (flareCount > 0) {
+      setprop("ai/submodels/submodel[0]/flare-release-snd", TRUE);
+      setprop("ai/submodels/submodel[0]/flare-release", TRUE);
+    } else {
+      setprop("ai/submodels/submodel[0]/flare-release-out-snd", TRUE);
+    }
+  }
+  if (getprop("ai/submodels/submodel[0]/flare-release-snd") == TRUE and (flareStart + 1) < input.elapsed.getValue()) {
+    setprop("ai/submodels/submodel[0]/flare-release-snd", FALSE);
+  }
+  if (getprop("ai/submodels/submodel[0]/flare-release-out-snd") == TRUE and (flareStart + 1) < input.elapsed.getValue()) {
+    setprop("ai/submodels/submodel[0]/flare-release-out-snd", FALSE);
+  }
+  if (flareCount > getprop("ai/submodels/submodel[0]/count")) {
+    setprop("ai/submodels/submodel[0]/flare-release", FALSE);
+    flareCount = -1;
+  }
+
+  # environment volume
+  var canopy = getprop("fdm/jsbsim/fcs/canopy/pos-norm");
+  var internal = getprop("sim/current-view/internal");
+  var vol = 0;
+  if(internal != nil and canopy != nil) {
+    vol = clamp(1-(internal*0.5)+(canopy*0.5), 0, 1);
+  } else {
+    vol = 0;
+  }
+  setprop("sim/ja37/sound/environment-volume", vol);
+  var rain = getprop("/environment/rain-norm");
+  if (rain == nil) {
+    rain = 0;
+  }
+  setprop("sim/ja37/sound/rain-volume", rain*0.35*vol);
 
   settimer(speed_loop, 0.05);
 }
@@ -1068,6 +987,85 @@ var battery_listener = func {
 #setlistener("controls/electric/battery", battery_listener, 0, 0);
 #setlistener("fdm/jsbsim/systems/electrical/external/switch", battery_listener, 0, 0);
 #setlistener("fdm/jsbsim/systems/electrical/external/enable-cmd", battery_listener, 0, 0);
+
+
+
+########### Thunder sounds (from c172p) ###################
+
+var speed_of_sound = func (t, re) {
+    # Compute speed of sound in m/s
+    #
+    # t = temperature in Celsius
+    # re = amount of water vapor in the air
+
+    # Compute virtual temperature using mixing ratio (amount of water vapor)
+    # Ratio of gas constants of dry air and water vapor: 287.058 / 461.5 = 0.622
+    var T = 273.15 + t;
+    var v_T = T * (1 + re/0.622)/(1 + re);
+
+    # Compute speed of sound using adiabatic index, gas constant of air,
+    # and virtual temperature in Kelvin.
+    return math.sqrt(1.4 * 287.058 * v_T);
+};
+
+var thunder_listener = func {
+    var thunderCalls = 0;
+
+    var lightning_pos_x = getprop("/environment/lightning/lightning-pos-x");
+    var lightning_pos_y = getprop("/environment/lightning/lightning-pos-y");
+    var lightning_distance = math.sqrt(math.pow(lightning_pos_x, 2) + math.pow(lightning_pos_y, 2));
+
+    # On the ground, thunder can be heard up to 16 km. Increase this value
+    # a bit because the aircraft is usually in the air.
+    if (lightning_distance > 20000)
+        return;
+
+    var t = getprop("/environment/temperature-degc");
+    var re = getprop("/environment/relative-humidity") / 100;
+    var delay_seconds = lightning_distance / speed_of_sound(t, re);
+
+    # Maximum volume at 5000 meter
+    var lightning_distance_norm = std.min(1.0, 1 / math.pow(lightning_distance / 5000.0, 2));
+
+    settimer(func {
+        var thunder1 = getprop("sim/ja37/sound/thunder1");
+        var thunder2 = getprop("sim/ja37/sound/thunder2");
+        var thunder3 = getprop("sim/ja37/sound/thunder3");
+
+        if (!thunder1) {
+            thunderCalls = 1;
+            setprop("sim/ja37/sound/dist-thunder1", lightning_distance_norm * getprop("sim/ja37/sound/environment-volume") * 1.5);
+        }
+        else if (!thunder2) {
+            thunderCalls = 2;
+            setprop("sim/ja37/sound/dist-thunder2", lightning_distance_norm * getprop("sim/ja37/sound/environment-volume") * 1.5);
+        }
+        else if (!thunder3) {
+            thunderCalls = 3;
+            setprop("sim/ja37/sound/dist-thunder3", lightning_distance_norm * getprop("sim/ja37/sound/environment-volume") * 1.5);
+        }
+        else
+            return;
+
+        # Play the sound (sound files are about 9 seconds)
+        play_thunder("thunder" ~ thunderCalls, 9.0, 0);
+    }, delay_seconds);
+};
+
+var play_thunder = func (name, timeout=0.1, delay=0) {
+    var sound_prop = "/sim/ja37/sound/" ~ name;
+
+    settimer(func {
+        # Play the sound
+        setprop(sound_prop, TRUE);
+
+        # Reset the property after timeout so that the sound can be
+        # played again.
+        settimer(func {
+            setprop(sound_prop, FALSE);
+        }, timeout);
+    }, delay);
+};
                 
 ###############  Test which system the flightgear version support.  ###########
 
@@ -1088,8 +1086,10 @@ var test_support = func {
       setprop("sim/ja37/supported/landing-light", FALSE);
       setprop("sim/ja37/supported/crash-system", 0);
       setprop("sim/ja37/supported/ubershader", FALSE);
+      setprop("sim/ja37/supported/lightning", FALSE);
   } elsif (major == 2) {
     setprop("sim/ja37/supported/landing-light", FALSE);
+    setprop("sim/ja37/supported/lightning", FALSE);
     if(minor < 7) {
       popupTip("JA-37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
       setprop("sim/ja37/supported/radar", FALSE);
@@ -1135,18 +1135,24 @@ var test_support = func {
     setprop("sim/ja37/supported/popuptips", 2);
     setprop("sim/ja37/supported/crash-system", 1);
     setprop("sim/ja37/supported/ubershader", TRUE);
+    setprop("sim/ja37/supported/lightning", TRUE);
     if (minor == 0) {
       setprop("sim/ja37/supported/old-custom-fails", 0);
       setprop("sim/ja37/supported/landing-light", FALSE);
       setprop("sim/ja37/supported/popuptips", 1);
       setprop("sim/ja37/supported/crash-system", 0);
+      setprop("sim/ja37/supported/lightning", FALSE);
     } elsif (minor <= 2) {
       setprop("sim/ja37/supported/old-custom-fails", 1);
       setprop("sim/ja37/supported/landing-light", FALSE);
       setprop("sim/ja37/supported/popuptips", 1);
+      setprop("sim/ja37/supported/lightning", FALSE);
     } elsif (minor <= 4) {
       setprop("sim/ja37/supported/old-custom-fails", 1);
       setprop("sim/ja37/supported/popuptips", 1);
+      setprop("sim/ja37/supported/lightning", FALSE);
+    } elsif (minor <= 6) {
+      setprop("sim/ja37/supported/lightning", FALSE);
     }
   } else {
     # future proof
@@ -1158,6 +1164,7 @@ var test_support = func {
     setprop("sim/ja37/supported/popuptips", 2);
     setprop("sim/ja37/supported/crash-system", 1);
     setprop("sim/ja37/supported/ubershader", TRUE);
+    setprop("sim/ja37/supported/lightning", TRUE);
   }
   setprop("sim/ja37/supported/initialized", TRUE);
 
@@ -1186,6 +1193,13 @@ var main_init = func {
                     "ai/submodels/submodel[2]/random",
                     "ai/submodels/submodel[3]/random");
   aircraft.data.save();
+
+
+
+  # define the locks since they otherwise start with some undefined value I cannot test on.
+  setprop("/autopilot/locks/speed", "");
+  setprop("/autopilot/locks/heading", "");
+  setprop("/autopilot/locks/altitude", "");
 
   setprop("/consumables/fuel/tank[8]/jettisoned", FALSE);
 
@@ -1219,7 +1233,8 @@ var main_init = func {
   screen.log.write("Welcome to Saab JA-37 Viggen, version "~getprop("sim/aircraft-version"), 1.0, 0.2, 0.2);
 
   # init cockpit temperature
-  setprop("environment/temperature-inside-degc", getprop("environment/temperature-degc"));
+  setprop("environment/aircraft-effects/temperature-inside-degC", getprop("environment/temperature-degc"));
+  setprop("/environment/aircraft-effects/dewpoint-inside-degC", getprop("environment/dewpoint-degc"));
 
   # init oxygen bottle pressure
   setprop("sim/ja37/systems/oxygen-bottle-pressure", rand()*75+50);#todo: start high, and lower slowly during flight
@@ -1246,6 +1261,11 @@ var main_init = func {
   # setup incoming listener
   setlistener("/sim/multiplay/chat-history", incoming_listener, 0, 0);
 
+  # Setup lightning listener
+  if (getprop("/sim/ja37/supported/lightning") == TRUE) {
+    setlistener("/environment/lightning/lightning-pos-y", thunder_listener);
+  }
+
   # start the main loop
 	settimer(func { update_loop() }, 0.1);
 }
@@ -1270,10 +1290,15 @@ var asymVortex = func () {
   }
 }
 
-var load_interior = func{
+var load_interior = func {
     setprop("/sim/current-view/view-number", 0);
+    settimer( load_interior_final, 0.5 );
+}
+
+var load_interior_final = func {
+    setprop("sim/current-view/field-of-view", 95);
     print("..Done!");
-  }
+}
 
 var main_init_listener = setlistener("sim/signals/fdm-initialized", func {
 	main_init();
@@ -1390,6 +1415,7 @@ var stopAutostart = func {
 }
 
 var startSupply = func {
+  setprop("/controls/engines/engine[0]/starter-cmd", TRUE);
   if (getprop("fdm/jsbsim/systems/electrical/external/available") == TRUE) {
     # using ext. power
     click();
@@ -1424,7 +1450,7 @@ var autostart = func {
   popupTip("Starting engine..");
   click();
   setprop("/controls/engines/engine[0]/cutoff", TRUE);
-  setprop("/controls/engines/engine[0]/starter-cmd", TRUE);
+  #setprop("/controls/engines/engine[0]/starter-cmd", TRUE);
   start_count = 0;
   settimer(waiting_n1, 0.5, 1);
 }
@@ -1611,10 +1637,10 @@ var follow = func () {
 var hydr1Lost = func {
   #if hydraulic system1 loses pressure or too low voltage then disengage A/P.
   if (input.hydr1On.getValue() == 0 or input.dcVolt.getValue() < 23) {
-    setprop("sim/ja37/avionics/autopilot", TRUE);
-    stopAP();
-  } else {
     setprop("sim/ja37/avionics/autopilot", FALSE);
+    #stopAP();
+  } else {
+    setprop("sim/ja37/avionics/autopilot", TRUE);
   }
   settimer(hydr1Lost, 1);
 }
