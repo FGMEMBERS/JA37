@@ -7,10 +7,11 @@ Features and improvements:
 GUI: Option to turn off verbose popups.
 GUI: Improve Checklists.
 GUI: Option to switch off hitting stuff above ground. (switched off now, might confuse users)
-Aero: Make cannon pod detachable and have pointweight.
-Aero: Air-brakes, even though they got welded shut in mid 80ties.
-Aero: Disable failure system from freezing surfaces (remove failure mode bug in 3.2- prevents)
-Aero: Pitch damper should also take lateral normal (Nz) acceleration as input.
+GUI: Remove from options: Radar, Radar screen and maybe reverse on touchdown. As all these now has switches in cockpit.
+Aero: Make cannon pod detachable and have pointweight. (and model it above drop-tank)
+Aero: Air-brakes, even though they got welded shut in mid 80ties. (Request from JazzTp)
+Control: Pitch damper should also take lateral normal (Nz) acceleration as input as per manual.
+Control: Disable failure system from freezing surfaces (remove failure mode bug in 3.2- prevents)
 Model: Make minimal polygon model for multiplayer LOD.
 Model: Make liveries that is not 59, able to not have to use base texture.
 Model: Ext. power truck more mil style textures.
@@ -20,12 +21,15 @@ Model: The canopy metal should be thinner and unpainted alu.
 Model: There should be mirrors on the canopy.
 Model: Put in not-working instruments and controls for immersion.
 Model: Some textures should be aligned so they can be better viewed from current pilot point of view.
+Model: The minimum AoA the indicator should show is -4 degrees, not -7.
+Model: The altimeter should have a standard button which set the pressure to 1013 hPa.
+Model: Fix that landing gear oleo struts now are too bright.
 Animation: Show wheels spinning in MP also.
 Animation: Proper animation of gear doors.
 Sim: Improve autopilot further. (alt-hold should use pitch not v-speed)
 Sim: Make autopilot depend fully on instrument properties not true properties.
 Sim: Implement ejection seat. (with parachute?)
-Sim: Make braking parachute.
+Sim: Make braking parachute?
 Sim: Reset controls after A/P let go of them.
 Sim: Stop using integers in xml where floating point is expected? (really not needed)
 Sim: Make verbose property to be used in all nasal scripts. (possible include in options)
@@ -37,11 +41,12 @@ Sim: Replace generic setValue in nasal with specific types.
 Sim: Make droptank do collision detection. (use retractable)
 Sim: Make drop-tank fall down. (use slaved submodel)
 Sim: Missiles should lock onto flares.
-Sim: Lock warning when another plane get radar lock. (ja37, m2000-5, f-14b)
+Sim: Lock warning when another plane get radar lock. (ja37, m2000-5, f-14b, f-15)
 Sim: Damage from missile explosion.
 Sim: Complete hydraulic dependencies. Brakes.
 Sim: Hydraulic drain.
-Sim: Shift-m should be a key without shift instead for convinience.
+Sim: Shift-m should be a key without shift instead for convienience.
+Sim: Engine fire. Should maybe be activated by default if too high outlet temperature?
 Effect: Rembrandt landing lightcone.
 Effect: Make pilot faint/die due to G-forces.
 Effect: Make tires burst if too high speed with parking brakes.
@@ -106,17 +111,17 @@ Default FG HUD (done)
 
 Livery work
 -----------
-Model: Improve the 31-17 grey livery.
-Model: Improve the 32-17 Blå Petter livery. (Blue Peter)
-Model: Improve the 59-16 grey livery.
-Model: Improve the 61-18 strike camo livery.
-Model: Improve the 57-21 red 'ghost' livery.
-Model: Improve the 46-04 unknown export livery.
-Model: Improve the 02-21 swedish sun livery.
+Model: Improve the 31-F17 grey livery.
+Model: Improve the 32-F17 Blå Petter livery. (Blue Peter)
+Model: Improve the 59-F16 grey livery.
+Model: Improve the 61-F18 strike camo livery.
+Model: Improve the 57-F21 red 'ghost' livery.
+Model: Improve the 46-F04 unknown export livery - Great lake monster.
+Model: Improve the 02-F21 swedish sun livery.
 Model: Improve the Flightgear livery.
-Model: Make the 11-16 black/grey camo livery.
-Model: Make the 12-04 black and gold livery.
-Model: Make the 48-21 finnish export livery. (Akktu Stakki - Lonely Wolf)
+Model: Make the 11-F16 black/grey camo livery.
+Model: Make the 12-F04 black and gold livery.
+Model: Make the 48-F21 finnish export livery. (Akktu Stakki - Lonely Wolf)
 
 
 Require more data: (or aerodynamic know-how)

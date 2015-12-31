@@ -322,7 +322,7 @@
                     <and>
                         <property>sim/current-view/internal</property>
                         <greater-than>
-                            <property>fdm/jsbsim/fcs/canopy-pos-norm</property>
+                            <property>fdm/jsbsim/fcs/canopy/pos-norm</property>
                             <value>0</value>
                         </greater-than>
                     </and>
@@ -337,7 +337,7 @@
                         </not-equals>
                     </and>
                 </or>
-                <property>gear/gear[0]/wow</property>
+                <!--<property>gear/gear[0]/wow</property>-->
             </condition>
             <reference-dist>5</reference-dist>
             <max-dist>10000</max-dist>
@@ -356,7 +356,7 @@
             </orientation>
             <pitch>
                 <property>engines/engine/n1</property>
-                <offset>1</offset>
+                <offset>0.65</offset><!-- changed from 1 -->
                 <factor>0.005</factor>
             </pitch>
             <volume>
@@ -384,7 +384,7 @@
                     <and>
                         <property>sim/current-view/internal</property>
                         <greater-than>
-                            <property>fdm/jsbsim/fcs/canopy-pos-norm</property>
+                            <property>fdm/jsbsim/fcs/canopy/pos-norm</property>
                             <value>0</value>
                         </greater-than>
                     </and>
@@ -428,11 +428,11 @@
                 <offset>0.000</offset>
                 <factor>0.000050</factor>
             </volume>
-            <!--<pitch>
-    <property>engines/engine/n1</property>
-    <offset>0.3</offset>
-    <factor>0.03</factor>
-   </pitch>-->
+            <pitch>
+                <property>engines/engine/n1</property>
+                <offset>0.9</offset>
+                <factor>0.001</factor>
+            </pitch>
         </engine_mil_model>
 
 
@@ -457,7 +457,7 @@
                     <and>
                         <property>sim/current-view/internal</property>
                         <greater-than>
-                            <property>fdm/jsbsim/fcs/canopy-pos-norm</property>
+                            <property>fdm/jsbsim/fcs/canopy/pos-norm</property>
                             <value>0.0</value>
                         </greater-than>
                     </and>
@@ -484,13 +484,13 @@
             </orientation>
             <volume>
                 <property>fdm/jsbsim/propulsion/engine/zone-scaled</property>
-                <factor>1.0</factor>
+                <factor>0.8</factor>
                 <min>0.1</min>
-                <max>1.0</max>
+                <max>0.8</max>
                 <offset>0.0</offset>
             </volume>
             <pitch>
-                <min>1.0</min>
+                <min>0.0</min><!-- changed from 1 -->
                 <max>1.0</max>
             </pitch>
         </engine_augmented_model>
@@ -499,9 +499,11 @@
 
         <rumble>
             <name>gear rumble</name>
-            <mode>looped</mode>
+            <!--<mode>looped</mode>-->
             <path>Sounds/rumble.wav</path>
-            <condition>
+            <mode>in-transit</mode>
+            <property>gear/gear[0]/position-norm</property>
+            <!--<condition>
                 <property>sim/current-view/internal</property>
                 <greater-than>
                     <property>gear/gear[0]/position-norm</property>
@@ -511,7 +513,7 @@
                     <property>gear/gear[0]/position-norm</property>
                     <value>1</value>
                 </less-than>
-            </condition>
+            </condition>-->
             <reference-dist>3</reference-dist>
             <max-dist>10</max-dist>
             <position>
@@ -519,6 +521,10 @@
                 <y>0.01</y>
                 <z>-0.6</z>
             </position>
+            <pitch>
+                <min>1.05</min>
+                <max>1.051</max>
+            </pitch>
             <volume>
                 <max>0.40</max>
             </volume>
@@ -561,7 +567,7 @@
         <property>sim/current-view/internal</property>
       </not>
       <greater-than>
-        <property>fdm/jsbsim/fcs/canopy-pos-norm</property>
+        <property>fdm/jsbsim/fcs/canopy/pos-norm</property>
         <value>0.0</value>
       </greater-than>
     </or>
@@ -603,7 +609,7 @@
             <pitch>
                 <property>velocities/groundspeed-kt</property>
                 <factor>0.0025</factor>
-                <offset>1.2</offset>
+                <offset>1.2</offset><!-- changed from 1.2 -->
             </pitch>
         </squeal>
 
@@ -863,7 +869,7 @@
             <path>Aircraft/JA37/Sounds/warning-master.wav</path>
             <type>avionics</type>
             <condition>
-                <property>sim/ja37/sound/master-on</property>
+                <property>fdm/jsbsim/systems/indicators/master-warning/audio</property>
                 <property>sim/current-view/internal</property>
                 <property>sim/ja37/sound/annunciation-enabled</property>
                 <greater-than>
@@ -1179,7 +1185,7 @@
      </volume>
     </terrain>  -->
 
-        <!--                                                                          wind                                   -->
+        <!--                                                                          environment                                   -->
 
 
         <wind>
@@ -1190,7 +1196,7 @@
             <condition>
                 <property>sim/current-view/internal</property>
                 <greater-than>
-                    <property>fdm/jsbsim/fcs/canopy-pos-norm</property>
+                    <property>fdm/jsbsim/fcs/canopy/pos-norm</property>
                     <value>0</value>
                 </greater-than>
             </condition>
@@ -1199,6 +1205,101 @@
                 <factor>0.001</factor>
             </volume>
         </wind>
+
+        <thunder1>
+            <name>thunder1</name>
+            <mode>once</mode>
+            <path>Aircraft/JA37/Sounds/thunder1.wav</path>
+            <type>avionics</type>
+            <property>sim/ja37/sound/thunder1</property>
+            <pitch>
+                <property>sim/ja37/sound/dist-thunder1</property>
+                <factor>2</factor>
+                <offset>0.50</offset>
+                <min>1.00</min>
+                <max>2.00</max>
+            </pitch>
+            <volume>
+                <property>sim/ja37/sound/dist-thunder1</property>
+            </volume>
+        </thunder1>
+        <thunder2>
+            <name>thunder2</name>
+            <mode>once</mode>
+            <path>Aircraft/JA37/Sounds/thunder2.wav</path>
+            <type>avionics</type>
+            <property>sim/ja37/sound/thunder2</property>
+            <pitch>
+                <property>sim/ja37/sound/dist-thunder2</property>
+                <factor>2</factor>
+                <offset>0.50</offset>
+                <min>1.00</min>
+                <max>2.00</max>
+            </pitch>
+            <volume>
+                <property>sim/ja37/sound/dist-thunder2</property>
+            </volume>
+        </thunder2>
+        <thunder3>
+            <name>thunder3</name>
+            <mode>once</mode>
+            <path>Aircraft/JA37/Sounds/thunder3.wav</path>
+            <type>avionics</type>
+            <property>sim/ja37/sound/thunder3</property>
+            <pitch>
+                <property>sim/ja37/sound/dist-thunder3</property>
+                <factor>1</factor>
+                <offset>0.50</offset>
+                <min>1.00</min>
+                <max>2.00</max>
+            </pitch>
+            <volume>
+                <property>sim/ja37/sound/dist-thunder3</property>
+            </volume>
+        </thunder3>
+
+        <rain>
+            <name>rain</name>
+            <mode>looped</mode>
+            <path>Aircraft/JA37/Sounds/rain.wav</path>
+            <type>avionics</type>
+            <condition>
+                <greater-than>
+                    <property>/environment/rain-norm</property>
+                    <value>0</value>
+                </greater-than>
+            </condition>
+            <volume>
+                <property>sim/ja37/sound/rain-volume</property>
+            </volume>
+        </rain>
+
+        <rain-windshield>
+            <name>rain-windshield</name>
+            <mode>looped</mode>
+            <path>Aircraft/JA37/Sounds/rain-windshield.wav</path>
+            <type>avionics</type>
+            <condition>
+                <and>
+                    <property>/sim/current-view/internal</property>
+                    <greater-than>
+                        <property>/environment/rain-norm</property>
+                        <value>0</value>
+                    </greater-than>
+                </and>
+            </condition>
+            <!--<position>
+                <x>-0.5</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </position>-->
+            <volume>
+                <property>velocities/airspeed-kt</property>
+                <factor>0.00075</factor>
+                <min>0.03</min>
+                <max>0.40</max>
+            </volume>
+        </rain-windshield>
 
         <!--                                                                          weapons                                   -->
 
@@ -1360,6 +1461,46 @@
                 <property>sim/ja37/armament/rb24/sound-volume</property>
             </volume>
         </rb24-signal>
+
+        <flare>
+            <name>flare</name>
+            <mode>single</mode>
+            <type>avionics</type>
+            <path>Aircraft/JA37/Sounds/flare.wav</path>
+            <condition>
+                <property>ai/submodels/submodel[0]/flare-release-snd</property>
+                <property>sim/current-view/internal</property>
+                <property>sim/ja37/sound/annunciation-enabled</property>
+                <greater-than>
+                    <property>systems/electrical/outputs/dc-voltage</property>
+                    <value>23</value>
+                </greater-than>
+            </condition>
+            <volume>
+                <factor>1</factor>
+                <max>1</max>
+            </volume>
+        </flare>
+
+        <flare>
+            <name>flareOut</name>
+            <mode>single</mode>
+            <type>avionics</type>
+            <path>Aircraft/JA37/Sounds/flareOut.wav</path>
+            <condition>
+                <property>ai/submodels/submodel[0]/flare-release-out-snd</property>
+                <property>sim/current-view/internal</property>
+                <property>sim/ja37/sound/annunciation-enabled</property>
+                <greater-than>
+                    <property>systems/electrical/outputs/dc-voltage</property>
+                    <value>23</value>
+                </greater-than>
+            </condition>
+            <volume>
+                <factor>1</factor>
+                <max>1</max>
+            </volume>
+        </flare>
 
         <missile-hit>
             <!-- multiple of these so the sound can be played over each other -->

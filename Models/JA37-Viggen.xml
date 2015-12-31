@@ -70,37 +70,38 @@
 
 <!-- Material shaders   -->
   <effect>
-	  <inherits-from>Aircraft/JA37/Models/Effects/ja37-combined-shader</inherits-from>
+    <inherits-from>Aircraft/JA37/Models/Effects/ja37-combined-shader</inherits-from>
     <!--<inherits-from>Aircraft/JA37/Models/Effects/shadow/interior-shadow</inherits-from>-->
-	  <object-name>canopy</object-name>
-	  <object-name>elevonLeftInner</object-name>
-	  <object-name>elevonLeftOuter</object-name>
-	  <object-name>elevonRightInner</object-name>
-	  <object-name>elevonRightOuter</object-name>
-	  <object-name>flaps</object-name>
-	  <object-name>fuselage</object-name>
+    <object-name>canopy</object-name>
+    <object-name>elevonLeftInner</object-name>
+    <object-name>elevonLeftOuter</object-name>
+    <object-name>elevonRightInner</object-name>
+    <object-name>elevonRightOuter</object-name>
+    <object-name>flaps</object-name>
+    <object-name>fuselage</object-name>
     <object-name>wingLeft</object-name>
     <object-name>wingRight</object-name>
-	  <object-name>rudder</object-name>
-	  <object-name>gearFrontBottom</object-name>
+    <object-name>rudder</object-name>
+    <object-name>gearFrontBottom</object-name>
     <object-name>gearFrontHub</object-name>
     <object-name>gearFrontTop</object-name>
-	  <object-name>gearFrontDoorsOpenLeft</object-name>
+    <object-name>gearFrontDoorsOpenLeft</object-name>
     <object-name>gearFrontDoorsOpenRight</object-name>
-	  <object-name>gearFrontDoorsClosed</object-name>
-	  <object-name>gearLeftMid</object-name>
+    <object-name>gearFrontDoorsClosed</object-name>
+    <object-name>gearLeftMid</object-name>
     <object-name>gearLeftBottom</object-name>
     <object-name>gearLeftTop</object-name>
-	  <object-name>gearLeftHinge</object-name>
-	  <object-name>gearLeftDoorsOpen</object-name>
-	  <object-name>gearLeftDoorsClosed</object-name>
-	  <object-name>gearRightMid</object-name>
+    <object-name>gearLeftHinge</object-name>
+    <object-name>gearLeftDoorsOpen</object-name>
+    <object-name>gearLeftDoorsClosed</object-name>
+    <object-name>gearRightMid</object-name>
     <object-name>gearRightBottom</object-name>
     <object-name>gearRightTop</object-name>
-	  <object-name>gearRightHinge</object-name>
-	  <object-name>gearRightDoorsOpen</object-name>
-	  <object-name>gearRightDoorsClosed</object-name>
+    <object-name>gearRightHinge</object-name>
+    <object-name>gearRightDoorsOpen</object-name>
+    <object-name>gearRightDoorsClosed</object-name>
     <object-name>dropTank</object-name>
+    <!--<object-name>dropTankNoshader</object-name> as long as the fins has no thickness ubershader cannot be applied to them --> 
   </effect>
 
   <effect>
@@ -126,7 +127,17 @@
   <effect>
     <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-transparent-shader</inherits-from>
     <object-name>glassRadar</object-name>
-    <!--<object-name>hud</object-name>-->
+  </effect>
+
+  <effect>
+    <!--<inherits-from>Aircraft/JA37/Models/Effects/ja37-total-transparent-shader</inherits-from>-->
+    <inherits-from>Effects/model-transparent</inherits-from>
+    <object-name>hud</object-name>
+  </effect>
+
+  <effect>  
+    <inherits-from>Aircraft/JA37/Models/Effects/ja37-mirror</inherits-from>
+    <object-name>mirrorreflect</object-name>
   </effect>
 
   <effect>  
@@ -150,11 +161,14 @@
     <object-name>reverser1</object-name>
     <object-name>reverser2</object-name>
     <object-name>reverser3</object-name>
+    <object-name>canopyinside</object-name>
+    <object-name>fuselageinside</object-name>
+    <object-name>mirrorholder</object-name>
   </effect>
 
   <effect>  
-	  <inherits-from>Aircraft/JA37/Models/Effects/ja37-nozzle-combined</inherits-from>
-	  <object-name>nozzle</object-name>
+    <inherits-from>Aircraft/JA37/Models/Effects/ja37-nozzle-combined</inherits-from>
+    <object-name>nozzle</object-name>
   </effect>
 
   <effect>  
@@ -255,6 +269,9 @@
   <object-name>glassOuter</object-name>
   <object-name>glassInternal</object-name>
   <object-name>canopy</object-name>
+  <object-name>canopyinside</object-name>
+  <object-name>mirrorholder</object-name>
+  <object-name>mirrorreflect</object-name>
   <property>canopy/position-norm</property><!-- auto MP transmit -->
   <factor>30.0</factor>
   <center>
@@ -846,7 +863,7 @@
   <object-name>gearFrontLight</object-name>
   <object-name>frontLandingLightGlare</object-name>
   <property>sim/multiplay/generic/float[0]</property><!-- gear/gear[0]/steering-norm -->
-  <factor>80</factor>
+  <factor>30</factor>
   <center>
    <x-m>-3.35848</x-m>
    <y-m>-0.000003</y-m>

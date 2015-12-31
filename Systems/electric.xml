@@ -67,25 +67,29 @@
             </traverse>
         </kinematic>
 
-        <scheduled_gain name="systems/electrical/generator-reserve-cmd">
+        <fcs_function name="systems/electrical/generator-reserve-cmd">
             <description>
-                      Generator reserve running command
+                      Generator reserve (Ram Air turbine) running command
+
+                      Page 82 of JA-37C manual.
             </description>
-            <input>/systems/generator-reserve/serviceable</input>
-            <table>
-                <independentVar lookup="row">propulsion/engine[0]/n2</independentVar>
-                <independentVar lookup="column">/controls/electric/reserve</independentVar>
-                <tableData>
-                     0   1
-                10   0   0
-                30   0   1
-            </tableData>
-            </table>
-            <clipto>
-                <min> 0 </min>
-                <max> 1 </max>
-            </clipto>
-        </scheduled_gain>
+            <function>
+                <product>
+                    <p>/systems/generator-reserve/serviceable</p>
+                    <p>/controls/electric/reserve</p>
+                    <table>
+                        <independentVar lookup="row">/velocities/airspeed-kt</independentVar>
+                        <independentVar lookup="column">gear/gear-pos-norm</independentVar>
+                        <tableData>
+                                    0    1
+                              0.0   0.0  0.0
+                            145.8   0.9  1.0
+                            162.0   1.0  1.0
+                        </tableData>
+                    </table>
+                </product>
+            </function>
+        </fcs_function>
 
         <kinematic name="systems/electrical/generator-reserve-running-norm">
             <description>
@@ -103,6 +107,18 @@
                 </setting>
             </traverse>
         </kinematic>
+
+        <switch name="systems/electrical/generator-reserve-supplying">
+            <description>
+                      Reserve is supplying, bool
+            </description>
+            <default value="0"/>
+            <test logic="AND" value="1">
+                systems/electrical/generator-reserve-running-norm == 1
+                systems/electrical/external/switch == 0
+                /controls/electric/reserve == 1
+            </test>
+        </switch>
 
         <switch name="systems/electrical/AC-supply-norm">
             <description>
@@ -385,7 +401,7 @@
         <pure_gain name="/systems/electrical/outputs/transponder">
             <description>
                       Transponder power
-      </description>
+            </description>
             <input>/systems/electrical/outputs/dc-voltage</input>
             <gain>1</gain>
         </pure_gain>
@@ -518,6 +534,18 @@
             <output>propulsion/starter_cmd</output>
             <output>propulsion/starter_cmd_copy</output>
         </switch>
+
+        <switch name="names/electrical/engine/starter-switch">
+            <description>
+                      Engine starter switch
+            </description>
+            <default value="/controls/engines/engine[0]/starter-cmd"/>
+            <test logic="AND" value="0">
+                /systems/electrical/outputs/dc-voltage gt 23
+                propulsion/engine[0]/n2 gt 57
+            </test>
+            <output>/controls/engines/engine[0]/starter-cmd</output>
+        </switch>        
 
         <fcs_function name="systems/electrical/ext-power-z-m">
             <function>
