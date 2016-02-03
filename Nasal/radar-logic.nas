@@ -56,21 +56,36 @@ var findRadarTracks = func () {
     var ships = node_ai.getChildren("ship");
     var vehicles = node_ai.getChildren("groundvehicle");
     var rb24 = node_ai.getChildren("rb-24j");
+	  var rb71 = node_ai.getChildren("rb-71");
+    var rb74 = node_ai.getChildren("rb-74");
 
     if(selection != nil and selection[6].getNode("valid").getValue() == FALSE) {
+      paint(selection[6], FALSE);
       selection = nil;
     }
 
-    processTracks(players, FALSE);    
+    processTracks(players, FALSE, FALSE, TRUE);    
     processTracks(tankers, FALSE);
     processTracks(ships, FALSE);
     processTracks(AIplanes, FALSE);
     processTracks(vehicles, FALSE);
     processTracks(rb24, FALSE, TRUE);
+	  processTracks(rb71, FALSE, TRUE);
+    processTracks(rb74, FALSE, TRUE);
     processCallsigns(players);
+  } else {
+    # Do not supply target info to the missiles if radar is off.
+    if(selection != nil) {
+      paint(selection[6], FALSE);
+    }
+    selection = nil;
   }
   var carriers = node_ai.getChildren("carrier");
   processTracks(carriers, TRUE);
+
+  if(selection != nil) {
+    append(selection, "lock");
+  }
 }
 
 var processCallsigns = func (players) {
@@ -84,16 +99,16 @@ var processCallsigns = func (players) {
 }
 
 
-var processTracks = func (vector, carrier, missile = FALSE) {
+var processTracks = func (vector, carrier, missile = FALSE, mp = FALSE) {
   var carrierNear = FALSE;
   foreach (var track; vector) {
     if(track != nil and track.getChild("valid") != nil and track.getChild("valid").getValue() == TRUE) {#only the tracks that are valid are sent here
       var trackInfo = nil;
       
       if(missile == FALSE) {
-        trackInfo = trackItemCalc(track, radarRange, carrier);
+        trackInfo = trackItemCalc(track, radarRange, carrier, mp);
       } else {
-        trackInfo = trackMissileCalc(track, radarRange, carrier);
+        trackInfo = trackMissileCalc(track, radarRange, carrier, mp);
       }
       if(trackInfo != nil) {
         var distance = trackInfo[2];
@@ -199,6 +214,7 @@ var processTracks = func (vector, carrier, missile = FALSE) {
           selection = trackInfo;
           lookatSelection();
           selection_updated = TRUE;
+          paint(selection[6], TRUE);
         #} elsif (track.getChild("name") != nil and track.getChild("name").getValue() == "RB-24J") {
           #for testing that selection view follows missiles
         #  selection = trackInfo;
@@ -207,9 +223,14 @@ var processTracks = func (vector, carrier, missile = FALSE) {
         } elsif (selection != nil and selection[6].getChild("unique").getValue() == unique.getValue()) {
           # this track is already selected, updating it
           selection = trackInfo;
+          paint(selection[6], TRUE);
           selection_updated = TRUE;
+        } else {
+          paint(trackInfo[6], FALSE);
         }
-      }#end of error check
+      } else {
+        paint(track, FALSE);
+      }
     }#end of valid check
   }#end of foreach
   if(carrier == TRUE) {
@@ -218,6 +239,15 @@ var processTracks = func (vector, carrier, missile = FALSE) {
     }      
   }
 }#end of processTracks
+
+var paint = func (node, painted) {
+  var attr = node.getChild("painted");
+  if (attr == nil) {
+    attr = node.addChild("painted");
+  }
+  attr.setValue(painted);
+  #if(painted == TRUE) { print("painted something"); }
+}
 
 var remove_suffix = func(s, x) {
     var len = size(x);
@@ -236,16 +266,20 @@ var remove_suffix = func(s, x) {
 # 5 - identifier
 # 6 - node
 # 7 - not targetable
+# 8 - if exist then selected
 
-var trackItemCalc = func (track, range, carrier) {
+var trackItemCalc = func (track, range, carrier, mp) {
   var x = track.getNode("position/global-x").getValue();
   var y = track.getNode("position/global-y").getValue();
   var z = track.getNode("position/global-z").getValue();
   var aircraftPos = geo.Coord.new().set_xyz(x, y, z);
-  return trackCalc(aircraftPos, range, carrier);
+  if (mp == FALSE or doppler(aircraftPos, track) == TRUE) {
+    return trackCalc(aircraftPos, range, carrier, mp);
+  }
+  return nil;
 }
 
-var trackMissileCalc = func (track, range, carrier) {
+var trackMissileCalc = func (track, range, carrier, mp) {
   var alt = track.getNode("position/altitude-ft").getValue();
   var lat = track.getNode("position/latitude-deg").getValue();
   var lon = track.getNode("position/longitude-deg").getValue();
@@ -253,10 +287,10 @@ var trackMissileCalc = func (track, range, carrier) {
     return nil;
   }
   var aircraftPos = geo.Coord.new().set_latlon(lat, lon, alt*feet2meter);
-  return trackCalc(aircraftPos, range, carrier);
+  return trackCalc(aircraftPos, range, carrier, mp);
 }
 
-var trackCalc = func (aircraftPos, range, carrier) {
+var trackCalc = func (aircraftPos, range, carrier, mp) {
   var distance = nil;
   var distanceDirect = nil;
   
@@ -310,11 +344,11 @@ var trackCalc = func (aircraftPos, range, carrier) {
       ya_rad = ya_rad + 2*math.pi;
     }
 
-    if(ya_rad > -1 and ya_rad < 1 and xa_rad > -1 and xa_rad < 1) {
+    if(ya_rad > -61.5 * D2R and ya_rad < 61.5 * D2R and xa_rad > -61.5 * D2R and xa_rad < 61.5 * D2R and (mp == FALSE or isNotBehindTerrain(aircraftPos) == TRUE)) {
       #is within the radar cone
+      # AJ37 manual: 61.5 deg sideways.
 
       var distanceRadar = distance/math.cos(myPitch);
-
       var hud_pos_x = canvas_HUD.pixelPerDegreeX * xa_rad * rad2deg;
       var hud_pos_y = canvas_HUD.centerOffset + canvas_HUD.pixelPerDegreeY * -ya_rad * rad2deg;
       return [hud_pos_x, hud_pos_y, distanceDirect, distanceRadar, xa_rad];
@@ -326,6 +360,221 @@ var trackCalc = func (aircraftPos, range, carrier) {
   return nil;
 }
 
+#
+# The following 6 methods is from Mirage 2000-5
+#
+var isNotBehindTerrain = func(SelectCoord) {
+    var isVisible = 0;
+    var MyCoord = geo.aircraft_position();
+    
+    # Because there is no terrain on earth that can be between these 2
+    if(MyCoord.alt() < 8900 and SelectCoord.alt() < 8900 and getprop("sim/ja37/radar/look-through-terrain") == FALSE)
+    {
+        # Temporary variable
+        # A (our plane) coord in meters
+        var a = MyCoord.x();
+        var b = MyCoord.y();
+        var c = MyCoord.z();
+        # B (target) coord in meters
+        var d = SelectCoord.x();
+        var e = SelectCoord.y();
+        var f = SelectCoord.z();
+        var x = 0;
+        var y = 0;
+        var z = 0;
+        var RecalculatedL = 0;
+        var difa = d - a;
+        var difb = e - b;
+        var difc = f - c;
+        # direct Distance in meters
+        var myDistance = SelectCoord.direct_distance_to(MyCoord);
+        var Aprime = geo.Coord.new();
+        
+        # Here is to limit FPS drop on very long distance
+        var L = 1000;
+        if(myDistance > 50000)
+        {
+            L = myDistance / 15;
+        }
+        var step = L;
+        var maxLoops = int(myDistance / L);
+        
+        isVisible = 1;
+        # This loop will make travel a point between us and the target and check if there is terrain
+        for(var i = 0 ; i < maxLoops ; i += 1)
+        {
+            L = i * step;
+            var K = (L * L) / (1 + (-1 / difa) * (-1 / difa) * (difb * difb + difc * difc));
+            var DELTA = (-2 * a) * (-2 * a) - 4 * (a * a - K);
+            
+            if(DELTA >= 0)
+            {
+                # So 2 solutions or 0 (1 if DELTA = 0 but that 's just 2 solution in 1)
+                var x1 = (-(-2 * a) + math.sqrt(DELTA)) / 2;
+                var x2 = (-(-2 * a) - math.sqrt(DELTA)) / 2;
+                # So 2 y points here
+                var y1 = b + (x1 - a) * (difb) / (difa);
+                var y2 = b + (x2 - a) * (difb) / (difa);
+                # So 2 z points here
+                var z1 = c + (x1 - a) * (difc) / (difa);
+                var z2 = c + (x2 - a) * (difc) / (difa);
+                # Creation Of 2 points
+                var Aprime1  = geo.Coord.new();
+                Aprime1.set_xyz(x1, y1, z1);
+                
+                var Aprime2  = geo.Coord.new();
+                Aprime2.set_xyz(x2, y2, z2);
+                
+                # Here is where we choose the good
+                if(math.round((myDistance - L), 2) == math.round(Aprime1.direct_distance_to(SelectCoord), 2))
+                {
+                    Aprime.set_xyz(x1, y1, z1);
+                }
+                else
+                {
+                    Aprime.set_xyz(x2, y2, z2);
+                }
+                var AprimeLat = Aprime.lat();
+                var Aprimelon = Aprime.lon();
+                var AprimeTerrainAlt = geo.elevation(AprimeLat, Aprimelon);
+                if(AprimeTerrainAlt == nil)
+                {
+                    AprimeTerrainAlt = 0;
+                }
+                
+                if(AprimeTerrainAlt > Aprime.alt())
+                {
+                    isVisible = 0;
+                }
+            }
+        }
+    }
+    else
+    {
+        isVisible = 1;
+    }
+    return isVisible;
+}
+
+# will return true if absolute closure speed of target is greater than 50kt
+#
+var doppler = func(t_coord, t_node) {
+    # Test to check if the target can hide below us
+    # Or Hide using anti doppler movements
+
+    if (getprop("sim/ja37/radar/doppler-enabled") == FALSE) {
+      return TRUE;
+    }
+
+    var DopplerSpeedLimit = getprop("sim/ja37/radar/min-doppler-speed-kt");
+    var InDoppler = 0;
+    var groundNotbehind = isGroundNotBehind(t_coord, t_node);
+
+    if(groundNotbehind)
+    {
+        InDoppler = 1;
+    } elsif(abs(get_closure_rate_from_Coord(t_coord, t_node)) > DopplerSpeedLimit)
+    {
+        InDoppler = 1;
+    }
+    return InDoppler;
+}
+
+var isGroundNotBehind = func(t_coord, t_node){
+    var myPitch = get_Elevation_from_Coord(t_coord);
+    var GroundNotBehind = 1; # sky is behind the target (this don't work on a valley)
+    if(myPitch < 0)
+    {
+        # the aircraft is below us, the ground could be below
+        # Based on earth curve. Do not work with mountains
+        # The script will calculate what is the ground distance for the line (us-target) to reach the ground,
+        # If the earth was flat. Then the script will compare this distance to the horizon distance
+        # If our distance is greater than horizon, then sky behind
+        # If not, we cannot see the target unless we have a doppler radar
+        var distHorizon = geo.aircraft_position().alt() / math.tan(abs(myPitch * D2R)) * M2NM;
+        var horizon = get_horizon( geo.aircraft_position().alt() *M2FT, t_node);
+        var TempBool = (distHorizon > horizon);
+        GroundNotBehind = (distHorizon > horizon);
+    }
+    return GroundNotBehind;
+}
+
+var get_Elevation_from_Coord = func(t_coord) {
+    var myPitch = math.asin((t_coord.alt() - geo.aircraft_position().alt()) / t_coord.direct_distance_to(geo.aircraft_position())) * R2D;
+    return myPitch;
+}
+
+var get_horizon = func(own_alt, t_node){
+    var tgt_alt = t_node.getNode("position/altitude-ft").getValue();
+    if(debug.isnan(tgt_alt))
+    {
+        return(0);
+    }
+    if(tgt_alt < 0 or tgt_alt == nil)
+    {
+        tgt_alt = 0;
+    }
+    if(own_alt < 0 or own_alt == nil)
+    {
+        own_alt = 0;
+    }
+    # Return the Horizon in NM
+    return (2.2 * ( math.sqrt(own_alt * FT2M) + math.sqrt(tgt_alt * FT2M)));# don't understand the 2.2 conversion to NM here..
+}
+
+var get_closure_rate_from_Coord = func(t_coord, t_node) {
+    var MyAircraftCoord = geo.aircraft_position();
+
+    # First step : find the target heading.
+    var myHeading = t_node.getNode("orientation/true-heading-deg").getValue();
+    
+    # Second What would be the aircraft heading to go to us
+    var myCoord = t_coord;
+    var projectionHeading = myCoord.course_to(MyAircraftCoord);
+    
+    # Calculate the angle difference
+    var myAngle = myHeading - projectionHeading; #Should work even with negative values
+    
+    # take the "ground speed"
+    # velocities/true-air-speed-kt
+    var mySpeed = t_node.getNode("velocities/true-airspeed-kt").getValue();
+    var myProjetedHorizontalSpeed = mySpeed*math.cos(myAngle*D2R); #in KTS
+    
+    #print("Projetted Horizontal Speed:"~ myProjetedHorizontalSpeed);
+    
+    # Now getting the pitch deviation
+    var myPitchToAircraft = - t_node.getNode("radar/elevation-deg").getValue();
+    #print("My pitch to Aircraft:"~myPitchToAircraft);
+    
+    # Get V speed
+    if(t_node.getNode("velocities/vertical-speed-fps").getValue() == nil)
+    {
+        return 0;
+    }
+    var myVspeed = t_node.getNode("velocities/vertical-speed-fps").getValue()*FPS2KT;
+    # This speed is absolutely vertical. So need to remove pi/2
+    
+    var myProjetedVerticalSpeed = myVspeed * math.cos(myPitchToAircraft-90*D2R);
+    
+    # Control Print
+    #print("myVspeed = " ~myVspeed);
+    #print("Total Closure Rate:" ~ (myProjetedHorizontalSpeed+myProjetedVerticalSpeed));
+    
+    # Total Calculation
+    var cr = myProjetedHorizontalSpeed+myProjetedVerticalSpeed;
+    
+    # Setting Essential properties
+    #var rng = me. get_range_from_Coord(MyAircraftCoord);
+    #var newTime= ElapsedSec.getValue();
+    #if(me.get_Validity())
+    #{
+    #    setprop(me.InstrString ~ "/" ~ me.shortstring ~ "/closure-last-range-nm", rng);
+    #    setprop(me.InstrString ~ "/" ~ me.shortstring ~ "/closure-rate-kts", cr);
+    #}
+    
+    return cr;
+}
+
 var nextTarget = func () {
   var max_index = size(tracks)-1;
   if(max_index > -1) {
@@ -335,9 +584,13 @@ var nextTarget = func () {
       tracks_index = 0;
     }
     selection = tracks[tracks_index];
+    paint(selection[6], TRUE);
     lookatSelection();
   } else {
     tracks_index = -1;
+    if (selection != nil) {
+      paint(selection[6], FALSE);
+    }
   }
 }
 
@@ -359,6 +612,7 @@ var centerTarget = func () {
   }
   if (centerMost != nil) {
     selection = centerMost;
+    paint(selection[6], TRUE);
     lookatSelection();
     tracks_index = centerIndex;
   }

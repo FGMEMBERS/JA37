@@ -13,7 +13,7 @@
   <fileheader>
     <author> Nikolai V. Chr. </author>
     <filecreationdate> 2013-02-15 </filecreationdate>
-    <version> 3.105 </version>
+    <version> 3.106 </version>
     <license>
       <licenseName>GPL 2 (General Public License version 2)</licenseName>
       <licenseURL>http://www.gnu.org/licenses/old-licenses/gpl-2.0.html</licenseURL>
@@ -132,15 +132,15 @@ Old values:
  -->
 
   <mass_balance>
-    <!-- estimations -->
-    <!--<ixx unit="SLUG*FT2"> 10000 </ixx>
-    <iyy unit="SLUG*FT2"> 60000 </iyy>
-    <izz unit="SLUG*FT2"> 65000 </izz>-->
     <!-- Datcom+ Pro -->
     <ixx unit="KG*M2">  19541.0273  </ixx>
     <iyy unit="KG*M2">  71224.5781  </iyy>
     <izz unit="KG*M2">  65561.6250  </izz>
     <ixz unit="KG*M2">   3210.2346  </ixz>
+    <!-- AeromatiC++ 3.2.5 -->
+    <!--<ixx unit="KG*M2">  21960.58  </ixx>
+    <iyy unit="KG*M2">  88334.06  </iyy>
+    <izz unit="KG*M2">  78179.33  </izz>-->
     <emptywt unit="LBS" > 23657.81 </emptywt><!-- Swedish airforce website (Is for JA37Di) -->
     <location name="CG" unit="M">
       <x> 1.64878 </x>
@@ -186,6 +186,22 @@ Old values:
         <x> -1.02697 </x>
         <y> 0.98148 </y>
         <z> -0.94307 </z>
+      </location>
+    </pointmass>
+    <pointmass name="Left outer wing pylon">
+      <weight unit="LBS"> 0 </weight>
+      <location name="POINTMASS" unit="M">
+        <x> 4.05216 </x>
+        <y> -3.94417 </y>
+        <z> -0.73722 </z>
+      </location>
+    </pointmass>
+    <pointmass name="Right outer wing pylon">
+      <weight unit="LBS"> 0 </weight>
+      <location name="POINTMASS" unit="M">
+        <x> 4.05216 </x>
+        <y> 3.94417 </y>
+        <z> -0.73722 </z>
       </location>
     </pointmass>
     <pointmass name="Center fuselage pylon">
@@ -522,22 +538,22 @@ Old values:
     </tank>
   </propulsion>
   
-  <flight_control file="Systems/ja37-controls"/>
+  <flight_control file="Systems/jsb-controls"/>
   <aerodynamics file="ja37-aerodynamics.xml"/>
-  <system file="ja37-hydraulic"/>
-  <system file="flight"/>
-  <system file="indicators"/>
-  <system file="cannon_recoil"/>
-  <system file="electric"/>
-  <system file="ja37-fuel"/>
+  <system file="jsb-hydraulic"/>
+  <system file="jsb-flight"/>
+  <system file="jsb-indicators"/>
+  <system file="jsb-cannon_recoil"/>
+  <system file="jsb-electric"/>
+  <system file="jsb-fuel"/>
 
 
   <!--  Carrier (note, these functions are not offical. As the real Viggen did not have carrier capacity, and so is not documented) -->
 
-  <system file="catapult_free"/>
-  <system file="holdback_free"/>
-  <system file="cat-hold"/>
-  <system file="hook"/>
+  <system file="jsb-catapult_free"/>
+  <system file="jsb-holdback_free"/>
+  <system file="jsb-cat-hold"/>
+  <system file="jsb-hook"/>
 
   <external_reactions>
     <force name="recoil" frame="BODY">

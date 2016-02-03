@@ -1,42 +1,48 @@
-
-
 var AcModel        = props.globals.getNode("sim/ja37");
 var OurHdg         = props.globals.getNode("orientation/heading-deg");
 var OurRoll        = props.globals.getNode("orientation/roll-deg");
 var OurPitch       = props.globals.getNode("orientation/pitch-deg");
 var HudReticleDev  = props.globals.getNode("sim/ja37/hud/reticle-total-deviation", 1);#polar coords
 var HudReticleDeg  = props.globals.getNode("sim/ja37/hud/reticle-total-angle", 1);
-var aim_9_model    = "Aircraft/JA37/Models/Armament/Weapons/RB-24J/rb-24j-";
-var SwSoundOnOff   = AcModel.getNode("armament/rb24/sound-on-off");
-var SwSoundVol     = AcModel.getNode("armament/rb24/sound-volume");
-var vol_search     = 0.03;
 var vol_weak_track = 0.10;
 var vol_track      = 0.15;
-var update_loop_time = 0.035;
+var update_loop_time = 0.005;
+
+var FRAME_TIME = 1;
+var REAL_TIME = 0;
+
+var TRUE = 1;
+var FALSE = 0;
 
 var g_fps        = 9.80665 * M2FT;
 var slugs_to_lbs = 32.1740485564;
 
 
-var AIM9 = {
+var AIM = {
 	#done
-	new : func (p) {
-		if(AIM9.active[p] != nil) {
+	new : func (p, type = "RB-24J", sign = "sidewinder") {
+		if(AIM.active[p] != nil) {
 			#do not make new missile logic if one exist for this pylon.
 			return -1;
 		}
-		var m = { parents : [AIM9]};
+		var m = { parents : [AIM]};
 		# Args: p = Pylon.
+
+		m.type_lc = string.lc(type);
+		m.type = type;
 
 		m.status            = 0; # -1 = stand-by, 0 = searching, 1 = locked, 2 = fired.
 		m.free              = 0; # 0 = status fired with lock, 1 = status fired but having lost lock.
 		m.trackWeak         = 1;
 
-		m.prop              = AcModel.getNode("armament/rb24/").getChild("msl", 0 , 1);
+		m.prop              = AcModel.getNode("armament/"~m.type_lc~"/").getChild("msl", 0 , 1);
+		m.SwSoundOnOff      = AcModel.getNode("armament/"~m.type_lc~"/sound-on-off");
+        m.SwSoundVol        = AcModel.getNode("armament/"~m.type_lc~"/sound-volume");
 		m.PylonIndex        = m.prop.getNode("pylon-index", 1).setValue(p);
 		m.ID                = p;
 		m.pylon_prop        = props.globals.getNode("controls/armament").getChild("station", p+1);
 		m.Tgt               = nil;
+		m.callsign          = "Unknown";
 		m.TgtValid          = nil;
 		m.TgtLon_prop       = nil;
 		m.TgtLat_prop       = nil;
@@ -55,21 +61,33 @@ var AIM9 = {
 		m.track_signal_h    = 0; #   this is directly used as input signal for the steering command.
 		m.t_coord           = geo.Coord.new().set_latlon(0, 0, 0);
 		m.last_t_coord      = m.t_coord;
-		#m.next_t_coord      = m.t_coord;
+		m.before_last_t_coord = nil;
+		#m.next_t_coord     = m.t_coord;
 		m.direct_dist_m     = nil;
+		m.speed_m           = 0;
 
-		# AIM-9L specs:
-		m.aim9_fov_diam     = getprop("sim/ja37/armament/rb24/fov-deg");
-		m.aim9_fov          = m.aim9_fov_diam / 2;
-		m.max_detect_rng    = getprop("sim/ja37/armament/rb24/max-detection-rng-nm");
-		m.max_seeker_dev    = getprop("sim/ja37/armament/rb24/track-max-deg") / 2;
-		m.force_lbs         = getprop("sim/ja37/armament/rb24/thrust-lbs");
-		m.thrust_duration   = getprop("sim/ja37/armament/rb24/thrust-duration-sec");
-		m.weight_launch_lbs = getprop("sim/ja37/armament/rb24/weight-launch-lbs");
-		m.weight_whead_lbs  = getprop("sim/ja37/armament/rb24/weight-warhead-lbs");
-		m.cd                = getprop("sim/ja37/armament/rb24/drag-coeff");
-		m.eda               = getprop("sim/ja37/armament/rb24/drag-area");
-		m.max_g             = getprop("sim/ja37/armament/rb24/max-g");
+		# AIM specs:
+		m.aim9_fov_diam         = getprop("sim/ja37/armament/"~m.type_lc~"/fov-deg");
+		m.aim9_fov              = m.aim9_fov_diam / 2;
+		m.max_detect_rng        = getprop("sim/ja37/armament/"~m.type_lc~"/max-detection-rng-nm");
+		m.max_seeker_dev        = getprop("sim/ja37/armament/"~m.type_lc~"/track-max-deg") / 2;
+		m.force_lbs_1           = getprop("sim/ja37/armament/"~m.type_lc~"/thrust-lbs-stage-1");
+		m.force_lbs_2           = getprop("sim/ja37/armament/"~m.type_lc~"/thrust-lbs-stage-2");
+		m.weight_launch_lbs     = getprop("sim/ja37/armament/"~m.type_lc~"/weight-launch-lbs");
+		m.weight_whead_lbs      = getprop("sim/ja37/armament/"~m.type_lc~"/weight-warhead-lbs");
+		m.cd                    = getprop("sim/ja37/armament/"~m.type_lc~"/drag-coeff");
+		m.eda                   = getprop("sim/ja37/armament/"~m.type_lc~"/drag-area");
+		m.max_g                 = getprop("sim/ja37/armament/"~m.type_lc~"/max-g");
+		m.stage_1_duration      = getprop("sim/ja37/armament/"~m.type_lc~"/stage-1-duration-sec");
+		m.stage_2_duration      = getprop("sim/ja37/armament/"~m.type_lc~"/stage-2-duration-sec");
+		m.searcher_beam_width   = getprop("sim/ja37/armament/"~m.type_lc~"/searcher-beam-width");
+		m.arming_time           = getprop("sim/ja37/armament/"~m.type_lc~"/arming-time-sec");
+		m.min_speed_for_guiding = getprop("sim/ja37/armament/"~m.type_lc~"/min-speed-for-guiding-mach");
+		m.selfdestruct_time     = getprop("sim/ja37/armament/"~m.type_lc~"/self-destruct-time-sec");
+		m.guidance              = getprop("sim/ja37/armament/"~m.type_lc~"/guidance");
+		m.all_aspect            = getprop("sim/ja37/armament/"~m.type_lc~"/all-aspect");
+		m.vol_search            = getprop("sim/ja37/armament/"~m.type_lc~"/vol-search");
+		m.aim_9_model           = "Aircraft/JA37/Models/Armament/Weapons/"~type~"/"~m.type_lc~"-";
 		m.dt_last           = 0;
 		# Find the next index for "models/model" and create property node.
 		# Find the next index for "ai/models/aim-9" and create property node.
@@ -85,18 +103,18 @@ var AIM9 = {
 		
 		n = props.globals.getNode("ai/models", 1);
 		for (i = 0; 1==1; i += 1) {
-			if (n.getChild("rb-24j", i, 0) == nil) {
+			if (n.getChild(m.type_lc, i, 0) == nil) {
 				break;
 			}
 		}
-		m.ai = n.getChild("rb-24j", i, 1);
+		m.ai = n.getChild(m.type_lc, i, 1);
 
 		m.ai.getNode("valid", 1).setBoolValue(1);
-		m.ai.getNode("name", 1).setValue("RB-24J");
-		m.ai.getNode("sign", 1).setValue("Sidewinder");
+		m.ai.getNode("name", 1).setValue(type);
+		m.ai.getNode("sign", 1).setValue(sign);
 		#m.model.getNode("collision", 1).setBoolValue(0);
 		#m.model.getNode("impact", 1).setBoolValue(0);
-		var id_model = aim_9_model ~ m.ID ~ ".xml";
+		var id_model = m.aim_9_model ~ m.ID ~ ".xml";
 		m.model.getNode("path", 1).setValue(id_model);
 		m.life_time = 0;
 
@@ -110,6 +128,8 @@ var AIM9 = {
 
 		m.ac      = nil;
 		m.coord   = geo.Coord.new().set_latlon(0, 0, 0);
+		m.last_coord = nil;
+		m.before_last_coord = nil;
 		m.s_down  = nil;
 		m.s_east  = nil;
 		m.s_north = nil;
@@ -117,10 +137,12 @@ var AIM9 = {
 		m.pitch   = nil;
 		m.hdg     = nil;
 
-		SwSoundOnOff.setValue(1);
+		m.lastFlare = 0;
 
-		settimer(func { SwSoundVol.setValue(vol_search); me.trackWeak = 1; m.search() }, 1);
-		return AIM9.active[m.ID] = m;
+		m.SwSoundOnOff.setValue(1);
+
+		settimer(func { m.SwSoundVol.setValue(m.vol_search); me.trackWeak = 1; m.search() }, 1);
+		return AIM.active[m.ID] = m;
 
 	},
 	#done
@@ -129,17 +151,17 @@ var AIM9 = {
 		me.model.remove();
 		me.ai.remove();
 		if (me.status == 2) {
-			delete(AIM9.flying, me.flyID);
+			delete(AIM.flying, me.flyID);
 		} else {
-			delete(AIM9.active, me.ID);
+			delete(AIM.active, me.ID);
 		}
 	},
 	#done
 	release: func() {
 		me.status = 2;
 		me.flyID = rand();
-		AIM9.flying[me.flyID] = me;
-		delete(AIM9.active, me.ID);
+		AIM.flying[me.flyID] = me;
+		delete(AIM.active, me.ID);
 		me.animation_flags_props();
 
 		# Get the A/C position and orientation values.
@@ -193,7 +215,7 @@ var AIM9 = {
 		me.pitchN.setDoubleValue(ac_pitch);
 		me.rollN.setDoubleValue(ac_roll);
 		#print("roll "~ac_roll~" on "~me.rollN.getPath());
-		me.coord.set_latlon(alat, alon, aalt / M2FT); # was (alat, alon, me.ac.alt())
+		me.coord.set_latlon(alat, alon, aalt * FT2M);
 
 		me.model.getNode("latitude-deg-prop", 1).setValue(me.latN.getPath());
 		me.model.getNode("longitude-deg-prop", 1).setValue(me.lonN.getPath());
@@ -213,7 +235,7 @@ var AIM9 = {
 		me.hdg = ac_hdg;
 
 		me.smoke_prop.setBoolValue(1);
-		SwSoundVol.setValue(0);
+		me.SwSoundVol.setValue(0);
 		me.trackWeak = 1;
 		#settimer(func { HudReticleDeg.setValue(0) }, 2);
 		#interpolate(HudReticleDev, 0, 2);
@@ -236,32 +258,41 @@ var AIM9 = {
 		var elapsed = systime();
 		if (me.dt_last != 0) {
 			dt = (elapsed - me.dt_last) * getprop("sim/speed-up");
+			if(dt <= 0) {
+				# to prevent pow floating point error in line:cdm = 0.2965 * math.pow(me.speed_m, -1.1506) + me.cd;
+				# could happen if the OS adjusts the clock backwards
+				dt = 0.00001;
+			}
 		}
 		me.dt_last = elapsed;
 
 		var init_launch = 0;
-		if ( me.life_time > 0.35 ) { #due to chance for hitting the aircraft, the missile will not guide until after its clear of the aircraft.
+		if ( me.life_time > 0 ) { 
 			init_launch = 1;
 		}
 		me.life_time += dt;
 		# record coords so we can give the latest nearest position for impact.
-		me.last_coord = me.coord;
-
+		me.before_last_coord = geo.Coord.new(me.last_coord);
+		me.last_coord = geo.Coord.new(me.coord);
+		#print(dt);
 
 		#### Calculate speed vector before steering corrections.
 
 		# Cut rocket thrust after boost duration.
-		var f_lbs = me.force_lbs;
-		if (me.life_time > 2) {
-			f_lbs = me.force_lbs * 0.3;
+		var f_lbs = me.force_lbs_1;
+		if (me.life_time > me.stage_1_duration) {
+			f_lbs = me.force_lbs_2;
 		}
-		if (me.life_time > me.thrust_duration) {
+		if (me.life_time > (me.stage_1_duration + me.stage_2_duration)) {
 			#print("lifetime "~me.life_time);
-			f_lbs = 0; me.smoke_prop.setBoolValue(0);
+			f_lbs = 0;
+		}
+		if (f_lbs < 1) {
+			me.smoke_prop.setBoolValue(0);
 		}
 
 		# Kill the AI after a while.
-		if (me.life_time > 60) { return me.del(); }
+		#if (me.life_time > 60) { return me.del(); }
 
 		# Get total speed.
 		var d_east_ft  = me.s_east * dt;
@@ -281,14 +312,14 @@ var AIM9 = {
 		# Adjust Cd by Mach number. The equations are based on curves
 		# for a conventional shell/bullet (no boat-tail).
 		var cdm = 0;
-		var speed_m = (total_s_ft / dt) / sound_fps;
-		#print("mach "~speed_m);
-		if (speed_m < 0.7)
-		 cdm = 0.0125 * speed_m + me.cd;
-		elsif (speed_m < 1.2 )
-		 cdm = 0.3742 * math.pow(speed_m, 2) - 0.252 * speed_m + 0.0021 + me.cd;
+		me.speed_m = (total_s_ft / dt) / sound_fps;
+		#print("mach "~me.speed_m~" - lifetime "~me.life_time);
+		if (me.speed_m < 0.7)
+		 cdm = 0.0125 * me.speed_m + me.cd;
+		elsif (me.speed_m < 1.2 )
+		 cdm = 0.3742 * math.pow(me.speed_m, 2) - 0.252 * me.speed_m + 0.0021 + me.cd;
 		else
-		 cdm = 0.2965 * math.pow(speed_m, -1.1506) + me.cd;
+		 cdm = 0.2965 * math.pow(me.speed_m, -1.1506) + me.cd;
 
 		# Add drag to the total speed using Standard Atmosphere (15C sealevel temperature);
 		# rho is adjusted for altitude in environment.rho_sndspeed(altitude),
@@ -327,8 +358,22 @@ var AIM9 = {
 				pitch_deg = getprop("orientation/pitch-deg");
 			} else {
 				#print("steering");
-				pitch_deg += me.track_signal_e;
-				hdg_deg += me.track_signal_h;
+				#Here will be set the max angle of pitch and the max angle of heading to avoid G overload
+                var myG = steering_speed_G(me.track_signal_e, me.track_signal_h, (total_s_ft / dt), mass, dt);
+                if(me.max_g < myG)
+                {
+                    #print("MyG");
+                    var MyCoef = max_G_Rotation(me.track_signal_e, me.track_signal_h, total_s_ft, mass, dt,me.max_g);
+                    me.track_signal_e =  me.track_signal_e * MyCoef;
+                    me.track_signal_h =  me.track_signal_h * MyCoef;
+                    myG = steering_speed_G(me.track_signal_e, me.track_signal_h, (total_s_ft / dt), mass, dt);
+                }
+                if (me.all_aspect == 1 or me.rear_aspect() == 1) {
+                	pitch_deg += me.track_signal_e;
+                	hdg_deg += me.track_signal_h;
+                }
+
+                #print("Still Tracking : Elevation ",me.track_signal_e,"Heading ",me.track_signal_h," Gload : ", myG );
 			}
 		}
 
@@ -340,7 +385,7 @@ var AIM9 = {
 		me.latN.setDoubleValue(me.coord.lat());
 		me.lonN.setDoubleValue(me.coord.lon());
 		me.altN.setDoubleValue(alt_ft);
-		me.coord.set_alt(alt_ft*0.3048);
+		me.coord.set_alt(alt_ft * FT2M);
 		me.pitchN.setDoubleValue(pitch_deg);
 		me.hdgN.setDoubleValue(hdg_deg);
 
@@ -349,7 +394,7 @@ var AIM9 = {
 		me.ai.getNode("radar/bearing-deg", 1).setValue(self.course_to(me.coord));
 		var angleInv = me.clamp(self.distance_to(me.coord)/self.direct_distance_to(me.coord), -1, 1);
 		me.ai.getNode("radar/elevation-deg", 1).setValue((self.alt()>me.coord.alt()?-1:1)*math.acos(angleInv)*R2D);
-		me.ai.getNode("velocities/true-airspeed-kt",1).setValue(speed_fps*0.5924838);
+		me.ai.getNode("velocities/true-airspeed-kt",1).setValue(speed_fps * FPS2KT);
 
 		#### Proximity detection.
 		if ( me.status == 2 ) {
@@ -361,9 +406,36 @@ var AIM9 = {
 					# Target unreachable, fly free.
 					me.free = 1;
 				}
+				if (me.guidance == "heat") {
+					var flareNode = me.Tgt.getNode("sim/multiplay/generic/string[10]");
+					if (flareNode != nil) {
+						var flareString = flareNode.getValue();
+						if (flareString != nil) {
+							var flareVector = split(":", flareString);
+							if (flareVector != nil and size(flareVector) == 2 and flareVector[1] == "flare") {
+								var flareNumber = num(flareVector[0]);
+								if (flareNumber != nil and flareNumber != me.lastFlare) {
+									# target has released a new flare, lets check if it fools us
+									me.lastFlare = flareNumber;
+									var aspect = me.aspect() / 180;
+									var fooled = rand() < (0.2 + 0.1 * aspect);
+									# 20% chance to be fooled, extra up till 10% chance added if front aspect
+									if (fooled) {
+										# fooled by the flare
+										print("Fooled by flare");
+										me.free = 1;
+									} else {
+										print("Flare ignored");
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 			var v = me.poximity_detection();
-			if ( ! v ) {
+			
+			if ( ! v) {
 				#print("exploded");
 				# We exploded, and start the sound propagation towards the plane
 				me.sndSpeed = sound_fps;
@@ -372,12 +444,7 @@ var AIM9 = {
 				me.sndPropagate();
 				return;
 			}
-			if (alt_ft < -75) {
-				#it must have hit ground (tmp fix to not keep it flying for a minute)
-				#print("rb24 hit ground");
-				me.del();
-				return;
-			}
+			
 		}
 		# record the velocities for the next loop.
 		me.s_north = speed_north_fps;
@@ -387,8 +454,60 @@ var AIM9 = {
 		me.pitch = pitch_deg;
 		me.hdg = hdg_deg;
 
-		settimer(func me.update(), 0.03, 1);# update_loop_time, 1);
+		settimer(func me.update(), update_loop_time, REAL_TIME);
 		
+	},
+
+	# If is heat-seeking rear-aspect-only missile, check if it has good view on engine(s) and can keep lock.
+	rear_aspect: func () {
+
+		var offset = me.aspect();
+
+		if (offset < 45) {
+			# clear view of engine heat, keep the lock
+			rearAspect = 1;
+		} else {
+			# the greater angle away from clear engine view the greater chance of losing lock.
+			var offset_away = offset - 45;
+			var probability = offset_away/135;
+			rearAspect = rand() > probability;
+		}
+
+		print ("RB-24J deviation from full rear-aspect: "~sprintf("%01.1f", offset)~" deg, keep IR lock on engine: "~rearAspect);
+
+		return rearAspect;# 1: keep lock, 0: lose lock
+	},
+
+	aspect: func () {
+		var rearAspect = 0;
+
+		var t_dist_m = me.coord.distance_to(me.t_coord);
+		var alt_delta_m = me.coord.alt() - me.t_coord.alt();
+		var elev_deg =  math.atan2( alt_delta_m, t_dist_m ) * R2D;
+		var elevation_offset = elev_deg - me.Tgt.getNode("orientation/pitch-deg").getValue();
+
+		var course = me.t_coord.course_to(me.coord);
+		var heading_offset = course - me.Tgt.getNode("orientation/true-heading-deg").getValue();
+
+		#
+		while (heading_offset < -180) {
+			heading_offset += 360;
+		}
+		while (heading_offset > 180) {
+			heading_offset -= 360;
+		}
+		while (elevation_offset < -180) {
+			elevation_offset += 360;
+		}
+		while (elevation_offset > 180) {
+			elevation_offset -= 360;
+		}
+		elevation_offset = math.abs(elevation_offset);
+		heading_offset = 180 - math.abs(heading_offset);
+
+		var offset = math.max(elevation_offset, heading_offset);
+
+		return offset;		
 	},
 
 
@@ -400,7 +519,7 @@ var AIM9 = {
 		if (me.status == 0) {
 			# Status = searching.
 			me.reset_seeker();
-			SwSoundVol.setValue(vol_search);
+			me.SwSoundVol.setValue(me.vol_search);
 			me.trackWeak = 1;
 			settimer(func me.search(), 0.1);
 			return(1);
@@ -408,7 +527,7 @@ var AIM9 = {
 		if ( me.status == -1 ) {
 			# Status = stand-by.
 			me.reset_seeker();
-			SwSoundVol.setValue(0);
+			me.SwSoundVol.setValue(0);
 			me.trackWeak = 1;
 			return(1);
 		}
@@ -418,7 +537,7 @@ var AIM9 = {
 			#print("invalid");
 			me.status = 0;
 			me.reset_seeker();
-			SwSoundVol.setValue(vol_search);
+			me.SwSoundVol.setValue(me.vol_search);
 			me.trackWeak = 1;
 			settimer(func me.search(), 0.1);
 			return(1);
@@ -441,7 +560,7 @@ var AIM9 = {
 
 			# Get target position.
 			var t_alt = me.TgtAlt_prop.getValue();
-			me.t_coord.set_latlon(me.TgtLat_prop.getValue(), me.TgtLon_prop.getValue(), t_alt * 0.3048);
+			me.t_coord.set_latlon(me.TgtLat_prop.getValue(), me.TgtLon_prop.getValue(), t_alt * FT2M);
 
 			# Calculate current target elevation and azimut deviation.
 			var t_dist_m = me.coord.distance_to(me.t_coord);
@@ -455,19 +574,31 @@ var AIM9 = {
 
 			# Compute gain to reduce target deviation to match an optimum 3 deg
 			# This augments steering by an additional 10 deg per second during
-			# the trajectory first 2 seconds.
+			# the trajectory stage 1 seconds.
 			# Then, keep track of deviations at the end of these two initial 2 seconds.
 			var e_gain = 1;
 			var h_gain = 1;
-			if ( me.life_time < 0.75 ) {
-				if (me.curr_tgt_e > 3 or me.curr_tgt_e < - 3) {
-					e_gain = 1 + (0.1 * dt);
+			if ( me.life_time < me.stage_1_duration ) {
+				if (me.curr_tgt_e > me.searcher_beam_width or me.curr_tgt_e < (-1 * me.searcher_beam_width)) {
+					#e_gain = 1 + (0.1 * dt);
 				}
-				if (me.curr_tgt_h > 3 or me.curr_tgt_h < - 3) {
-					h_gain = 1 + (0.1 * dt);
+				if (me.curr_tgt_h > me.searcher_beam_width or me.curr_tgt_h < (-1 * me.searcher_beam_width)) {
+					#h_gain = 1 + (0.1 * dt);
 				}
 				me.init_tgt_e = last_tgt_e;
-				me.init_tgt_h = last_tgt_h;			
+				me.init_tgt_h = last_tgt_h;
+			}
+
+			if(me.speed_m < me.min_speed_for_guiding or (me.guidance == "semi-radar" and me.is_painted(me.Tgt) == FALSE)) {
+				# it doesn't guide at lower speeds
+				# or if its semi-radar guided and the target is no longer painted
+				e_gain = 0;
+				h_gain = 0;
+			} elsif (me.curr_tgt_e > me.max_seeker_dev or me.curr_tgt_e < (-1 * me.max_seeker_dev)
+				  or me.curr_tgt_h > me.max_seeker_dev or me.curr_tgt_h < (-1 * me.max_seeker_dev)) {
+				# target is not in missile seeker view anymore
+				e_gain = 0;
+				h_gain = 0;
 			}
 
 			# Compute target deviation variation then seeker move to keep this deviation constant.
@@ -494,7 +625,7 @@ var AIM9 = {
 		if ( me.status != 2 and me.status != -1 ) {
 			me.check_t_in_fov();
 			# We are not launched yet: update_track() loops by itself at 10 Hz.
-			SwSoundVol.setValue(vol_track);
+			me.SwSoundVol.setValue(vol_track);
 			me.trackWeak = 0;
 			settimer(func me.update_track(nil), 0.1);
 		}
@@ -507,27 +638,43 @@ var AIM9 = {
 	poximity_detection: func {
 		var cur_dir_dist_m = me.coord.direct_distance_to(me.t_coord);
 		# Get current direct distance.
-		#print("distance to target_m = ",cur_dir_dist_m," prev_distance to target_m = ",me.direct_dist_m);
-		if ( me.direct_dist_m != nil and me.ac.direct_distance_to(me.coord) > 50) {#don't arm before 50m away from plane
+		if ( me.direct_dist_m != nil and me.life_time > me.arming_time) {
+			#print("distance to target_m = "~cur_dir_dist_m~" prev_distance to target_m = "~me.direct_dist_m);
 			if ( cur_dir_dist_m > me.direct_dist_m and me.direct_dist_m < 65 ) {
 				#print("passed target");
 				# Distance to target increase, trigger explosion.
 				me.explode();
 				return(0);
-			#} #elsif (cur_dir_dist_m < 20) {
+			#} #elsif (cur_dir_dist_m < 15) {
 			#	print("proximity fuse activated.");
 				#within killing distance, explode 
 				#(this might not be how the real thing does, but due to this only being called every frame, might miss otherwise)
 			#	me.explode();
 			#	return(0);
-			} elsif (me.free == 1 and cur_dir_dist_m < 20) {
+			} elsif (me.free == 1 and cur_dir_dist_m < 15) {
 				#print("Magnetic fuse active.");
 				# lost lock, magnetic detector checks if close enough to explode
 				me.explode();
 				return(0);
 			}
 		}
-		me.last_t_coord = me.t_coord;
+		if (me.life_time > me.selfdestruct_time) {
+			me.explode();
+		    return(0);
+		}
+		####Ground interaction
+        var ground = geo.elevation(me.coord.lat(), me.coord.lon());
+        #print("Ground :",ground);
+        if(ground != nil)
+        {
+            if(ground > me.coord.alt()) {
+                #print("Ground");
+                me.explode();
+                return 0;
+            }
+        }
+		me.before_last_t_coord = geo.Coord.new(me.last_t_coord);
+		me.last_t_coord = geo.Coord.new(me.t_coord);
 		me.direct_dist_m = cur_dir_dist_m;
 		return(1);
 	},
@@ -537,7 +684,36 @@ var AIM9 = {
 		var t_bearing_deg = me.last_t_coord.course_to(me.last_coord);
 		var t_delta_alt_m = me.last_coord.alt() - me.last_t_coord.alt();
 		var new_t_alt_m = me.t_coord.alt() + t_delta_alt_m;
-		var t_dist_m  = math.sqrt(math.abs((me.direct_dist_m * me.direct_dist_m)-(t_delta_alt_m * t_delta_alt_m)));
+		var t_dist_m  = me.direct_dist_m;
+		
+		var min_distance = me.direct_dist_m;
+		var explosion_coord = me.last_coord;
+		#print("min1 "~min_distance);
+		#print("last_t to t    : "~me.last_t_coord.direct_distance_to(me.t_coord));
+		#print("last to current: "~me.last_coord.direct_distance_to(me.coord));
+		for (var i = 0.1; i < 1; i += 0.1) {
+			var t_coord = me.interpolate(me.last_t_coord, me.t_coord, i);
+			var coord = me.interpolate(me.last_coord, me.coord, i);
+			var dist = coord.direct_distance_to(t_coord);
+			if (dist < min_distance) {
+				min_distance = dist;
+				explosion_coord = coord;
+			}
+		}
+		#print("min2 "~min_distance);
+		if (me.before_last_coord != nil and me.before_last_t_coord != nil) {
+			for (var i = 0.1; i < 1; i += 0.1) {
+				var t_coord = me.interpolate(me.before_last_t_coord, me.last_t_coord, i);
+				var coord = me.interpolate(me.before_last_coord, me.last_coord, i);
+				var dist = coord.direct_distance_to(t_coord);
+				if (dist < min_distance) {
+					min_distance = dist;
+					explosion_coord = coord;
+				}
+			}
+		}
+		#print("min3 "~min_distance);
+
 		# Create impact coords from this previous relative position applied to target current coord.
 		me.t_coord.apply_course_distance(t_bearing_deg, t_dist_m);
 		me.t_coord.set_alt(new_t_alt_m);		
@@ -545,26 +721,29 @@ var AIM9 = {
 		#print("FOX2: me.direct_dist_m = ",  me.direct_dist_m, " time ",getprop("sim/time/elapsed-sec"));
 		impact_report(me.t_coord, wh_mass, "missile"); # pos, alt, mass_slug,(speed_mps)
 
-		var ident = nil;
-		if(me.Tgt.getChild("callsign").getValue() != "" and me.Tgt.getChild("callsign").getValue() != nil) {
-          ident = me.Tgt.getChild("callsign").getValue();
-        } elsif (me.Tgt.getChild("name").getValue() != "" and me.Tgt.getChild("name").getValue() != nil) {
-          ident = me.Tgt.getChild("name").getValue();
-        } elsif (me.Tgt.getChild("sign").getValue() != "" and me.Tgt.getChild("sign").getValue() != nil) {
-          ident = me.Tgt.getChild("sign").getValue();
-        } else {
-          ident = "unknown";
-        }
-
-		var phrase = sprintf( "RB-24J exploded %01.0f", me.direct_dist_m) ~ " meters from " ~ ident;
-		if (getprop("sim/ja37/armament/msg")) {
-			setprop("/sim/multiplay/chat", phrase);
-		} else {
-			setprop("/sim/messages/atc", phrase);
+		var phrase = sprintf( me.type~" exploded: %01.1f", min_distance) ~ " meters from: " ~ me.callsign;
+		if (min_distance < 65) {
+			if (getprop("sim/ja37/armament/msg")) {
+				setprop("/sim/multiplay/chat", phrase);
+			} else {
+				setprop("/sim/messages/atc", phrase);
+			}
 		}
+		print(phrase);
 		me.ai.getNode("valid", 1).setBoolValue(0);
 		me.animate_explosion();
 		me.Tgt = nil;
+	},
+
+	interpolate: func (start, end, fraction) {
+		var x = (start.x()*(1-fraction)+end.x()*fraction);
+		var y = (start.y()*(1-fraction)+end.y()*fraction);
+		var z = (start.z()*(1-fraction)+end.z()*fraction);
+
+		var c = geo.Coord.new();
+		c.set_xyz(x,y,z);
+
+		return c;
 	},
 
 	#
@@ -585,7 +764,7 @@ var AIM9 = {
 			me.status = 0;
 			settimer(func me.search(), rand()*3.5);
 			me.Tgt = nil;
-			SwSoundVol.setValue(vol_search);
+			me.SwSoundVol.setValue(me.vol_search);
 			me.trackWeak = 1;
 			me.reset_seeker();
 		}
@@ -596,7 +775,7 @@ var AIM9 = {
 	search: func {
 		if ( me.status == -1 ) {
 			# Stand by.
-			SwSoundVol.setValue(0);
+			me.SwSoundVol.setValue(0);
 			me.trackWeak = 1;
 			return;
 		} elsif ( me.status > 0 ) {
@@ -613,11 +792,24 @@ var AIM9 = {
 			# Check if in range and in the (square shaped here) seeker FOV.
 			var abs_total_elev = math.abs(total_elev);
 			var abs_dev_deg = math.abs(total_horiz);
-			if (rng < me.max_detect_rng and abs_total_elev < me.aim9_fov_diam and abs_dev_deg < me.aim9_fov_diam ) {
+			if ((me.guidance != "semi-radar" or me.is_painted(tgt) == TRUE) and rng < me.max_detect_rng and abs_total_elev < me.aim9_fov_diam and abs_dev_deg < me.aim9_fov_diam ) {
 				me.status = 1;
-				SwSoundVol.setValue(vol_weak_track);
+				me.SwSoundVol.setValue(vol_weak_track);
 				me.trackWeak = 1;
 				me.Tgt = tgt;
+
+				var ident = nil;
+				if(me.Tgt.getChild("callsign").getValue() != "" and me.Tgt.getChild("callsign").getValue() != nil) {
+		          ident = me.Tgt.getChild("callsign").getValue();
+		        } elsif (me.Tgt.getChild("name").getValue() != "" and me.Tgt.getChild("name").getValue() != nil) {
+		          ident = me.Tgt.getChild("name").getValue();
+		        } elsif (me.Tgt.getChild("sign").getValue() != "" and me.Tgt.getChild("sign").getValue() != nil) {
+		          ident = me.Tgt.getChild("sign").getValue();
+		        } else {
+		          ident = "unknown";
+		        }
+		        me.callsign = ident;
+
 				var t_pos_str = me.Tgt.getChild("position");
 				var t_ori_str = me.Tgt.getChild("orientation");
 				me.TgtLon_prop       = t_pos_str.getChild("longitude-deg");
@@ -628,7 +820,7 @@ var AIM9 = {
 				return;
 			}
 		}
-		SwSoundVol.setValue(vol_search);
+		me.SwSoundVol.setValue(me.vol_search);
 		me.trackWeak = 1;
 		settimer(func me.search(), 0.1);
 	},
@@ -640,7 +832,12 @@ var AIM9 = {
 		me.track_signal_h = 0;
 	},
 
-
+	is_painted: func (target) {
+		if(target != nil and target.getChild("painted") != nil and target.getChild("painted").getValue() == TRUE) {
+			return TRUE;
+		}
+		return FALSE;
+	},
 
 	reset_seeker: func {
 		me.curr_tgt_e     = 0;
@@ -667,18 +864,18 @@ var AIM9 = {
 
 	animation_flags_props: func {
 		# Create animation flags properties.
-		var msl_path = "sim/ja37/armament/rb24/flags/msl-id-" ~ me.ID;
-		me.msl_prop = props.globals.initNode( msl_path, 1, "BOOL" );
-		var smoke_path = "sim/ja37/armament/rb24/flags/smoke-id-" ~ me.ID;
-		me.smoke_prop = props.globals.initNode( smoke_path, 0, "BOOL" );
-		var explode_path = "sim/ja37/armament/rb24/flags/explode-id-" ~ me.ID;
-		me.explode_prop = props.globals.initNode( explode_path, 0, "BOOL" );
-		var explode_smoke_path = "sim/ja37/armament/rb24/flags/explode-smoke-id-" ~ me.ID;
-		me.explode_smoke_prop = props.globals.initNode( explode_smoke_path, 0, "BOOL" );
-		var explode_sound_path = "sim/ja37/armament/rb24/flags/explode-sound-on-" ~ me.ID;;
-		me.explode_sound_prop = props.globals.initNode( explode_sound_path, 0, "BOOL" );
-		var explode_sound_vol_path = "sim/ja37/armament/rb24/flags/explode-sound-vol-" ~ me.ID;;
-		me.explode_sound_vol_prop = props.globals.initNode( explode_sound_vol_path, 0, "DOUBLE" );
+		var msl_path = "sim/ja37/armament/"~me.type_lc~"/flags/msl-id-" ~ me.ID;
+		me.msl_prop = props.globals.initNode( msl_path, 1, "BOOL", 1);
+		var smoke_path = "sim/ja37/armament/"~me.type_lc~"/flags/smoke-id-" ~ me.ID;
+		me.smoke_prop = props.globals.initNode( smoke_path, 0, "BOOL", 1);
+		var explode_path = "sim/ja37/armament/"~me.type_lc~"/flags/explode-id-" ~ me.ID;
+		me.explode_prop = props.globals.initNode( explode_path, 0, "BOOL", 1);
+		var explode_smoke_path = "sim/ja37/armament/"~me.type_lc~"/flags/explode-smoke-id-" ~ me.ID;
+		me.explode_smoke_prop = props.globals.initNode( explode_smoke_path, 0, "BOOL", 1);
+		var explode_sound_path = "sim/ja37/armament/flags/explode-sound-on-" ~ me.ID;;
+		me.explode_sound_prop = props.globals.initNode( explode_sound_path, 0, "BOOL", 1);
+		var explode_sound_vol_path = "sim/ja37/armament/flags/explode-sound-vol-" ~ me.ID;;
+		me.explode_sound_vol_prop = props.globals.initNode( explode_sound_vol_path, 0, "DOUBLE", 1);
 	},
 
 
@@ -712,7 +909,7 @@ var AIM9 = {
 		me.ac = geo.aircraft_position();
 		var distance = me.coord.direct_distance_to(me.ac);
 
-		me.sndDistance = me.sndDistance + (me.sndSpeed * dt) * 0.3048;
+		me.sndDistance = me.sndDistance + (me.sndSpeed * dt) * FT2M;
 		if(me.sndDistance > distance) {
 			var volume = math.pow(2.71828,(-.00025*(distance-1000)));
 			#print("explosion heard "~distance~"m vol:"~volume);
@@ -722,7 +919,7 @@ var AIM9 = {
 			settimer( func me.del(), 4);
 			return;
 		} elsif (me.sndDistance > 5000) {
-			me.del();
+			settimer(func { me.del(); }, 4 );
 		} else {
 			settimer(func me.sndPropagate(), 0.05);
 			return;
@@ -758,7 +955,7 @@ var impact_report = func(pos, mass_slug, string) {
 			break;
 	var impact = n.getChild(string, i, 1);
 
-	impact.getNode("impact/elevation-m", 1).setValue(pos.alt()*FT2M);
+	impact.getNode("impact/elevation-m", 1).setValue(pos.alt());
 	impact.getNode("impact/latitude-deg", 1).setValue(pos.lat());
 	impact.getNode("impact/longitude-deg", 1).setValue(pos.lon());
 	impact.getNode("mass-slug", 1).setValue(mass_slug);
@@ -774,9 +971,9 @@ var impact_report = func(pos, mass_slug, string) {
 var steering_speed_G = func(steering_e_deg, steering_h_deg, s_fps, mass, dt) {
 	# Get G number from steering (e, h) in deg, speed in ft/s and mass in slugs.
 	var steer_deg = math.sqrt((steering_e_deg*steering_e_deg)+(steering_h_deg*steering_h_deg));
-	var radius_ft = math.abs(s_fps / math.cos(90 - steer_deg));
+	var radius_ft = math.abs(s_fps / math.cos((90 - steer_deg)*D2R));
 	var g = (mass * s_fps * s_fps / radius_ft * dt) / g_fps;
-	#print("#### R = ", radius_ft, " G = ", g);
+	#print("#### R = ", radius_ft, " G = ", g); ##########################################################
 	return(g);
 }
 
@@ -870,4 +1067,31 @@ var rho_sndspeed = func(altitude) {
 
 }
 
-#var AIM9_instance = [nil, nil,nil,nil];#init aim-9
+var max_G_Rotation = func(steering_e_deg, steering_h_deg, s_fps, mass, dt,gMax) {
+        # Get G number from steering (e, h) in deg, speed in ft/s and mass in slugs.
+        #This function is for calculate the maximum angle without overload G
+
+        var steer_deg = math.sqrt((steering_e_deg*steering_e_deg)+(steering_h_deg*steering_h_deg));
+        var radius_ft = math.abs(s_fps / math.cos(90 - steer_deg));
+        var g = (mass * s_fps * s_fps / radius_ft * dt) / g_fps;
+
+         #Isolation of Radius
+        if(s_fps<1){s_fps=1;}
+        var radius_ft2 =(mass * s_fps * s_fps * dt)/((gMax*0.9) * g_fps);
+        if(math.abs(s_fps/radius_ft2)<1){
+                var steer_rad_theoric = math.acos(math.abs(s_fps/radius_ft2));
+                var steer_deg_theoric = 90 - (steer_rad_theoric * R2D);
+        }else{
+                var steer_rad_theoric = 1;
+                var steer_deg_theoric = 1;
+        }
+
+        var radius_ft_th = math.abs(s_fps / math.cos((90 -steer_deg_theoric)*D2R));
+        var g_th = (mass * s_fps * s_fps / radius_ft_th * dt) / g_fps;
+
+        #print ("Max G ",gMax , " Actual G " , g,"steer_deg_theoric ",steer_deg_theoric);
+        
+        return(steer_deg_theoric/steer_deg);
+}
+
+#var AIM_instance = [nil, nil,nil,nil];#init aim-9

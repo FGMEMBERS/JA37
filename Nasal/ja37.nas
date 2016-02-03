@@ -30,17 +30,97 @@ var MISSILE_FLYING = 2;
 ############### Main loop ###############
 
 input = {
-  replay:           "sim/replay/replay-state",
-  g3d:              "/velocities/groundspeed-3D-kt",
-  wow0:             "/gear/gear[0]/wow",
-  wow1:             "/gear/gear[1]/wow",
-  wow2:             "/gear/gear[2]/wow",
+  acInstrVolt:      "systems/electrical/outputs/ac-instr-voltage",
+  acMainVolt:       "systems/electrical/outputs/ac-main-voltage",
+  asymLoad:         "fdm/jsbsim/inertia/asymmetric-wing-load",
+  augmentation:     "/controls/engines/engine[0]/augmentation",
+  autoReverse:      "sim/ja37/autoReverseThrust",
+  breathVol:        "sim/ja37/sound/breath-volume",
+  cabinPressure:    "fdm/jsbsim/systems/flight/cabin-pressure-kpm2",
+  canopyPos:        "canopy/position-norm",
+  combat:           "/sim/ja37/hud/current-mode",
+  cutoff:           "controls/engines/engine[0]/cutoff",
+  dcVolt:           "systems/electrical/outputs/dc-voltage",
+  downFps:          "/velocities/down-relground-fps",
   elapsed:          "sim/time/elapsed-sec",
   elapsedInit:      "sim/time/elapsed-at-init-sec",
+  elecMain:         "controls/electric/main",
+  engineRunning:    "engines/engine/running",
+  fdmAug:           "fdm/jsbsim/propulsion/engine/augmentation",
+  flame:            "engines/engine/flame",
+  flapPosCmd:       "/fdm/jsbsim/fcs/flaps/pos-cmd",
+  fuelInternalRatio:"sim/ja37/avionics/fuel-internal-ratio",
+  fuelNeedleB:      "/instrumentation/fuel/needleB_rot",
+  fuelNeedleF:      "/instrumentation/fuel/needleF_rot",
+  fuelRatio:        "/instrumentation/fuel/ratio",
+  fuelWarning:      "sim/ja37/sound/fuel-low-on",
   fullInit:         "sim/time/full-init",
-  tank0LvlNorm:     "/consumables/fuel/tank[0]/level-norm",
-  tank8LvlNorm:     "/consumables/fuel/tank[8]/level-norm",
+  g3d:              "/velocities/groundspeed-3D-kt",
+  gearCmdNorm:      "/fdm/jsbsim/gear/gear-cmd-norm",
+  gearsPos:         "gear/gear/position-norm",
+  generatorOn:      "fdm/jsbsim/systems/electrical/generator-running-norm",
+  gravity:          "fdm/jsbsim/accelerations/gravity-ft_sec2",
+  hydr1On:          "fdm/jsbsim/systems/hydraulics/system1/pressure",
+  hydr2On:          "fdm/jsbsim/systems/hydraulics/system2/pressure-main",
+  hydrCombined:     "fdm/jsbsim/systems/hydraulics/flight-surface-actuation",
+  hz05:             "sim/ja37/blink/five-Hz/state",
+  hz10:             "sim/ja37/blink/ten-Hz/state",
+  hzThird:          "sim/ja37/blink/third-Hz/state",
+  impact:           "/ai/models/model-impact",
+  indAlt:           "/instrumentation/altitude-indicator",
+  indAltFt:         "instrumentation/altimeter/indicated-altitude-ft",
+  indAltMeter:      "instrumentation/altimeter/indicated-altitude-meter",
+  indAtt:           "/instrumentation/attitude-indicator",
+  indJoy:           "/instrumentation/joystick-indicator",
+  indRev:           "/instrumentation/reverse-indicator",
+  indTrn:           "/instrumentation/transonic-indicator",
+  lampCanopy:       "sim/ja37/avionics/canopyAndSeat",
+  lampData:         "sim/ja37/avionics/primaryData",
+  lampIgnition:     "sim/ja37/avionics/ignitionSys",
+  lampInertiaNav:   "sim/ja37/avionics/TN",
+  lampOxygen:       "sim/ja37/avionics/oxygen",
+  lampStart:        "sim/ja37/avionics/startSys",
+  lampStick:        "sim/ja37/avionics/joystick",
+  lampXTank:        "sim/ja37/avionics/xtank",
+  landLight:        "sim/ja37/effect/landing-light",
+  landLightALS:     "sim/rendering/als-secondary-lights/use-landing-light",
+  landLightSupport: "sim/ja37/supported/landing-light",
+  landLightSwitch:  "controls/electric/lights-land-switch",
+  lockAltitude:     "/autopilot/locks/altitude",
+  lockHeading:      "/autopilot/locks/heading",
+  lockPassive:      "/autopilot/locks/passive-mode",
+  mass1:            "fdm/jsbsim/inertia/pointmass-weight-lbs[1]",
+  mass3:            "fdm/jsbsim/inertia/pointmass-weight-lbs[3]",
+  mass5:            "fdm/jsbsim/inertia/pointmass-weight-lbs[5]",
+  mass6:            "fdm/jsbsim/inertia/pointmass-weight-lbs[6]",
+  MPfloat2:         "sim/multiplay/generic/float[2]",
+  MPfloat9:         "sim/multiplay/generic/float[9]",
+  MPint17:          "sim/multiplay/generic/int[17]",
+  MPint18:          "sim/multiplay/generic/int[18]",
+  MPint19:          "sim/multiplay/generic/int[19]",
+  MPint9:           "sim/multiplay/generic/int[9]",
+  n1:               "/engines/engine/n1",
+  n2:               "/engines/engine/n2",
+  pilotG:           "sim/ja37/accelerations/pilot-G",
+  pneumatic:        "fdm/jsbsim/systems/fuel/pneumatics/serviceable",
+  rad_alt:          "position/altitude-agl-ft",
+  replay:           "sim/replay/replay-state",
+  reversed:         "/engines/engine/reversed",
+  roll:             "/instrumentation/attitude-indicator/indicated-roll-deg",
+  serviceElec:      "systems/electrical/serviceable",
+  speedKt:          "/instrumentation/airspeed-indicator/indicated-speed-kt",
+  speedMach:        "/instrumentation/airspeed-indicator/indicated-mach",
+  speedWarn:        "sim/ja37/sound/speed-on",
+  starter:          "controls/engines/engine[0]/starter-cmd",
+  stationSelect:    "controls/armament/station-select",
+  subAmmo2:         "ai/submodels/submodel[2]/count", 
+  subAmmo3:         "ai/submodels/submodel[3]/count", 
+  sunAngle:         "sim/time/sun-angle-rad",
+  switchBeacon:     "controls/electric/lights-ext-beacon",
+  switchFlash:      "controls/electric/lights-ext-flash",
+  switchNav:        "controls/electric/lights-ext-nav",
   tank0LvlGal:      "/consumables/fuel/tank[0]/level-gal_us",
+  tank0LvlNorm:     "/consumables/fuel/tank[0]/level-norm",
   tank1LvlGal:      "/consumables/fuel/tank[1]/level-gal_us",
   tank2LvlGal:      "/consumables/fuel/tank[2]/level-gal_us",
   tank3LvlGal:      "/consumables/fuel/tank[3]/level-gal_us",
@@ -48,99 +128,22 @@ input = {
   tank5LvlGal:      "/consumables/fuel/tank[5]/level-gal_us",
   tank6LvlGal:      "/consumables/fuel/tank[6]/level-gal_us",
   tank7LvlGal:      "/consumables/fuel/tank[7]/level-gal_us",
+  tank8Flow:        "fdm/jsbsim/propulsion/tank[8]/external-flow-rate-pps",
+  tank8Jettison:    "/consumables/fuel/tank[8]/jettisoned",
   tank8LvlGal:      "/consumables/fuel/tank[8]/level-gal_us",
-  fuelNeedleB:      "/instrumentation/fuel/needleB_rot",
-  fuelNeedleF:      "/instrumentation/fuel/needleF_rot",
-  fuelRatio:        "/instrumentation/fuel/ratio",
-  fuelWarning:      "sim/ja37/sound/fuel-low-on",
-  n1:               "/engines/engine/n1",
-  n2:               "/engines/engine/n2",
-  reversed:         "/engines/engine/reversed",
-  augmentation:     "/controls/engines/engine[0]/augmentation",
-  gearCmdNorm:      "/fdm/jsbsim/gear/gear-cmd-norm",
-  gearsPos:         "gear/gear/position-norm",
-  dcVolt:           "systems/electrical/outputs/dc-voltage",
-  acInstrVolt:      "systems/electrical/outputs/ac-instr-voltage",
-  acMainVolt:       "systems/electrical/outputs/ac-main-voltage",
-  serviceElec:      "systems/electrical/serviceable",
-  flapPosCmd:       "/fdm/jsbsim/fcs/flaps/pos-cmd",
-  vgFps:            "/fdm/jsbsim/velocities/vg-fps",
-  downFps:          "/velocities/down-relground-fps",
+  tank8LvlNorm:     "/consumables/fuel/tank[8]/level-norm",
+  tank8Selected:    "/consumables/fuel/tank[8]/selected",
   thrustLb:         "engines/engine/thrust_lb",
   thrustLbAbs:      "engines/engine/thrust_lb-absolute",
-  indAltMeter:      "instrumentation/altimeter/indicated-altitude-meter",
-  indAltFt:         "instrumentation/altimeter/indicated-altitude-ft",
-  rad_alt:          "position/altitude-agl-ft",
-  autoReverse:      "sim/ja37/autoReverseThrust",
-  stationSelect:    "controls/armament/station-select",
-  combat:           "/sim/ja37/hud/current-mode",
-  warnButton:       "sim/ja37/avionics/master-warning-button",
-  engineRunning:    "engines/engine/running",
-  hz10:             "sim/ja37/blink/ten-Hz/state",
-  hz05:             "sim/ja37/blink/five-Hz/state",
-  hzThird:          "sim/ja37/blink/third-Hz/state",
-  flame:            "engines/engine/flame",
-  mass1:            "fdm/jsbsim/inertia/pointmass-weight-lbs[1]",
-  mass3:            "fdm/jsbsim/inertia/pointmass-weight-lbs[3]",
-  asymLoad:         "fdm/jsbsim/inertia/asymmetric-wing-load",
-  indJoy:           "/instrumentation/joystick-indicator",
-  indAtt:           "/instrumentation/attitude-indicator",
-  indAlt:           "/instrumentation/altitude-indicator",
-  indTrn:           "/instrumentation/transonic-indicator",
-  indRev:           "/instrumentation/reverse-indicator",
-  tank8Flow:        "fdm/jsbsim/propulsion/tank[8]/external-flow-rate-pps",
-  tank8Selected:    "/consumables/fuel/tank[8]/selected",
-  tank8Jettison:    "/consumables/fuel/tank[8]/jettisoned",
-  lockHeading:      "/autopilot/locks/heading",
-  lockAltitude:     "/autopilot/locks/altitude",
-  lockPassive:      "/autopilot/locks/passive-mode",
-  roll:             "/instrumentation/attitude-indicator/indicated-roll-deg",
-  speedMach:        "/instrumentation/airspeed-indicator/indicated-mach",
-  speedKt:          "/instrumentation/airspeed-indicator/indicated-speed-kt",
   TILS:             "sim/ja37/hud/TILS",
-  pilotG:           "sim/ja37/accelerations/pilot-G",
-  zAccPilot:        "accelerations/pilot/z-accel-fps_sec",
-  gravity:          "fdm/jsbsim/accelerations/gravity-ft_sec2",
   trigger:          "controls/armament/trigger",
-  landLightSwitch:  "controls/electric/lights-land-switch",
-  landLight:        "sim/ja37/effect/landing-light",
-  landLightSupport: "sim/ja37/supported/landing-light",
-  landLightALS:     "sim/rendering/als-secondary-lights/use-landing-light",
+  vgFps:            "/fdm/jsbsim/velocities/vg-fps",
   viewInternal:     "sim/current-view/internal",
-  sunAngle:         "sim/time/sun-angle-rad",
-  MPfloat2:         "sim/multiplay/generic/float[2]",
-  MPfloat9:         "sim/multiplay/generic/float[9]",
-  MPint9:           "sim/multiplay/generic/int[9]",
-  MPint17:          "sim/multiplay/generic/int[17]",
-  MPint18:          "sim/multiplay/generic/int[18]",
-  subAmmo2:         "ai/submodels/submodel[2]/count", 
-  subAmmo3:         "ai/submodels/submodel[3]/count", 
-  breathVol:        "sim/ja37/sound/breath-volume",
-  impact:           "/ai/models/model-impact",
-  fdmAug:           "fdm/jsbsim/propulsion/engine/augmentation",
-  hydr1On:          "fdm/jsbsim/systems/hydraulics/system1/pressure",
-  hydr2On:          "fdm/jsbsim/systems/hydraulics/system2/pressure-main",
-  hydrCombined:     "fdm/jsbsim/systems/hydraulics/flight-surface-actuation",
-  fuelInternalRatio:"sim/ja37/avionics/fuel-internal-ratio",
-  canopyPos:        "canopy/position-norm",
-  speedWarn:        "sim/ja37/sound/speed-on",
-  cabinPressure:    "fdm/jsbsim/systems/flight/cabin-pressure-kpm2",
-  elecMain:         "controls/electric/main",
-  lampData:         "sim/ja37/avionics/primaryData",
-  lampInertiaNav:   "sim/ja37/avionics/TN",
-  lampStart:        "sim/ja37/avionics/startSys",
-  cutoff:           "controls/engines/engine[0]/cutoff",
-  lampIgnition:     "sim/ja37/avionics/ignitionSys",
-  starter:          "controls/engines/engine[0]/starter-cmd",
-  lampXTank:        "sim/ja37/avionics/xtank",
-  lampStick:        "sim/ja37/avionics/joystick",
-  lampOxygen:       "sim/ja37/avionics/oxygen",
-  generatorOn:      "fdm/jsbsim/systems/electrical/generator-running-norm",
-  lampCanopy:       "sim/ja37/avionics/canopyAndSeat",
-  pneumatic:        "fdm/jsbsim/systems/fuel/pneumatics/serviceable",
-  switchFlash:      "controls/electric/lights-ext-flash",
-  switchBeacon:     "controls/electric/lights-ext-beacon",
-  switchNav:        "controls/electric/lights-ext-nav",
+  warnButton:       "sim/ja37/avionics/master-warning-button",
+  wow0:             "/gear/gear[0]/wow",
+  wow1:             "/gear/gear[1]/wow",
+  wow2:             "/gear/gear[2]/wow",
+  zAccPilot:        "accelerations/pilot/z-accel-fps_sec",
 };
    
 var update_loop = func {
@@ -239,111 +242,6 @@ var update_loop = func {
     #  setprop("fdm/jsbsim/fcs/rudder-serviceable", 0);
     #}
 
-    
-
-
-    # pylon payloads
-    for(var i=0; i<=4; i=i+1) {
-      if(getprop("payload/weight["~ (i) ~"]/selected") != "none" and getprop("payload/weight["~ (i) ~"]/weight-lb") == 0) {
-        # missile was loaded manually through payload/fuel dialog, so setting the pylon to not released
-        setprop("controls/armament/station["~(i+1)~"]/released", FALSE);
-        #print("adding "~i);
-        if(i != 4) {
-          if (getprop("payload/weight["~ (i) ~"]/selected") == "RB 24J") {
-            #is not center pylon and is RB24
-            if(armament.AIM9.new(i) == -1 and armament.AIM9.active[i].status == MISSILE_FLYING) {
-              #missile added through menu while another from that pylon is still flying.
-              #to handle this we have to ignore that addition.
-              setprop("controls/armament/station["~(i+1)~"]/released", TRUE);
-              setprop("payload/weight["~ (i) ~"]/selected", "none");
-              #print("refusing to mount new missile yet "~i);
-            }
-          } elsif (getprop("payload/weight["~ (i) ~"]/selected") == "M70") {
-              setprop("ai/submodels/submodel["~(5+i)~"]/count", 6);
-          }
-        }
-      }
-      #if(i!=0 and getprop("payload/weight["~ (i-1) ~"]/selected") == "none" and getprop("payload/weight["~ (i-1) ~"]/weight-lb") != 0) {
-      #  if(armament.AIM9.active[i-1] != nil) {
-          # pylon emptied through menu, so remove the logic
-          #print("removing "~i);
-      #    armament.AIM9.active[i-1].del();
-      #  } 
-      #}
-    }
-
-    #activate searcher on selected pylon if missile mounted
-    var armSelect = input.stationSelect.getValue();
-    for(i = 0; i <= 3; i += 1) {
-      if(armament.AIM9.active[i] != nil) {
-        #missile is mounted on pylon
-        if(armSelect != i+1 and armament.AIM9.active[i].status != MISSILE_FLYING) {
-          #pylon not selected, and not flying set missile on standby
-          armament.AIM9.active[i].status = MISSILE_STANDBY;#print("not sel "~(i));
-        } elsif (input.combat.getValue() != 2 or (armament.AIM9.active[i].status != MISSILE_STANDBY and armament.AIM9.active[i].status != MISSILE_FLYING and getprop("payload/weight["~ (i) ~"]/selected") == "none")) {
-          #pylon has logic but missile not mounted and not flying or not in tactical mode
-          armament.AIM9.active[i].status = MISSILE_STANDBY;#print("empty "~(i));
-        } elsif (armSelect == i+1 and armament.AIM9.active[i].status == MISSILE_STANDBY and getprop("payload/weight["~ (i) ~"]/selected") != "none" and input.combat.getValue() == 2) {
-          #pylon selected, missile mounted, in tactical mode, activate search
-          armament.AIM9.active[i].status = MISSILE_SEARCH;#print("active "~(i));
-          armament.AIM9.active[i].search();
-        }
-      }
-    }
-
-    var selected = nil;
-    for(var i=0; i<=4; i=i+1) { # set JSBSim mass
-      selected = getprop("payload/weight["~i~"]/selected");
-      if(selected == "none") {
-        # the pylon is empty, set its pointmass to zero
-        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 0) {
-          setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 0);
-        }
-        if(i==4) {
-          # no drop tank attached
-          input.tank8Selected.setValue(FALSE);
-          input.tank8Jettison.setValue(TRUE);
-          input.tank8LvlNorm.setValue(0);
-        }
-      } elsif (selected == "RB 24J") {
-        # the pylon has a sidewinder, give it a pointmass
-        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 188) {
-          setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 188);
-        }
-      } elsif (selected == "M70") {
-        # the pylon has a sidewinder, give it a pointmass
-        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 200) {
-          setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 200);
-        }
-      } elsif (selected == "Drop tank") {
-        # the pylon has a drop tank, give it a pointmass
-        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") == 0) {
-          setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 224.87);#if change this also change it in jsbsim
-        }
-        input.tank8Selected.setValue(TRUE);
-        input.tank8Jettison.setValue(FALSE);
-      }
-    }
-
-    # for aerodynamic response to asymmetric wing loading
-    if(input.mass1.getValue() == input.mass3.getValue()) {
-      # wing pylons symmetric loaded
-      if (input.asymLoad.getValue() != 0) {
-        input.asymLoad.setValue(0);
-      }
-    } elsif(input.mass1.getValue() < input.mass3.getValue()) {
-      # right wing pylon has more load than left
-      if (input.asymLoad.getValue() != -1) {
-        input.asymLoad.setValue(-1);
-      }
-    } else {
-      # left wing pylon has more load than right
-      if (input.asymLoad.getValue() != 1) {
-        input.asymLoad.setValue(1);
-      }
-    }
-
-
     # automatic reverse thrust enabler
     var reversed = input.reversed.getValue();
 
@@ -399,13 +297,6 @@ var update_loop = func {
     # front gear compression calc for spinning of wheel
     # setprop("gear/gear/compression-wheel", (getprop("gear/gear/compression-ft")*0.3048-1.84812));
 
-
-    #tracer ammo, due to it might run out faster than cannon rounds due to submodel delay not being precise
-    if(input.subAmmo3.getValue() > 0) {
-      input.subAmmo2.setValue(-1);
-    } else {
-      input.subAmmo2.setValue(0);
-    }
 
     # low speed warning
     var lowSpeed = FALSE;
@@ -654,6 +545,9 @@ var slow_loop = func () {
   var frostNormOutside = getprop("/environment/aircraft-effects/frost-outside");
   var frostNormInside = getprop("/environment/aircraft-effects/frost-inside");
   var rain = getprop("/environment/rain-norm");
+  if (rain == nil) {
+    rain = 0;
+  }
   var frostSpeedInside = clamp(-tempGlass, -60, 60)/600 + (tempGlass<0?fogNormInside/50:0);
   var frostSpeedOutside = clamp(-tempGlass, -60, 60)/600 + (tempGlass<0?(fogNormOutside/50 + rain/50):0);
   frostNormOutside = clamp(frostNormOutside + frostSpeedOutside, 0, 1);
@@ -687,9 +581,6 @@ var slow_loop = func () {
 
   settimer(slow_loop, 1.5);
 }
-
-var flareCount = -1;
-var flareStart = -1;
 
 # fast updating loop
 var speed_loop = func () {
@@ -747,36 +638,6 @@ var speed_loop = func () {
   var wow2 = input.wow2.getValue();
   input.MPint17.setIntValue(encode3bits(wow0, wow1, wow2));
 
-  # Flare release
-  if (getprop("ai/submodels/submodel[0]/flare-release-snd") == nil) {
-    setprop("ai/submodels/submodel[0]/flare-release-snd", FALSE);
-    setprop("ai/submodels/submodel[0]/flare-release-out-snd", FALSE);
-  }
-  var flareOn = getprop("ai/submodels/submodel[0]/flare-release-cmd");
-  if (flareOn == TRUE and getprop("ai/submodels/submodel[0]/flare-release") == FALSE
-      and getprop("ai/submodels/submodel[0]/flare-release-out-snd") == FALSE
-      and getprop("ai/submodels/submodel[0]/flare-release-snd") == FALSE) {
-    flareCount = getprop("ai/submodels/submodel[0]/count");
-    flareStart = input.elapsed.getValue();
-    setprop("ai/submodels/submodel[0]/flare-release-cmd", FALSE);
-    if (flareCount > 0) {
-      setprop("ai/submodels/submodel[0]/flare-release-snd", TRUE);
-      setprop("ai/submodels/submodel[0]/flare-release", TRUE);
-    } else {
-      setprop("ai/submodels/submodel[0]/flare-release-out-snd", TRUE);
-    }
-  }
-  if (getprop("ai/submodels/submodel[0]/flare-release-snd") == TRUE and (flareStart + 1) < input.elapsed.getValue()) {
-    setprop("ai/submodels/submodel[0]/flare-release-snd", FALSE);
-  }
-  if (getprop("ai/submodels/submodel[0]/flare-release-out-snd") == TRUE and (flareStart + 1) < input.elapsed.getValue()) {
-    setprop("ai/submodels/submodel[0]/flare-release-out-snd", FALSE);
-  }
-  if (flareCount > getprop("ai/submodels/submodel[0]/count")) {
-    setprop("ai/submodels/submodel[0]/flare-release", FALSE);
-    flareCount = -1;
-  }
-
   # environment volume
   var canopy = getprop("fdm/jsbsim/fcs/canopy/pos-norm");
   var internal = getprop("sim/current-view/internal");
@@ -796,175 +657,6 @@ var speed_loop = func () {
   settimer(speed_loop, 0.05);
 }
 
-###########  listener for handling the trigger #########
-var trigger_listener = func {
-    var trigger = input.trigger.getValue();
-    var armSelect = input.stationSelect.getValue();
-
-    #if masterarm is on and HUD in tactical mode, propagate trigger to station
-    if(input.combat.getValue() == 2 and input.dcVolt.getValue() > 23 and !(armSelect == 0 and input.acInstrVolt.getValue() < 100)) {
-      setprop("/controls/armament/station["~armSelect~"]/trigger", trigger);
-      var str = "payload/weight["~(armSelect-1)~"]/selected";
-      if (armSelect != 0 and getprop(str) == "M70") {
-        setprop("/controls/armament/station["~armSelect~"]/trigger-m70", trigger);
-      }
-    } else {
-      setprop("/controls/armament/station["~armSelect~"]/trigger", FALSE);
-    }
-
-    if(armSelect != 0 and getprop("/controls/armament/station["~armSelect~"]/trigger") == TRUE) {
-      if(getprop("payload/weight["~(armSelect-1)~"]/selected") != "none") { 
-        # trigger is pulled, a pylon is selected, the pylon has a missile that is locked on. The gear check is prevent missiles from firing when changing airport location.
-        if (armament.AIM9.active[armSelect-1] != nil and  armament.AIM9.active[armSelect-1].status == 1 and input.gearsPos.getValue() != 1) {
-          #missile locked, fire it.
-          setprop("payload/weight["~ (armSelect-1) ~"]/selected", "none");# empty the pylon
-          setprop("controls/armament/station["~armSelect~"]/released", TRUE);# setting the pylon as fired
-          #print("firing missile: "~armSelect~" "~getprop("controls/armament/station["~armSelect~"]/released"));
-        
-          armament.AIM9.active[armSelect-1].release();#print("release "~(armSelect-1));
-          var phrase = "RB-24J fired at: " ~ radar_logic.selection[5];
-          if (getprop("sim/ja37/armament/msg")) {
-            setprop("/sim/multiplay/chat", phrase);
-          } else {
-            setprop("/sim/messages/atc", phrase);
-          }
-        }
-      }
-    }
-}
-
-var last_impact = 0;
-
-var impact_listener = func {
-  if (radar_logic.selection != nil and (input.elapsed.getValue()-last_impact) > 1) {
-    var ballistic_name = input.impact.getValue();
-    var ballistic = props.globals.getNode(ballistic_name, 0);
-    if (ballistic != nil) {
-      var typeNode = ballistic.getNode("impact/type");
-      if (typeNode != nil and typeNode.getValue() != "terrain") {
-        var lat = ballistic.getNode("impact/latitude-deg").getValue();
-        var lon = ballistic.getNode("impact/longitude-deg").getValue();
-        var impactPos = geo.Coord.new().set_latlon(lat, lon);
-
-        var track = radar_logic.selection[6];
-
-        var x = track.getNode("position/global-x").getValue();
-        var y = track.getNode("position/global-y").getValue();
-        var z = track.getNode("position/global-z").getValue();
-        var selectionPos = geo.Coord.new().set_xyz(x, y, z);
-
-        var distance = impactPos.distance_to(selectionPos);
-        if (distance < 50) {
-          last_impact = input.elapsed.getValue();
-          var phrase =  ballistic.getNode("name").getValue() ~ " hit " ~ radar_logic.selection[5];
-          if (getprop("sim/ja37/armament/msg")) {
-            setprop("/sim/multiplay/chat", phrase);
-          } else {
-            setprop("/sim/messages/atc", phrase);
-          }
-        }
-      }
-    }
-  }
-}
-
-var incoming_listener = func {
-  var history = getprop("/sim/multiplay/chat-history");
-  var hist_vector = split("\n", history);
-  if (size(hist_vector) > 0) {
-    var last = hist_vector[size(hist_vector)-1];
-    var last_vector = split(":", last);
-    var author = last_vector[0];
-    var callsign = getprop("sim/multiplay/callsign");
-    if (size(last_vector) > 1 and author != callsign) {
-      # not myself
-      var m2000 = FALSE;
-      if (find(" at " ~ callsign ~ ". Release ", last_vector[1]) != -1) {
-        # a m2000 is firing at us
-        m2000 = TRUE;
-      }
-      if (last_vector[1] == " FOX2 at" or last_vector[1] == " aim7 at" or last_vector[1] == " aim9 at" or last_vector[1] == " aim120 at" or last_vector[1] == " RB-24J fired at" or m2000 == TRUE) {
-        # air2air being fired
-        if (size(last_vector) > 2 or m2000 == TRUE) {
-          #print("Missile launch detected at"~last_vector[2]~" from "~author);
-          if (m2000 == TRUE or last_vector[2] == " "~callsign) {
-            # its being fired at me
-            #print("Incoming!");
-            var enemy = radar_logic.getCallsign(author);
-            if (enemy != nil) {
-              #print("enemy identified");
-              var bearingNode = enemy.getNode("radar/bearing-deg");
-              if (bearingNode != nil) {
-                #print("bearing to enemy found");
-                var bearing = bearingNode.getValue();
-                var heading = getprop("orientation/heading-deg");
-                var clock = bearing - heading;
-                while(clock < 0) {
-                  clock = clock + 360;
-                }
-                while(clock > 360) {
-                  clock = clock - 360;
-                }
-                #print("incoming from "~clock);
-                if (clock >= 345 or clock < 15) {
-                  setprop("sim/ja37/sound/incoming12", 1);
-                } elsif (clock >= 15 and clock < 45) {
-                  setprop("sim/ja37/sound/incoming1", 1);
-                } elsif (clock >= 45 and clock < 75) {
-                  setprop("sim/ja37/sound/incoming2", 1);
-                } elsif (clock >= 75 and clock < 105) {
-                  setprop("sim/ja37/sound/incoming3", 1);
-                } elsif (clock >= 105 and clock < 135) {
-                  setprop("sim/ja37/sound/incoming4", 1);
-                } elsif (clock >= 135 and clock < 165) {
-                  setprop("sim/ja37/sound/incoming5", 1);
-                } elsif (clock >= 165 and clock < 195) {
-                  setprop("sim/ja37/sound/incoming6", 1);
-                } elsif (clock >= 195 and clock < 225) {
-                  setprop("sim/ja37/sound/incoming7", 1);
-                } elsif (clock >= 225 and clock < 255) {
-                  setprop("sim/ja37/sound/incoming8", 1);
-                } elsif (clock >= 255 and clock < 285) {
-                  setprop("sim/ja37/sound/incoming9", 1);
-                } elsif (clock >= 285 and clock < 315) {
-                  setprop("sim/ja37/sound/incoming10", 1);
-                } elsif (clock >= 315 and clock < 345) {
-                  setprop("sim/ja37/sound/incoming11", 1);
-                } else {
-                  setprop("sim/ja37/sound/incoming", 1);
-                }
-                return;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  setprop("sim/ja37/sound/incoming", 0);
-  setprop("sim/ja37/sound/incoming1", 0);
-  setprop("sim/ja37/sound/incoming2", 0);
-  setprop("sim/ja37/sound/incoming3", 0);
-  setprop("sim/ja37/sound/incoming4", 0);
-  setprop("sim/ja37/sound/incoming5", 0);
-  setprop("sim/ja37/sound/incoming6", 0);
-  setprop("sim/ja37/sound/incoming7", 0);
-  setprop("sim/ja37/sound/incoming8", 0);
-  setprop("sim/ja37/sound/incoming9", 0);
-  setprop("sim/ja37/sound/incoming10", 0);
-  setprop("sim/ja37/sound/incoming11", 0);
-  setprop("sim/ja37/sound/incoming12", 0);
-}
-
-var cycle_weapons = func {
-  var sel = getprop("controls/armament/station-select");
-  sel += 1;
-  if(sel > 4) {
-    sel = 0;
-  }
-  click();
-  setprop("controls/armament/station-select", sel)
-}
 
 ###########  loop for handling the battery signal for cockpit sound #########
 var voltage = 0;
@@ -1171,7 +863,7 @@ var test_support = func {
   print();
   print("***************************************************************");
   print("**         Initializing Saab JA-37 Viggen systems.           **");
-  print("**           Version "~getprop("sim/aircraft-version")~" on Flightgear "~version[0]~"."~version[1]~"."~version[2]~"               **");
+  print("**           Version "~getprop("sim/aircraft-version")~" on Flightgear "~version[0]~"."~version[1]~"."~version[2]~"            **");
   print("***************************************************************");
   print();
 }
@@ -1252,19 +944,13 @@ var main_init = func {
   # asymmetric vortex detachment
   asymVortex();
 
-  # setup trigger listener
-  setlistener("controls/armament/trigger", trigger_listener, 0, 0);
-
-  # setup impact listener
-  setlistener("/ai/models/model-impact", impact_listener, 0, 0);
-
-  # setup incoming listener
-  setlistener("/sim/multiplay/chat-history", incoming_listener, 0, 0);
-
   # Setup lightning listener
   if (getprop("/sim/ja37/supported/lightning") == TRUE) {
     setlistener("/environment/lightning/lightning-pos-y", thunder_listener);
   }
+
+  # start weapon systems
+  settimer(func { armament.main_weapons() }, 2);
 
   # start the main loop
 	settimer(func { update_loop() }, 0.1);
@@ -1309,29 +995,6 @@ var re_init_listener = setlistener("/sim/signals/reinit", func {
   re_init();
  }, 0, 0);
 
-############ droptank #####################
-
-var drop = func {
-    if (getprop("/consumables/fuel/tank[8]/jettisoned") == TRUE) {
-       popupTip("Drop tank already jettisoned.");
-       return;
-    }  
-    if (getprop("/gear/gear[0]/wow") > 0.05) {
-       popupTip("Can not eject drop tank while on ground!"); 
-       return;
-    }
-    if (input.combat.getValue() == 2) {
-       popupTip("Can not eject drop tank when masterarm on!");
-       return;
-    }
-    if (getprop("systems/electrical/outputs/dc-voltage") < 23) {
-       popupTip("Too little DC power to eject drop tank!");
-       return;
-    }
-    click();
-    setprop("payload/weight[4]/selected", "none");# empty the pylon
-    popupTip("Drop tank shut off and ejected. Using internal fuel.");
- }
 
 ############ strobe #####################
 
@@ -1700,50 +1363,6 @@ var cycleSmoke = func() {
     }
 }
 
-reloadAir2Air = func {
-  # Reload missiles - 4 of them.
-  setprop("payload/weight[0]/selected", "RB 24J");
-  setprop("payload/weight[1]/selected", "RB 24J");
-  setprop("payload/weight[2]/selected", "RB 24J");
-  setprop("payload/weight[3]/selected", "RB 24J");
-  screen.log.write("RB 24J missiles attached", 0.0, 1.0, 0.0);
-
-  # Reload flares - 40 of them.
-  setprop("ai/submodels/submodel[0]/count", 60);
-  setprop("ai/submodels/submodel[1]/count", 60);
-  screen.log.write("60 flares loaded", 0.0, 1.0, 0.0);
-
-  # Reload cannon - 146 of them.
-  #setprop("ai/submodels/submodel[2]/count", 29);
-  setprop("ai/submodels/submodel[3]/count", 146);
-  setprop("ai/submodels/submodel[4]/count", 146);
-  screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);
-}
-
-reloadAir2Ground = func {
-  # Reload missiles - 4 of them.
-  setprop("payload/weight[0]/selected", "M70");
-  setprop("payload/weight[1]/selected", "M70");
-  setprop("payload/weight[2]/selected", "M70");
-  setprop("payload/weight[3]/selected", "M70");
-  setprop("ai/submodels/submodel[5]/count", 6);
-  setprop("ai/submodels/submodel[6]/count", 6);
-  setprop("ai/submodels/submodel[7]/count", 6);
-  setprop("ai/submodels/submodel[8]/count", 6);
-  screen.log.write("Bofors M70 rocket pods attached", 0.0, 1.0, 0.0);
-
-  # Reload flares - 40 of them.
-  setprop("ai/submodels/submodel[0]/count", 60);
-  setprop("ai/submodels/submodel[1]/count", 60);
-  screen.log.write("60 flares loaded", 0.0, 1.0, 0.0);
-
-  # Reload cannon - 146 of them.
-  #setprop("ai/submodels/submodel[2]/count", 29);
-  setprop("ai/submodels/submodel[3]/count", 146);
-  setprop("ai/submodels/submodel[4]/count", 146);
-  screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);
-}
-
 var popupTip = func(label, y = 25, delay = nil) {
     #var node = props.Node.new({ "label": label, "x": getprop('/sim/startup/xsize')/2, "y": -y+getprop('/sim/startup/ysize'), "tooltip-id": "msg", "reason": "click"});
     #fgcommand("set-tooltip", node);
@@ -1827,7 +1446,7 @@ var refuelRange = func () {
   setprop("consumables/fuel/tank[7]/level-norm", 1.0);
 
   # Mount drop tank and fill it up.
-  setprop("payload/weight[4]/selected", "Drop Tank");
+  setprop("payload/weight[6]/selected", "Drop Tank");
   input.tank8Selected.setValue(TRUE);
   input.tank8Jettison.setValue(FALSE);
   setprop("consumables/fuel/tank[8]/level-norm", 1.0);

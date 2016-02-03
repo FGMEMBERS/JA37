@@ -1876,3 +1876,97 @@ Effect: Added metal shader to mirror holders.
 Effect: Removed floodlight from inner canopy as manual states it only lights up panels.
 Model: Removed alpha texture from canopy glass seen from outside to allow glass and reflections to be seen.
 Sim: Added Firefly to the author file.
+
+3.106 - 2016 February 3
+=====
+Sim: {Pinto} Added RB-71 Skyflash missile option to stores.
+HUD: Fixed that tower should not be shown if out of view.
+Sim: Commented some print statements in aim-7 logic.
+Sim: Aim-7/9 MP msg is now slightly different formatted.
+Sound: Changed some aim-7 sound properties in preparation for different beep at lock.
+Sim: Added possibility to take damage from missiles or cannon fired from another MP Viggen.
+GUI: Added an option for taking damage when being hit or not. Off per default.
+Sim: Slightly formatted the cannon hit message differently.
+Effect: Textures used in effects are now longer mipmapped, to help performance.
+Sim: Added Pinto to Author file.
+Aero: Significantly lowered RM71 missile drag.
+Sim: Missile bugfix of radian to degree calculation.
+Sim: Fixed that RB71 missile would attempt to pull over 90G.
+Sim: Removed print statements in RB71 missile code.
+Sim: Fixed that drop tank would have wrong weight if mounted through menu.
+Sim: Adjusted some RM71 stats.
+GUI: Selecting air2air loadout in menu will now mount 2 Sparrow and 2 sidewinders.
+Sim: Fixed that changing a pylon missile loadout would not change the logic.
+Sim: Only run change-pylon code if something is mounted.
+Sim: Fixed that mounting M70 would not remove guided missile logic.
+Sim: Fixed that getting hit from further away than maximum effect range would still do damage.
+Sim: You can now see result of getting hit in the console with statistics.
+HUD: Fixed an uncommon null-pointer exception.
+Sound: Explosion will now be heard when a missile explode nearby.
+Sim: When radar is off or broken it now clear the target info supplied to the missiles.
+Sim: Fixed that the missile growl could sometimes be heard when it should not be.
+Sound: The RB-71 no longer give a growl, but a beep when locked.
+Sim: RB-71 now become unguided while the radar does not paint the target. (semi-radar guided instead of heat seeking fire-and-forget)
+Sim: The guided missile are now much more accurate, even with low framerate.
+Sim: The callsign that is displayed when firing a guided missile will no longer be aircraft type, even if thats whats shown in the HUD.
+Sim: Both guided missiles now has a 2 second boost period and start steering immediatly after coming off the pylon.
+Sim: Guided missiles will now be deleted if they impact with the ground.
+Model: Fixed that canopy would appear to not be broken off, when it was.
+Sim: Added the 2 outermost pylons on the wings, they only can carry RB-24J.
+Effect: Made the mirrors more shiny.
+Sim: Fixed that missiles were launching from aircraft altitude, not pylon altitude.
+Sim: RB-24J now works much more like the real thing, thanks to new (declassified) info from Sweden.
+Sound: Incoming sound is no longer cutoff each time a MP msg is displayed.
+Sim: Missiles should now be more able to shoot aircrafts on the ground.
+Sound: Incoming sound is no longer cutoff each time a MP msg is displayed.
+Sim: Merged the two guided missile nasal files.
+HUD: Cannon rounds loaded is now displayed near the distance scale.
+HUD: If an empty pylon is selected, the HUD will display 'None'.
+Sim: When firing missiles or rockets next pylon with same loadout will now be selected at depletion.
+HUD: There is now also an ammo count of missiles and rockets.
+Sim: Cycle weapons will now cycle the type instead of station.
+Sim: Put all stores and weapons logic into its own nasal file.
+Sim: Reverser command is now independent of reverse status.
+Model: Fixed that reverser handle would activate when testing indicators.
+Model: Droptank indicators and cutoff ready are now also lit when using indicator test button.
+Sim: All jsbsim system files now starts with jsb.
+GUI: Removed density and static pressure from performance monitor.
+HUD: Made heading and sideslip indicator in HUD fail if the corresponding instrument fails.
+Model: Fixed tooltip on radar range control was a factor 1000 off.
+HUD: Fixed that when changing HUD lines width that the HUD would turn into amber color.
+GUI: Removed radar buttons from option dialog, as they are as switches in cockpit now.
+GUI: Made options dialog transparent.
+Sim: Checked manual and RB-71 can no longer be carried on fuselage pylons.
+Sim: Now able to be hit by the modified m2000-5.
+Sim: Adjusted damage from various missiles.
+Sim: Accounted for a case which will happen 50% of the time to also improve accuracy of the missiles.
+Model: {Pinto} Improved the M70 rocket pod design.
+Sim: Fixed wrong assumption in missile code that geo.Coord is immutable.
+Sim: Possible fix for M70 firing by itself after reload.
+Sim: Added support for rear-aspect-only heat seeking missiles. (is off until further notice)
+Sim: {Pinto} Cannon hits will now have a number attched to defeat the MP spam filter.
+Sim: Guided missiles will no longer overcompensate steering during stage 1 ignition.
+Sim: Added RB-74 sidewinder missiles and switched the RB-24J aspect flag to rear aspect.
+Aero: Made aileron and elevator have no authority at very high beta and alpha angles.
+Sim: Radar can no longer look through terrain when looking at MP planes. (if enabled in options)
+Sim: Radar will now also track own RB-74 missiles.
+Sim: There is now an option to enable pulse doppler radar functionality for MP planes.
+Made the sidewinders less effective but more in line with what sources say.
+Sim: Flares are now released with 'z' key instead of CTRL-f.
+Sim: Sidewinders can now be fooled by flares from another JA37. (experimental)
+Model: Removed MP sound and Bombable support in order to reduce load lag of the MP Viggen.
+Sim: Fixed a null pointer exception in the air-conditioner.
+Sim: Fixed that missiles could turn around after a target got out of view and still hit.
+HUD: Now less smooth and updates slower, but its good for performance.
+Radar: The canvas texture is now 16x smaller for performance.
+HUD: The canvas texture is now 4x smaller for performance.
+Aero: Fixed regression that droptank aerodynamics influence would depend on missile mass not drop-tank.
+Control: Made pitch gearing more restrictive around M0.65, to avoid too high alpha in hard turns.
+Control: Made pitch gearing more permissive around M0.10, to again allow for shorter takeoff.
+Model: {Swamp} Added KSUU Crew 1 livery.
+Radar: Scanned angles is now up to 61.5 deg as per AJ37 manual.
+Radar: Colors and lines in radar screen is now almost as per AJ37 manual.
+Radar: Route-manager next destination is now shown on radar as per AJ37 manual.
+Sim: Missiles now need AC voltage to search as per AJ37 manual.
+Radar: The radar locked track now has a cursor over it.
+Radar: Antenae declination to selection is now shown in tactical a2a mode.
