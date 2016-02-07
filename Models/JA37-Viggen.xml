@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 
-<PropertyList include="ja37-bombable.xml">
+<PropertyList><!-- include="ja37-bombable.xml">       -->
 
   <path>ja37.ac</path>
 
   <!-- Multiplay sound -->
-  <sound>
+  <!--<sound>
     <path>Aircraft/JA37/Systems/ja37-mp-sound.xml</path>
-  </sound>
+  </sound>-->
 
 
   <!--        Interior    -->
@@ -301,6 +301,9 @@
   <object-name>glassOuter</object-name>
   <object-name>glassInternal</object-name>
   <object-name>canopy</object-name>
+  <object-name>canopyinside</object-name>
+  <object-name>mirrorholder</object-name>
+  <object-name>mirrorreflect</object-name>
   <property>sim/multiplay/generic/int[1]</property><!-- fdm/jsbsim/fcs/canopy/hinges/serviceable -->
   <interpolation>
    <entry>
@@ -2431,6 +2434,8 @@
 
 <!-- ===================== start payload =========================== -->
 
+<!-- ====== drop pod ====== -->
+
 <animation>
   <object-name>dropTank</object-name>
   <object-name>dropTankNoshader</object-name>
@@ -2443,15 +2448,23 @@
   </condition>
  </animation>
 
+<!-- ====== rb 24j/74 ====== -->
+ 
 <animation>
   <object-name>missile</object-name><!-- Left wing pylon -->
   <type>select</type>
   <condition>
     <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
-   <equals>
-    <property>sim/multiplay/generic/float[11]</property><!-- payload/weight[0]/weight-lb -->
-    <value>188</value>
-   </equals>
+    <or>
+      <equals>
+        <property>sim/multiplay/generic/float[11]</property><!-- payload/weight[0]/weight-lb -->
+        <value>188</value>
+      </equals>
+      <equals>
+        <property>sim/multiplay/generic/float[11]</property><!-- payload/weight[0]/weight-lb -->
+        <value>179</value>
+      </equals>
+    </or>
   </condition>
  </animation>
 
@@ -2459,10 +2472,16 @@
   <object-name>missile2</object-name><!-- Left fuselage pylon -->
   <type>select</type>
   <condition>
-   <equals>
-    <property>sim/multiplay/generic/float[12]</property><!-- payload/weight[1]/weight-lb -->
-    <value>188</value>
-   </equals>
+   <or>
+      <equals>
+        <property>sim/multiplay/generic/float[12]</property><!-- payload/weight[1]/weight-lb -->
+        <value>188</value>
+      </equals>
+      <equals>
+        <property>sim/multiplay/generic/float[12]</property><!-- payload/weight[1]/weight-lb -->
+        <value>179</value>
+      </equals>
+    </or>
   </condition>
  </animation>
 
@@ -2471,10 +2490,16 @@
   <type>select</type>
   <condition>
     <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
-   <equals>
-    <property>sim/multiplay/generic/float[13]</property><!-- payload/weight[2]/weight-lb -->
-    <value>188</value>
-   </equals>
+   <or>
+      <equals>
+        <property>sim/multiplay/generic/float[13]</property><!-- payload/weight[2]/weight-lb -->
+        <value>188</value>
+      </equals>
+      <equals>
+        <property>sim/multiplay/generic/float[13]</property><!-- payload/weight[2]/weight-lb -->
+        <value>179</value>
+      </equals>
+    </or>
   </condition>
  </animation>
 
@@ -2482,13 +2507,73 @@
   <object-name>missile3</object-name><!-- Right fuselage pylon -->
   <type>select</type>
   <condition>
-   <equals>
-    <property>sim/multiplay/generic/float[14]</property><!-- payload/weight[3]/weight-lb -->
-    <value>188</value>
-   </equals>
+   <or>
+      <equals>
+        <property>sim/multiplay/generic/float[14]</property><!-- payload/weight[3]/weight-lb -->
+        <value>188</value>
+      </equals>
+      <equals>
+        <property>sim/multiplay/generic/float[14]</property><!-- payload/weight[3]/weight-lb -->
+        <value>179</value>
+      </equals>
+    </or>
   </condition>
  </animation>
 
+<animation>
+  <object-name>missileLWO</object-name><!-- Left outer wing pylon -->
+  <type>select</type>
+  <condition>
+     <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
+     <or><!-- missile mounted: bit 1 -->
+      <equals>
+        <property>sim/multiplay/generic/int[19]</property>
+        <value>1</value>
+      </equals>
+      <equals>
+        <property>sim/multiplay/generic/int[19]</property>
+        <value>3</value>
+      </equals>
+      <equals>
+        <property>sim/multiplay/generic/int[19]</property>
+        <value>5</value>
+      </equals>            
+      <equals>
+        <property>sim/multiplay/generic/int[19]</property>
+        <value>7</value>
+      </equals>       
+    </or>
+  </condition>
+ </animation>
+
+ <animation>
+  <object-name>missileRWO</object-name><!-- Right outer wing pylon -->
+  <type>select</type>
+  <condition>
+     <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
+     <or><!-- missile mounted: bit 2 -->
+      <equals>
+        <property>sim/multiplay/generic/int[19]</property>
+          <value>2</value>
+        </equals>
+        <equals>
+          <property>sim/multiplay/generic/int[19]</property>
+          <value>3</value>
+        </equals>
+        <equals>
+          <property>sim/multiplay/generic/int[19]</property>
+          <value>6</value>
+        </equals>            
+        <equals>
+          <property>sim/multiplay/generic/int[19]</property>
+          <value>7</value>
+        </equals>       
+    </or>
+  </condition>
+ </animation>
+
+ <!-- ====== m70 ====== -->
+ 
   <model><!-- Left wing pylon -->
     <path>Aircraft/JA37/Models/Armament/Weapons/M70/rocketPod.xml</path>
     <name>pod0</name>
@@ -2575,6 +2660,95 @@
   </condition>
  </animation>
 
+  <!-- ====== rb 71 ====== -->
+
+  <model><!-- Left wing pylon -->
+    <path>Aircraft/JA37/Models/Armament/Weapons/RB-71/aim-7.xml</path>
+    <name>rb710</name>
+    <offsets>
+      <y-m> -2.70</y-m>
+      <z-m> -0.70</z-m>
+      <x-m>  2.40</x-m>
+    </offsets>
+  </model>
+
+ <animation>
+  <object-name>rb710</object-name>
+  <type>select</type>
+  <condition>
+    <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
+   <equals>
+    <property>sim/multiplay/generic/float[11]</property><!-- payload/weight[0]/weight-lb -->
+    <value>425</value>
+   </equals>
+  </condition>
+ </animation>
+
+  <model><!-- Left fuselage pylon -->
+    <path>Aircraft/JA37/Models/Armament/Weapons/RB-71/aim-7.xml</path>
+    <name>rb712</name>
+    <offsets>
+      <y-m> -0.975</y-m>
+      <z-m> -0.975</z-m>
+      <x-m> -0.50</x-m>
+    </offsets>
+  </model>
+
+ <animation>
+  <object-name>rb712</object-name>
+  <type>select</type>
+  <condition>
+   <equals>
+    <property>sim/multiplay/generic/float[12]</property><!-- payload/weight[1]/weight-lb -->
+    <value>425</value>
+   </equals>
+  </condition>
+ </animation>
+
+  <model><!-- Right wing pylon -->
+    <path>Aircraft/JA37/Models/Armament/Weapons/RB-71/aim-7.xml</path>
+    <name>rb711</name>
+    <offsets>
+      <y-m>  2.70</y-m>
+      <z-m> -0.70</z-m>
+      <x-m>  2.40</x-m>
+    </offsets>
+  </model>
+
+ <animation>
+  <object-name>rb711</object-name>
+  <type>select</type>
+  <condition>
+    <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
+   <equals>
+    <property>sim/multiplay/generic/float[13]</property><!-- payload/weight[2]/weight-lb -->
+    <value>425</value>
+   </equals>
+  </condition>
+ </animation>
+
+   <model><!-- Right fuselage pylon -->
+    <path>Aircraft/JA37/Models/Armament/Weapons/RB-71/aim-7.xml</path>
+    <name>rb713</name>
+    <offsets>
+      <y-m>  0.975</y-m>
+      <z-m> -0.975</z-m>
+      <x-m> -0.50</x-m>
+    </offsets>
+  </model>
+
+ <animation>
+  <object-name>rb713</object-name>
+  <type>select</type>
+  <condition>
+   <equals>
+    <property>sim/multiplay/generic/float[14]</property><!-- payload/weight[3]/weight-lb -->
+    <value>425</value>
+   </equals>
+  </condition>
+ </animation>
+
+  
 <!--<animation>
   <type>range</type>
   <object-name>plaqueLeft</object-name>

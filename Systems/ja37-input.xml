@@ -147,7 +147,7 @@
             <desc>Cycle weapons.</desc>
             <binding>
                 <command>nasal</command>
-                <script>ja37.cycle_weapons()</script>
+                <script>armament.cycle_weapons()</script>
             </binding>
         </key>
         <key n="114">
@@ -181,8 +181,8 @@
                 </binding>
             </mod-up>
         </key>
-        <key n="6">
-            <name>Ctrl-F</name>
+        <key n="122">
+            <name>z</name>
             <desc>Trigger flare release</desc>
             <binding>
                 <command>property-toggle</command>
@@ -265,6 +265,36 @@
                     <command>property-assign</command>
                     <property>controls/armament/station-select</property>
                     <value>4</value>
+                </binding>
+                <binding>
+                    <command>nasal</command>
+                    <script>ja37.click();</script>
+                </binding>
+            </mod-ctrl>
+        </key>
+        <key n="54">
+            <name>CTRL-6</name>
+            <mod-ctrl>
+                <desc>Select missile outer left</desc>
+                <binding>
+                    <command>property-assign</command>
+                    <property>controls/armament/station-select</property>
+                    <value>5</value>
+                </binding>
+                <binding>
+                    <command>nasal</command>
+                    <script>ja37.click();</script>
+                </binding>
+            </mod-ctrl>
+        </key>
+        <key n="55">
+            <name>CTRL-7</name>
+            <mod-ctrl>
+                <desc>Select missile outer right</desc>
+                <binding>
+                    <command>property-assign</command>
+                    <property>controls/armament/station-select</property>
+                    <value>6</value>
                 </binding>
                 <binding>
                     <command>nasal</command>
@@ -386,7 +416,7 @@
             <desc>Eject drop tank.</desc>
             <binding>
                 <command>nasal</command>
-                <script>ja37.drop();</script>
+                <script>armament.drop();</script>
             </binding>
         </key>
         <key n="77">

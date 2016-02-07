@@ -7,7 +7,6 @@ Features and improvements:
 GUI: Option to turn off verbose popups.
 GUI: Improve Checklists.
 GUI: Option to switch off hitting stuff above ground. (switched off now, might confuse users)
-GUI: Remove from options: Radar, Radar screen and maybe reverse on touchdown. As all these now has switches in cockpit.
 Aero: Make cannon pod detachable and have pointweight. (and model it above drop-tank)
 Aero: Air-brakes, even though they got welded shut in mid 80ties. (Request from JazzTp)
 Control: Pitch damper should also take lateral normal (Nz) acceleration as input as per manual.
@@ -17,36 +16,48 @@ Model: Make liveries that is not 59, able to not have to use base texture.
 Model: Ext. power truck more mil style textures.
 Model: Put in more working instruments and controls.
 Model: Make gunpod, between the fuselage and droptank.
-Model: The canopy metal should be thinner and unpainted alu.
-Model: There should be mirrors on the canopy.
 Model: Put in not-working instruments and controls for immersion.
-Model: Some textures should be aligned so they can be better viewed from current pilot point of view.
+Model: Some control textures should be aligned so they can be better viewed from current pilot point of view.
 Model: The minimum AoA the indicator should show is -4 degrees, not -7.
 Model: The altimeter should have a standard button which set the pressure to 1013 hPa.
 Model: Fix that landing gear oleo struts now are too bright.
+Model: Fix the bloody irritating lag when getting near another JA37 in MP! (test if MP sounds are culprit)
+Model: Radar range control should be only 3 digits.
+Model: Inside radar heading disc should be 6 red lamps for radar lock warning.
 Animation: Show wheels spinning in MP also.
 Animation: Proper animation of gear doors.
+Animation: Maybe the canopy should open more, the pilot is not supposed to crawl out.
 Sim: Improve autopilot further. (alt-hold should use pitch not v-speed)
-Sim: Make autopilot depend fully on instrument properties not true properties.
+Sim: Make autopilot depend fully on instrument properties not true properties. (95% done)
 Sim: Implement ejection seat. (with parachute?)
-Sim: Make braking parachute?
+Sim: Make braking parachute? (manual does not seem to indicate that the plane had one)
 Sim: Reset controls after A/P let go of them.
-Sim: Stop using integers in xml where floating point is expected? (really not needed)
+Sim: Stop using integers in xml where floating point is expected? (is silly, not needed, rely on typecasting instead)
 Sim: Make verbose property to be used in all nasal scripts. (possible include in options)
 Sim: Air to ground guided missiles.
-Sim: Longer range air2air missiles.
 Sim: Make replay show the guided missiles flying.
 Sim: Improve terrain warning system.
 Sim: Replace generic setValue in nasal with specific types.
 Sim: Make droptank do collision detection. (use retractable)
 Sim: Make drop-tank fall down. (use slaved submodel)
-Sim: Missiles should lock onto flares.
+Sim: Missiles should lock onto flares from other mil plane types.
 Sim: Lock warning when another plane get radar lock. (ja37, m2000-5, f-14b, f-15)
-Sim: Damage from missile explosion.
-Sim: Complete hydraulic dependencies. Brakes.
+Sim: Complete hydraulic dependencies: Brakes.
 Sim: Hydraulic drain.
 Sim: Shift-m should be a key without shift instead for convienience.
-Sim: Engine fire. Should maybe be activated by default if too high outlet temperature?
+Sim: Engine fire. Should maybe be activated by default if too high outlet temperature? Or hot exhaust in inlet?
+Sim: Weapons should require electrical power to track, check the manual.
+Sim: Running thrust reverser at very low speed should risk getting hot exhaust getting sucked into engine resulting in fire.
+Sim: Button to jettison all stores including drop-tank.
+Sim: Should drop-tank require masterarm on instead of opposite, seems logical, double check manual.
+Sim: Specific damage to gears in crash code, speed of impact and vertical speed separate. (terrain type?)
+Sim: Make the weapon mode dial operational: simulated mode, operational mode and reduced mode.
+Sim: Make data-link between Viggens.
+Sim: Make anti-cheat system for MP fighting.
+Sim: Replace MP hit and fire messages with something else, so can leave civilian traffic in peace.
+Sim: Replace nasal blinkers with JSB code.
+Sim: If pausing while missile is flying, releasing pause will make the missile think a large dt has passed.
+Sim: Implement maximum speed reactions - Vne.
 Effect: Rembrandt landing lightcone.
 Effect: Make pilot faint/die due to G-forces.
 Effect: Make tires burst if too high speed with parking brakes.
@@ -54,13 +65,17 @@ Effect: Smoke after structural break.
 Effect: Adjust normalmap to be more subtle.
 Sound: More annunciater warnings and other sounds. (transonic)
 Sound: Make sounds when taking damage in bombable.
-HUD: Make individual parts in HUD fail if the corresponding instrument fails. (like heading indicator etc.)
+Sound: Adjust the volume of the explosion of nearby missile, depending on distance.
+Radar: When ILS and DME is tuned to airport, show it on radar with a 20km centerline.
+Radar: Show artificial horizon lines.
 HUD: Make boxes for desired pitch.
 HUD: Alt scale follow pitch lines at more than 1 degree roll from level flight. (swedish pilots seems able to read upside down, not sure I will make this)
 HUD: Make too low reference speed change reticle vertical tail down.
 HUD: All track semi circles and semi box should have a line in them. (might degrade performance)
 HUD: Sidewind indicator should really be 10 degs below plane axis line.
 HUD: Fix that HUD selects diamond_node, not radar logic, so HUD can be turned off in external view.
+HUD: When DME are enabled at the same time as ILS with glideslope, the distance scale make the ILS view confusing.
+
 
 
 Bugs:
@@ -91,7 +106,12 @@ Sim: {JazzTP} Replay did not replay explosion.
 Sound: Could hear aim-9 buzz even though not in tact mode, in external view.
 HUD: In landing mode when horizont is out of view, heading scale does not show commanded heading.
 HUD: In landing mode, commanded altitude lines can be confused with ILS guidance.
-Sim: If track type is selected in HUD, when missile hit the message will display the type, not callsign.
+Aero: Above mach 1 at higher altitudes, then plane seems to do some pitch oscillations. (Does not seem to be pitch damper fault)
+Sim: Sometimes the aim-9 growl can be hard no matter if its mounted on any pylon or not, even when KCA is selected. [reproduced]
+Sim: {Pinto} After fire M70, and reload, they will fire again. [might be fixed]
+Control: {Pinto} Pitch damper does fast violent oscillations at 36000ft M2.25+ without droptank.
+HUD: When autostarting is in progress, the HUD will switch off for a fraction of a second sometimes.
+HUD: In tactical mode the diamond would sometimes not be painted. Distance, callsign and tail would be shown though.
 
 
 Issues with FG: (or my limited understanding of it)
@@ -124,7 +144,7 @@ Model: Make the 12-F04 black and gold livery.
 Model: Make the 48-F21 finnish export livery. (Akktu Stakki - Lonely Wolf)
 
 
-Require more data: (or aerodynamic know-how)
+Require more data:
 ------------------
 Aero: Detailed axial coefficients.
 Aero: Mass distribution.
