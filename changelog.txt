@@ -1970,3 +1970,104 @@ Radar: Route-manager next destination is now shown on radar as per AJ37 manual.
 Sim: Missiles now need AC voltage to search as per AJ37 manual.
 Radar: The radar locked track now has a cursor over it.
 Radar: Antenae declination to selection is now shown in tactical a2a mode.
+Model: {Pinto} Missile textures updated to live version instead of dummy versions.
+
+3.107 - 2016 March 3
+=====
+Sim: Implemented minimum speed for missiles to guide.
+Sim: Added outer pylon storage to flight-recorder.
+Radar: Increased range to 120Km as per the AJ37 manual. (48Km limit is for fire control)
+Sim: {Pinto} Added and changed some key bindings.
+Sim: RB71 second stage thrust is now reduced.
+Model: {Pinto} Added an indicator arrow to radar heading compass.
+Model: {Pinto} Cleaned up the radar compass heading texture.
+Model: {Pinto} Added a steerpoint heading bug for radar compass.
+Sim: Added the RB-99 Amraam.
+Animation: Make the strobe darker in daylight.
+Sim: Replaces missile status numbers with statics.
+Model: Possible fix for missile model not showing when its fired from a pylon a second time.
+Sim: Adjusted RB-71 stats.
+Sim: Prevent missile from having negative speed.
+GUI: Made the option dialog higher to give room to new buttons.
+Sim: Engine fire implemented.
+Sim: Engine fire can fail engine, generator, reverser or afterburner if unlucky, so better land soon if happens.
+Sim: Engine fire can start from too high outlet temperature.
+Sim: Engine fire can start from running thrust reverser at very low speed getting hot exhaust sucked into engine inlet.
+Sim: Engine fire can start from missile hit or hitting terrain.
+Sim: Implemented small chance that engine fire can go out by itself.
+Model: Fixed that indicator would not show no forward thrust if reversed and reverser failed.
+Model: Fixed that indicator would not show no reverse thrust if in forward thrust and reverser failed.
+Sim: Fixed that parts of the system thought the plane was reversed before the reversers had fully deployed.
+Sim: Fixed 6 broken math calculations in the guided missile G-force code together with 5H1N0B1.
+Model: {Pinto} Rightmost altitude indicator is now a distance indicator for next steerpoint instead.
+Model: Distance indicator now shows DME if available, else it shows steerpoint.
+Sim: Made the gravity drop not affect the missile pitch.
+Sim: Fixed that missile search loop could affect steering during flight if unlucky timing.
+Sim: Medium range a2a missiles are now lofted 45 degs if target is more than 10 miles out.
+Sim: After lofting, missiles will now cruise and hold altitude until they are 5 miles from target.
+Sim: G-force turns for missiles at higher altitudes is now decreased depending on air density.
+Sim: Made drag computation for missiles depend on density altitude, instead of altitude above sealevel.
+Sim: Implememented missile seeker max angular speed before it loses lock. Seeker gyroscopic effect are accounted for.
+Sim: Made the guided missiles use pure pursuit when they are not lofting or cruising.
+Sim: If the seeker loses lock, the missile will now keep its course and hope to hit something.
+Model: {Pinto} Fixed some alignment and a white spot on the KSUU Crew 1 livery.
+Sim: Fixed some null pinter exceptions in radar logic.
+Model: Fixed some switch textures would not show on Linux.
+Effect: Increased the explosion size of all missiles depending on warhead size.
+Effect: {Pinto} Fixed some gauge and panel text effect issues in Rembrandt.
+Model: {Pinto} Fixed a bright spot on a gauge.
+Model: Reduced 50+ textures in size for performance.
+Sim: Fixed that sometimes the aim-9 growl could be hard no matter if its mounted on any pylon or not, even when KCA is selected.
+Sim: Fixed if pausing while missile is flying, releasing pause will make the missile think a large time has passed.
+Sound: Made the RB-99 lock beep higher pitch.
+Effect: The missile explosion will now be seen where it actually exploded.
+Sim: Changed missile lofting angle to 15 degs.
+Sim: Damage from warhead size is now, calculated instead of estimated.
+Sim: Damage from M2000-5 cannons is now 50% larger.
+Sim: Fixed acceleration formula for guided missiles.
+Sim: Adjusted drag, ref. area and thrust and thrust duration on guided missiles.
+Sim: Removed the distance limit on when the missile deems it has passed target and should explode.
+Sim: For proportional navigation and lead pursuit the factors is now exposed in property tree for guided missiles.
+Sim: Readded the distance limit on when the missile deems it has passed target and should explode, but increased it.
+Sim: Increased the seeker max angular rotation speed for the modern missiles.
+Sim: Prevented acceleration due to gravity to increase the missiles speed in other directions than down.
+Sim: Used a much smarter way to calculate the G-force of missiles. They will no longer make sharp angular turns at high speeds.
+Sim: The missiles now waits for minimum half a second before they start guiding, so they can get clear of aircraft.
+Sim: Stopped a variable from being double declared in missiles. (alt_ft)
+Sim: When a missiles is released, and does its first flight update, make sure it knows that no time has passed since firing.
+Sim: Switched missile guidance to proportional navigation.
+Sim: {5H1N0B1} Fixed that missiles would complain that they were only allowed to pull 0 G.
+Sim: {Onox} Some optimizations to damage code.
+Sim: Changed missile navigation back to pure pursuit for now.
+Sim: Better console print when missile hit.
+Sim: Fixed a null pointer exception in DME.
+Sim: Implemented a better proportional navigation for missiles.
+Sim: Increased self-destruct time for RB-99.
+Sim: Fixed that damage could be taken when hit was out of range.
+HUD: {Pinto} The ILS glideslope will now adapt slope to whatever the ILS is broadcasting.
+Model: {Pinto} Replaced the radio with something that looks more like in the real Viggen.
+Animation: {Pinto} The artificial horizon now have a ILS crosshair.
+Radar: Made runway heading show on waypoint as per manual.
+Radar: Made the waypoint circle 50% bigger.
+Sim: All MP chat messages from weapons, will now defeat spam filter.
+Sim: Improved drastically the quality of acceleration to degree function in proportional navigation.
+Sim: Guided missiles now has proper gravity drop, that does not increase speed in headed direction.
+Sim: Missiles will now start by pitching into the wind (elevation wise), not the direction the aircraft is pitching.
+Sim: Missiles first update now has a relevant time, so it no longer start by lagging behind the aircraft.
+Sim: Missiles will now start guiding after half a second, if they have enough speed.
+Effect: Fixed shifting of colors: The RB99 smoke trail is no longer lighted. It can now be clearly seen even at night though. (experimental)
+Sim: Missiles now use augmented proportional navigation.
+Sim: Doubled fidelity of missile accuracy improvement code.
+Sim: Improved case where you would switch selection and could still fire missile at previous selection. (can still happen if you do it very fast though)
+Sim: Fixed that if you paused sim while missile was in flight, when you unpaused it would think alot of time had passed.
+Sim: Enabled taking damage from F-15 cannon.
+Sim: Decreased arming time for RB99.
+Effect: Reduced threefold the amount of smoke particles from rb-99.
+Sim: Hopefully made better sure the missile model are actually loaded and that smoke are visible.
+Model: Inside radar heading disc is now 6 red lamps for radar lock/incoming warning. (they only work for incoming for now)
+Animation: Buffeting of view, at high G, on runway, transonic and high alpha.
+Sim: 1997 loadout no longer includes rb71.
+Sim: First step in making missile code more generic.
+Radar: Increased range to 180Km, as 120Km is for the older variant AJ-37.
+Sim: At relocating it nows repair all damage, command gear down and stop autopilot.
+Model: Adapted ksuu1 livery into ksuu2.

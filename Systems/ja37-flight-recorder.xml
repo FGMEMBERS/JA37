@@ -133,7 +133,7 @@
         </signal>
         <signal>
             <type>bool</type>
-            <property type="string">engines/engine[0]/reversed</property>
+            <property type="string">engines/engine[0]/is-reversed</property>
         </signal>
         <!-- exterior lights -->
         <signal>
@@ -255,6 +255,10 @@
         <signal>
             <type>int16</type>
             <property type="string">payload/weight[3]/weight-lb</property>
+        </signal>
+        <signal>
+            <type>int8</type>
+            <property type="string">sim/multiplay/generic/int[19]</property>
         </signal>
         <!-- Gears -->
         <!--<signal>

@@ -870,7 +870,7 @@ var HUDnasal = {
         landingMode:      "sim/ja37/hud/landing-mode",
         mach:             "instrumentation/airspeed-indicator/indicated-mach",
         mode:             "sim/ja37/hud/mode",
-        nav0GSDirectDeg:  "instrumentation/nav[0]/gs-direct-deg",
+        nav0GSNeedleDefl:  "instrumentation/nav[0]/gs-needle-deflection-norm",
         nav0GSInRange:    "instrumentation/nav[0]/gs-in-range",
         nav0HasGS:        "instrumentation/nav[0]/has-gs",
         nav0Heading:      "instrumentation/nav[0]/heading-deg",
@@ -1616,9 +1616,8 @@ var HUDnasal = {
         deg = me.input.nav0HeadingDefl.getValue()/2;# -10 to 10, divided by 2.
 
         if (me.input.nav0HasGS.getValue() == TRUE and me.input.nav0GSInRange.getValue() == TRUE) {
-          var normDeviation = (clamp(me.input.nav0GSDirectDeg.getValue() - 2.86, -4, 4)/4);
-          var dev3 = normDeviation * 5*pixelPerDegreeY+2.86*pixelPerDegreeY;
-          var dev2 = normDeviation * 3*pixelPerDegreeY+2.86*pixelPerDegreeY;
+          var dev3 = me.input.nav0GSNeedleDefl.getValue() * 5*pixelPerDegreeY+2.86*pixelPerDegreeY;
+          var dev2 = me.input.nav0GSNeedleDefl.getValue() * 3*pixelPerDegreeY+2.86*pixelPerDegreeY;
           me.desired_lines3.setTranslation(pixelPerDegreeX*deg, dev3);
           me.desired_lines2.setTranslation(pixelPerDegreeX*deg, dev2);
           guideUseLines = TRUE;
@@ -1741,6 +1740,9 @@ var HUDnasal = {
       } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 71") {
         me.qfe.setText("RB-71");
         me.qfe.show();
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 99") {
+        me.qfe.setText("RB-99");
+        me.qfe.show();
       } else {
         me.qfe.setText("None");
         me.qfe.show();
@@ -1813,6 +1815,11 @@ var HUDnasal = {
         me.reticle_cannon.hide();
         me.reticle_missile.show();
       } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 71") {
+        air2air = TRUE;
+        me.showSidewind(FALSE);
+        me.reticle_cannon.hide();
+        me.reticle_missile.show();
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 99") {
         air2air = TRUE;
         me.showSidewind(FALSE);
         me.reticle_cannon.hide();
@@ -1968,16 +1975,20 @@ var HUDnasal = {
           maxDist = 2500;# as per sources
         } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 24J") {
           # sidewinders
-          minDist =   300;
+          minDist =   300;# authentic: (1000ft)
           maxDist = 14500;
         } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 74") {
           # sidewinders
-          minDist =   300;
+          minDist =   325;
           maxDist = 17964.4;
         } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 71") {
           # skyflash
-          minDist =   300;
+          minDist =   350;
           maxDist = 45003.6;
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 99") {
+          # skyflash
+          minDist =   400;
+          maxDist = 71857.6;
         } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M70") {
           # Rocket pod
           minDist =   200;
@@ -2018,7 +2029,7 @@ var HUDnasal = {
         me.distanceText.hide();
       }
       me.dist_scale_group.show();
-    } elsif (me.input.dme.getValue() != "---" and me.input.dme.getValue() != "") {
+    } elsif (me.input.dme.getValue() != "---" and me.input.dme.getValue() != "" and me.input.dmeDist.getValue() != nil) {
       var distance = me.input.dmeDist.getValue();
       var line = (200/1024)*canvasWidth;
       var maxDist = 20;
