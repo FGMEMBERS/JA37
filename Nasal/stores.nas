@@ -58,11 +58,24 @@ var loop_stores = func {
     for(var i=0; i<=6; i=i+1) {
       var payloadName = props.globals.getNode("payload/weight["~ i ~"]/selected");
       var payloadWeight = props.globals.getNode("payload/weight["~ i ~"]/weight-lb");
+      if(getprop("dev") == TRUE) {
+        if (i == 0 or i == 2) {
+          payloadName.setValue("RB 71");
+          payloadWeight.setValue(0);
+        } elsif (i == 1 or i == 3) {
+          payloadName.setValue("RB 99");
+          payloadWeight.setValue(0);
+        }  elsif (i == 4 or i == 5) {
+          payloadName.setValue("RB 74");
+          payloadWeight.setValue(0);
+        }
+      }
       if(payloadName.getValue() != "none" and (
           (payloadName.getValue() == "M70" and payloadWeight.getValue() != 200)
           or (payloadName.getValue() == "RB 24J" and payloadWeight.getValue() != 179)
           or (payloadName.getValue() == "RB 74" and payloadWeight.getValue() != 188)
           or (payloadName.getValue() == "RB 71" and payloadWeight.getValue() != 425)
+          or (payloadName.getValue() == "RB 99" and payloadWeight.getValue() != 291)
           or (payloadName.getValue() == "Drop tank" and payloadWeight.getValue() != 224.87))) {
         # armament or drop tank was loaded manually through payload/fuel dialog, so setting the pylon to not released
         setprop("controls/armament/station["~(i+1)~"]/released", FALSE);
@@ -114,6 +127,21 @@ var loop_stores = func {
               armament.AIM.active[i].del();
             }
             if(armament.AIM.new(i, "RB-71", "Skyflash") == -1 and armament.AIM.active[i].status == MISSILE_FLYING) {
+              #missile added through menu while another from that pylon is still flying.
+              #to handle this we have to ignore that addition.
+              setprop("controls/armament/station["~(i+1)~"]/released", TRUE);
+              payloadName.setValue("none");
+              #print("refusing to mount new RB-71 missile yet "~i);
+            }
+          } elsif (payloadName.getValue() == "RB 99") {
+            # is not center pylon and is RB99
+            #print("rb71 "~i);
+            if(armament.AIM.active[i] != nil and armament.AIM.active[i].type != "RB-99") {
+              # remove aim-9 logic from that pylon
+              #print("removing aim-9 logic");
+              armament.AIM.active[i].del();
+            }
+            if(armament.AIM.new(i, "RB-99", "Amraam") == -1 and armament.AIM.active[i].status == MISSILE_FLYING) {
               #missile added through menu while another from that pylon is still flying.
               #to handle this we have to ignore that addition.
               setprop("controls/armament/station["~(i+1)~"]/released", TRUE);
@@ -184,12 +212,17 @@ var loop_stores = func {
           setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 188);
         }
       } elsif (selected == "RB 71") {
-        # the pylon has a sidewinder, give it a pointmass
+        # the pylon has a skyflash, give it a pointmass
         if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 425) {
           setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 425);
         }
+      } elsif (selected == "RB 99") {
+        # the pylon has a amraam, give it a pointmass
+        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 291) {
+          setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 291);
+        }
       } elsif (selected == "M70") {
-        # the pylon has a sidewinder, give it a pointmass
+        # the pylon has a rocket pod, give it a pointmass
         if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 200) {
           setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 200);
         }
@@ -310,7 +343,7 @@ var trigger_listener = func {
         
         var phrase = type ~ " fired at: " ~ callsign;
         if (getprop("sim/ja37/armament/msg")) {
-          setprop("/sim/multiplay/chat", phrase);
+          setprop("/sim/multiplay/chat", armament.defeatSpamFilter(phrase));
         } else {
           setprop("/sim/messages/atc", phrase);
         }
@@ -360,10 +393,10 @@ var impact_listener = func {
         var distance = impactPos.distance_to(selectionPos);
         if (distance < 50) {
           last_impact = input.elapsed.getValue();
-          var phrase =  ballistic.getNode("name").getValue() ~ " hit: " ~ radar_logic.selection[5] ~ ": " ~ hit_count;
+          var phrase =  defeatSpamFilter(ballistic.getNode("name").getValue() ~ " hit: " ~ radar_logic.selection[5]);
           if (getprop("sim/ja37/armament/msg")) {
             setprop("/sim/multiplay/chat", phrase);
-			hit_count = hit_count + 1;
+			      #hit_count = hit_count + 1;
           } else {
             setprop("/sim/messages/atc", phrase);
           }
@@ -374,6 +407,23 @@ var impact_listener = func {
 }
 
 ############ response to MP messages #####################
+
+var warhead_lbs = {
+    "aim-120":              44.0,
+    "AIM120":               44.0,
+    "RB-99":                44.0,
+    "aim-7":                88.0,
+    "RB-71":                88.0,
+    "aim-9":                20.8,
+    "RB-24J":               20.8,
+    "RB-74":                20.8,
+    "R74":                  16.0,
+    "MATRA-R530":           55.0,
+    "Meteor":               55.0,
+    "AIM-54":               135.0,
+    "Matra R550 Magic 2":   27.0,
+    "Matra MICA":           30.0,
+};
 
 var incoming_listener = func {
   var history = getprop("/sim/multiplay/chat-history");
@@ -391,7 +441,7 @@ var incoming_listener = func {
         # a m2000 is firing at us
         m2000 = TRUE;
       }
-      if (last_vector[1] == " FOX2 at" or last_vector[1] == " aim7 at" or last_vector[1] == " aim9 at" or last_vector[1] == " aim120 at" or last_vector[1] == " RB-24J fired at" or last_vector[1] == " RB-74 fired at" or last_vector[1] == " RB-71 fired at" or m2000 == TRUE) {
+      if (last_vector[1] == " FOX2 at" or last_vector[1] == " aim7 at" or last_vector[1] == " aim9 at" or last_vector[1] == " aim120 at" or last_vector[1] == " RB-24J fired at" or last_vector[1] == " RB-74 fired at" or last_vector[1] == " RB-71 fired at" or last_vector[1] == " RB-99 fired at" or m2000 == TRUE) {
         # air2air being fired
         if (size(last_vector) > 2 or m2000 == TRUE) {
           #print("Missile launch detected at"~last_vector[2]~" from "~author);
@@ -441,6 +491,26 @@ var incoming_listener = func {
                 } else {
                   playIncomingSound("");
                 }
+
+                #The incoming lamps overlap each other:
+                if (clock >= 345 or clock <= 75) {
+                  incomingLamp("1");
+                } 
+                if (clock >= 45 and clock <= 135) {
+                  incomingLamp("3");
+                }
+                if (clock >= 105 and clock <= 195) {
+                  incomingLamp("5");
+                }
+                if (clock >= 165 and clock <= 255) {
+                  incomingLamp("7");
+                }
+                if (clock >= 225 and clock <= 315) {
+                  incomingLamp("9");
+                }
+                if (clock >= 285 or clock <= 15) {
+                  incomingLamp("11");
+                }
                 return;
               }
             }
@@ -467,58 +537,29 @@ var incoming_listener = func {
             if(distance != nil) {
               var maxDist = 0;
 
-              if (type == "aim-120" or type == "AIM120") {
-                # 44 lbs
-                maxDist = 20;
-              } elsif (type == "aim-7" or type == "RB-71") {
-                # 88 lbs
-                maxDist = 25;
-              } elsif (type == "aim-9" or type == "RB-24J" or type == "RB-74") {
-                # 20.8 lbs
-                maxDist = 14;
-              } elsif (type == "R74") {
-                # 16 lbs
-                maxDist = 10;
-              } elsif (type == "MATRA-R530" or type == "Meteor") {
-                # 55 lbs
-                maxDist = 22;
-              } elsif (type == "AIM-54") {
-                # 135 lbs
-                maxDist = 30;
-              } elsif (type == "Matra R550 Magic 2") {
-                # 27 lbs
-                maxDist = 17;
-              } elsif (type == "Matra MICA") {
-                # 30 lbs
-                maxDist = 17.5;
+              if (contains(warhead_lbs, type)) {
+                maxDist = maxDamageDistFromWarhead(warhead_lbs[type]);
               } else {
                 return;
               }
-              #print("maxDist="~maxDist);
+
               var diff = maxDist-distance;
-              if (diff > 0) {
-                diff = diff * diff;
-              } else {
-                diff = diff * diff;
-                diff = diff * -1;
+
+              if (diff < 0) {
+                diff = 0;
               }
+
+              diff = diff * diff;
+              
               var probability = diff / (maxDist*maxDist);
 
-              var failure_modes = FailureMgr._failmgr.failure_modes;
-              var mode_list = keys(failure_modes);
-              var failed = 0;
-              foreach(var failure_mode_id; mode_list) {
-                if(rand() < probability) {
-                  FailureMgr.set_failure_level(failure_mode_id, 1);
-                  failed += 1;
-                }
-              }
+              var failed = fail_systems(probability);
               var percent = 100 * probability;
               print("Took "~percent~"% damage from "~type~" missile at "~distance~" meters distance! "~failed~" systems was hit.");
               nearby_explosion();
             }
           } 
-        } elsif (last_vector[1] == " KCA cannon shell hit" or last_vector[1] == " Gun Splash On ") {
+        } elsif (last_vector[1] == " KCA cannon shell hit" or last_vector[1] == " Gun Splash On " or last_vector[1] == " M61A1 shell hit") {
           # cannon hitting someone
           #print("cannon");
           if (size(last_vector) > 2 and last_vector[2] == " "~callsign) {
@@ -526,16 +567,11 @@ var incoming_listener = func {
             #print("hitting me");
 
             var probability = 0.20; # take 20% damage from each hit
-            var failure_modes = FailureMgr._failmgr.failure_modes;
-            var mode_list = keys(failure_modes);
-            var failed = 0;
-            foreach(var failure_mode_id; mode_list) {
-              if(rand() < probability) {
-                FailureMgr.set_failure_level(failure_mode_id, 1);
-                failed += 1;
-              }
+            if (last_vector[1] == " Gun Splash On ") {
+              probability = 0.30;
             }
-            print("Took 20% damage from cannon! "~failed~" systems was hit.");
+            var failed = fail_systems(probability);
+            print("Took "~probability*100~"% damage from cannon! "~failed~" systems was hit.");
             nearby_explosion();
           }
         }
@@ -544,6 +580,40 @@ var incoming_listener = func {
   }
 }
 
+var spams = 0;
+
+var defeatSpamFilter = func (str) {
+  spams += 1;
+  if (spams == 15) {
+    spams = 1;
+  }
+  str = str~":";
+  for (var i = 1; i <= spams; i+=1) {
+    str = str~".";
+  }
+  return str;
+}
+
+var maxDamageDistFromWarhead = func (lbs) {
+  # very simple
+  var dist = 3*math.sqrt(lbs);
+
+  return dist;
+}
+
+var fail_systems = func (probability) {
+    var failure_modes = FailureMgr._failmgr.failure_modes;
+    var mode_list = keys(failure_modes);
+    var failed = 0;
+    foreach(var failure_mode_id; mode_list) {
+        if (rand() < probability) {
+            FailureMgr.set_failure_level(failure_mode_id, 1);
+            failed += 1;
+        }
+    }
+    return failed;
+};
+
 var playIncomingSound = func (clock) {
   setprop("sim/ja37/sound/incoming"~clock, 1);
   settimer(func {stopIncomingSound(clock);},3);
@@ -551,6 +621,15 @@ var playIncomingSound = func (clock) {
 
 var stopIncomingSound = func (clock) {
   setprop("sim/ja37/sound/incoming"~clock, 0);
+}
+
+var incomingLamp = func (clock) {
+  setprop("instrumentation/radar/twr"~clock, 1);
+  settimer(func {stopIncomingLamp(clock);},4.5);
+}
+
+var stopIncomingLamp = func (clock) {
+  setprop("instrumentation/radar/twr"~clock, 0);
 }
 
 var nearby_explosion = func {
@@ -615,6 +694,13 @@ var ammoCount = func (station) {
           ammo += 1;
         }
       }
+    } elsif (type == "RB 99") {
+      ammo = 0;
+      for(var i = 0; i < 6; i += 1) {
+        if(getprop("payload/weight["~i~"]/selected") == "RB 99") {
+          ammo += 1;
+        }
+      }
     } elsif (type == "RB 74") {
       ammo = 0;
       for(var i = 0; i < 6; i += 1) {
@@ -659,6 +745,13 @@ var cycle_weapons = func {
         type = "M70";
       }
     } elsif (type == "M70") {
+      sel = selectType("RB 99");
+      if (sel != -1) {
+        newType = "RB 99";
+      } else {
+        type = "RB 99";
+      }
+    } elsif (type == "RB 99") {
       sel = selectType("RB 71");
       if (sel != -1) {
         newType = "RB 71";
@@ -692,7 +785,7 @@ var cycle_weapons = func {
 ############ reload #####################
 
 reloadAir2Air1979 = func {
-  # Reload missiles - 4 of them.
+  # Reload missiles - 6 of them.
 
   # Sidewinder
   setprop("payload/weight[1]/selected", "RB 24J");
@@ -719,7 +812,7 @@ reloadAir2Air1979 = func {
 }
 
 reloadAir2Air1987 = func {
-  # Reload missiles - 4 of them.
+  # Reload missiles - 6 of them.
 
   # Sidewinder
   setprop("payload/weight[1]/selected", "RB 74");
@@ -732,6 +825,33 @@ reloadAir2Air1987 = func {
   setprop("payload/weight[0]/selected", "RB 71");
   setprop("payload/weight[2]/selected", "RB 71");
   screen.log.write("2 RB-71 missiles attached", 0.0, 1.0, 0.0);
+
+  # Reload flares - 40 of them.
+  setprop("ai/submodels/submodel[0]/count", 60);
+  setprop("ai/submodels/submodel[1]/count", 60);
+  screen.log.write("60 flares loaded", 0.0, 1.0, 0.0);
+
+  # Reload cannon - 146 of them.
+  #setprop("ai/submodels/submodel[2]/count", 29);
+  setprop("ai/submodels/submodel[3]/count", 146);
+  setprop("ai/submodels/submodel[4]/count", 146);
+  screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);
+}
+
+reloadAir2Air1997 = func {
+  # Reload missiles - 6 of them.
+
+  # Amraam
+  setprop("payload/weight[1]/selected", "RB 99");
+  setprop("payload/weight[3]/selected", "RB 99");
+  setprop("payload/weight[0]/selected", "RB 99");
+  setprop("payload/weight[2]/selected", "RB 99");
+  screen.log.write("4 RB-99 missiles attached", 0.0, 1.0, 0.0);
+
+  # Sidewinder
+  setprop("payload/weight[4]/selected", "RB 74");
+  setprop("payload/weight[5]/selected", "RB 74");
+  screen.log.write("2 RB-74 missiles attached", 0.0, 1.0, 0.0);
 
   # Reload flares - 40 of them.
   setprop("ai/submodels/submodel[0]/count", 60);

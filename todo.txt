@@ -22,11 +22,12 @@ Model: The minimum AoA the indicator should show is -4 degrees, not -7.
 Model: The altimeter should have a standard button which set the pressure to 1013 hPa.
 Model: Fix that landing gear oleo struts now are too bright.
 Model: Fix the bloody irritating lag when getting near another JA37 in MP! (test if MP sounds are culprit)
-Model: Radar range control should be only 3 digits.
-Model: Inside radar heading disc should be 6 red lamps for radar lock warning.
+Model: Radar range control should be only 3 digits. (and be another place in the cockpit if should be accurate)
+Model: If heading indicator fails, the radar heading bug for steerpoints should freeze.
 Animation: Show wheels spinning in MP also.
 Animation: Proper animation of gear doors.
 Animation: Maybe the canopy should open more, the pilot is not supposed to crawl out.
+Animation: Buffeting of view, when get hit, crash.
 Sim: Improve autopilot further. (alt-hold should use pitch not v-speed)
 Sim: Make autopilot depend fully on instrument properties not true properties. (95% done)
 Sim: Implement ejection seat. (with parachute?)
@@ -45,9 +46,7 @@ Sim: Lock warning when another plane get radar lock. (ja37, m2000-5, f-14b, f-15
 Sim: Complete hydraulic dependencies: Brakes.
 Sim: Hydraulic drain.
 Sim: Shift-m should be a key without shift instead for convienience.
-Sim: Engine fire. Should maybe be activated by default if too high outlet temperature? Or hot exhaust in inlet?
 Sim: Weapons should require electrical power to track, check the manual.
-Sim: Running thrust reverser at very low speed should risk getting hot exhaust getting sucked into engine resulting in fire.
 Sim: Button to jettison all stores including drop-tank.
 Sim: Should drop-tank require masterarm on instead of opposite, seems logical, double check manual.
 Sim: Specific damage to gears in crash code, speed of impact and vertical speed separate. (terrain type?)
@@ -56,13 +55,20 @@ Sim: Make data-link between Viggens.
 Sim: Make anti-cheat system for MP fighting.
 Sim: Replace MP hit and fire messages with something else, so can leave civilian traffic in peace.
 Sim: Replace nasal blinkers with JSB code.
-Sim: If pausing while missile is flying, releasing pause will make the missile think a large dt has passed.
 Sim: Implement maximum speed reactions - Vne.
+Sim: Fix that KCA cannon will hit type if type is selected in HUD. Instead it should always be callsign.
+Sim: Implement navigation controls into the cockpit.
+Sim: Engine fire: reduced thrust, stuck throttle.
+Sim: Check uses of true/mag headings in missile code.
+Sim: Make missile code generic aircraft independent.
+Sim: Include Shinobis missile changes into missile code. (cruise missiles, bombs, rail)
+Sim: Stop auto-selecting when in tactical mode.
 Effect: Rembrandt landing lightcone.
 Effect: Make pilot faint/die due to G-forces.
 Effect: Make tires burst if too high speed with parking brakes.
 Effect: Smoke after structural break.
 Effect: Adjust normalmap to be more subtle.
+Effect: Engine fire smoke.
 Sound: More annunciater warnings and other sounds. (transonic)
 Sound: Make sounds when taking damage in bombable.
 Sound: Adjust the volume of the explosion of nearby missile, depending on distance.
@@ -89,7 +95,6 @@ Sim: Find out why cannon and sidewinder fire randomly after instant replay.
 Sim: {JazzTp} A repair did repair aircraft except for HUD, it was frozen. [not reproduced yet]
 Sim: {JazzTp} Radar screen did not see MP aircraft pass by. [not reproduced yet]
 Sim: When relocating or pausing, autostart might fail. [reproduced]
-Sim: Missile that misses dont seem to delete by altitude.
 Sim: When Bombable 4.5 is installed redout and blackout might not work properly. [related to certain Bombable settings I think]
 Sim: The auto-pilot can be bank unstable when auto-coordination is turned on.
 HUD: {JazzTp} When FG HUD is in 2nd or 3rd mode, it does not go away when switching to custom. [reproduced]
@@ -107,14 +112,13 @@ Sound: Could hear aim-9 buzz even though not in tact mode, in external view.
 HUD: In landing mode when horizont is out of view, heading scale does not show commanded heading.
 HUD: In landing mode, commanded altitude lines can be confused with ILS guidance.
 Aero: Above mach 1 at higher altitudes, then plane seems to do some pitch oscillations. (Does not seem to be pitch damper fault)
-Sim: Sometimes the aim-9 growl can be hard no matter if its mounted on any pylon or not, even when KCA is selected. [reproduced]
 Sim: {Pinto} After fire M70, and reload, they will fire again. [might be fixed]
 Control: {Pinto} Pitch damper does fast violent oscillations at 36000ft M2.25+ without droptank.
-HUD: When autostarting is in progress, the HUD will switch off for a fraction of a second sometimes.
+HUD: When autostarting is in progress, the HUD will switch off for a fraction of a second sometimes when loading stores. (due to stores mass moving the aircraft a bit and external power then gets disconnected.).
 HUD: In tactical mode the diamond would sometimes not be painted. Distance, callsign and tail would be shown though.
+Model: Droptank indicator should really be a steerpoint indicator.
 
-
-Issues with FG: (or my limited understanding of it)
+Issues with FG:
 ---------------
 Effect: Rembrandt does not make the engine flame lit enough, unless diffuse and ambient is increased also.
 

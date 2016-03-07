@@ -6,7 +6,7 @@ var rad2deg = 180.0/math.pi;
 var kts2kmh = 1.852;
 var feet2meter = 0.3048;
 
-var radarRange = 48000;#meter
+var radarRange = 180000;#meter, is estimate. The AJ-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
 
 var self = nil;
 var myAlt = nil;
@@ -58,6 +58,7 @@ var findRadarTracks = func () {
     var rb24 = node_ai.getChildren("rb-24j");
 	  var rb71 = node_ai.getChildren("rb-71");
     var rb74 = node_ai.getChildren("rb-74");
+    var rb99 = node_ai.getChildren("rb-99");
 
     if(selection != nil and selection[6].getNode("valid").getValue() == FALSE) {
       paint(selection[6], FALSE);
@@ -72,6 +73,7 @@ var findRadarTracks = func () {
     processTracks(rb24, FALSE, TRUE);
 	  processTracks(rb71, FALSE, TRUE);
     processTracks(rb74, FALSE, TRUE);
+    processTracks(rb99, FALSE, TRUE);
     processCallsigns(players);
   } else {
     # Do not supply target info to the missiles if radar is off.
@@ -272,6 +274,9 @@ var trackItemCalc = func (track, range, carrier, mp) {
   var x = track.getNode("position/global-x").getValue();
   var y = track.getNode("position/global-y").getValue();
   var z = track.getNode("position/global-z").getValue();
+  if(x == nil or y == nil or z == nil) {
+    return nil;
+  }
   var aircraftPos = geo.Coord.new().set_xyz(x, y, z);
   if (mp == FALSE or doppler(aircraftPos, track) == TRUE) {
     return trackCalc(aircraftPos, range, carrier, mp);
@@ -525,6 +530,10 @@ var get_horizon = func(own_alt, t_node){
 var get_closure_rate_from_Coord = func(t_coord, t_node) {
     var MyAircraftCoord = geo.aircraft_position();
 
+    if(t_node.getNode("orientation/true-heading-deg") == nil) {
+      return 0;
+    }
+
     # First step : find the target heading.
     var myHeading = t_node.getNode("orientation/true-heading-deg").getValue();
     
@@ -532,6 +541,10 @@ var get_closure_rate_from_Coord = func(t_coord, t_node) {
     var myCoord = t_coord;
     var projectionHeading = myCoord.course_to(MyAircraftCoord);
     
+    if (myHeading == nil or projectionHeading == nil) {
+      return 0;
+    }
+
     # Calculate the angle difference
     var myAngle = myHeading - projectionHeading; #Should work even with negative values
     
