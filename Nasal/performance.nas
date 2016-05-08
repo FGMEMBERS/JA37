@@ -72,9 +72,9 @@ input = {
   lat:              "/position/latitude-deg",
   lon:              "/position/longitude-deg",
   altAgl:           "/position/altitude-agl-ft",
-  wow0:             "/gear/gear[0]/wow",
-  wow1:             "/gear/gear[1]/wow",
-  wow2:             "/gear/gear[2]/wow",
+  wow0:             "fdm/jsbsim/gear/unit[0]/WOW",
+  wow1:             "fdm/jsbsim/gear/unit[1]/WOW",
+  wow2:             "fdm/jsbsim/gear/unit[2]/WOW",
   excess:           "fdm/jsbsim/systems/flight/excess-thrust-lb",
   ld:               "fdm/jsbsim/systems/flight/lift-drag-ratio",
   tw:               "fdm/jsbsim/systems/flight/thrust-weight-ratio",
@@ -120,7 +120,7 @@ MonitorBase.properties = func() { return []; }
 
 #
 # Fuel Efficiency Monitor
-# Shows nm/gal, estimate remaining range, remaining flight time, and total range
+# Shows nm/lbm, estimate remaining range, remaining flight time, and total range
 #
 var FuelEfficiency = {};
 FuelEfficiency.new = func(interval) {
@@ -146,8 +146,8 @@ FuelEfficiency.new = func(interval) {
 #
 FuelEfficiency.properties = func() {
   return [
-    { property : "efficiency", name : "Fuel Efficiency",       format : "%1.4f", unit : "nm/gal", halign : "right" },
-   # { property : "range",      name : "Estinate Remain Dist.", format : "%05d",  unit : "nm",     halign : "right" },
+    { property : "efficiency", name : "Fuel Efficiency",       format : "%1.4f", unit : "nm/lb",  halign : "right" },
+    { property : "range",      name : "Fuel range left",       format : "%4d",   unit : "nm",     halign : "right" },
    # { property : "time",       name : "Estimate Remain Time",  format : "%8s",   unit : "time",   halign : "right" },
    # { property : "total-range",name : "Estimate Cruise Range", format : "%05d",  unit : "nm",     halign : "right" },
   ];
@@ -164,7 +164,7 @@ FuelEfficiency.reinit = func()
 FuelEfficiency.update = func {
   me.updateFuelEfficiency();
   me.calcTotalFuel();
-  #me.estimateCruiseRange();
+  me.estimateCruiseRange();
   #me.estimateCruiseTime();
   #me.estimateTotalRange();
 }
@@ -187,22 +187,22 @@ FuelEfficiency.updateFuelEfficiency = func {
   }
   me.fuelFlow = fuelFlow;
   me.fuelEfficiency = (engineRunning * fuelFlow == 0) ? 0 : (groundSpeed / fuelFlow);
-  input.perfEff.setValue(me.fuelEfficiency);
+  input.perfEff.setDoubleValue(me.fuelEfficiency);
 }
 
 #
-# getFuelFlow : calculates fuel flow in gph
+# getFuelFlow : calculates fuel flow in pph
 # This method is usable for both JSBSim and Yasim
 #
 FuelEfficiency.getFuelFlow = func(engine) {
   var flowNode = engine.getNode("fuel-flow-gph");
   var flow = 0;
   if (flowNode != nil)
-    flow = flowNode.getValue();
+    flow = flowNode.getValue()*6.48;#JP-4
   if (flow == 0 or flowNode == nil) {
     flowNode = engine.getNode("fuel-flow_pph");
     if (flowNode != nil)
-      flow = flowNode.getValue() / 5.92;
+      flow = flowNode.getValue();
     else
       flow = 0;
   }
@@ -210,7 +210,7 @@ FuelEfficiency.getFuelFlow = func(engine) {
 }
 
 #
-# calcTotalFuel : calculate total fuel (us-gal)
+# calcTotalFuel : calculate total fuel (lbm)
 #
 FuelEfficiency.calcTotalFuel = func {
   var totalFuel = 0;
@@ -220,10 +220,10 @@ FuelEfficiency.calcTotalFuel = func {
       fuelLevelNode = tank.getNode("level-lbs");
     }
     if (fuelLevelNode != nil) {
-      totalFuel += fuelLevelNode.getValue() / 5.92;
+      totalFuel += fuelLevelNode.getValue();
     }
   }
-  setprop("/sim/gui/dialogs/performance-monitor/fuel-gal", totalFuel);
+  setprop("/sim/gui/dialogs/performance-monitor/fuel-lbm", totalFuel);
   me.totalFuel = totalFuel;
 }
 
@@ -237,7 +237,7 @@ FuelEfficiency.estimateTotalRange = func {
   var curPos = me.pos.get();
   var distance_so_far = calcDistance(me.posOrigin, me.pos) / 1000 * 0.5399568 ;
   var total_range = me.range + distance_so_far;
-  input.perfRangeTotal.setValue(total_range);
+  input.perfRangeTotal.setDoubleValue(total_range);
 }
 
 #
@@ -245,7 +245,7 @@ FuelEfficiency.estimateTotalRange = func {
 #
 FuelEfficiency.estimateCruiseRange = func {
   me.range = me.fuelEfficiency * me.totalFuel;
-  input.perfRange.setValue(me.range);
+  input.perfRange.setDoubleValue(me.range);
   return me.range;
 }
 
@@ -328,8 +328,8 @@ TakeoffDistance.reinit = func()
 TakeoffDistance.calcDistance = func() {
   var dist_m = calcDistance(me.startPosition, me.endPosition);
   var dist_ft = dist_m * 3.2808399;
-  input.perfDistFt.setValue(dist_ft);
-  input.perfDistM.setValue(dist_m);
+  input.perfDistFt.setDoubleValue(dist_ft);
+  input.perfDistM.setDoubleValue(dist_m);
 }
 
 TakeoffDistance.update = func() {
@@ -372,8 +372,8 @@ LandingDistance.properties = func() {
 LandingDistance.reinit = func() {
   me.isAvailable = 0;
   me.isRunning = 0;
-  input.perfDistLandFt.setValue(0);
-  input.perfDistLandM.setValue(0);
+  input.perfDistLandFt.setDoubleValue(0);
+  input.perfDistLandM.setDoubleValue(0);
 }
 
 LandingDistance.activate = func() {
@@ -414,8 +414,8 @@ LandingDistance.autoland = func() {
   me.endPos = me.position.get();
   var dist_m = calcDistance(me.startPos, me.endPos);
   var dist_ft = dist_m * 3.2808399;
-  input.perfDistLandFt.setValue(dist_ft);
-  input.perfDistLandM.setValue(dist_m);
+  input.perfDistLandFt.setDoubleValue(dist_ft);
+  input.perfDistLandM.setDoubleValue(dist_m);
   #if (getprop("/gear/gear[1]/compression-norm") > 0.05) {
     # disengage autopilot locks
     #setprop("/autopilot/locks/altitude", '');
@@ -469,22 +469,22 @@ MiscMonitor.properties = func() {
 MiscMonitor.update = func()
 {
   #  setprop("/sim/gui/dialogs/performance-monitor/glideslope", getprop("/velocities/glideslope")*100);
-  input.perfMach.setValue(input.mach.getValue());
-  input.perfClimb.setValue(input.speedV.getValue()*60);
-  input.perfSpeedG.setValue(input.speedG.getValue());
-  input.perfTAS.setValue(input.speedAir.getValue());
-  input.perfAlpha.setValue(input.alpha.getValue());
-  input.perfG.setValue(input.G.getValue());
-  input.perfRoll.setValue(input.p.getValue()*57.296);
-  input.perfTurnRate.setValue(input.psiDot.getValue()*57.296);
-  input.perfTurnRad.setValue(input.turnRad.getValue());
-  input.perfSink.setValue(input.speedD.getValue()* 0.3048);
-  input.perfWindDir.setValue(input.windDir.getValue());
-  input.perfWindKt.setValue(input.windKt.getValue());
-  input.perfTemp.setValue(input.temp.getValue());
-  input.perfAlt.setValue(input.alt.getValue());
-  #input.perfInhg.setValue(input.inhg.getValue());
-  #input.perfRho.setValue(input.slug.getValue());
+  input.perfMach.setDoubleValue(input.mach.getValue());
+  input.perfClimb.setDoubleValue(input.speedV.getValue()*60);
+  input.perfSpeedG.setDoubleValue(input.speedG.getValue());
+  input.perfTAS.setDoubleValue(input.speedAir.getValue());
+  input.perfAlpha.setDoubleValue(input.alpha.getValue());
+  input.perfG.setDoubleValue(input.G.getValue());
+  input.perfRoll.setDoubleValue(input.p.getValue()*57.296);
+  input.perfTurnRate.setDoubleValue(input.psiDot.getValue()*57.296);
+  input.perfTurnRad.setDoubleValue(input.turnRad.getValue());
+  input.perfSink.setDoubleValue(input.speedD.getValue()* 0.3048);
+  input.perfWindDir.setDoubleValue(input.windDir.getValue());
+  input.perfWindKt.setDoubleValue(input.windKt.getValue());
+  input.perfTemp.setDoubleValue(input.temp.getValue());
+  input.perfAlt.setDoubleValue(input.alt.getValue());
+  #input.perfInhg.setDoubleValue(input.inhg.getValue());
+  #input.perfRho.setDoubleValue(input.slug.getValue());
 }
 
 MiscMonitor.reinit = func() {
@@ -517,12 +517,12 @@ AeroMonitor.properties = func() {
 
 AeroMonitor.update = func()
 {
-  input.perfExcess.setValue(input.excess.getValue());
-  input.perfLd.setValue(input.ld.getValue());
-  input.perfTw.setValue(input.tw.getValue());
-  input.perfLw.setValue(input.lw.getValue());
-  input.perfTd.setValue(input.td.getValue());
-  input.perfMargin.setValue((input.rp.getValue()+input.rpShift.getValue()*291.338-input.cg.getValue())*0.0254);
+  input.perfExcess.setDoubleValue(input.excess.getValue());
+  input.perfLd.setDoubleValue(input.ld.getValue());
+  input.perfTw.setDoubleValue(input.tw.getValue());
+  input.perfLw.setDoubleValue(input.lw.getValue());
+  input.perfTd.setDoubleValue(input.td.getValue());
+  input.perfMargin.setDoubleValue((input.rp.getValue()+input.rpShift.getValue()*291.338-input.cg.getValue())*0.0254);
 
   var stall = input.stall.getValue();
   var stallText = stall == 1?"True":"False";

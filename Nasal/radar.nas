@@ -306,15 +306,20 @@ var radar = {
         #     .setTranslation(0,0);
 
     m.input = {
-      viewNumber:     "sim/current-view/view-number",
-      radarVoltage:   "systems/electrical/outputs/ac-main-voltage",
+      heading:              "instrumentation/heading-indicator/indicated-heading-deg",
+      hydrPressure:         "fdm/jsbsim/systems/hydraulics/system1/pressure",
+      radarEnabled:         "sim/ja37/hud/tracks-enabled",
+      radarRange:           "instrumentation/radar/range",
       radarScreenVoltage:   "systems/electrical/outputs/dc-voltage",
-      radarServ:      "instrumentation/radar/serviceable",
-      screenEnabled:  "sim/ja37/radar/enabled",
-      radarEnabled:   "sim/ja37/hud/tracks-enabled",
-      radarRange:     "instrumentation/radar/range",
-      timeElapsed:    "sim/time/elapsed-sec",
-      hydrPressure:   "fdm/jsbsim/systems/hydraulics/system1/pressure",
+      radarServ:            "instrumentation/radar/serviceable",
+      radarVoltage:         "systems/electrical/outputs/ac-main-voltage",
+      rmActive:             "autopilot/route-manager/active",
+      rmDist:               "autopilot/route-manager/wp/dist",
+      rmId:                 "autopilot/route-manager/wp/id",
+      rmTrueBearing:        "autopilot/route-manager/wp/true-bearing-deg",
+      screenEnabled:        "sim/ja37/radar/enabled",
+      timeElapsed:          "sim/time/elapsed-sec",
+      viewNumber:           "sim/current-view/view-number",
     };
 
     # setup property nodes for the loop
@@ -382,11 +387,11 @@ var radar = {
           #}
       #  }
       #}
-      
-      if (getprop("autopilot/route-manager/active") == TRUE) {
-        var dist = getprop("autopilot/route-manager/wp/dist");
-        var bearing = getprop("autopilot/route-manager/wp/bearing-deg");#magnetic
-        var heading = getprop("instrumentation/heading-indicator/indicated-heading-deg");#magnetic
+
+      if (me.input.rmActive.getValue() == TRUE) {
+        var dist = me.input.rmDist.getValue();        
+        var bearing = me.input.rmTrueBearing.getValue();#true
+        var heading = me.input.heading.getValue();#true
         if (dist != nil and bearing != nil and heading != nil) {
           var bug = bearing - heading;
 
@@ -397,13 +402,13 @@ var radar = {
 
           me.dest.show();
 
-          var name = getprop("autopilot/route-manager/wp/id");
+          var name = me.input.rmId.getValue();
           if (name != nil and size(split("-", name))>1) {
             #print(name~"="~dist~" "~me.strokeHeight~" "~(me.radarRange * M2NM));
             name = split("-", name);
             var icao = name[0];
             name = name[1];
-            name = split("L", split("R", name)[0])[0];
+            name = split("C", split("L", split("R", name)[0])[0])[0];
             name = num(name);
             if (name != nil and size(icao) == 4) {
               var head = 10 * name;
@@ -438,17 +443,11 @@ var radar = {
       var a2a = canvas_HUD.air2air;
       if (a2a == TRUE) {
         if (radar_logic.selection != nil) {
-          var node = radar_logic.selection[6];
-          var elevNode = node.getNode("radar/elevation-deg");
-          if (elevNode != nil) {
-            var elev = elevNode.getValue();
-            elev = clamp(elev, -10, 10)/10;
-            var x = me.strokeHeight*0.18*elev;
-            me.ant_cursor.setTranslation(x, 0);
-            me.ant_cursor.show();
-          } else {
-            me.ant_cursor.hide();
-          }
+          var elev = radar_logic.selection.getElevation();
+          elev = clamp(elev, -10, 10)/10;
+          var x = me.strokeHeight*0.18*elev;
+          me.ant_cursor.setTranslation(x, 0);
+          me.ant_cursor.show();
         } else {
           me.ant_cursor.hide();
         }
@@ -475,25 +474,14 @@ var radar = {
         foreach (var mp; radar_logic.tracks) {
           # Node with valid position data (and "distance!=nil").
 
-          # mp
-          #
-          # 0 - x position
-          # 1 - y position
-          # 2 - direct distance in meter
-          # 3 - distance in radar screen plane
-          # 4 - horizontal angle from aircraft in rad
-          # 5 - identifier
-          # 6 - node
-          # 7 - carrier
-
-          var distance = mp[3];
-          var xa_rad = mp[4];
+          var distance = mp.get_polar()[0];
+          var xa_rad = mp.get_polar()[1];
 
           #make blip
           if (b_i < me.no_blip and distance != nil and distance < me.radarRange ){#and alt-100 > getprop("/environment/ground-elevation-m")){
               #aircraft is within the radar ray cone
               var locked = FALSE;
-              if (size(mp) == 9) {
+              if (mp.isPainted() == TRUE) {
                 lock = TRUE;
                 locked = TRUE;
               }

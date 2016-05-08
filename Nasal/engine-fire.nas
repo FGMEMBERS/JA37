@@ -35,7 +35,7 @@ var last_serv_status = TRUE;
 #  + total engine failure
 #  - reduced thrust
 #  + no afterburner
-#  - black smoke
+#  + black smoke
 #  + reverser failure
 #  - throttle stuck
 #  + fire indicators blinking
@@ -48,6 +48,7 @@ var last_serv_status = TRUE;
 var loop_fire = func {
 	if (input.replay.getValue() == TRUE) {
 		settimer(loop_fire, 1);
+		return;
 	}
 
 	var new_fire = FALSE;

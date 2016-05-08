@@ -1,4 +1,4 @@
-var UPDATE_PERIOD = 0.1;
+var STORES_UPDATE_PERIOD = 0.05;
 
 var FALSE = 0;
 var TRUE = 1;
@@ -45,37 +45,35 @@ input = {
   tank8LvlNorm:     "/consumables/fuel/tank[8]/level-norm",
   tank8Selected:    "/consumables/fuel/tank[8]/selected",
   trigger:          "controls/armament/trigger",
-  wow0:             "/gear/gear[0]/wow",
-  wow1:             "/gear/gear[1]/wow",
-  wow2:             "/gear/gear[2]/wow",
+  wow0:             "fdm/jsbsim/gear/unit[0]/WOW",
+  wow1:             "fdm/jsbsim/gear/unit[1]/WOW",
+  wow2:             "fdm/jsbsim/gear/unit[2]/WOW",
+  dev:              "dev",
 };
 
 ############ main stores loop #####################
 
 var loop_stores = func {
 
+    if(input.replay.getValue() == TRUE) {
+      # replay is active, skip rest of loop.
+      settimer(loop_stores, STORES_UPDATE_PERIOD);
+      return;
+    }
+
     # pylon payloads
     for(var i=0; i<=6; i=i+1) {
       var payloadName = props.globals.getNode("payload/weight["~ i ~"]/selected");
       var payloadWeight = props.globals.getNode("payload/weight["~ i ~"]/weight-lb");
-      if(getprop("dev") == TRUE) {
-        if (i == 0 or i == 2) {
-          payloadName.setValue("RB 71");
-          payloadWeight.setValue(0);
-        } elsif (i == 1 or i == 3) {
-          payloadName.setValue("RB 99");
-          payloadWeight.setValue(0);
-        }  elsif (i == 4 or i == 5) {
-          payloadName.setValue("RB 74");
-          payloadWeight.setValue(0);
-        }
-      }
+      
       if(payloadName.getValue() != "none" and (
           (payloadName.getValue() == "M70" and payloadWeight.getValue() != 200)
           or (payloadName.getValue() == "RB 24J" and payloadWeight.getValue() != 179)
           or (payloadName.getValue() == "RB 74" and payloadWeight.getValue() != 188)
           or (payloadName.getValue() == "RB 71" and payloadWeight.getValue() != 425)
           or (payloadName.getValue() == "RB 99" and payloadWeight.getValue() != 291)
+          or (payloadName.getValue() == "RB 15F" and payloadWeight.getValue() != 1763.7)
+          or (payloadName.getValue() == "TEST" and payloadWeight.getValue() != 50)
           or (payloadName.getValue() == "Drop tank" and payloadWeight.getValue() != 224.87))) {
         # armament or drop tank was loaded manually through payload/fuel dialog, so setting the pylon to not released
         setprop("controls/armament/station["~(i+1)~"]/released", FALSE);
@@ -148,6 +146,36 @@ var loop_stores = func {
               payloadName.setValue("none");
               #print("refusing to mount new RB-71 missile yet "~i);
             }
+          } elsif (payloadName.getValue() == "TEST") {
+            # is not center pylon and is RB99
+            #print("rb71 "~i);
+            if(armament.AIM.active[i] != nil and armament.AIM.active[i].type != "TEST") {
+              # remove aim-9 logic from that pylon
+              #print("removing aim-9 logic");
+              armament.AIM.active[i].del();
+            }
+            if(armament.AIM.new(i, "TEST", "Missile-X") == -1 and armament.AIM.active[i].status == MISSILE_FLYING) {
+              #missile added through menu while another from that pylon is still flying.
+              #to handle this we have to ignore that addition.
+              setprop("controls/armament/station["~(i+1)~"]/released", TRUE);
+              payloadName.setValue("none");
+              #print("refusing to mount new RB-71 missile yet "~i);
+            }
+          } elsif (payloadName.getValue() == "RB 15F") {
+            # is not center pylon and is RB99
+            #print("rb71 "~i);
+            if(armament.AIM.active[i] != nil and armament.AIM.active[i].type != "RB 15F") {
+              # remove aim-9 logic from that pylon
+              #print("removing aim-9 logic");
+              armament.AIM.active[i].del();
+            }
+            if(armament.AIM.new(i, "RB-15F", "Robot 15F") == -1 and armament.AIM.active[i].status == MISSILE_FLYING) {
+              #missile added through menu while another from that pylon is still flying.
+              #to handle this we have to ignore that addition.
+              setprop("controls/armament/station["~(i+1)~"]/released", TRUE);
+              payloadName.setValue("none");
+              #print("refusing to mount new RB-71 missile yet "~i);
+            }
           }
         }
       }
@@ -169,19 +197,19 @@ var loop_stores = func {
         if(armSelect != (i+1) and armament.AIM.active[i].status != MISSILE_FLYING) {
           #pylon not selected, and not flying set missile on standby
           armament.AIM.active[i].status = MISSILE_STANDBY;
-          #print("not sel "~(i));
+          #print("not sel "~i);
         } elsif (input.acMainVolt.getValue() < 150 or input.combat.getValue() != 2
                   or (armament.AIM.active[i].status != MISSILE_STANDBY
                       and armament.AIM.active[i].status != MISSILE_FLYING
                       and payloadName.getValue() == "none")) {
           #pylon has logic but missile not mounted and not flying or not in tactical mode or has no power
           armament.AIM.active[i].status = MISSILE_STANDBY;
-          #print("empty "~(i));
+          #print("empty "~i);
         } elsif (armSelect == (i+1) and armament.AIM.active[i].status == MISSILE_STANDBY
                   and input.combat.getValue() == 2) { # and payloadName.getValue() == "RB 24J"
           #pylon selected, missile mounted, in tactical mode, activate search
           armament.AIM.active[i].status = MISSILE_SEARCH;
-          #print("active "~(i));
+          #print("active "~i);
           armament.AIM.active[i].search();
         }
       }
@@ -226,6 +254,16 @@ var loop_stores = func {
         if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 200) {
           setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 200);
         }
+      } elsif (selected == "TEST") {
+        # the pylon has a rocket pod, give it a pointmass
+        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 50) {
+          setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 50);
+        }
+      } elsif (selected == "RB 15F") {
+        # the pylon has a rocket pod, give it a pointmass
+        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 1763.7) {
+          setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 1763.7);
+        }
       } elsif (selected == "Drop tank") {
         # the pylon has a drop tank, give it a pointmass
         if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") == 0) {
@@ -251,6 +289,25 @@ var loop_stores = func {
       # left wing pylon has more load than right
       if (input.asymLoad.getValue() != 1) {
         input.asymLoad.setValue(1);
+      }
+    }
+
+    if(getprop("dev") == TRUE) {
+      for(var i=0; i<=6; i=i+1) {
+        var payloadName = props.globals.getNode("payload/weight["~ i ~"]/selected");
+        var payloadWeight = props.globals.getNode("payload/weight["~ i ~"]/weight-lb");
+      
+        if (i == 0) {
+          payloadName.setValue("RB 15F");
+        } elsif (i == 2) {
+          payloadName.setValue("RB 71");
+        } elsif (i == 1 or i == 3) {
+          payloadName.setValue("RB 99");
+        } elsif (i == 4) {
+          payloadName.setValue("RB 74");
+        } elsif (i == 5) {
+          payloadName.setValue("RB 24J");
+        }
       }
     }
 
@@ -301,7 +358,24 @@ var loop_stores = func {
     flareCount = -1;
   }
 
-  settimer(func { loop_stores() }, UPDATE_PERIOD);
+  var mkeys = keys(armament.AIM.flying);
+  var str = "";
+  foreach(var m; mkeys) {
+    var mid = m;
+    m = armament.AIM.flying[m];
+    var lat = m.latN.getValue();
+    var lon = m.lonN.getValue();
+    var alt = m.altN.getValue();
+    #print();
+    #print(mid);
+    #print(lat);
+    #print(lon);
+    #print(alt);
+    str = str~mid~";"~lat~";"~lon~";"~alt~":";
+  }
+  setprop("sim/multiplay/generic/string[13]", str);
+
+  settimer(func { loop_stores() }, STORES_UPDATE_PERIOD);
 }
 
 
@@ -331,7 +405,7 @@ var trigger_listener = func {
   if(armSelect != 0 and getprop("/controls/armament/station["~armSelect~"]/trigger") == TRUE) {
     if(getprop("payload/weight["~(armSelect-1)~"]/selected") != "none") { 
       # trigger is pulled, a pylon is selected, the pylon has a missile that is locked on. The gear check is prevent missiles from firing when changing airport location.
-      if (armament.AIM.active[armSelect-1] != nil and armament.AIM.active[armSelect-1].status == 1 and input.gearsPos.getValue() != 1 and radar_logic.selection != nil) {
+      if (armament.AIM.active[armSelect-1] != nil and armament.AIM.active[armSelect-1].status == 1 and (input.gearsPos.getValue() != 1 or input.dev.getValue()==TRUE) and radar_logic.selection != nil) {
         #missile locked, fire it.
 
         setprop("payload/weight["~ (armSelect-1) ~"]/selected", "none");# empty the pylon
@@ -342,7 +416,7 @@ var trigger_listener = func {
         armament.AIM.active[armSelect-1].release();#print("release "~(armSelect-1));
         
         var phrase = type ~ " fired at: " ~ callsign;
-        if (getprop("sim/ja37/armament/msg")) {
+        if (getprop("payload/armament/msg")) {
           setprop("/sim/multiplay/chat", armament.defeatSpamFilter(phrase));
         } else {
           setprop("/sim/messages/atc", phrase);
@@ -383,18 +457,13 @@ var impact_listener = func {
         var lon = ballistic.getNode("impact/longitude-deg").getValue();
         var impactPos = geo.Coord.new().set_latlon(lat, lon);
 
-        var track = radar_logic.selection[6];
-
-        var x = track.getNode("position/global-x").getValue();
-        var y = track.getNode("position/global-y").getValue();
-        var z = track.getNode("position/global-z").getValue();
-        var selectionPos = geo.Coord.new().set_xyz(x, y, z);
+        var selectionPos = radar_logic.selection.get_Coord();
 
         var distance = impactPos.distance_to(selectionPos);
         if (distance < 50) {
           last_impact = input.elapsed.getValue();
-          var phrase =  defeatSpamFilter(ballistic.getNode("name").getValue() ~ " hit: " ~ radar_logic.selection[5]);
-          if (getprop("sim/ja37/armament/msg")) {
+          var phrase =  defeatSpamFilter(ballistic.getNode("name").getValue() ~ " hit: " ~ radar_logic.selection.get_Callsign());
+          if (getprop("payload/armament/msg")) {
             setprop("/sim/multiplay/chat", phrase);
 			      #hit_count = hit_count + 1;
           } else {
@@ -409,20 +478,27 @@ var impact_listener = func {
 ############ response to MP messages #####################
 
 var warhead_lbs = {
-    "aim-120":              44.0,
-    "AIM120":               44.0,
-    "RB-99":                44.0,
-    "aim-7":                88.0,
-    "RB-71":                88.0,
-    "aim-9":                20.8,
-    "RB-24J":               20.8,
-    "RB-74":                20.8,
-    "R74":                  16.0,
-    "MATRA-R530":           55.0,
-    "Meteor":               55.0,
-    "AIM-54":               135.0,
-    "Matra R550 Magic 2":   27.0,
-    "Matra MICA":           30.0,
+    "aim-120":              44.00,
+    "AIM120":               44.00,
+    "RB-99":                44.00,
+    "aim-7":                88.00,
+    "RB-71":                88.00,
+    "aim-9":                20.80,
+    "RB-24J":               20.80,
+    "RB-74":                20.80,
+    "R74":                  16.00,
+    "MATRA-R530":           55.00,
+    "Meteor":               55.00,
+    "AIM-54":              135.00,
+    "Matra R550 Magic 2":   27.00,
+    "Matra MICA":           30.00,
+    "RB-15F":              440.92,
+    "SCALP":               992.00,
+    "KN-06":               315.00,
+    "GBU12":               190.00,
+    "GBU16":               450.00,
+    "Sea Eagle":           505.00,
+    "AGM65":               200.00,
 };
 
 var incoming_listener = func {
@@ -441,7 +517,7 @@ var incoming_listener = func {
         # a m2000 is firing at us
         m2000 = TRUE;
       }
-      if (last_vector[1] == " FOX2 at" or last_vector[1] == " aim7 at" or last_vector[1] == " aim9 at" or last_vector[1] == " aim120 at" or last_vector[1] == " RB-24J fired at" or last_vector[1] == " RB-74 fired at" or last_vector[1] == " RB-71 fired at" or last_vector[1] == " RB-99 fired at" or m2000 == TRUE) {
+      if (last_vector[1] == " FOX2 at" or last_vector[1] == " aim7 at" or last_vector[1] == " aim9 at" or last_vector[1] == " aim120 at" or last_vector[1] == " RB-24J fired at" or last_vector[1] == " RB-74 fired at" or last_vector[1] == " RB-71 fired at" or last_vector[1] == " RB-15F fired at" or last_vector[1] == " KN-06 fired at" or last_vector[1] == " RB-99 fired at" or m2000 == TRUE) {
         # air2air being fired
         if (size(last_vector) > 2 or m2000 == TRUE) {
           #print("Missile launch detected at"~last_vector[2]~" from "~author);
@@ -516,7 +592,7 @@ var incoming_listener = func {
             }
           }
         }
-      } elsif (getprop("sim/ja37/supported/old-custom-fails") > 0 and getprop("sim/ja37/armament/damage") == 1) {
+      } elsif (getprop("sim/ja37/supported/old-custom-fails") > 0 and getprop("payload/armament/damage") == 1) {
         # latest or second latest version of failure manager and taking damage enabled
         #print("damage enabled");
         var last1 = split(" ", last_vector[1]);
@@ -525,8 +601,8 @@ var incoming_listener = func {
           if (size(last_vector) > 3 and last_vector[3] == " "~callsign) {
             #print("that someone is me!");
             var type = last1[1];
-            if (type == "Matra") {
-              # Matra missiles have spaces in their names, so we fix that here.
+            if (type == "Matra" or type == "Sea") {
+              # Matra/seaeagle missiles have spaces in their names, so we fix that here.
               for (var i = 2; i < size(last1)-1; i += 1) {
                 type = type~" "~last1[i];
               }
@@ -535,6 +611,8 @@ var incoming_listener = func {
             var distance = num(number[1]);
             #print(type~"|");
             if(distance != nil) {
+              var dist = distance;
+              distance = ja37.clamp(distance-1.5, 0, 1000000);
               var maxDist = 0;
 
               if (contains(warhead_lbs, type)) {
@@ -555,11 +633,11 @@ var incoming_listener = func {
 
               var failed = fail_systems(probability);
               var percent = 100 * probability;
-              print("Took "~percent~"% damage from "~type~" missile at "~distance~" meters distance! "~failed~" systems was hit.");
+              printf("Took %.1f%% damage from %s missile at %0.1f meters. %s systems was hit", percent,type,dist,failed);
               nearby_explosion();
             }
           } 
-        } elsif (last_vector[1] == " KCA cannon shell hit" or last_vector[1] == " Gun Splash On " or last_vector[1] == " M61A1 shell hit") {
+        } elsif (last_vector[1] == " M70 rocket hit" or last_vector[1] == " KCA cannon shell hit" or last_vector[1] == " Gun Splash On " or last_vector[1] == " M61A1 shell hit") {
           # cannon hitting someone
           #print("cannon");
           if (size(last_vector) > 2 and last_vector[2] == " "~callsign) {
@@ -567,11 +645,11 @@ var incoming_listener = func {
             #print("hitting me");
 
             var probability = 0.20; # take 20% damage from each hit
-            if (last_vector[1] == " Gun Splash On ") {
+            if (last_vector[1] == " Gun Splash On " or last_vector[1] == " M70 rocket hit") {
               probability = 0.30;
             }
             var failed = fail_systems(probability);
-            print("Took "~probability*100~"% damage from cannon! "~failed~" systems was hit.");
+            printf("Took %.1f%% damage from cannon! %s systems was hit.", probability*100, failed);
             nearby_explosion();
           }
         }
@@ -610,6 +688,9 @@ var fail_systems = func (probability) {
             FailureMgr.set_failure_level(failure_mode_id, 1);
             failed += 1;
         }
+    }
+    if(probability > 0.19) {
+      setprop("environment/damage", 1);
     }
     return failed;
 };
@@ -715,6 +796,20 @@ var ammoCount = func (station) {
           ammo += 1;
         }
       }
+    } elsif (type == "TEST") {
+      ammo = 0;
+      for(var i = 0; i < 6; i += 1) {
+        if(getprop("payload/weight["~i~"]/selected") == "TEST") {
+          ammo += 1;
+        }
+      }
+    } elsif (type == "RB 15F") {
+      ammo = 0;
+      for(var i = 0; i < 6; i += 1) {
+        if(getprop("payload/weight["~i~"]/selected") == "RB 15F") {
+          ammo += 1;
+        }
+      }
     }
   }
   return ammo;
@@ -766,6 +861,13 @@ var cycle_weapons = func {
         type = "RB 24J";
       }
     } elsif (type == "RB 24J") {
+      sel = selectType("TEST");
+      if (sel != -1) {
+        newType = "TEST";
+      } else {
+        type = "TEST";
+      }
+    } elsif (type == "TEST") {
       sel = selectType("RB 74");
       if (sel != -1) {
         newType = "RB 74";
@@ -773,6 +875,13 @@ var cycle_weapons = func {
         type = "RB 74";
       }
     } elsif (type == "RB 74") {
+      sel = selectType("RB 15F");
+      if (sel != -1) {
+        newType = "RB 15F";
+      } else {
+        type = "RB 15F";
+      }
+    } elsif (type == "RB 15F") {
       sel = 0;
       newType = "KCA";
     }
@@ -809,6 +918,8 @@ reloadAir2Air1979 = func {
   setprop("ai/submodels/submodel[3]/count", 146);
   setprop("ai/submodels/submodel[4]/count", 146);
   screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);
+
+  ja37.ct("rl");
 }
 
 reloadAir2Air1987 = func {
@@ -836,6 +947,8 @@ reloadAir2Air1987 = func {
   setprop("ai/submodels/submodel[3]/count", 146);
   setprop("ai/submodels/submodel[4]/count", 146);
   screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);
+
+  ja37.ct("rl");
 }
 
 reloadAir2Air1997 = func {
@@ -863,13 +976,15 @@ reloadAir2Air1997 = func {
   setprop("ai/submodels/submodel[3]/count", 146);
   setprop("ai/submodels/submodel[4]/count", 146);
   screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);
+
+  ja37.ct("rl");
 }
 
 reloadAir2Ground = func {
   # Reload missiles - 4 of them.
-  setprop("payload/weight[0]/selected", "M70");
+  setprop("payload/weight[0]/selected", "RB 15F");
   setprop("payload/weight[1]/selected", "M70");
-  setprop("payload/weight[2]/selected", "M70");
+  setprop("payload/weight[2]/selected", "RB 15F");
   setprop("payload/weight[3]/selected", "M70");
   setprop("payload/weight[4]/selected", "RB 24J");
   setprop("payload/weight[5]/selected", "RB 24J");
@@ -877,7 +992,8 @@ reloadAir2Ground = func {
   setprop("ai/submodels/submodel[6]/count", 6);
   setprop("ai/submodels/submodel[7]/count", 6);
   setprop("ai/submodels/submodel[8]/count", 6);
-  screen.log.write("Bofors M70 rocket pods attached", 0.0, 1.0, 0.0);
+  screen.log.write("2 Bofors M70 rocket pods attached", 0.0, 1.0, 0.0);
+  screen.log.write("2 RB-15F cruise-missiles attached", 0.0, 1.0, 0.0);
 
   # Reload flares - 40 of them.
   setprop("ai/submodels/submodel[0]/count", 60);
@@ -889,6 +1005,8 @@ reloadAir2Ground = func {
   setprop("ai/submodels/submodel[3]/count", 146);
   setprop("ai/submodels/submodel[4]/count", 146);
   screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);
+
+  ja37.ct("rl");
 }
 
 ############ droptank #####################
@@ -898,12 +1016,8 @@ var drop = func {
        ja37.popupTip("Drop tank already jettisoned.");
        return;
     }  
-    if (getprop("/gear/gear[0]/wow") > 0.05) {
+    if (input.wow0.getValue() > 0.05) {
        ja37.popupTip("Can not eject drop tank while on ground!"); 
-       return;
-    }
-    if (input.combat.getValue() == 2) {
-       ja37.popupTip("Can not eject drop tank when masterarm on!");
        return;
     }
     if (getprop("systems/electrical/outputs/dc-voltage") < 23) {
@@ -937,3 +1051,44 @@ var main_weapons = func {
   # start the main loop
   settimer(func { loop_stores() }, 0.1);
 }
+
+var selectNextWaypoint = func () {
+  var active_wp = getprop("autopilot/route-manager/current-wp");
+
+  if (active_wp == nil or active_wp < 0) {
+    screen.log.write("Active route-manager waypoint invalid, unable to create target.", 1.0, 0.0, 0.0);
+    return;
+  }
+
+  var active_node = globals.props.getNode("autopilot/route-manager/route/wp["~active_wp~"]");
+
+  if (active_node == nil) {
+    screen.log.write("Active route-manager waypoint invalid, unable to create target.", 1.0, 0.0, 0.0);
+    return;
+  }
+
+  var lat = active_node.getNode("latitude-deg");
+  var lon = active_node.getNode("longitude-deg");
+  var alt = active_node.getNode("altitude-m").getValue();
+
+  if (alt < -9000) {
+    var ground = geo.elevation(lat.getValue(), lon.getValue());
+    if(ground != nil) {
+      alt = ground;
+    } else {
+      screen.log.write("Active route-manager waypoint has no altitude, unable to create target.", 1.0, 0.0, 0.0);
+      return;
+    }
+  }
+
+  var name = active_node.getNode("id");
+
+  var coord = geo.Coord.new();
+  coord.set_latlon(lat.getValue(), lon.getValue(), alt);
+
+  var contact = radar_logic.ContactGPS.new(name.getValue(), coord);
+
+  radar_logic.selection = contact;
+}
+
+setprop("/sim/failure-manager/display-on-screen", FALSE);
