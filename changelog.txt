@@ -2163,7 +2163,7 @@ Model: New eastern livery.
 Sound: Fixed that touchdown squall could be heard looping in the air. (in 2016.2.0)
 Sound: {Pinto} New RB24/74 growl.
 
-3.109
+3.109 - 2016 May 7
 =====
 HUD: The distance scale rotation speed will now vary according to aircraft weight.
 Control: The ailerons now have more autority near mach 0.7.
@@ -2221,4 +2221,13 @@ Model: Recompressed all liveries to level 9, and removed alpha.
 GUI: Performance monitor now shows miles left on current fuel consumption.
 GUI: Performance monitor now shows fuel consumption in NM/LB.
 Model: Removed alpha channel in many textures.
+
+3.110 - 2016 May 11
+=====
 Model: {Spectre} Added livery F21-48 Lonely Wolf, Finnish export livery.
+Model: {Spectre} Added the F4-12 Black Knight livery.
+Model: Attached drop-tank to fuselage.
+Effect: Fixed that the shinyness map was not updated to Fireflys new drop-tank UV, which gave strange effect.
+Model: Made drop-tank same color as underbelly of plane.
+GUI: Added splash screen for Black Knight livery.
+Model: Changed name of some liveries.
