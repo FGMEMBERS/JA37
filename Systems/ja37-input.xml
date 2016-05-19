@@ -439,7 +439,7 @@
                 <script>ja37.toggleNosewheelSteer();</script>
             </binding>
         </key>
-        <key n="109">
+        <!--<key n="109">
             <name>m</name>
             <desc>Final approach</desc>
             <binding>
@@ -450,7 +450,7 @@
                 <command>nasal</command>
                 <script>ja37.click();ja37.popupTip("Toggled configure HUD for final approach.");</script>
             </binding>
-        </key>
+        </key>-->
 		
         <key n="89">
             <name>Y</name>
@@ -529,7 +529,62 @@
 				<command>nasal</command>
 				<script>ja37.click()</script>
 			</binding>
-		</key>	
+		</key>
+
+        <key n="14">
+            <name>CTRL-N</name>
+            <desc>Target next route-manager waypoint</desc>
+            <repeatable>false</repeatable>
+            <binding>
+                <command>nasal</command>
+                <script>armament.selectNextWaypoint()</script>
+            </binding>
+        </key>
+
+        <key n="21">
+          <name>Ctrl-U</name>
+          <desc>[Cheat] Add 1000ft of emergency altitude</desc>
+          <binding>
+           <command>property-adjust</command>
+           <property>/position/altitude-ft</property>
+           <step type="double">1000.0</step>
+          </binding>
+          <binding>
+           <command>property-assign</command>
+           <property>/sim/startup/onground</property>
+           <value type="bool">false</value>
+          </binding>
+          <binding>
+           <command>nasal</command>
+           <script>ja37.ct("c-u")</script>
+          </binding>
+         </key>
+
+         <key n="97">
+          <name>a</name>
+          <desc>Increase speed-up</desc>
+            <binding>
+                <command>nasal</command>
+                <script>controls.speedup(1);</script>
+            </binding>
+            <binding>
+           <command>nasal</command>
+           <script>ja37.ct("a")</script>
+          </binding>
+         </key>
+
+         <key n="65">
+          <name>A</name>
+          <desc>Decrease speed-up</desc>
+          <binding>
+            <command>nasal</command>
+            <script>controls.speedup(-1);</script>
+          </binding>
+          <binding>
+           <command>nasal</command>
+           <script>ja37.ct("a")</script>
+          </binding>
+         </key>
 		
     </keyboard>
 </PropertyList>

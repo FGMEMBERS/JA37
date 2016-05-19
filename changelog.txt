@@ -2071,3 +2071,163 @@ Sim: First step in making missile code more generic.
 Radar: Increased range to 180Km, as 120Km is for the older variant AJ-37.
 Sim: At relocating it nows repair all damage, command gear down and stop autopilot.
 Model: Adapted ksuu1 livery into ksuu2.
+
+3.108 - 2016 April 13
+=====
+Model: Added new livery, desert camo.
+Sim: At reinit the parking brakes will now be set.
+Sim: Stopped the missile from switching between seaching and locking all the time.
+Effect: Engine fire or taking a certain amount of damage will now make black engine smoke.
+Model: If heading indicator fails, the radar heading bug for steerpoints will now freeze.
+Animation: Made the buffeting be angle modulated sin curves and depend on altitude.
+Sim: The target diamond will now only blink if target is further than minimum missile range.
+Model: Missiles streaks can now be seen over MP.
+Model: Better livery over MP support.
+Effect: Pylons are no longer lit by afterburner flame.
+Sim: Fixed that the rb74 would not lock onto target.
+Radar: For steerpoint with center runway, the radar should now also show runway heading line.
+Sim: Logging of unicvs files for missiles, targets and flight is now possible. (have to change a couple of lines only)
+Model: Made livery for Nevada.
+Model: Made the TWR indicators, battery recharging and external light up when testing indicator lights.
+Effect: Exhaust from missiles is now properly located at the outlet.
+Sim: Support for dropped and rail missiles.
+Sim: Dropped missiles can no longer be fired when inverted.
+Sim: Fixed a bug in body coordinate system translation into GPS coordinate system.
+Sim: Some extraction of 2 functions in missile code.
+Radar: Fixed that doppler code could crash the radar if logged in as observer.
+Sim: Moved guided missile properties to /payload.
+Sim: Work to make missiles generic and not depend on JA37.
+Sim: Lofted missiles now snap up also during sustain phase.
+Sim: Fixed missile gravity drop bug. (Still needs work..)
+Sim: Carriers can now be targeted and shot upon.
+Sim: Adapted 5H1N0B1's cruise missile navigation code. (no cruise missiles added yet though)
+Model: {Pinto} Improved the radar heading compass texture.
+Sim: Added a test missile for dev. testing.
+Sim: Started to convert node use in missile code, to be using a hash. (and be compatible with Shinobi's radar)
+Model: {Pinto} Added the RB-15F cruise-missile.
+Sim: Added the RB-15F functionality.
+Sim: Added M70 and Scalp to damage check.
+HUD: Last dev changes broke something with modes in the HUD, fixed now.
+Sim: Added custom fire messages for missile types. Not in use yet though.
+Sim: Removed the word cheat from anti-cheat MP message.
+Radar: Classify targets into type (air, marine, surface, ordnance) and let missiles fire only at right type.
+Radar: Doppler is now enabled per default.
+HUD: Fixed that towers were shown at incorrect altitude.
+Sim: A GPS target can now be entered via key crtl-n. It will take the currently active route-manager waypoint.
+Sim: Fixed that KCA cannon will hit type if type is selected in HUD. Instead its now callsign.
+Engine: Adjusted mil thrust curve.
+Aero: Adjusted wave drag.
+Sim: Reduced the static sensor error.
+Control: Made elevon have more authority at very high speeds at low altitude.
+HUD: Air to ground missiles/rockets now have two lines instead of a circle.
+Aero: Adjusted drag for all stores, except drop-tank.
+Effect: Removed some of the dirt on cockpit gauge glass.
+Aero: Better calculation of yaw due to asymmetric drag from stores.
+Sim: Adjusted the drag formula for guided missiles.
+Sim: Adjusted various performance stats of missiles.
+Sim: Fixed an issue that would prevent rb71 from reaching its loft altitude.
+Sim: Doppler radar should now be able to see planes if they are above 250 kt airspeed, not matter if they try to notch or not.
+Radar: Slightly optimized performance.
+Radar: Fixed bearing of steerpoint on radar screen was using magnetic.
+Sim: Increased performance of navigation code.
+Model: Added a auto throttle indicator.
+Model: Moved reverser handle and indicator plus callsign and handle next to that.
+Animation: A/P flight-director mode will no longer enable the A/P indicator lights.
+HUD: Sidewind indicator is now 8 degs below plane axis line.
+HUD: Digital altitude is now terrain elevation, not longer altimeter altitude. As per manual.
+HUD: When in ground attack mode, the speed is now shown as groundspeed.
+HUD: In landing mode, the digital speed will move up if AoA is greater than 8.5 degs, down again when lower than 5.5 degs.
+HUD: The tail of flightpathindicator now only move in landing mode. Low: high AoA or low speed and vice versa. Blinking if too high AoA.
+Model: The primary (left) altimeter now can be middle clicked which will set the pressure to 1013 hPa.
+Model: The reserve (right) altimeter now have same feature as the primary.
+HUD: Heading bug on top heading scale will now be shown also in landing mode if the scale is shown.
+HUD: Top heading scale will now show at pitch up 9 degs instead of 7.
+HUD: Interoperability is now enabled as default. (means imperial units)
+Radar: Fixed that own missiles can be fired upon.
+System: Reduced the simulation rate for some JSB systems. (only works in 2016.2)
+Model: Changed the tooltip on autopilot indicator for flightstick.
+Sim: Increased performance slightly for some Nasal code.
+Sim: Stopped some functions during replay.
+Sim: Added 2 outer pylons to flight-recorder.
+Sim: Replaced nasal blinkers with JSB code.
+Sound: Made the missile lock growl and buzz not be audiable from outside.
+Sim: Fixed replay was total broken.
+Sim: Drop-tank no longer require masterarm off to jettison, as per manual.
+Model: Fixed that in selection and topdown views the camera position was wrong.
+Sim: Fixed missile growl/buzz could be heard when cannon was selected.
+Sim: More efficient typecasting in nasal code.
+Sim: Added Vne airspeed to limits.
+Sim: If canopy breaks off the AC now understand that its open.
+Sound: If canopy breaks off, the sound is as if the canopy is open.
+Model: New eastern livery.
+Sound: Fixed that touchdown squall could be heard looping in the air. (in 2016.2.0)
+Sound: {Pinto} New RB24/74 growl.
+
+3.109 - 2016 May 7
+=====
+HUD: The distance scale rotation speed will now vary according to aircraft weight.
+Control: The ailerons now have more autority near mach 0.7.
+Sim: Added all Mirage-2000s ground attack ordnance to damage.
+Sim: Better simulation of gravity bombs.
+Model: Added red indicator on radar box (top left) for ground warning.
+Model: Somehow the faces between control surfaces and the plane were removed, remade some of them.
+Model: Made control surfaces double sided.
+Model: Fix that there is a gap between fuselage and engine, where one can see 'into' the model.
+Aero: Added proper wave drag for missiles.
+Model: Fixed some bad UV mapping inside reverser outlet.
+Model: Fixed a bad vertex position inside the reverser outlet.
+Model: Fixed a flipped normal where wing meets fuselage on bottom right side.
+Model: Fixed a missing face on the bottom outside of reverser outlet.
+HUD: The HUD mode calculation is now run even if the HUD is not shown, as it is used in other systems.
+Model: Added livery 01-F21 Viking.
+GUI: Added 2 new splash screens.
+Aero: Pitch due to air intake factor extrapolated into more regimes.
+Sim: Warning when KN-06 shoots at the Viggen.
+Effect: Fixed that when using the repair button, the black smoke would continue still.
+Effect: Made black damage smoke be less boyant and have less particles.
+Sim: {Richard} Even better printout to console of damage.
+Model: Removed duplicate livery over MP code.
+Sim: Bigger FOV for RB-99.
+Radar: {Pinto} Optimization of terrain mask code.
+Sim: Fixed lat/lon was switched in a function.
+Sim: Better missile time keeping for closing rates.
+Sim: Lofted missiles will now start to drop 10 miles from target.
+Sim: Cleaned up and refactored in missile code a bit.
+Sim: Fixed that when the missile lost guiding, the target position would also not be updated anymore.
+Sim: After lofting/cruising the missile now rotates towards target before APN sets in.
+Sim: Guarded against a trigonometry error in missile code.
+Sim: Missiles now bleed energy due to G load.
+Sim: Fixed a regression in missiles, APN for elevation would use horz. closing rate, instead of direct.
+Sim: Optimized slightly some JSBSIM systems.
+Sim: Major refactoring and optimization of missile code.
+Sim: Small improvement in how final hit distance for missiles is calculated.
+Sim: When inputting GPS coordinate without altitude info, it will now attempt to find that altitude. Else an error will be shown.
+Sim: Minor refactoring and optimization of missile code.
+Sim: Lowered the min speed for guiding for RB-15F due to it losing quickly energy due to G loads.
+Sim: Fixed that is a target is in range for a shot, then moves out range, the diamond still blinks.
+Sim: Missiles now report misses.
+Sim: Adjusted stats for RB-71 nad RB-74.
+Sim: Now only heat seeking missiles has an angle speed limit.
+Sim: Dropped missiles now is pitched into wind.
+Sim: Fixed that energy bleed due to g load was using current delta time.
+Sim: Deleted missiles should now no longer be able to search or lock.
+Sound: Made the missile track sound configurable per type.
+Aero: Fixed that the airplane would wobble on the runway when steering at speed.
+Sim: Missiles that snap-up now determine the altitude based of distance to target.
+Model: Fixed that UV mapping of inlet fans were intersecting with drop-tank.
+Model: Cleared parent of most objects, in hope to gain performance when switching livery.
+Model: {Spectre} Updated 2 liveries. SAF46 now has a great lake monster on the nose.
+Model: Recompressed all liveries to level 9, and removed alpha.
+GUI: Performance monitor now shows miles left on current fuel consumption.
+GUI: Performance monitor now shows fuel consumption in NM/LB.
+Model: Removed alpha channel in many textures.
+
+3.110 - 2016 May 11
+=====
+Model: {Spectre} Added livery F21-48 Lonely Wolf, Finnish export livery.
+Model: {Spectre} Added the F4-12 Black Knight livery.
+Model: Attached drop-tank to fuselage.
+Effect: Fixed that the shinyness map was not updated to Fireflys new drop-tank UV, which gave strange effect.
+Model: Made drop-tank same color as underbelly of plane.
+GUI: Added splash screen for Black Knight livery.
+Model: Changed name of some liveries.

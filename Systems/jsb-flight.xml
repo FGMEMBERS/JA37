@@ -2,7 +2,7 @@
 
 <system name="flight">
 
-    <channel name="Aerodynamic info">
+    <channel execrate="4" name="Aerodynamic info">
 
         <fcs_function name="systems/flight/axial-force-lb">
             <function>
@@ -168,7 +168,11 @@
         
     </channel>
 
-    <channel name="instruments">
+
+
+
+
+    <channel execrate="4" name="instruments">
 
         <fcs_function name="propulsion/engine/rpm_r-s">
             <function>
@@ -300,6 +304,93 @@
                 gear/unit[0]/WOW == 1
             </test>
         </switch>    
+
+        <fcs_function name="systems/flight/buffeting/output">
+            <function>
+                <product>
+                    <sum>
+                        <sin>
+                          <product>
+                            <property>sim-time-sec</property>
+                            <property>systems/flight/buffeting/var1</property>
+                          </product>
+                        </sin>
+                        <sin>
+                          <product>
+                            <property>sim-time-sec</property>
+                            <property>systems/flight/buffeting/var2</property>
+                          </product>
+                        </sin>
+                        <sin>
+                          <product>
+                            <property>sim-time-sec</property>
+                            <property>systems/flight/buffeting/var3</property>
+                          </product>
+                        </sin>
+                    </sum>
+                    <table>
+                        <independentVar lookup="row">atmosphere/density-altitude</independentVar>
+                        <tableData>
+                              0.0         1.0
+                          30000.0         0.0
+                        </tableData>
+                    </table>
+                    <property>systems/flight/buffeting/magnitude</property>
+                </product>
+            </function>
+        </fcs_function>
+    
+    </channel>
+
+    <channel execrate="2" name="blinkers">
+
+        <fcs_function name="systems/flight/blink/five">
+            <function>
+                <integer>
+                  <mod>
+                    <product>
+                        <property>sim-time-sec</property>
+                        <value>5</value>
+                    </product>
+                    <value>2</value>
+                  </mod>
+                </integer>
+            </function>
+            <output>/sim/ja37/blink/five-Hz/state</output>
+        </fcs_function>
+
+        <fcs_function name="systems/flight/blink/ten">
+            <function>
+                <integer>
+                  <mod>
+                    <product>
+                        <property>sim-time-sec</property>
+                        <value>10</value>
+                    </product>
+                    <value>2</value>
+                  </mod>
+                </integer>
+            </function>
+            <output>/sim/ja37/blink/ten-Hz/state</output>
+        </fcs_function>
+
+        <fcs_function name="systems/flight/blink/third">
+            <function>
+                <integer>
+                    <min>
+                        <mod>
+                            <product>
+                                <property>sim-time-sec</property>
+                                <value>1</value>
+                            </product>
+                            <value>3</value>
+                        </mod>
+                        <value>1.99999999</value>
+                    </min>
+                </integer>
+            </function>
+            <output>/sim/ja37/blink/third-Hz/state</output>
+        </fcs_function>
     
     </channel>
 

@@ -2,7 +2,7 @@
 
 <flight_control name="JA37 FC">
 
-    <channel name="Canopy">
+    <channel execrate="4" name="Canopy">
 
         <!-- canopy get stuck if it fail -->
         <switch name="names/canopy/tmp-engage">
@@ -55,7 +55,7 @@
 -->
 
 
-    <channel name="Elevons">
+    <channel execrate="1" name="Elevons">
         <!-- Elevator contribution can move elevons 20 degrees down, and 25 degrees up -->
 
         <fcs_function name="fcs/elevator/stick-geared">
@@ -70,9 +70,9 @@
                         -0.50  -0.28
                         -0.38  -0.19
                         -0.23  -0.11
-                        -0.10  -0.05
+                        -0.10  -0.045
                          0.00   0.00
-                         0.10   0.05
+                         0.10   0.045
                          0.23   0.11
                          0.38   0.19
                          0.50   0.28
@@ -97,9 +97,9 @@
                         -0.50  -0.28
                         -0.38  -0.19
                         -0.23  -0.11
-                        -0.10  -0.05
+                        -0.10  -0.045
                          0.00   0.00
-                         0.10   0.05
+                         0.10   0.045
                          0.23   0.11
                          0.38   0.19
                          0.50   0.28
@@ -261,7 +261,7 @@
             </function>
         </fcs_function>-->
 
-        <fcs_function name="systems/flight/pitch-gearing">
+        <fcs_function name="systems/flight/pitch-gearing-restrictive">
             <function>
                 <product>
                     <table>
@@ -276,13 +276,44 @@
                             0.80        0.24      0.60      0.50
                             1.00        0.21      0.48      0.50
                             1.50        0.12      0.20      0.50
-                            2.00        0.04      0.10      0.50
+                            2.00        0.07      0.10      0.50
                         </tableData>
                     </table>
                     <!--<property>/test</property>-->
                </product>
             </function>
         </fcs_function>
+
+        <fcs_function name="systems/flight/pitch-gearing-fun">
+            <function>
+                <product>
+                    <table>
+                        <independentVar lookup="row">velocities/mach</independentVar>
+                        <independentVar lookup="column">atmosphere/density-altitude</independentVar>
+                        <tableData>
+                                        0.0      20000     45000
+                            0.00        1.00      0.85      0.65            
+                            0.10        0.85      0.85      0.65
+                            0.50        0.75      0.75      0.65
+                            0.65        0.50      0.75      0.65
+                            0.80        0.35      0.75      0.65
+                            1.00        0.30      0.65      0.65
+                            1.50        0.20      0.30      0.65
+                            2.00        0.10     0.20      0.65
+                        </tableData>
+                    </table>
+                    <!--<property>/test</property>-->
+               </product>
+            </function>
+        </fcs_function>
+
+        <switch name="systems/flight/pitch-gearing">
+            <default value="systems/flight/pitch-gearing-restrictive"/>
+            <test logic="OR" value="systems/flight/pitch-gearing-fun">
+                /sim/ja37/avionics/fun == 1
+            </test>
+        </switch>
+
 
 <!--
 100  0.15 0.30
@@ -548,11 +579,12 @@
                 <independentVar lookup="column">atmosphere/density-altitude</independentVar>
                 <tableData>
                                   0.0         60000.0
-                      0.0         0.45           1.0   
-                      0.5         0.35           0.75  <!-- roll rate between 125 - 150 degrees/sec with roll damper on -->
-                      0.75        0.50           0.60
-                      1.0         0.30           0.45  <!-- roll rate between 200 - 225 degrees/sec with roll damper on -->
-                      2.2         0.06           0.225 <!-- roll rate between 200 - 225 degrees/sec with roll damper on -->
+                      0.0         1.00           1.0
+                      0.1         0.45           1.0   
+                      0.5         0.35           0.75  <!-- roll rate 125 - 150 degrees/sec with roll damper on -->
+                      0.75        0.65           0.60
+                      1.0         0.30           0.45  <!-- roll rate 200 - 225 degrees/sec with roll damper on -->
+                      2.2         0.06           0.225 <!-- roll rate 200 - 225 degrees/sec with roll damper on -->
                 </tableData>
             </table>
             <gain>fcs/aileron/limit-factor</gain>
@@ -662,7 +694,9 @@
 
 
 
-    <channel name="Yaw">
+
+
+    <channel execrate="1" name="Yaw">
         <!-- Rudder can move 25 degrees to each side -->
 
         <fcs_function name="fcs/rudder/stick-geared">
@@ -677,9 +711,9 @@
                         -0.50  -0.28
                         -0.38  -0.19
                         -0.23  -0.11
-                        -0.10  -0.05
+                        -0.10  -0.045
                          0.00   0.00
-                         0.10   0.05
+                         0.10   0.045
                          0.23   0.11
                          0.38   0.19
                          0.50   0.28
@@ -815,7 +849,8 @@
                 <independentVar lookup="column">atmosphere/density-altitude</independentVar>
                 <tableData>
                           0.0         70000.0
-              0.0         0.60           1.00
+              0.0         1.00           1.00
+              0.1         0.60           1.00
               0.5         0.22           0.40
               1.0         0.15           0.25
               2.2         0.07           0.10              
@@ -888,7 +923,9 @@
 
 
 
-    <channel name="Landing Gear">
+
+
+    <channel execrate="1" name="Landing Gear">
 
         <switch name="names/gear-target-norm">
             <default value="gear/gear-cmd-norm"/>
@@ -996,7 +1033,7 @@
 
 
 
-    <channel name="Flaps">
+    <channel execrate="1" name="Flaps">
         <!-- Can move 30 degrees down, and 4 degrees up -->
 
         <kinematic name="names/flaps/pos-norm">
@@ -1050,7 +1087,11 @@
 
     </channel>
 
-    <channel name="Throttle">
+
+
+
+
+    <channel execrate="2" name="Throttle">
 
         <aerosurface_scale name="names/throttle/pos-norm-scale">
             <input>fcs/throttle-cmd-norm</input>
@@ -1172,7 +1213,10 @@
         -->
     </channel>
 
-    <channel name="Autopilot">
+
+
+
+    <channel execrate="4" name="Autopilot">
         <scheduled_gain name="names/autopilot/Autopilot-max-climb">
             <input>autopilot/one</input>
             <table>
@@ -1252,7 +1296,7 @@
 
 
 
-    <channel name="Wings">
+    <channel execrate="8" name="Wings">
         <aerosurface_scale name="names/structural/Wings-normal-factor">
             <input>structural/wings/serviceable</input>
             <zero_centered> false </zero_centered>
