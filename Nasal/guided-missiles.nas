@@ -34,6 +34,11 @@ var MISSILE_SEARCH = 0;
 var MISSILE_LOCK = 1;
 var MISSILE_FLYING = 2;
 
+var AIR = 0;
+var MARINE = 1;
+var SURFACE = 2;
+var ORDNANCE = 3;
+
 var g_fps        = 9.80665 * M2FT;
 var slugs_to_lbs = 32.1740485564;
 
@@ -43,6 +48,23 @@ var slugs_to_lbs = 32.1740485564;
 #
 var contact = nil;
 #
+# Contact should implement the following interface:
+#
+# get_type()      - (AIR, MARINE, SURFACE or ORDNANCE)
+# getUnique()     - Used when comparing 2 targets to each other and determining if they are the same target.
+# isValid()       - If this target is valid
+# getElevation()
+# get_bearing()
+# get_Callsign()
+# get_range()
+# get_Coord()
+# get_Latitude()
+# get_Longitude()
+# get_altitude()
+# get_Pitch()
+# get_heading()
+# getFlareNode()  - Used for flares.
+# isPainted()     - Tells if this is the target that are being tracked, only used in semi-radar guided missiles.
 
 var AIM = {
 	#done
@@ -89,7 +111,7 @@ var AIM = {
 		m.Cd_base               = getprop("payload/armament/"~m.type_lc~"/drag-coeff");
 		m.eda                   = getprop("payload/armament/"~m.type_lc~"/drag-area");
 		m.max_g                 = getprop("payload/armament/"~m.type_lc~"/max-g");
-		m.searcher_beam_width   = getprop("payload/armament/"~m.type_lc~"/searcher-beam-width");
+		#m.searcher_beam_width   = getprop("payload/armament/"~m.type_lc~"/searcher-beam-width");
 		m.arming_time           = getprop("payload/armament/"~m.type_lc~"/arming-time-sec");
 		m.min_speed_for_guiding = getprop("payload/armament/"~m.type_lc~"/min-speed-for-guiding-mach");
 		m.selfdestruct_time     = getprop("payload/armament/"~m.type_lc~"/self-destruct-time-sec");
@@ -105,8 +127,9 @@ var AIM = {
         m.rail_dist_m           = getprop("payload/armament/"~m.type_lc~"/rail-length-m");
         m.rail_forward          = getprop("payload/armament/"~m.type_lc~"/rail-point-forward");
         m.class                 = getprop("payload/armament/"~m.type_lc~"/class");
+        m.reportDist            = getprop("payload/armament/"~m.type_lc~"/max-report-distance");
 		m.aim_9_model           = getprop("payload/armament/models")~type~"/"~m.type_lc~"-";
-		m.dt_last           = 0;
+		m.elapsed_last          = 0;
 		# Find the next index for "models/model" and create property node.
 		# Find the next index for "ai/models/aim-9" and create property node.
 		# (M. Franz, see Nasal/tanker.nas)
@@ -172,7 +195,7 @@ var AIM = {
 		m.paused             = 0;
 		m.old_speed_fps	     = 0;
 		m.dt                 = 0;
-		m.g = 0;		
+		m.g                  = 0;
 
 		# navigation and guidance
 		m.last_deviation_e       = nil;
@@ -202,7 +225,7 @@ var AIM = {
 		m.track_signal_e         = 0;
 		m.track_signal_h         = 0;
 
-		# cruise missiles
+		# cruise-missiles
 		m.nextGroundElevation = 0; # next Ground Elevation
 		m.nextGroundElevationMem = [-10000, -1];
 
@@ -536,12 +559,12 @@ var AIM = {
 		if (me.paused == 1) {
 			# sim has been unpaused lets make sure dt becomes very small to let elapsed time catch up.
 			me.paused = 0;
-			me.dt_last = elapsed-0.02;
+			me.elapsed_last = elapsed-0.02;
 		}
 		var init_launch = 0;
-		if (me.dt_last != 0) {
+		if (me.elapsed_last != 0) {
 			#if (getprop("sim/speed-up") == 1) {
-				me.dt = (elapsed - me.dt_last)*getprop("sim/speed-up");
+				me.dt = (elapsed - me.elapsed_last)*getprop("sim/speed-up");
 			#} else {
 			#	dt = getprop("sim/time/delta-sec")*getprop("sim/speed-up");
 			#}
@@ -552,7 +575,7 @@ var AIM = {
 				me.dt = 0.00001;
 			}
 		}
-		me.dt_last = elapsed;
+		me.elapsed_last = elapsed;
 
 		
 		me.life_time += me.dt;
@@ -618,15 +641,10 @@ var AIM = {
 
 		var speed_change_fps = me.speedChange(thrust_lbf, rho, Cd);
 		
-#var ns = speed_change_fps + me.old_speed_fps;
 
 		if (me.last_dt != 0) {
 			speed_change_fps = speed_change_fps + me.energyBleed(me.g, me.altN.getValue() + me.density_alt_diff);
 		}
-
-#var nsb = speed_change_fps + me.old_speed_fps;
-#printf("Percent speed due to G bleed %.1f", 100*nsb/ns);
-
 
 		var grav_bomb = FALSE;
 		if (me.force_lbs_1 == 0 and me.force_lbs_2 == 0) {
@@ -689,7 +707,7 @@ var AIM = {
 		if (grav_bomb == TRUE) {
 			# true gravity acc
 			me.speed_down_fps += g_fps * me.dt;
-			me.pitch = math.atan2( me.speed_down_fps, speed_horizontal_fps ) * R2D;
+			me.pitch = math.atan2(-me.speed_down_fps, speed_horizontal_fps ) * R2D;
 		}
 
 		# Calculate altitude and elevation velocity vector (no incidence here).
@@ -764,11 +782,11 @@ var AIM = {
 			var exploded = me.poximity_detection();
 			
 			if (exploded == TRUE) {
-				printf("%s max speed was %.1f Mach, bleed %4d kt.", me.type, me.maxMach, me.energyBleedKt);
+				printf("%s max speed was %.2f Mach, bleed %4d kt.", me.type, me.maxMach, me.energyBleedKt);
 				# We exploded, and start the sound propagation towards the plane
 				me.sndSpeed = sound_fps;
 				me.sndDistance = 0;
-				me.dt_last = systime();
+				me.elapsed_last = systime();
 				me.sndPropagate();
 				return;
 			}
@@ -1290,7 +1308,7 @@ var AIM = {
 
 		var phrase = sprintf( me.type~" exploded: %01.1f", min_distance) ~ " meters from: " ~ me.callsign;
 		print(phrase~"  Reason: "~reason~sprintf(" time %.1f", me.life_time));
-		if (min_distance < 65) {
+		if (min_distance < me.reportDist) {
 			me.sendMessage(phrase);
 		} else {
 			me.sendMessage(me.type~" missed "~me.callsign~": "~reason);
@@ -1343,9 +1361,9 @@ var AIM = {
 		if (1==1 or contact != me.Tgt) {
 			#print("search2");
 			if (contact != nil and contact.isValid() == TRUE and
-				(  (contact.get_type() == radar_logic.SURFACE and me.class == "A/G")
-                or (contact.get_type() == radar_logic.AIR and me.class == "A/A")
-                or (contact.get_type() == radar_logic.MARINE and me.class == "A/G"))) {
+				(  (contact.get_type() == SURFACE and me.class == "A/G")
+                or (contact.get_type() == AIR and me.class == "A/A")
+                or (contact.get_type() == MARINE and me.class == "A/G"))) {
 				#print("search3");
 				var tgt = contact; # In the radar range and horizontal field.
 				var rng = tgt.get_range();
@@ -1551,10 +1569,10 @@ var AIM = {
 		}
 		#dt = update_loop_time;
 		var elapsed = systime();
-		if (me.dt_last != 0) {
-			dt = (elapsed - me.dt_last) * getprop("sim/speed-up");
+		if (me.elapsed_last != 0) {
+			dt = (elapsed - me.elapsed_last) * getprop("sim/speed-up");
 		}
-		me.dt_last = elapsed;
+		me.elapsed_last = elapsed;
 
 		me.ac = geo.aircraft_position();
 		var distance = me.coord.direct_distance_to(me.ac);

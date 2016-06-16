@@ -424,6 +424,10 @@ var update_loop = func {
 	    input.rmBearingRel.setDoubleValue(input.rmBearing.getValue() - input.headingMagn.getValue());
       
     }
+
+    if(getprop("sim/description") != "Saab JA-37 Viggen" and getprop("/instrumentation/radar/range") == 180000) {
+      setprop("/instrumentation/radar/range", 120000);
+    }
 	
     settimer(
       #func debug.benchmark("j37 loop", 
@@ -879,10 +883,12 @@ var test_support = func {
       setprop("sim/ja37/supported/ubershader", FALSE);
       setprop("sim/ja37/supported/lightning", FALSE);
       setprop("sim/ja37/supported/fire", FALSE);
+      setprop("sim/ja37/supported/new-marker", FALSE);
   } elsif (major == 2) {
     setprop("sim/ja37/supported/landing-light", FALSE);
     setprop("sim/ja37/supported/lightning", FALSE);
     setprop("sim/ja37/supported/fire", FALSE);
+    setprop("sim/ja37/supported/new-marker", FALSE);
     if(minor < 7) {
       popupTip("JA-37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
       setprop("sim/ja37/supported/radar", FALSE);
@@ -930,6 +936,7 @@ var test_support = func {
     setprop("sim/ja37/supported/ubershader", TRUE);
     setprop("sim/ja37/supported/lightning", TRUE);
     setprop("sim/ja37/supported/fire", FALSE);
+    setprop("sim/ja37/supported/new-marker", FALSE);
     if (minor == 0) {
       setprop("sim/ja37/supported/old-custom-fails", 0);
       setprop("sim/ja37/supported/landing-light", FALSE);
@@ -950,6 +957,21 @@ var test_support = func {
       setprop("sim/ja37/supported/lightning", FALSE);
       setprop("sim/ja37/supported/fire", TRUE);
     }
+  } elsif (major == 2016) {
+    setprop("sim/ja37/supported/options", TRUE);
+    setprop("sim/ja37/supported/radar", TRUE);
+    setprop("sim/ja37/supported/hud", TRUE);
+    setprop("sim/ja37/supported/old-custom-fails", 2);
+    setprop("sim/ja37/supported/landing-light", TRUE);
+    setprop("sim/ja37/supported/popuptips", 2);
+    setprop("sim/ja37/supported/crash-system", 1);
+    setprop("sim/ja37/supported/ubershader", TRUE);
+    setprop("sim/ja37/supported/lightning", TRUE);
+    setprop("sim/ja37/supported/fire", TRUE);
+    setprop("sim/ja37/supported/new-marker", FALSE);
+    if (minor >= 2) {
+      setprop("sim/ja37/supported/new-marker", TRUE);
+    }
   } else {
     # future proof
     setprop("sim/ja37/supported/options", TRUE);
@@ -962,12 +984,13 @@ var test_support = func {
     setprop("sim/ja37/supported/ubershader", TRUE);
     setprop("sim/ja37/supported/lightning", TRUE);
     setprop("sim/ja37/supported/fire", TRUE);
+    setprop("sim/ja37/supported/new-marker", TRUE);
   }
   setprop("sim/ja37/supported/initialized", TRUE);
 
   print();
   print("***************************************************************");
-  print("**         Initializing Saab JA-37 Viggen systems.           **");
+  print("**         Initializing "~getprop("sim/description")~" systems.           **");
   print("**           Version "~getprop("sim/aircraft-version")~" on Flightgear "~version[0]~"."~version[1]~"."~version[2]~"            **");
   print("***************************************************************");
   print();
@@ -1028,7 +1051,7 @@ var main_init = func {
       input[name] = props.globals.getNode(input[name], 1);
   }
 
-  screen.log.write("Welcome to Saab JA-37 Viggen, version "~getprop("sim/aircraft-version"), 1.0, 0.2, 0.2);
+  screen.log.write("Welcome to "~getprop("sim/description")~", version "~getprop("sim/aircraft-version"), 1.0, 0.2, 0.2);
 
   # init cockpit temperature
   setprop("environment/aircraft-effects/temperature-inside-degC", getprop("environment/temperature-degc"));
@@ -1775,4 +1798,11 @@ var loadSysFail = func () {
 
 var loadIFail = func () {
   ct("ifa");fgcommand("dialog-show", props.Node.new({"dialog-name":"instrument-failures"}));
+}
+
+var resetView = func () {
+  setprop("sim/current-view/field-of-view", getprop("sim/current-view/config/default-field-of-view-deg"));
+  setprop("sim/current-view/heading-offset-deg", getprop("sim/current-view/config/heading-offset-deg"));
+  setprop("sim/current-view/pitch-offset-deg", getprop("sim/current-view/config/pitch-offset-deg"));
+  setprop("sim/current-view/roll-offset-deg", getprop("sim/current-view/config/roll-offset-deg"));
 }

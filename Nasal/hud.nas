@@ -896,6 +896,7 @@ var HUDnasal = {
         rad_alt:          "position/altitude-agl-ft",#/instrumentation/radar-altimeter/radar-altitude-ft",
         radar_serv:       "instrumentation/radar/serviceable",
         RMActive:         "autopilot/route-manager/active",
+        rmDist:           "autopilot/route-manager/wp/dist",
         RMCurrWaypoint:   "autopilot/route-manager/current-wp",
         RMWaypointBearing:"autopilot/route-manager/wp/bearing-deg",
         roll:             "orientation/roll-deg",
@@ -1023,7 +1024,7 @@ var HUDnasal = {
             out_of_ammo = TRUE;
       } elsif (me.input.station.getValue() == 0 and me.input.cannonAmmo.getValue() == 0) {
             out_of_ammo = TRUE;
-      } elsif (me.input.station.getValue() != 0 and getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M70" and getprop("ai/submodels/submodel["~(4+me.input.station.getValue())~"]/count") == 0) {
+      } elsif (me.input.station.getValue() != 0 and getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M70 ARAK" and getprop("ai/submodels/submodel["~(4+me.input.station.getValue())~"]/count") == 0) {
             out_of_ammo = TRUE;
       }
 
@@ -1589,7 +1590,7 @@ var HUDnasal = {
         desired_alt_delta_ft = me.input.APTgtAlt.getValue()-me.input.alt_ft.getValue();
       } elsif (me.input.APLockAlt.getValue() == "agl-hold" and me.input.APTgtAgl.getValue() != nil) {
         desired_alt_delta_ft = me.input.APTgtAgl.getValue()-me.input.rad_alt.getValue();
-      } elsif(me.input.RMActive.getValue() == 1 and me.input.RMCurrWaypoint.getValue() != nil) {
+      } elsif(me.input.RMActive.getValue() == 1 and me.input.RMCurrWaypoint.getValue() != nil and me.input.RMCurrWaypoint.getValue() >= 0) {
         var i = me.input.RMCurrWaypoint.getValue();
         var rt_alt = getprop("autopilot/route-manager/route/wp["~i~"]/altitude-ft");
         if(rt_alt != nil and rt_alt > 0) {
@@ -1737,25 +1738,46 @@ var HUDnasal = {
     } elsif (mode == COMBAT) {
       var armSelect = me.input.station.getValue();
       if(armSelect == 0) {
-        me.qfe.setText("KCA");
+        me.qfe.setText("AKAN");
         me.qfe.show();
-      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 24J") {
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 24 Sidewinder") {
         me.qfe.setText("RB-24");
         me.qfe.show();
-      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 74") {
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 24J Sidewinder") {
+        me.qfe.setText("RB-24J");
+        me.qfe.show();
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 74 Sidewinder") {
         me.qfe.setText("RB-74");
         me.qfe.show();
-      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M70") {
-        me.qfe.setText("M70");
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M70 ARAK") {
+        me.qfe.setText("M70 ARAK");
         me.qfe.show();
-      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 71") {
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 71 Skyflash") {
         me.qfe.setText("RB-71");
         me.qfe.show();
-      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 99") {
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 99 Amraam") {
         me.qfe.setText("RB-99");
         me.qfe.show();
-      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 15F") {
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 15F Attackrobot") {
         me.qfe.setText("RB-15F");
+        me.qfe.show();
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 04E Attackrobot") {
+        me.qfe.setText("RB-04E");
+        me.qfe.show();
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 05A Attackrobot") {
+        me.qfe.setText("RB-05A");
+        me.qfe.show();
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "RB 75 Maverick") {
+        me.qfe.setText("RB-75");
+        me.qfe.show();
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M71 Bomblavett") {
+        me.qfe.setText("M71");
+        me.qfe.show();
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M90 Bombkapsel") {
+        me.qfe.setText("M90");
+        me.qfe.show();
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M55 AKAN") {
+        me.qfe.setText("M55 AKAN");
         me.qfe.show();
       } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "TEST") {
         me.qfe.setText("TEST");
@@ -1818,48 +1840,99 @@ var HUDnasal = {
       air2ground = FALSE;
       return me.showFlightPathVector(1, out_of_ammo, mode);
     } elsif (mode == COMBAT and cannon == FALSE) {
-      if(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M70") {
+      if(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M70 ARAK") {
         air2air = FALSE;
         air2ground = TRUE;
         me.showSidewind(FALSE);
         me.reticle_cannon.show();
         me.reticle_missile.hide();
         me.reticle_c_missile.show();
-      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 24J") {
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 24 Sidewinder") {
         air2air = TRUE;
         air2ground = FALSE;
         me.showSidewind(FALSE);
         me.reticle_cannon.hide();
         me.reticle_missile.show();
         me.reticle_c_missile.hide();
-      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 74") {
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 24J Sidewinder") {
         air2air = TRUE;
         air2ground = FALSE;
         me.showSidewind(FALSE);
         me.reticle_cannon.hide();
         me.reticle_missile.show();
         me.reticle_c_missile.hide();
-      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 71") {
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 74 Sidewinder") {
         air2air = TRUE;
         air2ground = FALSE;
         me.showSidewind(FALSE);
         me.reticle_cannon.hide();
         me.reticle_missile.show();
         me.reticle_c_missile.hide();
-      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 99") {
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 71 Skyflash") {
         air2air = TRUE;
         air2ground = FALSE;
         me.showSidewind(FALSE);
         me.reticle_cannon.hide();
         me.reticle_missile.show();
         me.reticle_c_missile.hide();
-      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 15F") {
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 99 Amraam") {
+        air2air = TRUE;
+        air2ground = FALSE;
+        me.showSidewind(FALSE);
+        me.reticle_cannon.hide();
+        me.reticle_missile.show();
+        me.reticle_c_missile.hide();
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 15F Attackrobot") {
         air2air = FALSE;
         air2ground = TRUE;
         me.showSidewind(FALSE);
         me.reticle_cannon.hide();
         me.reticle_missile.hide();
         me.reticle_c_missile.show();
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 04E Attackrobot") {
+        air2air = FALSE;
+        air2ground = TRUE;
+        me.showSidewind(FALSE);
+        me.reticle_cannon.hide();
+        me.reticle_missile.hide();
+        me.reticle_c_missile.show();
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 05A Attackrobot") {
+        air2air = FALSE;
+        air2ground = TRUE;
+        me.showSidewind(FALSE);
+        me.reticle_cannon.hide();
+        me.reticle_missile.hide();
+        me.reticle_c_missile.show();
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "RB 75 Maverick") {
+        air2air = FALSE;
+        air2ground = TRUE;
+        me.showSidewind(FALSE);
+        me.reticle_cannon.hide();
+        me.reticle_missile.hide();
+        me.reticle_c_missile.show();
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M71 Bomblavett") {
+        air2air = FALSE;
+        air2ground = TRUE;
+        me.showSidewind(FALSE);
+        me.reticle_cannon.hide();
+        me.reticle_missile.hide();
+        me.reticle_c_missile.show();
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M90 Bombkapsel") {
+        air2air = FALSE;
+        air2ground = TRUE;
+        me.showSidewind(FALSE);
+        me.reticle_cannon.hide();
+        me.reticle_missile.hide();
+        me.reticle_c_missile.show();
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M55 AKAN") {
+        me.showSidewind(FALSE);
+        me.reticle_cannon.setTranslation(0, centerOffset);
+        me.reticle_cannon.show();
+        me.reticle_missile.hide();
+        me.reticle_c_missile.hide();
+        air2air = FALSE;
+        air2ground = FALSE;
+        return me.showFlightPathVector(1, TRUE, mode);
       } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "TEST") {
         air2air = TRUE;
         air2ground = FALSE;
@@ -2058,27 +2131,55 @@ var HUDnasal = {
           # cannon
           minDist =  100;
           maxDist = 2500;# as per sources
-        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 24J") {
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 24 Sidewinder") {
+          # sidewinders
+          minDist =   400;
+          maxDist = 12801.6;
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 24J Sidewinder") {
           # sidewinders
           minDist =   300;# authentic: (1000ft)
           maxDist = 14500;
-        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 74") {
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 74 Sidewinder") {
           # sidewinders
           minDist =   325;
           maxDist = 17964.4;
-        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 71") {
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 71 Skyflash") {
           # skyflash
           minDist =   350;
           maxDist = 40744;
-        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 99") {
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 99 Amraam") {
           # amraam
           minDist =   400;
           maxDist = 71857.6;
-        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 15F") {
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 15F Attackrobot") {
           # robot 15F
           minDist =   400;
           maxDist = 150000;
-        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M70") {
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 04E Attackrobot") {
+          # robot 15F
+          minDist =   0.1 * NM2M;
+          maxDist = 17.28 * NM2M;
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 05A Attackrobot") {
+          # robot 15F
+          minDist =   0.2 * NM2M;
+          maxDist = 4.86 * NM2M;
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "RB 75 Maverick") {
+          # robot 15F
+          minDist =   0.2 * NM2M;
+          maxDist = 12 * NM2M;
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M55 AKAN") {
+          # robot 15F
+          minDist =   0;
+          maxDist = 2800;
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M71 Bomblavett") {
+          # robot 15F
+          minDist =   0;
+          maxDist = 1000;
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M90 Bombkapsel") {
+          # robot 15F
+          minDist =   0.1 * NM2M;
+          maxDist = 8 * NM2M;
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M70 ARAK") {
           # Rocket pod
           minDist =   200;
           maxDist =  2000;
@@ -2137,6 +2238,25 @@ var HUDnasal = {
 
       me.targetSpeed.hide();
       me.targetDistance1.show();
+      me.targetDistance2.hide();
+      me.distanceText.show();
+      me.distanceScale.show();
+      me.dist_scale_group.show();
+    } elsif (me.input.RMActive.getValue() == TRUE) {
+      var distance = me.input.rmDist.getValue();
+      var line = (200/1024)*canvasWidth;
+      var maxDist = 20;
+      var pixelPerMeter = (line)/(maxDist);
+      var pos = pixelPerMeter*distance;
+      pos = clamp(pos, 0, line);
+      me.mySpeed.setTranslation(pos, 0);
+      me.mySpeed.show();
+
+      me.targetDistance1.setTranslation(0, 0);
+      me.distanceText.setText(sprintf("%.1f", me.input.units.getValue() == 1  ? distance*kts2kmh : distance));
+
+      me.targetSpeed.hide();
+      me.targetDistance1.hide();
       me.targetDistance2.hide();
       me.distanceText.show();
       me.distanceScale.show();
