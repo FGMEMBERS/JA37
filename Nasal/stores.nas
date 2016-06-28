@@ -15,16 +15,16 @@ input = {
   acInstrVolt:      "systems/electrical/outputs/ac-instr-voltage",
   acMainVolt:       "systems/electrical/outputs/ac-main-voltage",
   asymLoad:         "fdm/jsbsim/inertia/asymmetric-wing-load",
-  combat:           "/sim/ja37/hud/current-mode",
+  combat:           "/ja37/hud/current-mode",
   dcVolt:           "systems/electrical/outputs/dc-voltage",
   elapsed:          "sim/time/elapsed-sec",
   elecMain:         "controls/electric/main",
   engineRunning:    "engines/engine/running",
   gearCmdNorm:      "/fdm/jsbsim/gear/gear-cmd-norm",
   gearsPos:         "gear/gear/position-norm",
-  hz05:             "sim/ja37/blink/five-Hz/state",
-  hz10:             "sim/ja37/blink/ten-Hz/state",
-  hzThird:          "sim/ja37/blink/third-Hz/state",
+  hz05:             "ja37/blink/five-Hz/state",
+  hz10:             "ja37/blink/ten-Hz/state",
+  hzThird:          "ja37/blink/third-Hz/state",
   impact:           "/ai/models/model-impact",
   mass1:            "fdm/jsbsim/inertia/pointmass-weight-lbs[1]",
   mass3:            "fdm/jsbsim/inertia/pointmass-weight-lbs[3]",
@@ -501,7 +501,7 @@ var loop_stores = func {
 
     # outer stores
     var leftRb2474 = getprop("fdm/jsbsim/inertia/pointmass-weight-lbs[5]") == 188 or getprop("fdm/jsbsim/inertia/pointmass-weight-lbs[5]") == 179;
-    var rightRb2474 = getprop("fdm/jsbsim/inertia/pointmass-weight-lbs[6]") == 188 or getprop("fdm/jsbsim/inertia/pointmass-weight-lbs[5]") == 179;
+    var rightRb2474 = getprop("fdm/jsbsim/inertia/pointmass-weight-lbs[6]") == 188 or getprop("fdm/jsbsim/inertia/pointmass-weight-lbs[6]") == 179;
     input.MPint19.setIntValue(ja37.encode3bits(leftRb2474, rightRb2474, 0));
 
   # Flare release
@@ -619,10 +619,10 @@ var trigger_listener = func {
         }
         #print("firing missile: "~armSelect~" "~getprop("controls/armament/station["~armSelect~"]/released"));
         var callsign = armament.AIM.active[armSelect-1].callsign;
-        var type = armament.AIM.active[armSelect-1].type;
+        var brevity = armament.AIM.active[armSelect-1].brevity;
         armament.AIM.active[armSelect-1].release();#print("release "~(armSelect-1));
         
-        var phrase = type ~ " fired at: " ~ callsign;
+        var phrase = brevity ~ " at: " ~ callsign;
         if (getprop("payload/armament/msg")) {
           setprop("/sim/multiplay/chat", armament.defeatSpamFilter(phrase));
         } else {
@@ -712,6 +712,7 @@ var warhead_lbs = {
     "aim-7":                88.00,
     "RB-71":                88.00,
     "aim-9":                20.80,
+    "AIM-9":                20.80,
     "RB-24":                20.80,
     "RB-24J":               20.80,
     "RB-74":                20.80,
@@ -753,7 +754,11 @@ var incoming_listener = func {
         # a m2000 is firing at us
         m2000 = TRUE;
       }
-      if (last_vector[1] == " FOX2 at" or last_vector[1] == " aim7 at" or last_vector[1] == " aim9 at" or last_vector[1] == " aim120 at" or last_vector[1] == " RB-24J fired at" or last_vector[1] == " RB-74 fired at" or last_vector[1] == " RB-71 fired at" or last_vector[1] == " RB-15F fired at" or last_vector[1] == " KN-06 fired at" or last_vector[1] == " RB-99 fired at" or m2000 == TRUE) {
+      if (last_vector[1] == " FOX2 at" or last_vector[1] == " Fox 1 at" or last_vector[1] == " Fox 2 at" or last_vector[1] == " Fox 3 at"
+          or last_vector[1] == " Greyhound at" or last_vector[1] == " Bombs away at" or last_vector[1] == " Bruiser at" or last_vector[1] == " Rifle at" or last_vector[1] == " Bird away at"
+          or last_vector[1] == " aim7 at" or last_vector[1] == " aim9 at"
+          or last_vector[1] == " aim120 at"
+          or m2000 == TRUE) {
         # air2air being fired
         if (size(last_vector) > 2 or m2000 == TRUE) {
           #print("Missile launch detected at"~last_vector[2]~" from "~author);
@@ -828,7 +833,7 @@ var incoming_listener = func {
             }
           }
         }
-      } elsif (getprop("sim/ja37/supported/old-custom-fails") > 0 and getprop("payload/armament/damage") == 1) {
+      } elsif (getprop("ja37/supported/old-custom-fails") > 0 and getprop("payload/armament/damage") == 1) {
         # latest or second latest version of failure manager and taking damage enabled
         #print("damage enabled");
         var last1 = split(" ", last_vector[1]);
@@ -942,12 +947,12 @@ var fail_systems = func (probability) {
 };
 
 var playIncomingSound = func (clock) {
-  setprop("sim/ja37/sound/incoming"~clock, 1);
+  setprop("ja37/sound/incoming"~clock, 1);
   settimer(func {stopIncomingSound(clock);},3);
 }
 
 var stopIncomingSound = func (clock) {
-  setprop("sim/ja37/sound/incoming"~clock, 0);
+  setprop("ja37/sound/incoming"~clock, 0);
 }
 
 var incomingLamp = func (clock) {
@@ -1304,8 +1309,8 @@ reloadJAAir2Air1979 = func {
   screen.log.write("4 RB-24J missiles attached", 0.0, 1.0, 0.0);
 
   # Skyflash
-  setprop("payload/weight[0]/selected", "RB 71");
-  setprop("payload/weight[2]/selected", "RB 71");
+  setprop("payload/weight[0]/selected", "RB 71 Skyflash");
+  setprop("payload/weight[2]/selected", "RB 71 Skyflash");
   screen.log.write("2 RB-71 missiles attached", 0.0, 1.0, 0.0);
 
   # Reload flares - 40 of them.
@@ -1329,8 +1334,8 @@ reloadJAAir2Air1987 = func {
   screen.log.write("4 RB-74 missiles attached", 0.0, 1.0, 0.0);
 
   # Skyflash
-  setprop("payload/weight[0]/selected", "RB 71");
-  setprop("payload/weight[2]/selected", "RB 71");
+  setprop("payload/weight[0]/selected", "RB 71 Skyflash");
+  setprop("payload/weight[2]/selected", "RB 71 Skyflash");
   screen.log.write("2 RB-71 missiles attached", 0.0, 1.0, 0.0);
 
   # Reload flares - 40 of them.

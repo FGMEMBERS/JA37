@@ -81,7 +81,11 @@ MiscMonitor.properties = func() {
 
 MiscMonitor.update = func()
 {
-  setprop("/sim/gui/dialogs/systems-monitor/rpm", getprop("fdm/jsbsim/propulsion/engine/rpm_r-min"));
+  if(getprop("sim/description") == "Saab JA-37 Viggen") {
+    setprop("/sim/gui/dialogs/systems-monitor/rpm", getprop("fdm/jsbsim/propulsion/engine/ja37-rpm_r-min"));
+  } else {
+    setprop("/sim/gui/dialogs/systems-monitor/rpm", getprop("fdm/jsbsim/propulsion/engine/aj37-rpm_r-min"));
+  }
   setprop("/sim/gui/dialogs/systems-monitor/temp", getprop("environment/aircraft-effects/temperature-inside-degC"));
   setprop("/sim/gui/dialogs/systems-monitor/outlet", (getprop("engines/engine/egt-degf") -32 )/1.8 );#getprop("fdm/jsbsim/propulsion/engine/outlet-temperature-degc"));
   setprop("/sim/gui/dialogs/systems-monitor/psi1", getprop("fdm/jsbsim/systems/hydraulics/system1/main/psi"));
@@ -90,7 +94,7 @@ MiscMonitor.update = func()
   setprop("/sim/gui/dialogs/systems-monitor/flaps", getprop("fdm/jsbsim/fcs/flap-pos-deg"));
   setprop("/sim/gui/dialogs/systems-monitor/oil", getprop("engines/engine/oil-pressure-psi"));
   var temp = nil;
-  if (getprop("sim/ja37/supported/fuel-temp") == 1) {
+  if (getprop("ja37/supported/fuel-temp") == 1) {
     temp = getprop("consumables/fuel/tank[0]/temperature_degC");
   } else {
     temp = 15;
