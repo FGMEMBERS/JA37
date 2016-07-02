@@ -1,6 +1,6 @@
-======================================
-Flightgear Saab JA-37 Viggen Changelog
-======================================
+==============================================
+Flightgear Saab JA-37 / AJ-37 Viggen Changelog
+==============================================
 
 1.0 - Late 2012
 ---
@@ -1877,7 +1877,7 @@ Effect: Removed floodlight from inner canopy as manual states it only lights up 
 Model: Removed alpha texture from canopy glass seen from outside to allow glass and reflections to be seen.
 Sim: Added Firefly to the author file.
 
-3.106 - 2016 February 3
+3.106 - 2016 February 3 (Flightgear 2016.1.1 version)
 =====
 Sim: {Pinto} Added RB-71 Skyflash missile option to stores.
 HUD: Fixed that tower should not be shown if out of view.
@@ -2222,7 +2222,7 @@ GUI: Performance monitor now shows miles left on current fuel consumption.
 GUI: Performance monitor now shows fuel consumption in NM/LB.
 Model: Removed alpha channel in many textures.
 
-3.110 - 2016 May 11
+3.110 - 2016 May 11 (Flightgear 2016.2.1 version)
 =====
 Model: {Spectre} Added livery F21-48 Lonely Wolf, Finnish export livery.
 Model: {Spectre} Added the F4-12 Black Knight livery.
@@ -2231,3 +2231,138 @@ Effect: Fixed that the shinyness map was not updated to Fireflys new drop-tank U
 Model: Made drop-tank same color as underbelly of plane.
 GUI: Added splash screen for Black Knight livery.
 Model: Changed name of some liveries.
+
+4.000 - 2016 June 15
+=====
+Sim: {Pinto} Added keybindings for radio navigation.
+GUI: Added the new keybindings for radio navigation to the help description.
+HUD: Fixed that the routemanager in rare case could crash the HUD.
+Sim: Removed missile over MP capability, due to it breaking the MP packet size.
+HUD: Distancescale will now show distance to waypoint if no DME is available.
+Sim: Made cannon only try to defeat spam filter when MP msg. is on.
+Model: Made Stick indicator go off if any of the control surfaces is damaged.
+GUI: Key 'Q' now resets the view direction and zoom.
+Model: {Pinto} Fixed small irregularity in droptankNoshader, and re-aligned droptank
+Model: {Pinto} Fixed small gap between droptankNoshader and droptank.
+Model: {Pinto} Fixing center pylon to be symmetrical.
+Model: {Pinto} Modeled the actual bottom airinlet.
+Model: {Pinto} Fixed the center pylon shape and position.
+Model: {Pinto} Modeled the gunpod. (It is detachable in case the model should be reused for a AJ-37)
+Model: {Pinto} Adjusted position of drop-tank to proper attach it to the pylon.
+Sim: The cannon now fires from the new gunpod.
+Model: The glass infront of the radar screen no longer has a texture.
+Model: {Pinto} Made the the little JA37 vertical fin on top of outlet.
+Model: {Pinto} Moved the backup pitot tube lower on the vertical tail.
+Model: {Pinto} Updated the UV map for the above mentioned move.
+Model: {Pinto} Optimized main model by 2000 faces.
+Model: {Pinto} Fixed that the front left wheel hub was going outwards.
+Sim: Added Pinto to main authors list.
+Model: {Pinto} Made many objects including fuselage single-sided geometry.
+Model: {Pinto} Moved bottom beacon and top strobe lights to better positions.
+Model: {Pinto} Fixed fins on droptank to have volume so ubershader can be applied on them.
+Model: {Pinto} Merged droptank into one object.
+Model: {Pinto} Fixed gaps between outer windshield and frame.
+Model: {Pinto} Further optimized faces that are not seen, by deletion.
+Engine: Adjusted output.
+Aero: Adjusted wave drag.
+Aero: Began splitting jsbsim files up in preparation for AJ37.
+Sim: Started making performance document for AJ37.
+Engine: Started making engine for AJ37.
+Aero: Changed the fuel capacity relative contents.
+Aero: Moved CoG and Neutral point 15 cm back.
+Aero: Added wave drag to droptank.
+Sim: Renamed performance files.
+Aero: Adjusted wave drag for high altitude.
+Sim: Started refactoring set file into base and specific for variant.
+Sim: Renamed jsbsim main file.
+Model: {Pinto} Better M70 model.
+Engine: Fixed that the AJ engine would not start up.
+Sim: Made shared model file for vaiants.
+Sim: More work in making shared model file.
+Engine: Switched fuel type to F-40.
+AJ37: Engine: Moved collector tank to be on top of CoG.
+GUI: Made splash screen for AJ37.
+GUI: Moved splashcreens into own folder.
+GUI: Changed welcome message on screen and in console to the variant type.
+Aero: Refactored some more JSBSim code.
+Model: {Pinto} Made a variant Saab AJ-37 Viggen model.
+Model: Some work to apply livery and animations and loading of model differ on variant.
+Model: {Pinto} Fixed that the models would not load correctly.
+Sim: Disabled cannon in the AJ37.
+Sim: Decreased radar range for AJ37 to 120 Km.
+Sim: Added the RB-24 missile to the AJ37.
+Sim: Removed RB-74, RB-71 and RB-99 from AJ37 loadout.
+Sim: Removed the RB15F from JA loadout options.
+Sim: Put rb74 back into the AJ37.
+Sim: Added stats in the AJ37 for M90, RB-75, RB-04 and RB-05.
+Sim: Changed RB-71 fire message to Fox 1.
+Sim: Missiles will now output max speed with 1 more decimal.
+HUD: KCA weapon renamed to AKAN.
+Radar: Geo targets now acts as if painted, as the computer is aware of its position all the time.
+Sim: Changed weight of M70 to 794 lbm.
+Sim: Added actual loadout for AJ37. 4/6 is functional.
+Sim: Renamed all the armament loadout options.
+Model: {Pinto} Modelled and textured RB04E anti-ship missile.
+Model: {Pinto} Modelled and textured RB05A vision guided a2g missile.
+Model: {Pinto} Modelled and textured RB75 Maverick vision guided fire-and-forget a2g missile.
+Model: {Pinto} Modelled and textured M55 AKAN gunpod.
+Model: {Pinto} Modelled and textured M71 rail and bomblets.
+Model: {Pinto} Modelled and textured M90 'Mjolner' cluster glide-bomb.
+Model: {Pinto} Attached the new armament to the AJ37.
+Model: Canopy now opens more.
+Effect: Added smoke and explosions to the new armament.
+Sim: The AJ37 M55 cannonpods now work.
+Sim: M55 rounds added to damage file.
+Model: {Pinto} Fixed that could see through the aircraft when landing gear was deployed.
+GUI: Added 4 loadout options for the AJ37.
+Aero: Recoil is now assuming that shells weight only 220 (M55) and 300 (KCA) Grams. Will significant lower recoil.
+Sim: Center pylon logic now supports droppable armaments.
+Sound: Fixed that outer wing pylons release armement sounds was incorrect location.
+Sim: Made the center m55 fire.
+Sim: Stopped auto fire from m55, when new ammo is loaded, and the pylon was switched in meantime.
+Effect: Made the m55's fire from correct positions.
+Sim: Plane will now auto-remove armament that RB04 leaves no room for.
+Sim: Made the m71 work.
+Sim: Missiles now have custom report distance ala the Mirage.
+Sim: Damage from clusterbombs is now computed differently.
+Sim: Added damage from m71.
+Sim: Added A-10 ordnance to damage.
+Effect: Added explosions and model to falling M71.
+
+4.001 - 2016 June 28
+=====
+GUI: Changed the AJ-37 date to 1971.
+Effect: Made the M90 cluster bomb explosion more flat.
+GUI: Fixed that selecting long range fuel load would not allow fuel in drop tank.
+Sim: Fixed that hits from F14 AIM-9 would not do damage.
+Sound: Added hit sound for weapons fired from center pylon.
+GUI: Systems monitor will now show correct rpm for AJ37 engine.
+Model: Fixed that livery 01 and 48 had red text on the bottom vertical winglet.
+Sim: Made better system for ordnance to know if the target is correct class.
+Radar: Now guesses if multiplayer is ground or marine target.
+Sim: Adjusted some stats on RB-05, they can now hit air targets.
+GUI: Removed the following buttons from options: doppler and cannon spread.
+Aero: Adjusted drag for some stores.
+Model: Moved pilot eye view up 3 cm to better be able to instrument land.
+HUD: Adjusted symbology positions to fit the new pilot view.
+HUD: Fixed a nullpointer error.
+Sim: Fixed a nullpointer error.
+Model: {Pinto} Made nosecone prettier as seen from cockpit.
+Effect: Made store effects share textures.
+Effect: Prevented firing many M70 would crash Flightgear.
+Effect: Adjusted effects for M70.
+Sim: Adjusted stats for M70.
+HUD: Fixed that crosshair for M70 would sometimes be in wrong position.
+Sound: Replaced the exterior fan sound.
+Sound: Adjusted fly-by sounds and replaced the reheat part.
+Model: Fixed that mounting RB24J on left outer pylon, would mount it on right also.
+Model: Removed unneeded armament models from variants.
+Sim: Refactored custom properties that were mistakenly sent over MP due to their location.
+Sim: Reduced the time the flightrecorder records at full fidelity in half to help with people crashing the Viggen after flying for 15 mins.
+Sim: Make missiles/bombs call out the brevity code when fired.
+GUI: Fixed that RB71 would not be properly loaded from menu loadout options.
+Effect: Replaced the default redout/blackout system, with my own improved time based system.
+Model: {Pinto} Fixed right altimeter would change the barometric setting in same direction no matter what direction mouse scrollwheel was used.
+Effect: Adjusted blackout to be much more forgiving. Recovery and redout is less forgiving though.
+Model: Experimental 90 degrees FOV for cockpit view.
+GUI: Renamed JA37 to AJ37 in AJ options title.

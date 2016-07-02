@@ -2,7 +2,7 @@
 
 <particlesystem>
    <name>explosion</name>
-   <texture>smoke.png</texture>
+   <texture>../smoke.png</texture>
 
    <emissive type="bool">true</emissive>
    <lighting type="bool">false</lighting>
@@ -66,7 +66,7 @@
          <alpha><value> 0.1 </value></alpha>
        </color>
        <size>
-         <value>100</value>
+         <value>200</value>
        </size>
      </end>
 
@@ -88,7 +88,7 @@
 
 <particlesystem>
    <name>explosion-smoke</name>
-   <texture>smoke.png</texture>
+   <texture>../smoke.png</texture>
 
    <emissive type="bool">false</emissive>
    <lighting type="bool">false</lighting>
@@ -152,7 +152,7 @@
          <alpha><value> 0.04 </value></alpha>
        </color>
        <size>
-         <value>120</value>
+         <value>240</value>
        </size>
      </end>
 

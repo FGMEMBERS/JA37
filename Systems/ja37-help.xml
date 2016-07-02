@@ -34,8 +34,8 @@
         <desc>Select cannon</desc>
     </key>
     <key>
-        <name>CTRL-1..4 and CTRL-6..7</name>
-        <desc>Select missiles</desc>
+        <name>CTRL-1..4 and CTRL-6..8</name>
+        <desc>Select pylon</desc>
     </key>
 	<key>
         <name>[ / ]</name>
@@ -133,6 +133,10 @@
         <name>Ctrl Shift a</name>
         <desc>Continue on current heading, speed and altitude with A/P</desc>
     </key>
+    <key>
+        <name>Q</name>
+        <desc>Reset view</desc>
+    </key>
     <!--<key>  as the real Viggen does not have carrier capacity, these functions are not officially documented. It works though.
       <name>L</name>
       <desc>Carrier launch-bar engage (hold for 10 seconds)</desc>
@@ -153,7 +157,7 @@
       <name>m</name>
       <desc>Toggle configure HUD for final approach</desc>
      </key> -->
-    <text>
+    <text><![CDATA[
       Startup
       _______
       Start up engine and systems
@@ -252,6 +256,24 @@
       ________
       Livery 59, uses half the texture memory of the other liveries.
 
+      Additional keys
+      _______________
+      Some additional keys for navigation is listed here:
+      
+      } - gross freq up
+      { - gross freq down
+      > - fine freq up
+      < - fine freq down
+      ) - radial up
+      ( - radial down
+      * - comm / nav
+      & - mhz / khz
+      + - volume up
+      = - volume down
+      CTRL-. - next waypoint
+      CTRL-, - previous waypoint
+      \ - DME
+
       Trivia
       ______
       This is the mid 80'ties version. So it has no airbrake
@@ -267,5 +289,5 @@
       Notes:
       _____
       Hangar homepage: https://sites.google.com/site/fghangar
-      </text>
+      ]]></text>
 </PropertyList>

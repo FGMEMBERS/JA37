@@ -6,7 +6,7 @@ var rad2deg = 180.0/math.pi;
 var kts2kmh = 1.852;
 var feet2meter = 0.3048;
 
-var radarRange = 180000;#meter, is estimate. The AJ-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
+var radarRange = getprop("sim/description") == "Saab JA-37 Viggen"?180000:120000;#meter, is estimate. The AJ-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
 
 var self = nil;
 var myAlt = nil;
@@ -30,15 +30,15 @@ input = {
         hdgReal:          "/orientation/heading-deg",
         pitch:            "/orientation/pitch-deg",
         roll:             "/orientation/roll-deg",
-        tracks_enabled:   "sim/ja37/hud/tracks-enabled",
-        callsign:         "/sim/ja37/hud/callsign",
+        tracks_enabled:   "ja37/hud/tracks-enabled",
+        callsign:         "/ja37/hud/callsign",
         carrierNear:      "fdm/jsbsim/ground/carrier-near",
         voltage:          "systems/electrical/outputs/ac-main-voltage",
         hydrPressure:     "fdm/jsbsim/systems/hydraulics/system1/pressure",
         ai_models:        "/ai/models",
-        lookThrough:      "sim/ja37/radar/look-through-terrain",
-        dopplerOn:        "sim/ja37/radar/doppler-enabled",
-        dopplerSpeed:     "sim/ja37/radar/min-doppler-speed-kt",
+        lookThrough:      "ja37/radar/look-through-terrain",
+        dopplerOn:        "ja37/radar/doppler-enabled",
+        dopplerSpeed:     "ja37/radar/min-doppler-speed-kt",
 };
 
 var findRadarTracks = func () {
@@ -62,11 +62,16 @@ var findRadarTracks = func () {
     var tankers = input.ai_models.getChildren("tanker");
     var ships = input.ai_models.getChildren("ship");
     var vehicles = input.ai_models.getChildren("groundvehicle");
-    var rb24 = input.ai_models.getChildren("rb-24j");
+    var rb24 = input.ai_models.getChildren("rb-24");
+    var rb24j = input.ai_models.getChildren("rb-24j");
 	  var rb71 = input.ai_models.getChildren("rb-71");
     var rb74 = input.ai_models.getChildren("rb-74");
     var rb99 = input.ai_models.getChildren("rb-99");
     var rb15 = input.ai_models.getChildren("rb-15f");
+    var rb04 = input.ai_models.getChildren("rb-04e");
+    var rb05 = input.ai_models.getChildren("rb-05a");
+    var rb75 = input.ai_models.getChildren("rb-75");
+    var m90 = input.ai_models.getChildren("m90");
     var test = input.ai_models.getChildren("test");
     if(selection != nil and selection.isValid() == FALSE) {
       #print("not valid");
@@ -83,10 +88,15 @@ var findRadarTracks = func () {
 #});
     processTracks(vehicles, FALSE, FALSE, FALSE, SURFACE);
     processTracks(rb24, FALSE, TRUE, FALSE, ORDNANCE);
+    processTracks(rb24j, FALSE, TRUE, FALSE, ORDNANCE);
 	  processTracks(rb71, FALSE, TRUE, FALSE, ORDNANCE);
     processTracks(rb74, FALSE, TRUE, FALSE, ORDNANCE);
     processTracks(rb99, FALSE, TRUE, FALSE, ORDNANCE);
     processTracks(rb15, FALSE, TRUE, FALSE, ORDNANCE);
+    processTracks(rb04, FALSE, TRUE, FALSE, ORDNANCE);
+    processTracks(rb05, FALSE, TRUE, FALSE, ORDNANCE);
+    processTracks(rb75, FALSE, TRUE, FALSE, ORDNANCE);
+    processTracks(m90, FALSE, TRUE, FALSE, ORDNANCE);
     processTracks(test, FALSE, TRUE, FALSE, ORDNANCE);
     processCallsigns(players);
 
@@ -352,9 +362,11 @@ var trackCalc = func (aircraftPos, range, carrier, mp, type, node) {
         if (doppler(aircraftPos, node) == TRUE) {
           # doppler picks it up, must be an aircraft
           type = AIR;
-        } else {
-          # doppler does not see it, must be ground target
+        } elsif (aircraftAlt > 1) {
+          # doppler does not see it, and is not on sea, must be ground target
           type = SURFACE;
+        } else {
+          type = MARINE;
         }
       }
 
@@ -649,10 +661,10 @@ var centerTarget = func () {
 }
 
 var lookatSelection = func () {
-  props.globals.getNode("/sim/ja37/radar/selection-heading-deg", 1).unalias();
-  props.globals.getNode("/sim/ja37/radar/selection-pitch-deg", 1).unalias();
-  props.globals.getNode("/sim/ja37/radar/selection-heading-deg", 1).alias(selection.getNode().getNode("radar/bearing-deg"));
-  props.globals.getNode("/sim/ja37/radar/selection-pitch-deg", 1).alias(selection.getNode().getNode("radar/elevation-deg"));
+  props.globals.getNode("/ja37/radar/selection-heading-deg", 1).unalias();
+  props.globals.getNode("/ja37/radar/selection-pitch-deg", 1).unalias();
+  props.globals.getNode("/ja37/radar/selection-heading-deg", 1).alias(selection.getNode().getNode("radar/bearing-deg"));
+  props.globals.getNode("/ja37/radar/selection-pitch-deg", 1).alias(selection.getNode().getNode("radar/elevation-deg"));
 }
 
 # setup property nodes for the loop
@@ -668,7 +680,7 @@ var loop = func () {
 
 var starter = func () {
   removelistener(lsnr);
-  if(getprop("sim/ja37/supported/radar") == TRUE) {
+  if(getprop("ja37/supported/radar") == TRUE) {
     loop();
   }
 }
@@ -678,7 +690,7 @@ var getCallsign = func (callsign) {
   return node;
 }
 
-var lsnr = setlistener("sim/ja37/supported/initialized", starter);
+var lsnr = setlistener("ja37/supported/initialized", starter);
 
 
 
@@ -1001,7 +1013,7 @@ var ContactGPS = {
   },
 
   isPainted: func () {
-    return FALSE;
+    return TRUE;
   },
 
   getUnique: func () {
