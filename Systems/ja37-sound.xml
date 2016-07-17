@@ -54,6 +54,22 @@
             </volume>
         </canopy>
 
+        <welcome>
+            <name>welcome</name>
+            <path>Aircraft/JA37/Sounds/welcome.wav</path>
+            <mode>once</mode>
+            <type>avionics</type>
+            <condition>
+                <equals>
+                    <property>ja37/avionics/welcome</property>
+                    <value>1.0</value>
+                </equals>
+            </condition>
+            <volume>
+                <factor>1</factor>
+            </volume>
+        </welcome>
+
         <!--                                          battery                                   -->
 
         <battery>
@@ -693,7 +709,7 @@
                 <z>0.25</z>
             </position>
             <volume>
-                <factor>0.75</factor>
+                <factor>0.50</factor>
             </volume>
         </controls>
 

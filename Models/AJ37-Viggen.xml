@@ -1339,14 +1339,11 @@
   <animation>
     <type>material</type>
     <object-name>radarMountAltWarnIndicator</object-name>
-    <condition>
-      <property>/instrumentation/terrain-warning</property>
-    </condition>
     <emission>
         <red>1.0</red>
         <green>0.0</green>
         <blue>0.0</blue>
-        <factor-prop>systems/electrical/dc-light</factor-prop>
+        <factor-prop>/instrumentation/terrain-warning-light</factor-prop>
     </emission>
   </animation>
 
@@ -1428,6 +1425,7 @@
     <object-name>gearRightHinge</object-name>
     <object-name>gearRightDoorsOpen</object-name>
     <object-name>gearRightDoorsClosed</object-name>
+    <object-name>bottomAirInlet</object-name>
   </effect>
 
   <effect>
@@ -1490,6 +1488,8 @@
     <object-name>canopyinside</object-name>
     <object-name>fuselageinside</object-name>
     <object-name>mirrorholder</object-name>
+    <object-name>engineOutlet</object-name>
+    <object-name>engineRear</object-name>
   </effect>
 
   <effect>  
@@ -3443,7 +3443,8 @@
   </offsets>
  </model>
 
-<model>
+<!-- old internal flame -->
+<!--<model>
   <name>InternalFlame</name>
   <path>Aircraft/JA37/Models/Effects/engine/InternalFlame.xml</path>
   <offsets>
@@ -3451,14 +3452,398 @@
    <y-m>0.0</y-m>
    <z-m>0.0</z-m>
   </offsets>
- </model>
+ </model>-->
+ 
+<!--******************************************* Pinto's edits *******************************************-->
+
+<!-- Air Intake --> 
+ <animation>
+  <object-name>engineAirIntake</object-name>
+  <type>spin</type>
+  <property>engines/engine/rpm</property>
+  <factor>1</factor>
+  <axis>
+   <x>1</x>
+   <y>0</y>
+   <z>0</z>
+  </axis>
+ </animation>
+ 
+ <!-- Air Outlet -->  
+ <animation>
+  <object-name>engineOutlet</object-name>
+  <type>spin</type>
+  <property>engines/engine/rpm</property>
+  <factor>1</factor>
+  <axis>
+   <x>1</x>
+   <y>0</y>
+   <z>0</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <type>material</type>
+  <condition>
+    <equals>
+      <property>/sim/rendering/rembrandt/enabled</property>
+      <value>0</value>
+    </equals>
+  </condition>
+  <object-name>engineOutlet</object-name>
+  <emission>
+   <red>0.0080</red>
+   <green>0.0075</green>
+   <blue>0.01</blue>
+   <factor-prop>sim/multiplay/generic/float[5]</factor-prop><!-- engines/engine/flame -->
+  </emission>
+ </animation>
+
+  <animation><!-- I do not like this workaround -->
+  <type>material</type>
+  <condition>
+    <equals>
+      <property>/sim/rendering/rembrandt/enabled</property>
+      <value>1</value>
+    </equals>
+  </condition>
+  <object-name>engineOutlet</object-name>
+  <emission>
+   <red>0.0080</red>
+   <green>0.0075</green>
+   <blue>0.01</blue>
+   <factor-prop>sim/multiplay/generic/float[5]</factor-prop><!-- engines/engine/flame -->
+  </emission>
+  <ambient>
+   <red>0.01</red>
+   <green>0.01</green>
+   <blue>0.01</blue>
+   <factor-prop>sim/multiplay/generic/float[5]</factor-prop><!-- engines/engine/flame -->
+  </ambient>
+  <diffuse>
+   <red>0.0080</red>
+   <green>0.0075</green>
+   <blue>0.01</blue>
+   <factor-prop>sim/multiplay/generic/float[5]</factor-prop><!-- engines/engine/flame -->
+  </diffuse>
+ </animation> 
+ 
+ <!-- Outlet Nozzles -->   
+ <animation>
+  <object-name>engineNozzle1</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71386</x-m>
+   <y-m>0.10359</y-m>
+   <z-m>-0.52878</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>0.875</y>
+   <z>0.125</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle2</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71392</x-m>
+   <y-m>0.29147</y-m>
+   <z-m>-0.44422</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>0.625</y>
+   <z>0.375</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle3</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71386</x-m>
+   <y-m>0.43622</y-m>
+   <z-m>-0.29947</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>0.375</y>
+   <z>0.625</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle4</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71386</x-m>
+   <y-m>0.51457</y-m>
+   <z-m>-0.11035</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>0.125</y>
+   <z>0.875</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle5</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71386</x-m>
+   <y-m>0.51457</y-m>
+   <z-m>0.09436</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>-0.125</y>
+   <z>0.875</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle6</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71392</x-m>
+   <y-m>0.43623</y-m>
+   <z-m>0.28348</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>-0.375</y>
+   <z>0.625</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle7</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.7139</x-m>
+   <y-m>0.29145</y-m>
+   <z-m>0.42818</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>-0.625</y>
+   <z>0.375</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle8</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71384</x-m>
+   <y-m>0.10238</y-m>
+   <z-m>0.50656</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>-0.875</y>
+   <z>0.125</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle9</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71384</x-m>
+   <y-m>-0.10233</y-m>
+   <z-m>0.50656</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>-0.875</y>
+   <z>-0.125</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle10</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71388</x-m>
+   <y-m>-0.29144</y-m>
+   <z-m>0.4282</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>-0.625</y>
+   <z>-0.375</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle11</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71384</x-m>
+   <y-m>-0.43621</y-m>
+   <z-m>0.28348</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>-0.375</y>
+   <z>-0.625</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle12</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71383</x-m>
+   <y-m>-0.51454</y-m>
+   <z-m>0.09436</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>-0.125</y>
+   <z>-0.875</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle13</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71383</x-m>
+   <y-m>-0.51454</y-m>
+   <z-m>-0.11034</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>0.125</y>
+   <z>-0.875</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle14</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71382</x-m>
+   <y-m>-0.43621</y-m>
+   <z-m>-0.29946</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>0.375</y>
+   <z>-0.625</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle15</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71386</x-m>
+   <y-m>-0.29147</y-m>
+   <z-m>-0.44422</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>0.625</y>
+   <z>-0.375</z>
+  </axis>
+ </animation>
+ 
+ <animation>
+  <object-name>engineNozzle16</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71385</x-m>
+   <y-m>-0.10234</y-m>
+   <z-m>-0.52256</z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y>0.875</y>
+   <z>-0.125</z>
+  </axis>
+ </animation>
+ 
+ <!--
+ <animation>
+  <object-name>engineNozzle</object-name>
+  <type>rotate</type>
+  <property>rotors/main/rpm</property>
+  <factor>35.0</factor>
+  <offset-deg>-35.0</offset-deg>
+  <center>
+   <x-m>5.71</x-m>
+   <y-m></y-m>
+   <z-m></z-m>
+  </center>
+  <axis>
+   <x>0</x>
+   <y></y>
+   <z></z>
+  </axis>
+ </animation>
+ -->
+ <!--******************************************* my edits *******************************************-->
  
  
  <model>
   <name>ExternalFlame</name>
   <path>Aircraft/JA37/Models/Effects/engine/ExternalFlame.xml</path>
   <offsets>
-   <x-m>5.90</x-m>
+   <x-m>5.50</x-m>
    <y-m>0.0</y-m>
    <z-m>0.0</z-m>
   </offsets>
@@ -3468,21 +3853,21 @@
   <name>ExternalFlameALS</name>
   <path>Aircraft/JA37/Models/Effects/engine/augmentationFlame.xml</path>
   <offsets>
-   <x-m>6.0555</x-m>
+   <x-m>5.80</x-m>
    <y-m>0.0</y-m>
    <z-m>0.0</z-m>
   </offsets>
  </model>
 
- <!--<model>
+ <model>
   <name>HeatBlurALS</name>
   <path>Aircraft/JA37/Models/Effects/engine/heatDistortion.xml</path>
   <offsets>
-   <x-m>6.825</x-m>
+   <x-m>6.8</x-m>
    <y-m>0.0</y-m>
    <z-m>0.0</z-m>
   </offsets>
- </model>-->
+ </model>
 
 
 <!--  other particle effects -->
@@ -3499,15 +3884,15 @@
     </offsets>
   </model>
 
- <!--<model>  never worked as intended, so commented out.
-  <name>strake-vortex</name>
-  <path>Aircraft/JA37/Models/Effects/strake-vortex.xml</path>
+<model>  
+  <name>vapour</name>
+  <path>Aircraft/JA37/Models/Effects/vapour.xml</path>
   <offsets>
-   <x-m>0.58</x-m>
-   <y-m>0</y-m>
-   <z-m>0.25</z-m>
+   <x-m>0.0</x-m>
+   <y-m>0.0</y-m>
+   <z-m>0.0</z-m>
   </offsets>
- </model>-->
+ </model>
 
 <model>
   <name>aerobatic_smoke_blue</name>

@@ -101,7 +101,7 @@ var loop_stores = func {
           or (payloadName.getValue() == "RB 75 Maverick" and payloadWeight.getValue() != 462)
           or (payloadName.getValue() == "M90 Bombkapsel" and payloadWeight.getValue() != 1322.77)
           or (payloadName.getValue() == "TEST" and payloadWeight.getValue() != 50)
-          or (payloadName.getValue() == "Drop tank" and payloadWeight.getValue() != 224.87))) {
+          or (payloadName.getValue() == "Drop tank" and payloadWeight.getValue() != 211.64))) {
         # armament or drop tank was loaded manually through payload/fuel dialog, so setting the pylon to not released
         setprop("controls/armament/station["~(i+1)~"]/released", FALSE);
         #print("adding "~i);
@@ -432,8 +432,8 @@ var loop_stores = func {
         }
       } elsif (selected == "Drop tank") {
         # the pylon has a drop tank, give it a pointmass
-        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 224.87) {
-          setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 224.87);#if change this also change it in jsbsim and -set file
+        if (getprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]") != 211.64) {
+          setprop("fdm/jsbsim/inertia/pointmass-weight-lbs["~ (i+1) ~"]", 211.64);#if change this also change it in jsbsim and -set file
         }
         input.tank8Selected.setValue(TRUE);
         input.tank8Jettison.setValue(FALSE);
@@ -464,7 +464,7 @@ var loop_stores = func {
         var payloadWeight = props.globals.getNode("payload/weight["~ i ~"]/weight-lb");
       
         if (i == 0) {
-          payloadName.setValue("RB 15F Attackrobot");
+          payloadName.setValue("RB 71 Skyflash");
         } elsif (i == 2) {
           payloadName.setValue("RB 71 Skyflash");
         } elsif (i == 1 or i == 3) {
@@ -502,7 +502,8 @@ var loop_stores = func {
     # outer stores
     var leftRb2474 = getprop("fdm/jsbsim/inertia/pointmass-weight-lbs[5]") == 188 or getprop("fdm/jsbsim/inertia/pointmass-weight-lbs[5]") == 179;
     var rightRb2474 = getprop("fdm/jsbsim/inertia/pointmass-weight-lbs[6]") == 188 or getprop("fdm/jsbsim/inertia/pointmass-weight-lbs[6]") == 179;
-    input.MPint19.setIntValue(ja37.encode3bits(leftRb2474, rightRb2474, 0));
+    var wtv = getprop("fdm/jsbsim/effects/wingtip-vapour");
+    input.MPint19.setIntValue(ja37.encode3bits(leftRb2474, rightRb2474, wtv));
 
   # Flare release
   if (getprop("ai/submodels/submodel[0]/flare-release-snd") == nil) {
@@ -624,7 +625,7 @@ var trigger_listener = func {
         
         var phrase = brevity ~ " at: " ~ callsign;
         if (getprop("payload/armament/msg")) {
-          setprop("/sim/multiplay/chat", armament.defeatSpamFilter(phrase));
+          armament.defeatSpamFilter(phrase);
         } else {
           setprop("/sim/messages/atc", phrase);
         }
@@ -692,7 +693,7 @@ var impact_listener = func {
           last_impact = input.elapsed.getValue();
           var phrase =  ballistic.getNode("name").getValue() ~ " hit: " ~ radar_logic.selection.get_Callsign();
           if (getprop("payload/armament/msg")) {
-            setprop("/sim/multiplay/chat", defeatSpamFilter(phrase));
+            defeatSpamFilter(phrase);
 			      #hit_count = hit_count + 1;
           } else {
             setprop("/sim/messages/atc", phrase);
@@ -736,6 +737,8 @@ var warhead_lbs = {
     "M71":                 200.00,
     "MK-82":               192.00,
     "LAU-68":               10.00,
+    "M317":                145.00,
+    "GBU-31":              945.00,
 };
 
 var incoming_listener = func {
@@ -910,6 +913,7 @@ var incoming_listener = func {
 }
 
 var spams = 0;
+var spamList = [];
 
 var defeatSpamFilter = func (str) {
   spams += 1;
@@ -920,8 +924,22 @@ var defeatSpamFilter = func (str) {
   for (var i = 1; i <= spams; i+=1) {
     str = str~".";
   }
-  return str;
+  var newList = [str];
+  for (var i = 0; i < size(spamList); i += 1) {
+    append(newList, spamList[i]);
+  }
+  spamList = newList;  
 }
+
+var spamLoop = func {
+  var spam = pop(spamList);
+  if (spam != nil) {
+    setprop("/sim/multiplay/chat", spam);
+  }
+  settimer(spamLoop, 1.20);
+}
+
+spamLoop();
 
 var maxDamageDistFromWarhead = func (lbs) {
   # very simple

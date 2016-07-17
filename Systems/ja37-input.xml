@@ -8,8 +8,8 @@
                 <binding>
                     <command>nasal</command>
                     <script>
-           ja37.apCont();
-         </script>
+                       ja37.apCont();
+                    </script>
                 </binding>
             </mod-shift>
         </key>
@@ -1149,6 +1149,82 @@
                 <script>ja37.resetView();</script>
             </binding>
         </key>
+
+        <key n="356">
+            <name>Ctrl Left</name>
+            <repeatable type="bool">false</repeatable>
+            <mod-ctrl>
+                <desc>Trim yaw (or adjust AP heading.)</desc>
+                <binding>
+                    <command>property-cycle</command>
+                    <property>controls/flight/trim-yaw</property>
+                    <value type="int">1</value>
+                    <value type="int">0</value>
+                    <value type="int">-1</value>
+                    <wrap>false</wrap>
+                </binding>
+            </mod-ctrl>
+        </key>
+
+        <key n="358">
+            <name>Ctrl Right</name>
+            <repeatable type="bool">false</repeatable>
+            <mod-ctrl>
+                <desc>Trim yaw (or adjust AP heading.)</desc>
+                <binding>
+                    <command>property-cycle</command>
+                    <property>controls/flight/trim-yaw</property>
+                    <value type="int">-1</value>
+                    <value type="int">0</value>
+                    <value type="int">1</value>
+                    <wrap>false</wrap>
+                </binding>
+            </mod-ctrl>
+        </key>
+
+        <key n="357">
+            <name>Ctrl Up</name>
+            <repeatable type="bool">true</repeatable>
+            <mod-ctrl>
+                <desc>A/T speed</desc>
+                <binding>
+                    <command>property-adjust</command>
+                    <property>autopilot/settings/target-speed-kt</property>
+                    <step>5</step>
+                    <min type="int">0</min>
+                    <max type="int">2000</max>
+                    <wrap>false</wrap>
+                </binding>
+            </mod-ctrl>
+        </key>
+
+        <key n="359">
+            <name>Ctrl Down</name>
+            <repeatable type="bool">true</repeatable>
+            <mod-ctrl>
+                <desc>A/T speed</desc>
+                <binding>
+                    <command>property-adjust</command>
+                    <property>autopilot/settings/target-speed-kt</property>
+                    <step>-5</step>
+                    <min type="int">0</min>
+                    <max type="int">2000</max>
+                    <wrap>false</wrap>
+                </binding>
+            </mod-ctrl>
+        </key>
+
+        <key n="262">
+          <name>F6</name>
+          <desc>noop</desc>
+          <repeatable type="bool">false</repeatable>
+          <binding>
+           <command>nasal</command>
+           <script>
+            ja37.noop();
+           </script>
+          </binding>
+         </key>
 		
     </keyboard>
 </PropertyList>

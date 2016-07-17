@@ -60,28 +60,30 @@
 
         <fcs_function name="fcs/elevator/stick-geared">
             <function>
-                <table>
-                    <independentVar lookup="row">fcs/elevator-cmd-norm</independentVar>
-                    <tableData>
-                        -1.00  -1.00
-                        -0.86  -0.74
-                        -0.75  -0.56
-                        -0.62  -0.40
-                        -0.50  -0.28
-                        -0.38  -0.19
-                        -0.23  -0.11
-                        -0.10  -0.045
-                         0.00   0.00
-                         0.10   0.045
-                         0.23   0.11
-                         0.38   0.19
-                         0.50   0.28
-                         0.62   0.40
-                         0.75   0.56
-                         0.86   0.74
-                         1.00   1.00
-                    </tableData>
-                </table>
+                <product>
+                    <table>
+                        <independentVar lookup="row">fcs/elevator-cmd-norm</independentVar>
+                        <tableData>
+                            -1.00  -1.00
+                            -0.86  -0.74
+                            -0.75  -0.56
+                            -0.62  -0.40
+                            -0.50  -0.28
+                            -0.38  -0.19
+                            -0.23  -0.11
+                            -0.10  -0.045
+                             0.00   0.00
+                             0.10   0.045
+                             0.23   0.11
+                             0.38   0.19
+                             0.50   0.28
+                             0.62   0.40
+                             0.75   0.56
+                             0.86   0.74
+                             1.00   1.00
+                        </tableData>
+                    </table>
+                </product>
             </function>
         </fcs_function>
 
@@ -203,8 +205,60 @@
             <output>fcs/pitch-damper/rate</output>
         </pure_gain>
 
-        <summer name="names/elevator/cmd-sum">
+        <fcs_function name="fcs/elevator/stick-css-neg">
+            <function>
+                <difference>
+                    <property> fcs/elevator/stick-geared </property>
+                    <value> -0.15 </value>
+                </difference>
+            </function>
+        </fcs_function>
+
+        <fcs_function name="fcs/elevator/stick-css-pos">
+            <function>
+                <difference>
+                    <property> fcs/elevator/stick-geared </property>
+                    <value> 0.15 </value>
+                </difference>
+            </function>
+        </fcs_function>
+
+        <switch name="fcs/elevator/stick-css-deadzone">
+            <default value="0"/>
+            <test logic="AND" value="fcs/elevator/stick-css-pos">
+                fcs/elevator/stick-geared gt  0.15
+            </test>
+            <test logic="AND" value="fcs/elevator/stick-css-neg">
+                fcs/elevator/stick-geared lt  -0.15
+            </test>
+            <output>/controls/flight/elevator-cmd-ap</output>
+        </switch>
+
+        <switch name="fcs/elevator/stick-css">
+            <default value="0"/>
+            <test logic="OR" value="fcs/elevator/stick-css-deadzone">
+                /ja37/avionics/temp-halt-ap-pitch == 0
+            </test>
+        </switch>
+
+        <switch name="fcs/elevator/stick-css-ap">
+            <default value="0"/>
+            <test logic="AND" value="/controls/flight/elevator-ap">
+                /ja37/avionics/temp-halt-ap-pitch == 1
+                /ja37/avionics/auto-altitude-on == 1
+            </test>
+            <output>/controls/flight/elevator-ap</output>
+        </switch>
+
+        <pure_gain name="fcs/elevator/stick-geared-switched">
             <input>fcs/elevator/stick-geared</input>
+            <gain>/ja37/avionics/temp-halt-ap-pitch</gain>
+        </pure_gain>
+
+        <summer name="names/elevator/cmd-sum">
+            <input>fcs/elevator/stick-geared-switched</input>
+            <input>fcs/elevator/stick-css</input>
+            <input>/controls/flight/elevator-ap</input>
             <input>fcs/pitch-trim-cmd-norm</input>
             <input>fcs/pitch-damper/rate</input>
             <clipto>
@@ -213,6 +267,58 @@
             </clipto>
             <output>fcs/elevator/cmd-sum</output>
         </summer>
+
+        <!-- auto pitch trim
+        <switch name="names/elevator/pitch-trim-cmd-norm-target">
+            <default value="/controls/flight/elevator-trim-target"/>
+            <test logic="AND" value="fcs/elevator/cmd-sum">
+                accelerations/Nz gt 0.97
+                accelerations/Nz lt 1.03
+                velocities/mach  gt 0.93
+                velocities/q-rad_sec   lt 0.01
+                velocities/q-rad_sec   gt -0.01
+            </test>
+            <test logic="AND" value="fcs/elevator/cmd-sum">
+                accelerations/Nz gt 0.97
+                accelerations/Nz lt 1.03
+                velocities/q-rad_sec   lt 0.01
+                velocities/q-rad_sec   gt -0.01
+                /ja37/avionics/temp-halt-ap-pitch == 1
+                /ja37/avionics/auto-attitude-on == 1
+            </test>
+            <output>/controls/flight/elevator-trim-target</output>
+            <clipto>
+                <min>-0.5</min>
+                <max>0.5</max>
+            </clipto>
+        </switch>
+
+        <kinematic name="names/elevator/trim-norm-lag">
+            <input>/controls/flight/elevator-trim-target</input>
+            <traverse>
+                <setting>
+                    <position> -1.0 </position>
+                    <time>      0.0 </time>
+                </setting>
+                <setting>
+                    <position>  1.0 </position>
+                    <time>      5.0 </time>
+                </setting>
+            </traverse>
+            <output>/controls/flight/elevator-trim-lag</output>
+        </kinematic>
+
+        <switch name="names/elevator/pitch-trim-cmd-norm">
+            <default value="/controls/flight/elevator-trim"/>
+            <test logic="AND" value="/controls/flight/elevator-trim-lag">
+                /controls/flight/elevator-trim-target ne /controls/flight/elevator-trim
+            </test>
+            <output>/controls/flight/elevator-trim</output>
+            <clipto>
+                <min>-0.5</min>
+                <max>0.5</max>
+            </clipto>
+        </switch>-->
 
         <!--<fcs_function name="systems/flight/pitch-gearing">
             <function>
@@ -274,9 +380,9 @@
                             0.50        0.50      0.60      0.50
                             0.65        0.37      0.60      0.50
                             0.80        0.28      0.60      0.50
-                            1.00        0.23      0.48      0.50
-                            1.50        0.15      0.20      0.50
-                            2.00        0.10      0.10      0.50
+                            1.00        0.25      0.45      0.70
+                            1.50        0.15      0.30      0.70
+                            2.00        0.10      0.12      0.65
                         </tableData>
                     </table>
                     <!--<property>/test</property>-->
@@ -297,9 +403,9 @@
                             0.50        0.75      0.75      0.65
                             0.65        0.50      0.75      0.65
                             0.80        0.35      0.75      0.65
-                            1.00        0.30      0.65      0.65
-                            1.50        0.20      0.30      0.65
-                            2.00        0.10     0.20      0.65
+                            1.00        0.30      0.60      0.75
+                            1.50        0.20      0.35      0.75
+                            2.00        0.10      0.20      0.70
                         </tableData>
                     </table>
                     <!--<property>/test</property>-->
@@ -559,8 +665,60 @@
             <output>fcs/roll-damper/rate</output>
         </pure_gain>
 
-        <summer name="names/aileron/cmd-sum">
+        <fcs_function name="fcs/aileron/stick-css-neg">
+            <function>
+                <difference>
+                    <property> fcs/aileron/stick-geared </property>
+                    <value> -0.15 </value>
+                </difference>
+            </function>
+        </fcs_function>
+
+        <fcs_function name="fcs/aileron/stick-css-pos">
+            <function>
+                <difference>
+                    <property> fcs/aileron/stick-geared </property>
+                    <value> 0.15 </value>
+                </difference>
+            </function>
+        </fcs_function>
+
+        <switch name="fcs/aileron/stick-css-deadzone">
+            <default value="0"/>
+            <test logic="AND" value="fcs/aileron/stick-css-pos">
+                fcs/aileron/stick-geared gt  0.15
+            </test>
+            <test logic="AND" value="fcs/aileron/stick-css-neg">
+                fcs/aileron/stick-geared lt  -0.15
+            </test>
+            <output>/controls/flight/aileron-cmd-ap</output>
+        </switch>
+
+        <switch name="fcs/aileron/stick-css">
+            <default value="0"/>
+            <test logic="OR" value="fcs/aileron/stick-css-deadzone">
+                /ja37/avionics/temp-halt-ap-roll2 == 0
+            </test>
+        </switch>
+
+        <switch name="fcs/aileron/stick-css-ap">
+            <default value="0"/>
+            <test logic="OR" value="/controls/flight/aileron-ap">
+                /ja37/avionics/temp-halt-ap-roll2 == 1
+                /ja37/avionics/auto-attitude-on == 1
+            </test>
+            <output>/controls/flight/aileron-ap</output>
+        </switch>
+
+        <pure_gain name="fcs/aileron/stick-geared-switched">
             <input>fcs/aileron/stick-geared</input>
+            <gain>/ja37/avionics/temp-halt-ap-roll2</gain>
+        </pure_gain>
+
+        <summer name="names/aileron/cmd-sum">
+            <input>fcs/aileron/stick-geared-switched</input>
+            <input>fcs/aileron/stick-css</input>
+            <input>/controls/flight/aileron-ap</input>
             <input>fcs/roll-trim-cmd-norm</input>
             <input>fcs/roll-limiter/rate</input>
             <input>fcs/roll-damper/rate</input>
@@ -1245,8 +1403,8 @@
                 <table>
                     <independentVar lookup="row">/ja37/accelerations/pilot-G</independentVar>
                     <tableData>
-                        2.0           -0.75
-                        4.0             0
+                        3.0           -0.75
+                        4.5           -0.1
                     </tableData>
                 </table>
             </function>
@@ -1258,8 +1416,8 @@
                 <table>
                     <independentVar lookup="row">/ja37/accelerations/pilot-G</independentVar>
                     <tableData>
-                       -1.0             0
-                        0.0            0.75
+                       -1.20           0
+                       -0.20           0.75
                     </tableData>
                 </table>
             </function>
