@@ -142,12 +142,6 @@ var processTracks = func (vector, carrier, missile = 0, mp = 0, type = -1) {
       if(trackInfo != nil) {
         var distance = trackInfo.get_range()*NM2M;
 
-        # tell the jsbsim hook system that if we are near a carrier
-        if(carrier == TRUE and distance < 1000) {
-          # is carrier and is within 1 Km range
-          carrierNear = TRUE;
-        }
-
         # find and remember the type of the track
         var typeNode = track.getChild("model-shorter");
         var model = nil;
@@ -157,7 +151,13 @@ var processTracks = func (vector, carrier, missile = 0, mp = 0, type = -1) {
           var pathNode = track.getNode("sim/model/path");
           if (pathNode != nil) {
             var path = pathNode.getValue();
+
             model = split(".", split("/", path)[-1])[0];
+
+            if (distance < 1000 and (model == "mp-clemenceau" or model == "mp-eisenhower" or model == "mp-nimitz" or model == "mp-vinson")) {
+              carrierNear = TRUE;
+            }
+
             model = remove_suffix(model, "-model");
             model = remove_suffix(model, "-anim");
             track.addChild("model-shorter").setValue(model);
@@ -192,6 +192,12 @@ var processTracks = func (vector, carrier, missile = 0, mp = 0, type = -1) {
             funcHash.listenerID1 = setlistener(track.getChild("valid"), func {call(func funcHash.callme1(), nil, funcHash, funcHash, var err =[]);}, 0, 1);
             funcHash.listenerID2 = setlistener(pathNode,                func {call(func funcHash.callme2(), nil, funcHash, funcHash, var err =[]);}, 0, 1);
           }
+        }
+
+        # tell the jsbsim hook system that if we are near a carrier
+        if(carrier == TRUE and distance < 1000) {
+          # is carrier and is within 1 Km range
+          carrierNear = TRUE;
         }
 
         var unique = track.getChild("unique");
@@ -335,12 +341,19 @@ var trackCalc = func (aircraftPos, range, carrier, mp, type, node) {
     #aircraft angle
     var ya_rad = xg_rad * math.sin(myRoll) + yg_rad * math.cos(myRoll);
     var xa_rad = xg_rad * math.cos(myRoll) - yg_rad * math.sin(myRoll);
+    var xa_rad_corr = xg_rad * math.cos(0) - yg_rad * math.sin(0);
 
     while (xa_rad < -math.pi) {
       xa_rad = xa_rad + 2*math.pi;
     }
     while (xa_rad > math.pi) {
       xa_rad = xa_rad - 2*math.pi;
+    }
+    while (xa_rad_corr < -math.pi) {
+      xa_rad_corr = xa_rad_corr + 2*math.pi;
+    }
+    while (xa_rad_corr > math.pi) {
+      xa_rad_corr = xa_rad_corr - 2*math.pi;
     }
     while (ya_rad > math.pi) {
       ya_rad = ya_rad - 2*math.pi;
@@ -349,7 +362,7 @@ var trackCalc = func (aircraftPos, range, carrier, mp, type, node) {
       ya_rad = ya_rad + 2*math.pi;
     }
 
-    if(ya_rad > -61.5 * D2R and ya_rad < 61.5 * D2R and xa_rad > -61.5 * D2R and xa_rad < 61.5 * D2R) {
+    if(ya_rad > -61.5 * D2R and ya_rad < 61.5 * D2R and xa_rad_corr > -61.5 * D2R and xa_rad_corr < 61.5 * D2R) {
       #is within the radar cone
       # AJ37 manual: 61.5 deg sideways.
 
@@ -375,14 +388,14 @@ var trackCalc = func (aircraftPos, range, carrier, mp, type, node) {
       var hud_pos_y = canvas_HUD.centerOffset + canvas_HUD.pixelPerDegreeY * -ya_rad * rad2deg;
 
       var contact = Contact.new(node, type);
-      contact.setPolar(distanceRadar, xa_rad);
+      contact.setPolar(distanceRadar, xa_rad_corr);
       contact.setCartesian(hud_pos_x, hud_pos_y);
       return contact;
 
     } elsif (carrier == TRUE) {
       # need to return carrier even if out of radar cone, due to carrierNear calc
       var contact = Contact.new(node, type);
-      contact.setPolar(900000, xa_rad);
+      contact.setPolar(900000, xa_rad_corr);
       contact.setCartesian(900000, 900000);# 900000 used in hud to know if out of radar cone.
       return contact;
     }
@@ -1195,7 +1208,7 @@ var ContactGPS = {
 
     var self      =  geo.aircraft_position();
     var myPitch   =  input.pitch.getValue()*deg2rads;
-    var myRoll    =  input.roll.getValue()*deg2rads;
+    var myRoll    =  0;#input.roll.getValue()*deg2rads;  Ignore roll, since a real radar does that
     var myAlt     =  self.alt();
     var myHeading =  input.hdgReal.getValue();
     var distance  =  self.distance_to(me.coord);

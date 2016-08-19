@@ -623,6 +623,43 @@
         <!-- Swedish: EJ REV (blinking)
         -->
 
+        <fcs_function name="systems/indicators/no-reverse-tertiary">
+            <function>
+                <and>
+                    <or>
+                        <nq>
+                            <property>/gear/gear[0]/position-norm</property>
+                            <value>0</value>
+                        </nq>
+                        <lt>
+                            <property>velocities/mach</property>
+                            <value>0.64</value>
+                        </lt>
+                    </or>
+                    <nq>
+                        <property>/ja37/systems/tertiary-opening</property>
+                        <value>1</value>
+                    </nq>
+                </and>
+            </function>
+        </fcs_function>
+
+        <switch name="systems/indicators/no-reverse-tertiary-time">
+            <default value="sim-time-sec"/>
+            <test logic="OR" value="systems/indicators/no-reverse-tertiary-time">
+                systems/indicators/no-reverse-tertiary == 1
+            </test>
+        </switch>
+
+        <fcs_function name="systems/indicators/no-reverse-tertiary-times-up">
+            <function>
+                <sum>
+                    <p>systems/indicators/no-reverse-tertiary-time</p>
+                    <v>12</v><!-- manual say 10, but have to give it time to open -->
+                </sum>
+            </function>
+        </fcs_function>
+
         <fcs_function name="systems/indicators/no-reverse-primary">
             <function>
                 <or>
@@ -646,6 +683,10 @@
                             <value>0</value>
                         </eq>
                     </and>
+                    <lt>
+                        <property>systems/indicators/no-reverse-tertiary-times-up</property>
+                        <property>sim-time-sec</property>
+                    </lt>
                 </or>
             </function>
         </fcs_function>
@@ -1050,7 +1091,7 @@
                             </eq>
                             <lt>
                                 <property>propulsion/engine[0]/n2</property>
-                                <value>57</value>
+                                <value>50</value>
                             </lt>
                             <gt>
                                 <property>propulsion/engine[0]/n2</property>
@@ -1085,7 +1126,7 @@
                         </eq>
                         <lt>
                             <property>propulsion/engine[0]/n2</property>
-                            <value>57</value>
+                            <value>50</value>
                         </lt>
                         <eq>
                             <property>/engines/engine/thrust_lb</property>
@@ -1462,6 +1503,14 @@
                                     </eq>
                                 </and>
                             </or>
+                            <eq>
+                                <p>/ja37/avionics/temp-halt-ap-pitch</p>
+                                <v>1</v>
+                            </eq>
+                            <eq>
+                                <p>/ja37/avionics/temp-halt-ap-roll2</p>
+                                <v>1</v>
+                            </eq>
                         </and>
                     </not>
                     <eq>
@@ -1811,12 +1860,20 @@
             <test logic="OR" value="/ja37/blink/ten-Hz/state">
                 /ja37/sound/terrain-on == 1
             </test>
-        </switch>        
+        </switch>
+
+        <switch name="/instrumentation/terrain-warning-test">
+            <default value="0"/>
+            <test logic="OR" value="/ja37/blink/ten-Hz/state">
+                /controls/lighting/test-indicator-panels == 1
+            </test>
+        </switch>
 
         <switch name="/instrumentation/terrain-warning-light">
             <default value="0"/>
             <test logic="OR" value="/systems/electrical/dc-light">
                 /instrumentation/terrain-warning == 1
+                /instrumentation/terrain-warning-test == 1
             </test>
         </switch>        
 
@@ -2303,7 +2360,8 @@
             </description>
             <default value="0"/>
             <test logic="OR" value="1">
-                propulsion/starter_cmd_copy == 1
+                systems/electrical/starter-relay-R1 == 1
+                /controls/engines/engine[0]/starter-cmd == 1
             </test>
         </switch>
 

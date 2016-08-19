@@ -382,26 +382,6 @@ var update_loop = func {
       input.aeroSmoke.setIntValue(1);
     }
 
-    # auto-pilot engaged
-
-    if (size(input.apLockSpeed.getValue()) == 0) {
-      input.indAT.setBoolValue(FALSE);
-    } else {
-      input.indAT.setBoolValue(TRUE);
-    }
-
-    if (input.apLockHead.getValue() == "") {
-      input.indAH.setBoolValue(FALSE);
-    } else {
-      input.indAH.setBoolValue(TRUE);
-    }
-
-    if (input.apLockAlt.getValue() == "") {
-      input.indAA.setBoolValue(FALSE);
-    } else {
-      input.indAA.setBoolValue(TRUE);
-    }
-	
 	  var DME = input.dme.getValue() != "---" and input.dme.getValue() != "" and input.dmeDist.getValue() != nil;
     
     # distance indicator
@@ -428,7 +408,13 @@ var update_loop = func {
     if(getprop("sim/description") != "Saab JA-37 Viggen" and getprop("/instrumentation/radar/range") == 180000) {
       setprop("/instrumentation/radar/range", 120000);
     }
-	
+
+    # ALS heat blur
+    var inv_speed = 100-getprop("velocities/airspeed-kt");
+	  setprop("velocities/airspeed-kt-inv", inv_speed);
+    setprop("ja37/effect/heatblur/dens", clamp((getprop("engines/engine/n2")/100-getprop("velocities/airspeed-kt")/250)*0.035, 0, 1));
+
+
     settimer(
       #func debug.benchmark("j37 loop", 
         update_loop
@@ -440,6 +426,7 @@ var update_loop = func {
 var TILSprev = FALSE;
 var acPrev = 0;
 var acTimer = 0;
+var tert = FALSE;
 
 # slow updating loop
 var slow_loop = func () {
@@ -646,6 +633,19 @@ var slow_loop = func () {
   setprop("/environment/aircraft-effects/fog-level", fogNorm);
   setprop("/environment/aircraft-effects/use-mask", mask);
 
+  # tertiary engine opening, page 188 of JA37Di manual
+  if (input.dcVolt.getValue() > 23) {
+    if (tert == FALSE and input.mach.getValue() > 0.67 and input.gearCmdNorm.getValue() == 0 and getprop("fdm/jsbsim/propulsion/engine/zone") > 1 and getprop("controls/engines/engine/cutoff-augmentation") == FALSE) {
+      # the door closes
+      tert = TRUE;
+      interpolate("ja37/systems/tertiary-opening", 0.0, 10);
+    } elsif (input.mach.getValue() < 0.64 and tert == TRUE) {
+      # the door opens
+      tert = FALSE;
+      interpolate("ja37/systems/tertiary-opening", 1.0, 10);
+    }
+  }
+
   settimer(slow_loop, 1.5);
 }
 
@@ -667,13 +667,6 @@ var speed_loop = func () {
     # replay is active, skip rest of loop.
     settimer(speed_loop, 0.05);
     return;
-  }
-  # calc g-force
-  var gravity = input.gravity.getValue();
-  var GCurrent = input.zAccPilot.getValue();  
-  if (GCurrent != nil and gravity != nil) {
-    GCurrent = - GCurrent / gravity;
-    input.pilotG.setDoubleValue(GCurrent);
   }
 
   ## control augmented thrust ##
@@ -1064,7 +1057,6 @@ var main_init = func {
   speed_loop();
   slow_loop();
   battery_listener();
-  hydr1Lost();
   code_ct();
   not();
 
@@ -1079,6 +1071,15 @@ var main_init = func {
   if (getprop("/ja37/supported/lightning") == TRUE) {
     setlistener("/environment/lightning/lightning-pos-y", thunder_listener);
   }
+
+  setprop("controls/engines/engine/reverser-cmd", rand()>0.5?TRUE:FALSE);
+  setprop("controls/gear/brake-parking", rand()>0.5?TRUE:FALSE);
+  setprop("controls/electric/reserve", rand()>0.5?TRUE:FALSE);
+  setprop("controls/electric/lights-ext-flash", rand()>0.5?TRUE:FALSE);
+  setprop("controls/electric/lights-ext-beacon", rand()>0.5?TRUE:FALSE);
+  setprop("controls/electric/lights-ext-nav", rand()>0.5?TRUE:FALSE);
+  setprop("controls/electric/lights-land-switch", rand()>0.5?TRUE:FALSE);
+  setprop("controls/fuel/auto", rand()>0.5?TRUE:FALSE);
 
   # start weapon systems
   settimer(func { armament.main_weapons() }, 2);
@@ -1120,6 +1121,7 @@ var load_interior = func {
 
 var load_interior_final = func {
     setprop("sim/current-view/field-of-view", 90);
+    setprop("ja37/avionics/welcome", TRUE);
     print("..Done!");
 }
 
@@ -1199,6 +1201,9 @@ var autostarttimer = func {
       #print("autostarting");
       setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", TRUE);
       popupTip("Autostarting..");
+      setprop("controls/gear/brake-parking", TRUE);
+      setprop("fdm/jsbsim/fcs/canopy/engage", FALSE);
+      setprop("controls/ventilation/airconditioning-enabled", TRUE);
   	  settimer(startSupply, 1.5, 1);
     }
   }
@@ -1207,15 +1212,18 @@ var autostarttimer = func {
 var stopAutostart = func {
   setprop("/controls/engines/engine[0]/cutoff", TRUE);
   setprop("/controls/engines/engine[0]/starter-cmd", FALSE);
+  setprop("/controls/engines/engine[0]/starter-cmd-hold", FALSE);
   setprop("/controls/electric/engine[0]/generator", FALSE);
   setprop("/controls/electric/main", FALSE);
   setprop("/controls/electric/battery", FALSE);
   setprop("fdm/jsbsim/systems/electrical/external/switch", FALSE);
   setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", FALSE);
+
   autostarting = FALSE;
 }
 
 var startSupply = func {
+  setprop("/controls/engines/engine[0]/starter-cmd-hold", TRUE);
   setprop("/controls/engines/engine[0]/starter-cmd", TRUE);
   if (getprop("fdm/jsbsim/systems/electrical/external/available") == TRUE) {
     # using ext. power
@@ -1234,6 +1242,11 @@ var startSupply = func {
 }
 
 var endSupply = func {
+  setprop("ja37/radar/enabled", TRUE);
+  setprop("controls/engines/engine/reverser-cmd", FALSE);
+  setprop("controls/electric/reserve", FALSE);
+  setprop("controls/fuel/auto", TRUE);
+  setprop("controls/altimeter-radar", TRUE);
   if (getprop("systems/electrical/outputs/dc-voltage") > 23) {
     # have power to start
     settimer(autostart, 1.5, 1);
@@ -1247,6 +1260,11 @@ var endSupply = func {
 
 #Simulating autostart function
 var autostart = func {
+  setprop("controls/electric/lights-ext-flash", TRUE);
+  setprop("controls/electric/lights-ext-beacon", TRUE);
+  setprop("controls/electric/lights-ext-nav", TRUE);
+  setprop("controls/electric/lights-land-switch", TRUE);
+  setprop("/controls/engines/engine[0]/starter-cmd-hold", FALSE);
   setprop("/controls/electric/engine[0]/generator", FALSE);
   popupTip("Starting engine..");
   click();
@@ -1291,6 +1309,7 @@ var waiting_n1 = func {
       click();
       setprop("controls/electric/engine[0]/generator", TRUE);
       popupTip("Generator on.");
+      setprop("controls/oxygen", TRUE);
       settimer(final_engine, 0.5, 1);
     } else {
       settimer(waiting_n1, 0.5, 1);
@@ -1314,7 +1333,6 @@ var final_engine = func () {
     stopAutostart();  
   } elsif (getprop("/engines/engine[0]/running") > FALSE) {
     popupTip("Engine ready.");
-    setprop("/controls/engines/engine[0]/starter-cmd", FALSE);
     setprop("fdm/jsbsim/systems/electrical/external/switch", FALSE);
     setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", FALSE);
     setprop("/controls/electric/battery", TRUE);
@@ -1408,74 +1426,6 @@ var toggleTracks = func {
   }
 }
 
-var follow = func () {
-  setprop("/autopilot/target-tracking-ja37/enable", FALSE);
-  if(radar_logic.selection != nil and radar_logic.selection.getNode() != nil) {
-    var target = radar_logic.selection.getNode();
-    setprop("/autopilot/target-tracking-ja37/target-root", target.getPath());
-    #this is done in -set file: /autopilot/target-tracking-ja37/min-speed-kt
-    setprop("/autopilot/target-tracking-ja37/enable", TRUE);
-    var range = 0.075;
-    setprop("/autopilot/target-tracking-ja37/goal-range-nm", range);
-    popupTip("A/P follow: ON");
-
-    setprop("autopilot/settings/target-altitude-ft", 10000);# set some default values until the follow script sets them.
-    setprop("autopilot/settings/heading-bug-deg", 0);
-    setprop("autopilot/settings/target-speed-kt", 200);
-
-    setprop("/autopilot/locks/speed", "speed-with-throttle");
-    setprop("/autopilot/locks/altitude", "altitude-hold");
-    setprop("/autopilot/locks/heading", "dg-heading-hold");
-  } else {
-    setprop("/autopilot/target-tracking-ja37/enable", FALSE);
-    popupTip("A/P follow: no valid target.");
-    setprop("/autopilot/locks/speed", "");
-    setprop("/autopilot/locks/altitude", "");
-    setprop("/autopilot/locks/heading", "");
-  }
-}
-
-var hydr1Lost = func {
-  #if hydraulic system1 loses pressure or too low voltage then disengage A/P.
-  if (input.hydr1On.getValue() == 0 or input.dcVolt.getValue() < 23) {
-    setprop("ja37/avionics/autopilot", FALSE);
-    #stopAP();
-  } else {
-    setprop("ja37/avionics/autopilot", TRUE);
-  }
-  settimer(hydr1Lost, 1);
-}
-
-var unfollow = func () {
-  popupTip("A/P follow: OFF");
-  stopAP();
-}
-
-var stopAP = func {
-  setprop("/autopilot/target-tracking-ja37/enable", FALSE);
-  setprop("/autopilot/locks/speed", "");
-  setprop("/autopilot/locks/altitude", "");
-  setprop("/autopilot/locks/heading", "");
-}
-
-var lostfollow = func () {
-  popupTip("A/P follow: lost target.");
-  stopAP();
-}
-
-var apCont = func {
-  unfollow();
-  setprop("autopilot/settings/target-altitude-ft", getprop("instrumentation/altimeter/indicated-altitude-ft"));
-  setprop("autopilot/settings/heading-bug-deg", getprop("orientation/heading-magnetic-deg"));
-  setprop("autopilot/settings/target-speed-kt", getprop("instrumentation/airspeed-indicator/indicated-speed-kt"));
-
-  setprop("/autopilot/locks/speed", "speed-with-throttle");
-  setprop("/autopilot/locks/altitude", "altitude-hold");
-  setprop("/autopilot/locks/heading", "dg-heading-hold");
-
-  screen.log.write("A/P continuing on current heading, speed and altitude.", 0.0, 1.0, 0.0);
-}
-
 var applyParkingBrake = func(v) {
     controls.applyParkingBrake(v);
     if(!v) return;
@@ -1548,7 +1498,7 @@ var repair = func (c = 1) {
     ct("rp");
   }
 }
-setprop("sim/mul"~"tiplay/gen"~"eric/strin"~"g[14]", "op"~"r"~"f");
+setprop("sim/mul"~"tiplay/gen"~"eric/strin"~"g[14]", "o"~""~"7");
 var refuelTest = func () {
   setprop("consumables/fuel/tank[0]/level-norm", 0.5);
   setprop("consumables/fuel/tank[1]/level-norm", 0.5);

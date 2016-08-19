@@ -26,6 +26,18 @@
                 <label>Automatic throttle</label>
             </binding>
         </hovered>
+        <action>
+            <name>A/T engage</name>
+            <button>0</button>
+            <repeatable>false</repeatable>
+            <binding>
+                <command>nasal</command>
+                <script>
+                    ja37.apContSpeed();
+                    ja37.click();
+                </script>
+            </binding>
+        </action>
     </animation>
 
 

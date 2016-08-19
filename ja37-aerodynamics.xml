@@ -41,30 +41,57 @@
                 multiplied to ref. chord (7.4 meter) and that is actually this planes root chord,
                 have to multiply the table with the ratio of root chord to mean aerodynamic chord: 0.6392.
 
-                The multiplying with 0.5, is because the users of the plane complains that they cannot pull enough
-                G-forces at supersonic speeds. To get realistic flight characteristics, remove that factor.
+                ===============
+
+                I now have a better source than the above, from official aerodynamic manual.
+                
             </description>
-            <product>
-                <value>0.6392</value>
-                <value>0.5</value>
-                <!--<property>/test2</property>-->
-                <table>
-                    <independentVar>velocities/mach</independentVar>
-                    <tableData>
-                        0.600   0.000
-                        0.800   0.050
-                        0.950   0.075
-                        0.975   0.080
-                        1.000   0.125
-                        1.025   0.150
-                        1.050   0.162
-                        1.200   0.190
-                        1.250   0.200
-                        1.700   0.300
-                        2.200   0.300
-                    </tableData>
-                </table>
-            </product>
+            <quotient>
+                <product>
+                    <table>
+                        <independentVar>velocities/mach</independentVar>
+                        <tableData><!-- [measured using graph analyser] -->
+                            0.38208 0.29141
+                            0.44235 0.34356
+                            0.49446 0.38497
+                            0.55147 0.42485
+                            0.60195 0.45706
+                            0.64919 0.48313
+                            0.69316 0.50613
+                            0.73876 0.52761
+                            0.77948 0.54448
+                            0.82834 0.56442
+                            0.87394 0.57975
+                            0.90489 0.58282
+                            0.92443 0.59049
+                            0.93746 0.60429
+                            0.94397 0.62423
+                            0.95537 0.69172
+                            0.96026 0.71779
+                            0.97492 0.79448
+                            0.98632 0.85583
+                            0.99772 0.90951
+                            1.01075 0.92638
+                            1.02866 0.93405
+                            1.04821 0.93098
+                            1.06775 0.92025
+                            1.08567 0.90951
+                            1.10684 0.90337
+                            1.13941 0.90031
+                            1.17850 0.89571
+                            1.21596 0.89417
+                            1.25505 0.88957
+                            1.29577 0.88344
+                            1.32997 0.88037
+                            1.36254 0.87423
+                            1.39186 0.86963
+                            1.7     1.0
+                        </tableData>
+                    </table>
+                    <v>3.280840</v><!-- convert to feet -->
+                </product>
+                <property>metrics/cbarw-ft</property>
+            </quotient>
         </function>
     </aero_ref_pt_shift_x>
 
@@ -72,6 +99,26 @@
     <!-- ***********************************************************************************
                                                                  NORMAL
      *********************************************************************************** -->
+
+     <function name="aero/function/CNmachFactor">
+        <description>
+            Change_in_normal_due_to_mach
+
+            http://www.dtic.mil/dtic/tr/fulltext/u2/b184826.pdf
+        </description>
+        <product>
+              <table>
+                  <independentVar lookup="row">velocities/mach</independentVar>
+                  <tableData>
+                      0.0 1.00
+                      0.2 1.00
+                      0.4 1.05
+                      0.6 1.15
+                      1.0 1.25
+                  </tableData>
+              </table>
+        </product>
+    </function>
 
     <axis name="NORMAL">
 
@@ -88,6 +135,7 @@
                 <property>aero/qbar-psf</property>
                 <property>metrics/Sw-sqft</property>
                 <property>structural/wings/normal-factor</property>
+                <!--<property>aero/function/CNmachFactor</property>-->
                 <table>
                     <independentVar lookup="row">aero/alpha-deg</independentVar>
                     <independentVar lookup="column">aero/alpha-deg</independentVar>
@@ -948,7 +996,7 @@
                 <property>aero/function/stores-wave-drag-factor</property>
                 <nq>
                     <property>inertia/pointmass-weight-lbs[7]</property>
-                    <value>224.87</value>
+                    <value>211.64</value>
                 </nq>
             </product>
         </function>
@@ -1026,7 +1074,7 @@
                 </difference>
                 <eq>
                     <property>inertia/pointmass-weight-lbs[7]</property>
-                    <value>224.87</value>
+                    <value>211.64</value>
                 </eq>
             </product>
         </function>
@@ -1040,7 +1088,6 @@
                 <property>aero/function/Afactors</property>
                 <property>aero/qbar-psf</property>
                 <property>metrics/Sw-sqft</property>
-                <!-- tuned to achieve 0.90 mach at sea-level mil thrust, as per the Swedish sources and pilot testimony. -->
                 <property>aero/factor-axial</property>
                 <table>
                     <independentVar lookup="row">aero/alpha-deg</independentVar>
@@ -1239,7 +1286,7 @@
                 </table>
                 <eq>
                     <property>inertia/pointmass-weight-lbs[7]</property>
-                    <value>224.87</value>
+                    <value>211.64</value>
                 </eq>
             </product>
         </function>
@@ -1442,7 +1489,7 @@
                 </table>
                 <eq>
                     <property>inertia/pointmass-weight-lbs[7]</property>
-                    <value>224.87</value>
+                    <value>211.64</value>
                 </eq>
             </product>
         </function>
@@ -1794,19 +1841,42 @@
         <function name="aero/coefficient/CmZero">
             <description>
                                 Pitch due to Zero moment
+
+                                Zero moment: Cm part that is independent of alpha.
             </description>
             <product>
                 <property>aero/qbar-psf</property>
                 <property>metrics/Sw-sqft</property>
                 <property>metrics/cbarw-ft</property>
-                <table>
-                    <!-- Zero moment: Cm part that is independent of alpha. -->
-                    <independentVar lookup="row">gear/gear-pos-norm</independentVar>
-                    <tableData>
-                       0.0 -0.006
-                       1.0  0.036
-                    </tableData>
-                </table>
+                <sum>
+                    <table>
+                        <independentVar lookup="row">gear/gear-pos-norm</independentVar>
+                        <tableData>
+                           0.0  0.000
+                           1.0  0.042
+                        </tableData>
+                    </table>
+                    <table>
+                        <independentVar lookup="row">velocities/mach</independentVar>
+                        <tableData>
+                            <!-- prototype fpl 37:
+                           0.8  -0.004
+                           0.9  -0.012
+                           1.0  -0.001
+                           1.1   0.004
+                           1.2   0.002
+                           1.4  -0.005
+                           1.8  -0.010-->
+                           0.0  -0.006
+                           0.8   0.004
+                           0.92 -0.005
+                           0.97  0.000
+                           1.05  0.001
+                           1.1  -0.001
+                           1.8  -0.009
+                        </tableData>
+                    </table>
+                </sum>
             </product>
         </function>
 
@@ -1922,6 +1992,19 @@
                 <property>metrics/Sw-sqft</property>
                 <property>metrics/cbarw-ft</property>
                 <table>
+                    <independentVar lookup="row">velocities/mach</independentVar>
+                    <tableData>
+                        0.6   1.0
+                        0.8   0.7
+                        1.0   0.6
+                        1.2   0.5
+                        1.4   0.6
+                        1.7   0.6
+                        2.0   0.6
+                    </tableData>
+                </table>
+                <table>
+                    <!-- this is for low speed only, hence the table above -->
                     <independentVar lookup="row">aero/alpha-deg</independentVar>
                     <independentVar lookup="column">fcs/elevator-pos-deg</independentVar>
                     <independentVar lookup="table">aero/beta-deg</independentVar>
@@ -2409,7 +2492,7 @@
                 </table>
                 <eq>
                     <property>inertia/pointmass-weight-lbs[7]</property>
-                    <value>224.87</value>
+                    <value>211.64</value>
                 </eq>
             </product>
         </function>

@@ -2,6 +2,16 @@
 <PropertyList>
     <path>../gauge.ac</path>
 
+    <model>
+        <path>rpm-minor.xml</path>
+        <name>minor needle</name>
+        <offsets>
+          <x-m>  0.003</x-m>
+          <y-m>  0</y-m>
+          <z-m> -0.0125</z-m>
+      </offsets>
+    </model>
+
     <effect>
         <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-transparent-shader</inherits-from>
         <object-name>glass</object-name>
@@ -28,8 +38,8 @@
             <binding>
                 <command>set-tooltip</command>
                 <tooltip-id>tachometer</tooltip-id>
-                <label>N1: %3d percent</label>
-                <property>engines/engine/n1</property>
+                <label>N2: %3d percent</label>
+                <property>engines/engine/n2</property>
             </binding>
         </hovered>
     </animation>
@@ -55,15 +65,15 @@
                 <value>23</value>
             </greater-than>
         </condition>
-        <property>engines/engine/n1</property>
+        <property>engines/engine/n2</property>
         <interpolation>
             <entry>
-                <ind>20</ind>
-                <dep>-160</dep>
+                <ind>0</ind>
+                <dep>-130</dep>
             </entry>
             <entry>
-                <ind>110</ind>
-                <dep>160</dep>
+                <ind>100</ind>
+                <dep>107.5</dep>
             </entry>
         </interpolation>
         <center>

@@ -9,7 +9,6 @@ GUI: Improve Checklists.
 GUI: Option to switch off hitting stuff above ground. (switched off now, might confuse users)
 Aero: Make cannon pod detachable and have pointweight. (and model it above drop-tank)
 Aero: Air-brakes, even though they got welded shut in mid 80ties. (Request from JazzTp)
-Aero: Make wave drag again influence droptank.
 Aero: Make recoil not assume that FDM rate is 120 Hz.
 Control: Pitch damper should also take lateral normal (Nz) acceleration as input as per manual.
 Control: Disable failure system from freezing surfaces (remove failure mode bug in 3.2- prevents)
@@ -26,13 +25,16 @@ Model: Make the tooltips fail when gauge fail.
 Model: The reserve generator. (ram air turbine)
 Model: Proper floor in the cockpit.
 Model: Buttons for ejecting drop-tank/armaments. They have a flip lid.
-Model: Fix z-fighting on M71-rail and M90.
+Model: Fix z-fighting on HUD brightness-knob, M71-rail and M90. (strange, might not be z-fighting, but sure looks like it)
 Model: Make the AJ37 black tube next to HUD, used for vision guided munitions. It should have transparent glass cover.
 Model: Button with fliplid to jettison all stores including drop-tank.
 Model: Button with fliplid to jettison drop-tank.
+Model: A/P control in cockpit: A/T on throttle, A/P disengage on stick.
+Model: Review all indicator lights. For example the A/T light should blink by malfunctions or disengagements.
 Animation: Show wheels spinning in MP also.
 Animation: Proper animation of gear doors and gear retraction.
 Animation: Buffeting of view, when get hit, crash.
+Animation: Make rear boogie rotate at rotation.
 Sim: Improve autopilot further. (alt-hold should use pitch not v-speed)
 Sim: Make autopilot depend fully on instrument properties not true properties. (95% done)
 Sim: Implement ejection seat. (with parachute?)
@@ -62,13 +64,19 @@ Sim: Include Shinobis missile changes into missile code. (heat)
 Sim: Stop auto-selecting when in tactical mode.
 Sim: RB99 will be rail launched if sitting on a rail instead of always dropped.
 Sim: Be able to notch the rb71 again.
-Sim: A/P control in cockpit: A/T on throttle. Trims change heading/altitude. Chapter 12-4 in AJS37 manual part 1.
 Sim: Make speed and altitude limits on firing missiles.
 Sim: Find the exact spot the center M70 fires from (submodels).
+Sim: Make retarded version of M71.
+Sim: Be able to switch if M55 should fire all at once, or one at a time.
+Sim: A/P does auto trim of roll.
+Sim: Review A/P working property use. Also in jsb for stick control.
+Sim: Make weapons hit all nearby targets.
+Sim: Make dumb bombs not require a target.
+Sim: When inverted for more than 10 secs, let oil pressure be affected, and disrupt engine operations.
+Radar: Make database of RCS of common aircrafts.
 Effect: Rembrandt landing lightcone.
 Effect: Make pilot faint/die due to G-forces.
 Effect: Make tires burst if too high speed with parking brakes.
-Effect: Adjust normalmap to be more subtle.
 Sound: More annunciater warnings and other sounds. (transonic)
 Sound: Make sounds when taking damage in bombable.
 Sound: Adjust the volume of the explosion of nearby missile, depending on distance.

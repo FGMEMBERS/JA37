@@ -13,7 +13,7 @@
   <fileheader>
     <author> Nikolai V. Chr. </author>
     <filecreationdate> 2013-02-15 </filecreationdate>
-    <version> 4.001 </version>
+    <version> 4.002 </version>
     <license>
       <licenseName>GPL 2 (General Public License version 2)</licenseName>
       <licenseURL>http://www.gnu.org/licenses/old-licenses/gpl-2.0.html</licenseURL>
@@ -85,7 +85,7 @@
       <!-- Measured using Saab diagram in Gimp -->
       <wing_incidence unit="DEG"> 0.00    </wing_incidence>
     <location name="AERORP" unit="M">
-      <x> 2.05878 </x>
+      <x> 1.79878 </x>
       <y> 0 </y>
       <z> -0.20081 </z>
     </location>
@@ -149,7 +149,7 @@ Old values:
       <z> 0 </z>
     </location>
     <pointmass name="Pilot">
-      <weight unit="LBS"> 165 </weight>
+      <weight unit="KG"> 72 </weight>
       <location name="POINTMASS" unit="M">
         <x> -3.3 </x>
         <y>  0.0 </y>
@@ -205,7 +205,7 @@ Old values:
       </location>
     </pointmass>
     <pointmass name="Center fuselage pylon">
-      <weight unit="LBS"> 224.87 </weight> <!-- Estimate by David Culp, notice when this change also change it in nasal scripts and aero section -->
+      <weight unit="LBS"> 211.64 </weight> <!-- JA37 manual, notice when this change also change it in nasal scripts and aero section -->
       <location name="POINTMASS" unit="M">
         <x>  0.52406 </x>
         <y>  0.00 </y>
@@ -219,9 +219,9 @@ Old values:
   <aerodynamics file="ja37-aerodynamics.xml"/>
   <system file="jsb-hydraulic"/>
   <system file="jsb-flight"/>
+  <system file="jsb-electric"/>
   <system file="jsb-indicators"/>
   <system file="jsb-cannon_recoil"/>
-  <system file="jsb-electric"/>
   <system file="jsb-fuel"/>
   <external_reactions file="Systems/jsb-external-reactions"/>
   <ground_reactions file="Systems/jsb-ground-reactions"/>
