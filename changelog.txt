@@ -2417,7 +2417,7 @@ Sim: Minor missile change that make them better predict the targets horizontal m
 Effect: More forgiving redout.
 GUI: {Pinto} Another ja37 splash.
 
-4.003 - 2016 August 16
+4.003 - 2016 August 16 (Flightgear 2016.3.1 version)
 =====
 Effect: Black damage smoke, now again attached to world.
 Model: {Pinto} Added tertiary gate to engine outlet.
@@ -2442,3 +2442,50 @@ Aero: Disabled normal due to mach.
 Aero: Static margin is now slightly less at very high speeds.
 Aero: Elevator due to mach has been adjusted.
 GUI: Removed the aerobatic pitch gearing setting.
+
+4.004
+=====
+Sim: Reduced loadout for AJ-37.
+Sim: Added AJS-37 variant.
+Radar: {Pinto} Fixed a bug and optimized the terrain masking check for MP planes.
+GUI: {Pinto} Added AJS-37 splash screen.
+
+4.005 - 2016 October 12 (this version is for FG 2.8 only)
+=====
+Fixed plane so it flies in Flightgear version 2.8.0.5
+Model: Fixed some textures that was not power of two.
+Effect: Disabled all shader effects.
+Sound: Fixed that path to 2 sound files were not specified local.
+Sim: Changed some properties that did not exist in FG 2.8
+Sim: Changed the JSB tag pi into the number for FG 2.8
+Sim: Made propulsion and contact points inlined to work in FG 2.8
+Sim: Disabled carrier support.
+Sim: Removed clip tags from all JSB switches.
+
+4.006 - 2016 October 12
+=====
+HUD: Fixed that on older FG versions DME would show even if off.
+Sim: Init gravity for older FG versions that do not calculate it themselves. (this fixes FG 3.0.0 crash)
+Sound: Fixed that path to 2 sound files were not specified local.
+
+4.007 - 2016 November 5
+=====
+Radar: Small optimization.
+Model: Made many faces that didn't needed to be double sided, single sided.
+Model: Fixed that some normals was pointing inwards.
+Model: Included the tutorial marker in the saab37 distribution, so it works with all FG versions.
+Effect: Applied metal ubershader to outlet tertiary gate.
+Sim: Tertiary engine opening is now JSB controlled as nasal interpolation is unreliable.
+Sim: Reversing is now JSB controlled as nasal interpolation is unreliable.
+Sim: Moved some minor systems to JSB from Nasal.
+GUI: Moved help and checklist files to GUI folder.
+GUI: Update of help.
+Radar: Fixed that the runway line on radar had to be converted from magnetic to true.
+HUD: Allowed the localizer heading line to move 3 degrees more to the sides.
+HUD: Limited glidepath vertical lines to move max half their own length upwards, as per manual.
+HUD: Fixed glidepath vertical lines was moving opposite of what manual states.
+HUD: Fixed that top heading scale bug would sometimes be shown when the scale was not shown and vice versa.
+Sim: Introduced some more conditions under which the tertiary opening would open up.
+Control: The inner elevons now react more coarse, sluggish than the faster outer elevons.
+Control: Elevon hydraulic deflection speed adjusted so roll and pitch deflections use same deg/s.
+GUI: Fixed that performance monitor would show calibrated airspeed instead of true.

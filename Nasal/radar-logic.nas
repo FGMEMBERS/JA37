@@ -6,7 +6,7 @@ var rad2deg = 180.0/math.pi;
 var kts2kmh = 1.852;
 var feet2meter = 0.3048;
 
-var radarRange = getprop("sim/description") == "Saab JA-37 Viggen"?180000:120000;#meter, is estimate. The AJ-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
+var radarRange = getprop("ja37/systems/variant") == 0?180000:120000;#meter, is estimate. The AJ(S)-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
 
 var self = nil;
 var myAlt = nil;
@@ -341,7 +341,7 @@ var trackCalc = func (aircraftPos, range, carrier, mp, type, node) {
     #aircraft angle
     var ya_rad = xg_rad * math.sin(myRoll) + yg_rad * math.cos(myRoll);
     var xa_rad = xg_rad * math.cos(myRoll) - yg_rad * math.sin(myRoll);
-    var xa_rad_corr = xg_rad * math.cos(0) - yg_rad * math.sin(0);
+    var xa_rad_corr = xg_rad;
 
     while (xa_rad < -math.pi) {
       xa_rad = xa_rad + 2*math.pi;
@@ -362,7 +362,7 @@ var trackCalc = func (aircraftPos, range, carrier, mp, type, node) {
       ya_rad = ya_rad + 2*math.pi;
     }
 
-    if(ya_rad > -61.5 * D2R and ya_rad < 61.5 * D2R and xa_rad_corr > -61.5 * D2R and xa_rad_corr < 61.5 * D2R) {
+    if(ya_rad > -61.5 * D2R and ya_rad < 61.5 * D2R and xa_rad > -61.5 * D2R and xa_rad < 61.5 * D2R) {
       #is within the radar cone
       # AJ37 manual: 61.5 deg sideways.
 
@@ -407,6 +407,7 @@ var trackCalc = func (aircraftPos, range, carrier, mp, type, node) {
 # The following 6 methods is from Mirage 2000-5
 #
 var isNotBehindTerrain = func(SelectCoord) {
+    # this function has been optimized by Pinto
     var isVisible = 0;
     var MyCoord = geo.aircraft_position();
     
@@ -422,15 +423,16 @@ var isNotBehindTerrain = func(SelectCoord) {
         var d = SelectCoord.x();
         var e = SelectCoord.y();
         var f = SelectCoord.z();
-        var x = 0;
-        var y = 0;
-        var z = 0;
-        var RecalculatedL = 0;
         var difa = d - a;
         var difb = e - b;
         var difc = f - c;
+    
+    #print("a,b,c | " ~ a ~ "," ~ b ~ "," ~ c);
+    #print("d,e,f | " ~ d ~ "," ~ e ~ "," ~ f);
+    
         # direct Distance in meters
-        var myDistance = SelectCoord.direct_distance_to(MyCoord);
+        var myDistance = math.sqrt( math.pow((d-a),2) + math.pow((e-b),2) + math.pow((f-c),2)); #calculating distance ourselves to avoid another call to geo.nas (read: speed, probably).
+        #print("myDistance: " ~ myDistance);
         var Aprime = geo.Coord.new();
         
         # Here is to limit FPS drop on very long distance
@@ -439,58 +441,36 @@ var isNotBehindTerrain = func(SelectCoord) {
         {
             L = myDistance / 15;
         }
-        var step = L;
         var maxLoops = int(myDistance / L);
         
         isVisible = 1;
         # This loop will make travel a point between us and the target and check if there is terrain
-        for(var i = 0 ; i < maxLoops ; i += 1)
+        for(var i = 1 ; i <= maxLoops ; i += 1)
         {
-            L = i * step;
-            var K = (L * L) / (1 + (-1 / difa) * (-1 / difa) * (difb * difb + difc * difc));
-            var DELTA = (-2 * a) * (-2 * a) - 4 * (a * a - K);
-            
-            if(DELTA >= 0)
-            {
-                # So 2 solutions or 0 (1 if DELTA = 0 but that 's just 2 solution in 1)
-                var x1 = (-(-2 * a) + math.sqrt(DELTA)) / 2;
-                var x2 = (-(-2 * a) - math.sqrt(DELTA)) / 2;
-                # So 2 y points here
-                var y1 = b + (x1 - a) * (difb) / (difa);
-                var y2 = b + (x2 - a) * (difb) / (difa);
-                # So 2 z points here
-                var z1 = c + (x1 - a) * (difc) / (difa);
-                var z2 = c + (x2 - a) * (difc) / (difa);
-                # Creation Of 2 points
-                var Aprime1  = geo.Coord.new();
-                Aprime1.set_xyz(x1, y1, z1);
-                
-                var Aprime2  = geo.Coord.new();
-                Aprime2.set_xyz(x2, y2, z2);
-                
-                # Here is where we choose the good
-                if(math.round((myDistance - L), 2) == math.round(Aprime1.direct_distance_to(SelectCoord), 2))
-                {
-                    Aprime.set_xyz(x1, y1, z1);
-                }
-                else
-                {
-                    Aprime.set_xyz(x2, y2, z2);
-                }
-                var AprimeLat = Aprime.lat();
-                var Aprimelon = Aprime.lon();
-                var AprimeTerrainAlt = geo.elevation(AprimeLat, Aprimelon);
-                if(AprimeTerrainAlt == nil)
-                {
-                    AprimeTerrainAlt = 0;
-                }
-                
-                if(AprimeTerrainAlt > Aprime.alt())
-                {
-                    # This will prevent the rest of the loop to run if a masking high point is found:
-                    return 0;
-                }
-            }
+          #calculate intermediate step
+          #basically dividing the line into maxLoops number of steps, and checking at each step
+          #to ascii-art explain it:
+          #  |us|----------|step 1|-----------|step 2|--------|step 3|----------|them|
+          #there will be as many steps as there is i
+          #every step will be equidistant
+          
+          #also, if i == 0 then the first step will be our plane
+          
+          var x = ((difa/(maxLoops+1))*i)+a;
+          var y = ((difb/(maxLoops+1))*i)+b;
+          var z = ((difc/(maxLoops+1))*i)+c;
+          #print("i:" ~ i ~ "|x,y,z | " ~ x ~ "," ~ y ~ "," ~ z);
+          Aprime.set_xyz(x,y,z);
+          var AprimeTerrainAlt = geo.elevation(Aprime.lat(), Aprime.lon());
+          if(AprimeTerrainAlt == nil)
+          {
+            AprimeTerrainAlt = 0;
+          }
+          
+          if(AprimeTerrainAlt > Aprime.alt())
+          {
+            return 0;
+          }
         }
     }
     else
