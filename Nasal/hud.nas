@@ -1109,8 +1109,12 @@ var HUDnasal = {
     }
   },
 
+  topHeadingScaleShown: func () {
+    return mode != LANDING or me.input.pitch.getValue() < -2 or me.input.pitch.getValue() > 13.5;
+  },
+
   displayHeadingScale: func () {
-    if (mode != LANDING or me.input.pitch.getValue() < -2 or me.input.pitch.getValue() > 13.5) {
+    if (me.topHeadingScaleShown()) {
       if(me.input.srvHead.getValue() == TRUE) {
         var heading = me.input.hdg.getValue();
         var headOffset = heading/10 - int (heading/10);
@@ -1263,7 +1267,7 @@ var HUDnasal = {
         pos_x = (687/1024)*canvasWidth-(512/1024)*canvasWidth;
       }
       me.heading_bug_group.setTranslation(pos_x, -headScalePlace);
-      if((mode != LANDING or me.input.pitch.getValue() < -5 or me.input.pitch.getValue() > 9) and (blink == FALSE or me.input.fiveHz.getValue() == TRUE)) {
+      if(me.topHeadingScaleShown() and (blink == FALSE or me.input.fiveHz.getValue() == TRUE)) {
         me.heading_bug.show();
       } else {
         me.heading_bug.hide();
@@ -1627,11 +1631,17 @@ var HUDnasal = {
     if(mode == LANDING) {
       var deg = deflect;
       if (me.input.nav0InRange.getValue() == TRUE or me.input.TILS.getValue() == TRUE) {
-        deg = me.input.nav0HeadingDefl.getValue()/2;# -10 to 10, divided by 2.
+        deg = me.input.nav0HeadingDefl.getValue()*0.8;# -10 to +10, showed as -8 till +8
 
         if (me.input.nav0HasGS.getValue() == TRUE and me.input.nav0GSInRange.getValue() == TRUE) {
-          var dev3 = me.input.nav0GSNeedleDefl.getValue() * 5*pixelPerDegreeY+2.86*pixelPerDegreeY;
-          var dev2 = me.input.nav0GSNeedleDefl.getValue() * 3*pixelPerDegreeY+2.86*pixelPerDegreeY;
+          var factor = me.input.nav0GSNeedleDefl.getValue() * -1;
+          if (factor < 0) {
+            # manual states that they can move one length down and half length up. This is to limit to half up.
+            # Maybe should clip instead of scale, not sure.
+            factor *= 0.5;
+          }
+          var dev3 = factor * 5 * pixelPerDegreeY +2.86*pixelPerDegreeY;
+          var dev2 = factor * 3 * pixelPerDegreeY +2.86*pixelPerDegreeY;
           me.desired_lines3.setTranslation(pixelPerDegreeX*deg, dev3);
           me.desired_lines2.setTranslation(pixelPerDegreeX*deg, dev2);
           guideUseLines = TRUE;
@@ -1725,7 +1735,7 @@ var HUDnasal = {
   },
 
   displayQFE: func (mode) {
-    var DME = me.input.dme.getValue() != "---" and me.input.dme.getValue() != "";
+    var DME = me.input.dme.getValue() != "---" and me.input.dme.getValue() != "" and me.input.dmeDist.getValue() != nil and me.input.dmeDist.getValue() != 0;
     if (mode == LANDING and me.input.nav0InRange.getValue() == TRUE) {
       if (me.input.TILS.getValue() == TRUE) {
         if (DME == TRUE) {
@@ -2113,6 +2123,7 @@ var HUDnasal = {
       var rotationSpeed = 250+((weight-28725)/(40350-28725))*(280-250);#km/h
       # as per manual, minimum rotation speed is 250:
       rotationSpeed = ja37.clamp(rotationSpeed, 250, 1000);
+      #rotationSpeed = getprop("fdm/jsbsim/systems/flight/rotation-speed");
       var pixelPerKmh = (2/3*line)/rotationSpeed;
       if(me.input.ias.getValue() < 75/kts2kmh) {
         me.mySpeed.setTranslation(pixelPerKmh*75, 0);
@@ -2234,7 +2245,7 @@ var HUDnasal = {
         me.distanceText.hide();
       }
       me.dist_scale_group.show();
-    } elsif (me.input.dme.getValue() != "---" and me.input.dme.getValue() != "" and me.input.dmeDist.getValue() != nil) {
+    } elsif (me.input.dme.getValue() != "---" and me.input.dme.getValue() != "" and me.input.dmeDist.getValue() != nil and me.input.dmeDist.getValue() != 0) {
       var distance = me.input.dmeDist.getValue();
       var line = (200/1024)*canvasWidth;
       var maxDist = 20;

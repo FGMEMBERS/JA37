@@ -374,7 +374,7 @@
         </multiplay>
 
 
-        <checklists include="Systems/ja37-checklists.xml"/>
+        <checklists include="GUI/viggen-checklists.xml"/>
 
 
         <!--**********************************************************************
@@ -565,6 +565,9 @@
     </ai>
     <fdm>
         <jsbsim>
+            <accelerations>
+                <gravity-ft_sec2 type="double">32.1740</gravity-ft_sec2><!-- start value for compatibility with older FG versions -->
+            </accelerations>
             <structural>
                 <wings>
                     <serviceable type="bool">true</serviceable>
@@ -701,6 +704,12 @@
                         <var3 type="double">50</var3>
                         <magnitude type="double">0.0005</magnitude>
                     </buffeting>
+                    <tertiary>
+                        <state type="double">0</state>
+                    </tertiary>
+                    <reverse>
+                        <state type="double">0</state>
+                    </reverse>
                 </flight>
             </systems>
             <aero>

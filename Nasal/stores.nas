@@ -706,6 +706,19 @@ var impact_listener = func {
 
 ############ response to MP messages #####################
 
+var cannon_types = {
+    " M70 rocket hit":        0.30,
+    " M55 cannon shell hit":  0.20,
+    " KCA cannon shell hit":  0.20,
+    " Gun Splash On ":        0.30,
+    " M61A1 shell hit":       0.20,
+    " GAU-8/A hit":           0.30,
+    " BK27 cannon hit":       0.20,
+    " GSh-30 hit":            0.20,
+};
+    
+    
+    
 var warhead_lbs = {
     "aim-120":              44.00,
     "AIM120":               44.00,
@@ -713,6 +726,7 @@ var warhead_lbs = {
     "aim-7":                88.00,
     "RB-71":                88.00,
     "aim-9":                20.80,
+    "AIM9":                 20.80,
     "AIM-9":                20.80,
     "RB-24":                20.80,
     "RB-24J":               20.80,
@@ -739,6 +753,12 @@ var warhead_lbs = {
     "LAU-68":               10.00,
     "M317":                145.00,
     "GBU-31":              945.00,
+    "AIM132":               22.05,
+    "ALARM":               450.00,
+    "STORMSHADOW":         850.00,
+    "R-60":                  6.60,
+    "R-27R1":               85.98,
+    "R-27T1":               85.98,
 };
 
 var incoming_listener = func {
@@ -891,17 +911,16 @@ var incoming_listener = func {
               nearby_explosion();
             }
           } 
-        } elsif (last_vector[1] == " M70 rocket hit" or last_vector[1] == " M55 cannon shell hit" or last_vector[1] == " KCA cannon shell hit" or last_vector[1] == " Gun Splash On " or last_vector[1] == " M61A1 shell hit" or last_vector[1] == " GAU-8/A hit") {
+        } elsif (cannon_types[last_vector[1]] != nil) {
           # cannon hitting someone
           #print("cannon");
           if (size(last_vector) > 2 and last_vector[2] == " "~callsign) {
             # that someone is me!
             #print("hitting me");
 
-            var probability = 0.20; # take 20% damage from each hit
-            if (last_vector[1] == " Gun Splash On " or last_vector[1] == " M70 rocket hit" or last_vector[1] == " GAU-8/A hit") {
-              probability = 0.30;
-            }
+            var probability = cannon_types[last_vector[1]];
+            #print("probability: " ~ probability);
+            
             var failed = fail_systems(probability);
             printf("Took %.1f%% damage from cannon! %s systems was hit.", probability*100, failed);
             nearby_explosion();
@@ -1154,7 +1173,7 @@ var ammoCount = func (station) {
 }
 
 var selectCannon = func {
-  if(getprop("sim/description") == "Saab JA-37 Viggen") {
+  if(getprop("ja37/systems/variant") == 0) {
     setprop("controls/armament/station-select", 0);
     ja37.click();
   }
@@ -1178,7 +1197,7 @@ var cycle_weapons = func {
 
   while(newType == "none") {
     if (type == "none") {
-      if(getprop("sim/description") == "Saab JA-37 Viggen") {
+      if(getprop("ja37/systems/variant") == 0) {
         sel = 0;
         newType = "KCA";
       } else {
@@ -1288,7 +1307,7 @@ var cycle_weapons = func {
         type = "RB 15F Attackrobot";
       }
     } elsif (type == "RB 15F Attackrobot") {
-      if(getprop("sim/description") == "Saab JA-37 Viggen") {
+      if(getprop("ja37/systems/variant") == 0) {
         sel = 0;
         newType = "KCA";
       } else {
@@ -1419,6 +1438,96 @@ reloadJAAir2Ground = func {
 
 reloadAJAir2Tank = func {
   # Reload missiles - 4 of them.
+  setprop("payload/weight[0]/selected", "M70 ARAK");
+  setprop("payload/weight[1]/selected", "RB 24J Sidewinder");
+  setprop("payload/weight[2]/selected", "M70 ARAK");
+  setprop("payload/weight[3]/selected", "RB 75 Maverick");
+  setprop("payload/weight[4]/selected", "none");
+  setprop("payload/weight[5]/selected", "none");
+  setprop("ai/submodels/submodel[6]/count", 6);
+  setprop("ai/submodels/submodel[8]/count", 6);
+  screen.log.write("2 Bofors M70 rocket pods attached", 0.0, 1.0, 0.0);
+  screen.log.write("1 RB-75 Maverick attached", 0.0, 1.0, 0.0);
+  screen.log.write("1 RB-24J Sidewinder attached", 0.0, 1.0, 0.0);
+
+  # Reload flares - 40 of them.
+  setprop("ai/submodels/submodel[0]/count", 60);
+  setprop("ai/submodels/submodel[1]/count", 60);
+  screen.log.write("60 flares loaded", 0.0, 1.0, 0.0);
+
+  # Reload cannon - 146 of them.
+  reloadGuns();
+}
+
+reloadAJAir2Ship = func {
+  # Reload missiles - 4 of them.
+  setprop("payload/weight[0]/selected", "RB 04E Attackrobot");
+  setprop("payload/weight[1]/selected", "RB 05A Attackrobot");
+  setprop("payload/weight[2]/selected", "RB 04E Attackrobot");
+  setprop("payload/weight[3]/selected", "RB 75 Maverick");
+  setprop("payload/weight[4]/selected", "none");
+  setprop("payload/weight[5]/selected", "none");
+  screen.log.write("1 RB-05A missile attached", 0.0, 1.0, 0.0);
+  screen.log.write("2 RB-04E cruise-antiship-missile attached", 0.0, 1.0, 0.0);
+  screen.log.write("1 RB-75 Maverick attached", 0.0, 1.0, 0.0);
+
+  # Reload flares - 40 of them.
+  setprop("ai/submodels/submodel[0]/count", 60);
+  setprop("ai/submodels/submodel[1]/count", 60);
+  screen.log.write("60 flares loaded", 0.0, 1.0, 0.0);
+
+  # Reload cannon - 146 of them.
+  reloadGuns();
+}
+
+reloadAJAir2Personel = func {
+  # Reload missiles - 4 of them.
+  setprop("payload/weight[0]/selected", "M55 AKAN");
+  setprop("ai/submodels/submodel[10]/count", 150);
+  setprop("payload/weight[1]/selected", "M71 Bomblavett");
+  setprop("payload/weight[1]/ammo", 4);
+  setprop("payload/weight[2]/selected", "M55 AKAN");
+  setprop("ai/submodels/submodel[12]/count", 150);
+  setprop("payload/weight[3]/selected", "M71 Bomblavett");
+  setprop("payload/weight[3]/ammo", 4);
+  setprop("payload/weight[4]/selected", "none");
+  setprop("payload/weight[5]/selected", "none");
+  screen.log.write("2 M55 cannonpod attached", 0.0, 1.0, 0.0);
+  screen.log.write("2 M71 bomblet rail attached", 0.0, 1.0, 0.0);
+
+  # Reload flares - 40 of them.
+  setprop("ai/submodels/submodel[0]/count", 60);
+  setprop("ai/submodels/submodel[1]/count", 60);
+  screen.log.write("60 flares loaded", 0.0, 1.0, 0.0);
+
+  # Reload cannon - 146 of them.
+  reloadGuns();
+}
+
+reloadAJAir2Air = func {
+  # Reload missiles - 4 of them.
+  setprop("payload/weight[0]/selected", "M55 AKAN");
+  setprop("ai/submodels/submodel[10]/count", 150);
+  setprop("payload/weight[1]/selected", "RB 24J Sidewinder");
+  setprop("payload/weight[2]/selected", "M55 AKAN");
+  setprop("ai/submodels/submodel[12]/count", 150);
+  setprop("payload/weight[3]/selected", "RB 24J Sidewinder");
+  setprop("payload/weight[4]/selected", "none");
+  setprop("payload/weight[5]/selected", "none");
+  screen.log.write("2 M55 cannonpod attached", 0.0, 1.0, 0.0);
+  screen.log.write("2 RB-24J Sidewinder attached", 0.0, 1.0, 0.0);
+
+  # Reload flares - 40 of them.
+  setprop("ai/submodels/submodel[0]/count", 60);
+  setprop("ai/submodels/submodel[1]/count", 60);
+  screen.log.write("60 flares loaded", 0.0, 1.0, 0.0);
+
+  # Reload cannon - 146 of them.
+  reloadGuns();
+}
+
+reloadAJSAir2Tank = func {
+  # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "RB 75 Maverick");
   setprop("payload/weight[1]/selected", "M70 ARAK");
   setprop("payload/weight[2]/selected", "RB 75 Maverick");
@@ -1440,18 +1549,17 @@ reloadAJAir2Tank = func {
   reloadGuns();
 }
 
-reloadAJAir2Ship = func {
+reloadAJSAir2Ship = func {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "RB 15F Attackrobot");
   setprop("payload/weight[1]/selected", "RB 05A Attackrobot");
-  setprop("payload/weight[2]/selected", "RB 04E Attackrobot");
+  setprop("payload/weight[2]/selected", "RB 15F Attackrobot");
   setprop("payload/weight[3]/selected", "RB 75 Maverick");
   setprop("payload/weight[4]/selected", "RB 24J Sidewinder");
   setprop("payload/weight[5]/selected", "RB 24J Sidewinder");
   screen.log.write("1 RB-05A missile attached", 0.0, 1.0, 0.0);
-  screen.log.write("1 RB-04E cruise-antiship-missile attached", 0.0, 1.0, 0.0);
   screen.log.write("1 RB-75 Maverick attached", 0.0, 1.0, 0.0);
-  screen.log.write("1 RB-15F cruise-missiles attached", 0.0, 1.0, 0.0);
+  screen.log.write("2 RB-15F cruise-missiles attached", 0.0, 1.0, 0.0);
   screen.log.write("2 RB-24J Sidewinder attached", 0.0, 1.0, 0.0);
 
   # Reload flares - 40 of them.
@@ -1463,7 +1571,7 @@ reloadAJAir2Ship = func {
   reloadGuns();
 }
 
-reloadAJAir2Personel = func {
+reloadAJSAir2Personel = func {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "M55 AKAN");
   setprop("ai/submodels/submodel[10]/count", 150);
@@ -1488,7 +1596,7 @@ reloadAJAir2Personel = func {
   reloadGuns();
 }
 
-reloadAJAir2Air = func {
+reloadAJSAir2Air = func {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "M55 AKAN");
   setprop("ai/submodels/submodel[10]/count", 150);
@@ -1514,7 +1622,7 @@ reloadAJAir2Air = func {
 reloadGuns = func {
   # Reload cannon - 146 of them.
   #setprop("ai/submodels/submodel[2]/count", 29);
-  if(getprop("sim/description") == "Saab JA-37 Viggen") {
+  if(getprop("ja37/systems/variant") == 0) {
     setprop("ai/submodels/submodel[3]/count", 146);
     setprop("ai/submodels/submodel[4]/count", 146);
     screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);

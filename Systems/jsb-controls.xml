@@ -90,7 +90,7 @@
         <switch name="fcs/elevator/alpha-limit-speed">
             <default value="350.9719"/>
             <test logic="AND" value="377.96976">
-                /ja37/systems/variant == 1
+                /ja37/systems/variant gt 0
             </test>
         </switch>
 
@@ -376,13 +376,14 @@
             </range>
         </aerosurface_scale>
 
-        <switch name="systems/flight/pitch-gearing-norm">
+        <switch name="systems/flight/pitch-gearing">
             <default value="systems/flight/pitch-gearing-ja37-norm"/>
             <test logic="OR" value="systems/flight/pitch-gearing-aj37-norm">
-               /ja37/systems/variant == 1
+               /ja37/systems/variant gt 0
             </test>
         </switch>
 
+        <!--
         <fcs_function name="systems/flight/pitch-gearing-fun">
             <function>
                 <product>
@@ -401,7 +402,6 @@
                             2.00        0.10      0.20      0.70
                         </tableData>
                     </table>
-                    <!--<property>/test</property>-->
                </product>
             </function>
         </fcs_function>
@@ -411,7 +411,7 @@
             <test logic="OR" value="systems/flight/pitch-gearing-fun">
                 /ja37/avionics/fun == 1
             </test>
-        </switch>
+        </switch>-->
 
         <!-- At high speeds elevator up deflection is reduced,
            At high altitude elevator up deflection is increased -->
@@ -457,7 +457,8 @@
                 </setting>
                 <setting>
                     <position>  1.0 </position>
-                    <time>      1.5 </time><!-- high number will prevent too much instant G when fast pulling back -->
+                    <!--<time>      1.257 </time>--><!-- 35 degs per second -->
+                    <time>      1.5 </time>
                 </setting>
             </traverse>
             <clipto>
@@ -502,7 +503,7 @@
         <switch name="fcs/elevator/alpha-scheduler">
             <default value="fcs/elevator/alpha-scheduler-ja37"/>
             <test logic="OR" value="fcs/elevator/alpha-scheduler-aj37">
-               /ja37/systems/variant == 1
+               /ja37/systems/variant gt 0
             </test>
             <clipto>
                 <min>-1</min>
@@ -803,7 +804,7 @@
                 </setting>
                 <setting>
                     <position>  1.0 </position>
-                    <time>      0.25 </time>
+                    <time>      0.857 </time><!-- 35 degs per second -->
                 </setting>
             </traverse>
             <clipto>
@@ -880,19 +881,54 @@
             <output>fcs/right-elevon-pos-rad</output>
         </summer>
 
-        <pure_gain name="names/elevon/Left-Elevon-Pos-Deg">
+        <pure_gain name="names/elevon/Left-Elevon-Outer-Pos-Deg">
             <input>fcs/left-elevon-pos-rad</input>
             <gain>57.296</gain>
             <output>fcs/left-aileron-pos-norm</output>
             <!-- is really deg, but use this for MP transmit -->
         </pure_gain>
 
-        <pure_gain name="names/elevon/Right-Elevon-Pos-Deg">
+        <pure_gain name="names/elevon/Right-Elevon-Outer-Pos-Deg">
             <input>fcs/right-elevon-pos-rad</input>
             <gain>57.296</gain>
             <output>fcs/right-aileron-pos-norm</output>
             <!-- is really deg, but use this for MP transmit -->
         </pure_gain>
+
+        <kinematic name="names/elevon/Left-Elevon-Inner-Pos-Deg">
+            <input>fcs/left-aileron-pos-norm</input>
+            <noscale/>
+            <traverse>
+                <setting>
+                    <position> -37.0 </position>
+                    <time>      0.0 </time>
+                </setting>
+                <setting>
+                    <position>  31.0 </position>
+                    <time>      2.50 </time><!-- 29.5 degs per second -->
+                </setting>
+            </traverse>
+            <output>fcs/elevator-pos-norm</output>
+            <!-- is really deg, but use this for MP transmit -->
+        </kinematic>
+
+        <kinematic name="names/elevon/Right-Elevon-Inner-Pos-Deg">
+            <input>fcs/right-aileron-pos-norm</input>
+            <noscale/>
+            <traverse>
+                <setting>
+                    <position> -37.0 </position>
+                    <time>      0.0 </time>
+                </setting>
+                <setting>
+                    <position>  31.0 </position>
+                    <time>      2.50 </time><!-- 29.5 degs per second -->
+                </setting>
+            </traverse>
+            <output>fcs/spoiler-pos-norm</output>
+            <!-- is really deg, but use this for MP transmit -->
+        </kinematic>
+
     </channel>
 
 
@@ -1238,6 +1274,14 @@
 
     <channel execrate="1" name="Flaps">
         <!-- Can move 30 degrees down, and 4 degrees up -->
+
+        <switch name="names/flaps/cmd-active">
+            <default value="0"/>
+            <test logic="OR" value="1">
+                /systems/electrical/outputs/dc-voltage gt 23
+            </test>
+            <output>fcs/flaps/pos-cmd</output>
+        </switch>
 
         <kinematic name="names/flaps/pos-norm">
             <input>fcs/flaps/tmp-norm</input>

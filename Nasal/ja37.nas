@@ -251,21 +251,6 @@ var update_loop = func {
       input.fuelTemp.setBoolValue(FALSE);
     }
 
-    ## control flaps ##
-
-    var flapsCommand = 0;
-    var battery = input.dcVolt.getValue();
-
-    if (battery > 23) {
-      flapsCommand = 1;
-    } else {
-      flapsCommand = 0;
-    }
-    if (input.flapPosCmd.getValue() != flapsCommand) {
-      #trying to not write to fdm unless changed.
-      input.flapPosCmd.setDoubleValue(flapsCommand);
-    }
-    
     #if(getprop("/sim/failure-manager/controls/flight/rudder/serviceable") == 1) {
     #  setprop("fdm/jsbsim/fcs/rudder/serviceable", 1);
     #} elsif (getprop("fdm/jsbsim/fcs/rudder/serviceable") == 1) {
@@ -302,7 +287,7 @@ var update_loop = func {
           #print("Auto-reversing the thrust");
           touchdown1 = FALSE;
           touchdown2 = FALSE;
-          reversethrust.togglereverser();
+          reversethrust.reverserOn();
         }
       }
     }
@@ -310,16 +295,6 @@ var update_loop = func {
     prevGear0 = gear0;
     prevGear1 = gear1;
     prevGear2 = gear2;
-
-    # Make sure have engine sound at reverse thrust
-
-    var thrust = input.thrustLb.getValue();
-     
-    if(thrust != nil) {
-      input.thrustLbAbs.setDoubleValue(abs(thrust));
-    } else {
-      input.thrustLbAbs.setDoubleValue(0);
-    }
 
     # meter altitude property
 
@@ -405,7 +380,7 @@ var update_loop = func {
       
     }
 
-    if(getprop("sim/description") != "Saab JA-37 Viggen" and getprop("/instrumentation/radar/range") == 180000) {
+    if(getprop("ja37/systems/variant") != 0 and getprop("/instrumentation/radar/range") == 180000) {
       setprop("/instrumentation/radar/range", 120000);
     }
 
@@ -426,7 +401,6 @@ var update_loop = func {
 var TILSprev = FALSE;
 var acPrev = 0;
 var acTimer = 0;
-var tert = FALSE;
 
 # slow updating loop
 var slow_loop = func () {
@@ -632,19 +606,6 @@ var slow_loop = func () {
   setprop("/environment/aircraft-effects/frost-level", frostNorm);
   setprop("/environment/aircraft-effects/fog-level", fogNorm);
   setprop("/environment/aircraft-effects/use-mask", mask);
-
-  # tertiary engine opening, page 188 of JA37Di manual
-  if (input.dcVolt.getValue() > 23) {
-    if (tert == FALSE and input.mach.getValue() > 0.67 and input.gearCmdNorm.getValue() == 0 and getprop("fdm/jsbsim/propulsion/engine/zone") > 1 and getprop("controls/engines/engine/cutoff-augmentation") == FALSE) {
-      # the door closes
-      tert = TRUE;
-      interpolate("ja37/systems/tertiary-opening", 0.0, 10);
-    } elsif (input.mach.getValue() < 0.64 and tert == TRUE) {
-      # the door opens
-      tert = FALSE;
-      interpolate("ja37/systems/tertiary-opening", 1.0, 10);
-    }
-  }
 
   settimer(slow_loop, 1.5);
 }
