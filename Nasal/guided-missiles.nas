@@ -42,6 +42,8 @@ var ORDNANCE = 3;
 var g_fps        = 9.80665 * M2FT;
 var slugs_to_lbs = 32.1740485564;
 
+var first_in_air = FALSE;# first missile is in the air, other missiles should not write to blade[x].
+
 #
 # The radar will make sure to keep this variable updated.
 # Whatever is targeted and ready to be fired upon, should be set here.
@@ -250,6 +252,8 @@ var AIM = {
 		m.energyBleedKt = 0;
 
 		m.lastFlare = 0;
+		m.explodeSound = TRUE;
+		m.first = FALSE;
 
 		m.SwSoundOnOff.setBoolValue(FALSE);
 		m.SwSoundVol.setDoubleValue(m.vol_search);
@@ -260,6 +264,9 @@ var AIM = {
 	#done
 	del: func {
 		#print("deleted");
+		if (me.first == TRUE) {
+			me.resetFirst();
+		}
 		me.model.remove();
 		me.ai.remove();
 		if (me.status == MISSILE_FLYING) {
@@ -748,6 +755,8 @@ var AIM = {
 		#setprop("logging/missile/drag-lbf", Cd * q * me.eda);
 		#setprop("logging/missile/thrust-lbf", thrust_lbf);
 
+		me.setFirst(grav_bomb);
+
 		me.latN.setDoubleValue(me.coord.lat());
 		me.lonN.setDoubleValue(me.coord.lon());
 		me.altN.setDoubleValue(me.alt_ft);
@@ -794,7 +803,9 @@ var AIM = {
 				me.sndSpeed = sound_fps;
 				me.sndDistance = 0;
 				me.elapsed_last = systime();
-				me.sndPropagate();
+				if (me.explodeSound == TRUE) {
+					me.sndPropagate();
+				}
 				return;
 			}
 		} else {
@@ -809,6 +820,25 @@ var AIM = {
 		}
 		me.last_dt = me.dt;
 		settimer(func me.flight(), update_loop_time, SIM_TIME);		
+	},
+
+	setFirst: func(grav_bomb) {
+		if (grav_bomb == FALSE) {
+			if (me.first == TRUE or first_in_air == FALSE) {
+				me.first = TRUE;
+				first_in_air = TRUE;
+				setprop("rotors/main/blade[0]/flap-deg", me.coord.lat());
+				setprop("rotors/main/blade[1]/flap-deg", me.coord.lon());
+				setprop("rotors/main/blade[2]/flap-deg", me.coord.alt());
+			}
+		}
+	},
+
+	resetFirst: func() {
+		first_in_air = FALSE;
+		setprop("rotors/main/blade[0]/flap-deg", 0);
+		setprop("rotors/main/blade[1]/flap-deg", 0);
+		setprop("rotors/main/blade[2]/flap-deg", 0);
 	},
 
 	limitG: func () {
@@ -1306,7 +1336,11 @@ var AIM = {
         if(ground != nil and me.direct_dist_m != nil)
         {
             if(ground > me.coord.alt()) {
-                me.explode("Hit terrain.");
+            	var event = "exploded";
+            	if(me.life_time < me.arming_time) {
+                	event = "landed disarmed";
+            	}
+            	me.explode("Hit terrain.", event);
                 return TRUE;
             }
         }
@@ -1314,7 +1348,7 @@ var AIM = {
 		return FALSE;
 	},
 
-	explode: func (reason) {
+	explode: func (reason, event = "exploded") {
 		# Get missile relative position to the target at last frame.
 		#var t_bearing_deg = me.last_t_coord.course_to(me.last_coord);
 		#var t_delta_alt_m = me.last_coord.alt() - me.last_t_coord.alt();
@@ -1357,7 +1391,7 @@ var AIM = {
 		#print("FOX2: me.direct_dist_m = ",  me.direct_dist_m, " time ",getprop("sim/time/elapsed-sec"));
 		#impact_report(me.t_coord, wh_mass, "missile"); # pos, alt, mass_slug,(speed_mps)
 
-		var phrase = sprintf( me.type~" exploded: %01.1f", min_distance) ~ " meters from: " ~ me.callsign;
+		var phrase = sprintf( me.type~" "~event~": %01.1f", min_distance) ~ " meters from: " ~ me.callsign;
 		print(phrase~"  Reason: "~reason~sprintf(" time %.1f", me.life_time));
 		if (min_distance < me.reportDist) {
 			me.sendMessage(phrase);
@@ -1366,7 +1400,12 @@ var AIM = {
 		}
 		
 		me.ai.getNode("valid", 1).setBoolValue(0);
-		me.animate_explosion();
+		if (event == "exploded") {
+			me.animate_explosion();
+			me.explodeSound = TRUE;
+		} else {
+			me.explodeSound = FALSE;
+		}
 		me.Tgt = nil;
 	},
 

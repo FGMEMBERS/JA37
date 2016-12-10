@@ -321,6 +321,9 @@ var loop_stores = func {
 
     #activate searcher on selected pylon if missile mounted
     var armSelect = input.stationSelect.getValue();
+    if (armSelect == 0) {
+      setprop("ja37/avionics/vid", FALSE);
+    }
     for(i = 0; i <= 6; i += 1) {
       var payloadName = props.globals.getNode("payload/weight["~ i ~"]/selected");
       if(armament.AIM.active[i] != nil) {
@@ -342,6 +345,17 @@ var loop_stores = func {
           armament.AIM.active[i].status = MISSILE_SEARCH;
           #print("active "~i);
           armament.AIM.active[i].search();
+        } 
+      }
+      if (armSelect == (i+1)) {
+        if(payloadName.getValue() == "RB 75 Maverick"
+                and armament.AIM.active[i] != nil
+                and armament.AIM.active[i].status == MISSILE_SEARCH
+                and input.combat.getValue() == 2) {
+          #pylon selected, maverick mounted, in tactical mode, searching: activate VID
+          setprop("ja37/avionics/vid", TRUE);
+        } else {
+          setprop("ja37/avionics/vid", FALSE);
         }
       }
     }
@@ -539,23 +553,6 @@ var loop_stores = func {
     setprop("ai/submodels/submodel[0]/flare-release", FALSE);
     flareCount = -1;
   }
-
-  #var mkeys = keys(armament.AIM.flying);
-  #var str = "";
-  #foreach(var m; mkeys) {
-  #  var mid = m;
-  #  m = armament.AIM.flying[m];
-  #  var lat = m.latN.getValue();
-  #  var lon = m.lonN.getValue();
-  #  var alt = m.altN.getValue();
-    #print();
-    #print(mid);
-    #print(lat);
-    #print(lon);
-    #print(alt);
-  #  str = str~mid~";"~lat~";"~lon~";"~alt~":";
-  #}
-  #setprop("sim/multiplay/generic/string[13]", str);
 
   settimer(func { loop_stores() }, STORES_UPDATE_PERIOD);
 }

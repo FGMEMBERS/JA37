@@ -10,7 +10,6 @@ GUI: Option to switch off hitting stuff above ground. (switched off now, might c
 Aero: Make JA cannon pod detachable and have pointweight. (and model it above drop-tank)
 Aero: Air-brakes, even though they got welded shut in mid 80ties. (Request from JazzTp)
 Aero: Make recoil not assume that FDM rate is 120 Hz.
-Control: Pitch damper should also take lateral normal (Nz) acceleration as input as per manual.
 Control: Disable failure system from freezing surfaces (remove failure mode bug in 3.2- prevents)
 Model: Make minimal polygon model for multiplayer LOD.
 Model: Make liveries that is not 59, able to not have to use base texture.
@@ -26,16 +25,14 @@ Model: The reserve generator. (ram air turbine)
 Model: Proper floor in the cockpit.
 Model: Buttons for ejecting drop-tank/armaments. They have a flip lid.
 Model: Fix z-fighting on HUD brightness-knob, M71-rail and M90. (strange, might not be z-fighting, but sure looks like it)
-Model: Make the AJ37 black tube next to HUD, used for vision guided munition RB-75. It should have transparent glass cover.
 Model: Button with fliplid to jettison all stores including drop-tank.
 Model: Button with fliplid to jettison drop-tank.
 Model: A/P control in cockpit: A/T on throttle, A/P disengage on stick.
 Model: Review all indicator lights. For example the A/T light should blink by malfunctions or disengagements.
-Animation: Show wheels spinning in MP also.
 Animation: Proper animation of gear doors and gear retraction.
 Animation: Buffeting of view, when get hit, crash.
 Animation: Make rear boogie rotate at takeoff/landing rotation.
-Sim: Improve autopilot further. (alt-hold should use pitch not v-speed)
+Sim: Improve autopilot further.
 Sim: Make autopilot depend fully on instrument properties not true properties. (95% done)
 Sim: Implement ejection seat. (with parachute?)
 Sim: Reset controls after A/P let go of them.
@@ -72,10 +69,13 @@ Sim: Review A/P working property use. Also in jsb for stick control.
 Sim: Make weapons hit all nearby targets.
 Sim: Make dumb bombs not require a target.
 Sim: When inverted for more than 10 secs, let oil pressure be affected, and disrupt engine operations.
+Sim: Make schedule for max climb rate with A/P at slow speed different when gears is down (or A/T AoA hold).
+Sim: Make flare over MP use int instead of String.
 Radar: Make database of RCS of common aircrafts.
 Effect: Rembrandt landing lightcone.
 Effect: Make pilot faint/die due to G-forces.
 Effect: Make tires burst if too high speed with parking brakes.
+Effect: Review all armament smokes and make them ignore lightning.
 Sound: More annunciater warnings and other sounds. (transonic)
 Sound: Make sounds when taking damage in bombable.
 Sound: Adjust the volume of the explosion of nearby missile, depending on distance.
@@ -88,6 +88,7 @@ HUD: All track semi circles and semi box should have a line in them. (might degr
 HUD: Fix that HUD selects diamond_node, not radar logic, so HUD can be turned off in external view.
 HUD: When DME are enabled at the same time as ILS with glideslope, the distance scale make the ILS view confusing.
 HUD: Make crossing out of hud when armament not ready to fire and trigger is pressed.
+HUD: Make use of Richards new wrapper, to improve terrain warning. (2017.1.1)
 
 
 
@@ -106,6 +107,7 @@ Model: CTRL-X in HUD view will not zoom to correct level.
 Model: Droptank indicator should really be a steerpoint indicator.
 Model: In FG 2.12 radar screen does not work as it should. (no canvas replacement)
 Model: sim load-lag when coming near other ja37. [reproduced, select anims are probably to blame]
+Model: All shader use of <use> does not work over MP.
 Radar: Shooting at imdrone ship, it blinks in and out before getting lock.
 Report: {JabberWocky} After A/P the plane consumes too much fuel. [not reproduceable]
 Sim: Check missile sound at KCA again..

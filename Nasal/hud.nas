@@ -47,7 +47,8 @@ var QFEcalibrated = FALSE;# if the altimeters are calibrated
 
 var HUDTop = 0.77; # position of top of HUD in meters. 0.77
 var HUDBottom = 0.63; # position of bottom of HUD in meters. 0.63
-var HUDHoriz = -4.0; # position of HUD on x axis in meters. -4.0
+#var HUDHoriz = -4.0; # position of HUD on x axis in meters. -4.0
+var HUDHoriz = -4.06203;#pintos new hud
 var HUDHeight = HUDTop - HUDBottom; # height of HUD
 var canvasWidth = 512;
 var max_width = (450/1024)*canvasWidth;
@@ -766,6 +767,22 @@ var HUDnasal = {
     HUDnasal.main.tower_symbol_icao.setTranslation((12/1024)*canvasWidth, -(12/1024)*canvasWidth);
     HUDnasal.main.tower_symbol_icao.setFontSize((60/1024)*canvasWidth*fs, ar);
 
+    #ccip symbol
+    HUDnasal.main.ccip_symbol = HUDnasal.main.root.createChild("group");
+    HUDnasal.main.ccip_symbol.createTransform();
+    var ccip = HUDnasal.main.ccip_symbol.createChild("path")
+                           .moveTo(-(5/1024)*canvasWidth,   0)
+                           .lineTo(  0, -(5/1024)*canvasWidth)
+                           .lineTo( (5/1024)*canvasWidth,   0)
+                           .lineTo(  0,  (5/1024)*canvasWidth)
+                           .lineTo(-(5/1024)*canvasWidth,   0)
+                           .moveTo(-(25/1024)*canvasWidth,   0)
+                           .arcLargeCW((25/1024)*canvasWidth, (25/1024)*canvasWidth, 0,  (50/1024)*canvasWidth, 0)
+                           .moveTo(-(25/1024)*canvasWidth,   0)
+                           .arcLargeCCW((25/1024)*canvasWidth, (25/1024)*canvasWidth, 0,  (50/1024)*canvasWidth, 0)
+                           .setStrokeLineWidth(w)
+                           .setColor(r,g,b, a);
+
     #distance scale
     HUDnasal.main.dist_scale_group = HUDnasal.main.root.createChild("group").setTranslation(-(100/1024)*canvasWidth, (distScalePos/1024)*canvasWidth);
     HUDnasal.main.mySpeed = HUDnasal.main.dist_scale_group.createChild("path")
@@ -830,7 +847,7 @@ var HUDnasal = {
              HUDnasal.main.alt_scale_line, HUDnasal.main.aim_reticle_fin, HUDnasal.main.reticle_cannon, HUDnasal.main.desired_lines2,
              HUDnasal.main.alt_pointer, HUDnasal.main.rad_alt_pointer, HUDnasal.main.target_air, HUDnasal.main.target_sea, HUDnasal.main.target_ground, HUDnasal.main.desired_lines3, HUDnasal.main.horizon_line_gap,
              HUDnasal.main.reticle_no_ammo, HUDnasal.main.takeoff_symbol, HUDnasal.main.horizon_line, HUDnasal.main.horizon_dots, HUDnasal.main.diamond,
-             tower, HUDnasal.main.aim_reticle, HUDnasal.main.targetSpeed, HUDnasal.main.mySpeed, HUDnasal.main.distanceScale, HUDnasal.main.targetDistance1,
+             tower, ccip, HUDnasal.main.aim_reticle, HUDnasal.main.targetSpeed, HUDnasal.main.mySpeed, HUDnasal.main.distanceScale, HUDnasal.main.targetDistance1,
              HUDnasal.main.targetDistance2, HUDnasal.main.landing_line, HUDnasal.main.heading_bug_horz];
 
     artifactsText0 = [HUDnasal.main.airspeedInt, HUDnasal.main.airspeed, HUDnasal.main.hdgM, HUDnasal.main.hdgL, HUDnasal.main.hdgR, HUDnasal.main.qfe,
@@ -1066,8 +1083,11 @@ var HUDnasal = {
       # desired alt lines
       me.displayDesiredAltitudeLines(guide);
 
+      # CCIP
+      var fallTime = me.displayCCIP();
+
       # distance scale
-      me.showDistanceScale(mode);
+      me.showDistanceScale(mode, fallTime);
 
       ### artificial horizon and pitch lines ###
       me.displayPitchLines(mode);
@@ -1080,6 +1100,8 @@ var HUDnasal = {
 
       # tower symbol
       me.displayTower();
+
+      
 
       skip = !skip;#we skip some function every other time, for performance
 
@@ -2110,7 +2132,7 @@ var HUDnasal = {
     }
   },
 
-  showDistanceScale: func (mode) {
+  showDistanceScale: func (mode, fallTime) {
     if(mode == TAKEOFF) {
       var line = (200/1024)*canvasWidth;
 
@@ -2149,6 +2171,9 @@ var HUDnasal = {
         var minDist = nil;# meters
         var maxDist = nil;# meters
         var currDist = radar_logic.selection.get_range()*NM2M;
+        var unit = "meters";
+        var blink = FALSE;
+        var shown = TRUE;
         if(armSelect == 0) {
           # cannon
           minDist =  100;
@@ -2195,8 +2220,9 @@ var HUDnasal = {
           maxDist = 2800;
         } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M71 Bomblavett") {
           # robot 15F
-          minDist =   0;
-          maxDist = 1000;
+          unit = "seconds";
+          minDist =   4;
+          maxDist =  16;
         } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M90 Bombkapsel") {
           # robot 15F
           minDist =   0.1 * NM2M;
@@ -2211,12 +2237,30 @@ var HUDnasal = {
           maxDist =180000;
         }
         if(currDist != nil and minDist != nil) {
-          var pixelPerMeter = (3/5*line)/(maxDist - minDist);
-          var startDist = (minDist - ((maxDist - minDist)/3));
-          var pos = pixelPerMeter*(currDist-startDist);
-          pos = clamp(pos, 0, line);
-          me.mySpeed.setTranslation(pos, 0);
-          me.mySpeed.show();
+          if (unit == "meters") {
+            var pixelPerMeter = (3/5*line)/(maxDist - minDist);
+            var startDist = (minDist - ((maxDist - minDist)/3));
+            var pos = pixelPerMeter*(currDist-startDist);
+            pos = clamp(pos, 0, line);
+            me.mySpeed.setTranslation(pos, 0);
+          } else {
+            var pixelPerMeter = (3/5*line)/(maxDist - minDist);
+            var startDist = (minDist - ((maxDist - minDist)/3));
+            var pos = pixelPerMeter*(fallTime-startDist);
+            pos = clamp(pos, 0, line);
+            me.mySpeed.setTranslation(pos, 0);
+            if (fallTime < 4) {
+              blink = TRUE;
+            }
+            if (fallTime > 16) {
+              shown = FALSE;
+            }
+          }
+          if(shown == TRUE and (blink == FALSE or me.input.tenHz.getValue() == TRUE)) {
+            me.mySpeed.show();
+          } else {
+            me.mySpeed.hide();
+          }
         } else {
           me.mySpeed.hide();
         }
@@ -2224,9 +2268,15 @@ var HUDnasal = {
         me.targetDistance2.setTranslation(4/5*line, 0);
 
         me.targetSpeed.hide();
-        me.targetDistance1.show();
-        me.targetDistance2.show();
-        me.distanceScale.show();
+        if(shown == TRUE and (blink == FALSE or me.input.tenHz.getValue() == TRUE)) {
+          me.targetDistance1.show();
+          me.targetDistance2.show();
+          me.distanceScale.show();
+        } else {
+          me.targetDistance1.hide();
+          me.targetDistance2.hide();
+          me.distanceScale.hide();
+        }
       } else {
         me.mySpeed.hide();
         me.targetSpeed.hide();
@@ -2305,14 +2355,11 @@ var HUDnasal = {
 
         if(pos_x > (512/1024)*canvasWidth) {
           showme = FALSE;
-        }
-        if(pos_x < -(512/1024)*canvasWidth) {
+        } elsif(pos_x < -(512/1024)*canvasWidth) {
           showme = FALSE;
-        }
-        if(pos_y > (512/1024)*canvasWidth) {
+        } elsif(pos_y > (512/1024)*canvasWidth) {
           showme = FALSE;
-        }
-        if(pos_y < -(512/1024)*canvasWidth) {
+        } elsif(pos_y < -(512/1024)*canvasWidth) {
           showme = FALSE;
         }
 
@@ -2336,6 +2383,118 @@ var HUDnasal = {
     } else {
       me.tower_symbol.hide();
     }
+  },
+
+  displayCCIP: func () {
+    if(mode == COMBAT) {
+
+      var armSelect = me.input.station.getValue();
+      if(armSelect != 0 and getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M71 Bomblavett") {
+
+        var bomb = nil;
+        if(armament.AIM.active[armSelect-1] != nil) {
+          bomb = armament.AIM.active[armSelect-1];
+        } else {
+          me.ccip_symbol.hide();
+          return 20;
+        }
+
+        var agl = getprop("position/altitude-agl-ft")*FT2M;
+        var alti = getprop("position/altitude-ft")*FT2M;
+        var pitch = getprop("orientation/pitch-deg");
+        var roll = getprop("orientation/roll-deg");
+        var vel = getprop("velocities/groundspeed-kt")*0.5144;#m/s
+        var heading = getprop("orientation/heading-deg");#true
+        var dens = getprop("fdm/jsbsim/atmosphere/density-altitude");
+        var mach = getprop("velocities/mach");
+
+        var alpha = getprop("orientation/alpha-deg");
+        var beta = getprop("orientation/side-slip-deg");# positive is air from right
+
+        var alpha_diff = alpha * math.cos(roll*D2R) + beta * math.sin(roll*D2R);
+        alpha_diff = alpha > 0?alpha_diff:0;
+        pitch = pitch - alpha_diff;
+
+        var t = 0.0;
+        var dt = 0.1;
+        var alt = agl;
+        var vel_z = vel*math.sin(pitch*D2R);#positive upwards
+        var fps_z = vel_z * M2FT;
+        var vel_x = vel*math.cos(pitch*D2R);
+        var fps_x = vel_x * M2FT;
+
+        var rs = armament.rho_sndspeed(dens-(agl/2)*M2FT);
+        var rho = rs[0];
+        var Cd = bomb.drag(mach);
+        var mass = bomb.weight_launch_lbs / armament.slugs_to_lbs;
+        var q = 0.5 * rho * fps_z * fps_z;
+        var deacc = (Cd * q * bomb.eda) / mass;
+
+        while (alt > 0 and t <= 16) {#16 secs is max fall time according to manual
+          t += dt;
+          var acc = -9.81 + deacc * FT2M;
+          vel_z += acc * dt;
+          alt = alt + vel_z*dt+0.5*acc*dt*dt;
+        }
+        #printf("time=%0.1f", t);
+
+        if (t >= 16) {
+          me.ccip_symbol.hide();
+          return t;
+        }
+        #t -= 0.75 * math.cos(pitch*D2R);            # fudge factor
+        q = 0.5 * rho * fps_x * fps_x;
+        deacc = (Cd * q * bomb.eda) / mass;
+        var acc = -deacc * FT2M;
+        var dist = vel_x*t+0.5*acc*t*t;
+
+        var ac = geo.aircraft_position();
+        var ccipPos = geo.Coord.new(ac);
+        ccipPos.apply_course_distance(heading, dist);
+        #var elev = geo.elevation(ac.lat(), ac.lon());
+        var elev = alti-agl;#faster
+        ccipPos.set_alt(elev);
+        
+
+
+        var showme = TRUE;
+
+        var hud_pos = radar_logic.ContactGPS.new("CCIP", ccipPos);
+        if(hud_pos != nil) {
+          var distance = hud_pos.get_range()*NM2M;
+          var pos_x = hud_pos.get_cartesian()[0];
+          var pos_y = hud_pos.get_cartesian()[1];
+
+          #printf("dist=%0.1f (%3d , %3d)", dist, pos_x, pos_y);
+
+          if(pos_x > (512/1024)*canvasWidth) {
+            showme = FALSE;
+          } elsif(pos_x < -(512/1024)*canvasWidth) {
+            showme = FALSE;
+          } elsif(pos_y > (512/1024)*canvasWidth) {
+            showme = FALSE;
+          } elsif(pos_y < -(512/1024)*canvasWidth) {
+            showme = FALSE;
+          }
+
+          if(showme == TRUE) {
+            me.ccip_symbol.setTranslation(pos_x, pos_y);
+            me.ccip_symbol.show();
+            me.ccip_symbol.update();
+          } else {
+            me.ccip_symbol.hide();
+          }
+        } else {
+          me.ccip_symbol.hide();
+        }
+        return t;
+      } else {
+        me.ccip_symbol.hide();
+      }
+    } else {
+      me.ccip_symbol.hide();
+    }
+    return 20;
   },
 
   displayRadarTracks: func (mode) {

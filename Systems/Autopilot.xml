@@ -1,12 +1,5 @@
 <?xml version="1.0"?>
 <PropertyList>
-    <params>
-        <controls>
-            <aileron>controls/flight/aileron-ap</aileron>
-            <rudder>controls/flight/rudder</rudder>
-            <elevator>controls/flight/elevator-ap</elevator>
-        </controls>
-    </params>
 
     <pid-controller>
         <name>Roll target leveler</name>
@@ -233,10 +226,8 @@
         </output>
         <config>
             <Kp>-0.10</Kp>
-            <beta>1.0</beta>
-            <alpha>0.1</alpha>
             <Ti>1.0</Ti>
-            <Td>1.0</Td>
+            <Td>100.0</Td>
             <u_min>0.15</u_min>
             <u_max>1.0</u_max>
         </config>
