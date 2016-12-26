@@ -1,6 +1,6 @@
-==============================================
-Flightgear Saab JA-37 / AJ-37 Viggen Changelog
-==============================================
+===================================
+Flightgear Saab 37 Viggen Changelog
+===================================
 
 1.0 - Late 2012
 ---
@@ -2526,3 +2526,66 @@ Model: Changed default livery for AJS.
 Sim: Made so only AoA throttle hold combined with altitude hold ignores AoA limiter.
 Effect: Fixed regression that cannon would no longer fire.
 Model: Fixed that 2 liveries were mixed together on SAF 01.
+
+4.011 - 2016 December 26
+=====
+Sim: Getting pitch to target now takes curvature of earth into account, in missiles and radar.
+Model: Converted some flat shaded faces to smooth shaded on fuselage.
+Effect: Made buffeting smarter and more correct.
+Effect: Floodlight is now more lit.
+Sim: Armaments now is optimized for Nasal garbage collection.
+Sim: Armaments now makes bigger effort to find impact distance.
+Radar: Converted radar logic to be object oriented.
+Sim: Armament no longer reports bleed in console. But now reports type, in other messages.
+Radar: Radar logic now optimized for Nasal garbage collection.
+Sim: More accurate way of passing target location updates to armament.
+HUD: Reduced texture imprint by 4 times.
+Sim: Better init of armament position.
+Sim: Removed double declaration of variable in missile code.
+Sim: Made RB-15F be terrain following again.
+Effect: Made all weapon smoke trails be unaffected by lightning as it don't work proper anyway.
+Model: Made AoA indicator look more like the real in Viggen.
+Model: The minimum AoA/pitch the indicator should show is now -4 degrees, not -7.
+Sim: Smarter console output for missile code.
+Sim: Weapons now display smoke trail over MP, one at a time. (experimental)
+Sim: Weapons can now also be unguided, GPS or laser guided.
+Sim: Weapon code now has much more documentation.
+Sim: Made dropped munitions keep track of target while in the drop before engine kicks in.
+Sim: Prevented munitions from crusing, if they did not snap up.
+Sim: Made sure M71 model is shown also after some from same pylon has exploded.
+Sim: Added vision guided support in weapons code.
+Effect: Reduced armament smoke particles to avoid crashing.
+Sim: IR missiles now report if missed and if they were fooled by flare.
+Sim: Added possibility to specify navigation system for guided munitions.
+Sim: RB-05 no longer uses APN, but flies direct to target.
+Sim: Guided munitions no longer to take alpha and beta of target into account, it was too unreliable.
+Sim: Rear aspect missiles now easier loses lock without direct view of engine.
+Sim: Made missile code able to support very long range missiles.
+Sim: Missile gravity acc. is now applied differently, should work better.
+Sim: Stopped compensating for beta and alpha twice during release of missile.
+Sim: Missiles now dont pull too many G when lofting or pitching to cruise.
+Sim: Made lofting/cruising smarter and simpler.
+Sim: Made the RB71 loft less.
+Sim: Now also warn when f-14 fires sparrow.
+Sim: Reduced Skyflash max G.
+Sim: If a missile target is less than 10 miles out, lofting and cruising will stop.
+Effect: Redout onset is now -2.
+Radar: On radarscreen is now the set range, as per manual.
+Sim: Munitions code now can optionally consume fuel.
+Sim: More informative console output when missile loses view of target.
+Control: Throttle control was adjusted as per AJS manual.
+Animation: Nozzle-indicator, tachometer, AoA-indicator and epr-gauge now goes to zero when DC voltage is too low.
+Animation: Nozzle-indicator, tachometer, AoA-indicator and epr-gauge is now damped, so the needle wont jump around.
+Sim: Sidewinders seeker total FOV reduced considerably.
+Sim: Sidewinder can now lock onto sun if unlucky.
+Sim: Updated mentioned authors in munitions code.
+Model: {Spectre} New livery: Ferris F21-79
+Sim: Made sidewinders consume fuel.
+Sim: Increased drag for M71 bomblets.
+Model: {Pinto} Made retarded M71.
+Sim: Updated firecontrol to be able to fire M71 retarded.
+Sim: M71 and M71r now drop alternating from pylons as per manual.
+Model: {Spectre} New X-Mas livery.
+Sim: Fixed M70 and M55 should fire simultanously, as per dev notes.
+Sim: Made the RB-24 more authentic and less able to hit.
+HUD: Fixed that out of ammo FPI was always shown when M55 selected.

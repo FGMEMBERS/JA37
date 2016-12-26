@@ -50,7 +50,7 @@ var HUDBottom = 0.63; # position of bottom of HUD in meters. 0.63
 #var HUDHoriz = -4.0; # position of HUD on x axis in meters. -4.0
 var HUDHoriz = -4.06203;#pintos new hud
 var HUDHeight = HUDTop - HUDBottom; # height of HUD
-var canvasWidth = 512;
+var canvasWidth = 256;
 var max_width = (450/1024)*canvasWidth;
 # HUD z is 0.63 - 0.77. Height of HUD is 0.14m
 # Therefore each pixel is 0.14 / 1024 = 0.00013671875m or each meter is 7314.2857142857142857142857142857 pixels.
@@ -1045,14 +1045,22 @@ var HUDnasal = {
       #  return;
       #}
 
-      var cannon = me.input.station.getValue() == 0 and me.input.combat.getValue() == TRUE;
+      var cannon = me.input.station.getValue() == 0;
+      cannon = cannon or getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M55 AKAN";
+      cannon = me.input.combat.getValue() == TRUE and cannon;
       var out_of_ammo = FALSE;
-      if (me.input.station.getValue() != 0 and getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "none") {
-            out_of_ammo = TRUE;
-      } elsif (me.input.station.getValue() == 0 and me.input.cannonAmmo.getValue() == 0) {
-            out_of_ammo = TRUE;
-      } elsif (me.input.station.getValue() != 0 and getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M70 ARAK" and getprop("ai/submodels/submodel["~(4+me.input.station.getValue())~"]/count") == 0) {
-            out_of_ammo = TRUE;
+      #if (me.input.station.getValue() != 0 and getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "none") {
+      #      out_of_ammo = TRUE;
+      #} elsif (me.input.station.getValue() == 0 and me.input.cannonAmmo.getValue() == 0) {
+      #      out_of_ammo = TRUE;
+      #} elsif (me.input.station.getValue() != 0 and getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M70 ARAK" and getprop("ai/submodels/submodel["~(4+me.input.station.getValue())~"]/count") == 0) {
+      #      out_of_ammo = TRUE;
+      #}
+      var ammo = armament.ammoCount(me.input.station.getValue());
+      if (ammo > 0) {
+        out_of_ammo = FALSE;
+      } else {
+        out_of_ammo = TRUE;
       }
 
       # ground collision warning
@@ -1815,6 +1823,9 @@ var HUDnasal = {
       } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M71 Bomblavett") {
         me.qfe.setText("M71");
         me.qfe.show();
+      } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M71 Bomblavett (Retarded)") {
+        me.qfe.setText("M71R");
+        me.qfe.show();
       } elsif(getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M90 Bombkapsel") {
         me.qfe.setText("M90");
         me.qfe.show();
@@ -1960,6 +1971,13 @@ var HUDnasal = {
         me.reticle_cannon.hide();
         me.reticle_missile.hide();
         me.reticle_c_missile.show();
+      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M71 Bomblavett (Retarded)") {
+        air2air = FALSE;
+        air2ground = TRUE;
+        me.showSidewind(FALSE);
+        me.reticle_cannon.hide();
+        me.reticle_missile.hide();
+        me.reticle_c_missile.show();
       } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M90 Bombkapsel") {
         air2air = FALSE;
         air2ground = TRUE;
@@ -1967,15 +1985,6 @@ var HUDnasal = {
         me.reticle_cannon.hide();
         me.reticle_missile.hide();
         me.reticle_c_missile.show();
-      } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "M55 AKAN") {
-        me.showSidewind(FALSE);
-        me.reticle_cannon.setTranslation(0, centerOffset);
-        me.reticle_cannon.show();
-        me.reticle_missile.hide();
-        me.reticle_c_missile.hide();
-        air2air = FALSE;
-        air2ground = FALSE;
-        return me.showFlightPathVector(1, TRUE, mode);
       } elsif(getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "TEST") {
         air2air = TRUE;
         air2ground = FALSE;
@@ -2223,6 +2232,11 @@ var HUDnasal = {
           unit = "seconds";
           minDist =   4;
           maxDist =  16;
+        } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M71 Bomblavett (Retarded)") {
+          # robot 15F
+          unit = "seconds";
+          minDist =   4;
+          maxDist =  16;
         } elsif (getprop("payload/weight["~(armSelect-1)~"]/selected") == "M90 Bombkapsel") {
           # robot 15F
           minDist =   0.1 * NM2M;
@@ -2389,7 +2403,7 @@ var HUDnasal = {
     if(mode == COMBAT) {
 
       var armSelect = me.input.station.getValue();
-      if(armSelect != 0 and getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M71 Bomblavett") {
+      if(armSelect != 0 and (getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M71 Bomblavett" or getprop("payload/weight["~ (armSelect-1) ~"]/selected") == "M71 Bomblavett (Retarded)")) {
 
         var bomb = nil;
         if(armament.AIM.active[armSelect-1] != nil) {
@@ -2407,6 +2421,9 @@ var HUDnasal = {
         var heading = getprop("orientation/heading-deg");#true
         var dens = getprop("fdm/jsbsim/atmosphere/density-altitude");
         var mach = getprop("velocities/mach");
+        var speed_down_fps = getprop("velocities/speed-down-fps");
+        var speed_east_fps = getprop("velocities/speed-east-fps");
+        var speed_north_fps = getprop("velocities/speed-north-fps");
 
         var alpha = getprop("orientation/alpha-deg");
         var beta = getprop("orientation/side-slip-deg");# positive is air from right
@@ -2418,15 +2435,15 @@ var HUDnasal = {
         var t = 0.0;
         var dt = 0.1;
         var alt = agl;
-        var vel_z = vel*math.sin(pitch*D2R);#positive upwards
-        var fps_z = vel_z * M2FT;
-        var vel_x = vel*math.cos(pitch*D2R);
+        var vel_z = -speed_down_fps*FT2M;#positive upwards
+        var fps_z = -speed_down_fps;
+        var vel_x = math.sqrt(speed_east_fps*speed_east_fps+speed_north_fps*speed_north_fps)*FT2M;
         var fps_x = vel_x * M2FT;
 
-        var rs = armament.rho_sndspeed(dens-(agl/2)*M2FT);
+        var rs = bomb.rho_sndspeed(dens-(agl/2)*M2FT);
         var rho = rs[0];
         var Cd = bomb.drag(mach);
-        var mass = bomb.weight_launch_lbs / armament.slugs_to_lbs;
+        var mass = bomb.weight_launch_lbm / armament.slugs_to_lbm;
         var q = 0.5 * rho * fps_z * fps_z;
         var deacc = (Cd * q * bomb.eda) / mass;
 
@@ -2436,16 +2453,26 @@ var HUDnasal = {
           vel_z += acc * dt;
           alt = alt + vel_z*dt+0.5*acc*dt*dt;
         }
-        #printf("time=%0.1f", t);
+        #printf("predict fall time=%0.1f", t);
 
         if (t >= 16) {
           me.ccip_symbol.hide();
           return t;
         }
         #t -= 0.75 * math.cos(pitch*D2R);            # fudge factor
+
         q = 0.5 * rho * fps_x * fps_x;
         deacc = (Cd * q * bomb.eda) / mass;
         var acc = -deacc * FT2M;
+        
+        var fps_x_final = t*acc+fps_x;# calc final horz speed
+        var fps_x_average = (fps_x-(fps_x-fps_x_final)*0.5);
+        var mach_average = fps_x_average / rs[1];
+        
+        Cd = bomb.drag(mach_average);
+        q = 0.5 * rho * fps_x_average * fps_x_average;
+        deacc = (Cd * q * bomb.eda) / mass;
+        acc = -deacc * FT2M;
         var dist = vel_x*t+0.5*acc*t*t;
 
         var ac = geo.aircraft_position();
