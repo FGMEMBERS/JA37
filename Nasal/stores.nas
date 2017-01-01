@@ -560,7 +560,7 @@ var loop_stores = func {
       # release a flare
       setprop("ai/submodels/submodel[0]/flare-release-snd", TRUE);
       setprop("ai/submodels/submodel[0]/flare-release", TRUE);
-      setprop("sim/multiplay/generic/string[10]", flareStart~":flare");
+      setprop("rotors/main/blade[3]/flap-deg", flareStart);
     } else {
       # play the sound for out of flares
       setprop("ai/submodels/submodel[0]/flare-release-out-snd", TRUE);
@@ -568,7 +568,7 @@ var loop_stores = func {
   }
   if (getprop("ai/submodels/submodel[0]/flare-release-snd") == TRUE and (flareStart + 1) < input.elapsed.getValue()) {
     setprop("ai/submodels/submodel[0]/flare-release-snd", FALSE);
-    setprop("sim/multiplay/generic/string[10]", "0:noflare");
+    setprop("rotors/main/blade[3]/flap-deg", 0);
   }
   if (getprop("ai/submodels/submodel[0]/flare-release-out-snd") == TRUE and (flareStart + 1) < input.elapsed.getValue()) {
     setprop("ai/submodels/submodel[0]/flare-release-out-snd", FALSE);
@@ -756,14 +756,14 @@ var impact_listener = func {
 ############ response to MP messages #####################
 
 var cannon_types = {
-    " M70 rocket hit":        0.30,
-    " M55 cannon shell hit":  0.20,
-    " KCA cannon shell hit":  0.20,
-    " Gun Splash On ":        0.30,
-    " M61A1 shell hit":       0.20,
-    " GAU-8/A hit":           0.30,
-    " BK27 cannon hit":       0.20,
-    " GSh-30 hit":            0.20,
+    " M70 rocket hit":        0.25, #135mm
+    " M55 cannon shell hit":  0.10, # 30mm
+    " KCA cannon shell hit":  0.10, # 30mm
+    " Gun Splash On ":        0.10, # 30mm
+    " M61A1 shell hit":       0.05, # 20mm
+    " GAU-8/A hit":           0.10, # 30mm
+    " BK27 cannon hit":       0.07, # 27mm
+    " GSh-30 hit":            0.10, # 30mm
 };
     
     
@@ -963,18 +963,29 @@ var incoming_listener = func {
             }
           } 
         } elsif (cannon_types[last_vector[1]] != nil) {
-          # cannon hitting someone
-          #print("cannon");
           if (size(last_vector) > 2 and last_vector[2] == " "~callsign) {
-            # that someone is me!
-            #print("hitting me");
+            var last3 = split(" ", last_vector[3]);
+            if(size(last3) > 2 and size(last3[2]) > 2 and last3[2] == "hits" ) {
+              var probability = cannon_types[last_vector[1]];
+              var hit_count = num(last3[1]);
+              if (hit_count != nil) {
+                var damaged_sys = 0;
+                for (var i = 1; i <= hit_count; i = i + 1) {
+                  var failed = fail_systems(probability);
+                  damaged_sys = damaged_sys + failed;
+                }
 
-            var probability = cannon_types[last_vector[1]];
-            #print("probability: " ~ probability);
-            
-            var failed = fail_systems(probability);
-            printf("Took %.1f%% damage from cannon! %s systems was hit.", probability*100, failed);
-            nearby_explosion();
+                printf("Took %.1f%% x %2d damage from cannon! %s systems was hit.", probability*100, hit_count, damaged_sys);
+                nearby_explosion();
+              }
+            } else {
+              var probability = cannon_types[last_vector[1]];
+              #print("probability: " ~ probability);
+              
+              var failed = fail_systems(probability * 3);# Old messages is assumed to be 3 hits
+              printf("Took %.1f%% x 3 damage from cannon! %s systems was hit.", probability*100, failed);
+              nearby_explosion();
+            }
           }
         }
       }

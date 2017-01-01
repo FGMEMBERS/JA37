@@ -381,9 +381,9 @@
                 <int n="14" alias="/payload/weight[3]/ammo"/>                      
                 <!-- misc -->
                 <!--<string n="0" alias="/sim/aircraft-version"/> not used anymore -->
-                <string n="10" type="string">none</string><!-- flare -->
+                <!--<string n="10" type="string">none</string>--><!-- flare -->
                 <!--<string n="13" type="string"></string>--><!-- not used -->
-                <string n="15" type="string"></string><!-- anti-c -->
+                <string n="15" type="string"></string><!-- antic -->
             </generic>
         </multiplay>
 
@@ -1018,6 +1018,9 @@
                 <flap-deg type="double">0</flap-deg>
                 <position-deg alias="/gear/gear[2]/rollspeed-ms"/>
             </blade>
+            <blade n="3">
+                <flap-deg type="double">0</flap-deg><!-- used for releasing flares -->
+            </blade>
         </main>
         <tail>
             <rpm alias="/orientation/alpha-deg"/>
@@ -1085,8 +1088,8 @@
 *************************************************************************-->
     <limits>
         <max-gear-extension-speed>334.77</max-gear-extension-speed>        <!-- as per manual -->
-        <max-positive-g>8.0</max-positive-g>  <!-- Pilots were usually not allowed to exceed this -->
-        <max-negative-g>-2.0</max-negative-g>
+        <max-positive-g>7.0</max-positive-g>  <!-- Pilots were usually not allowed to exceed this -->
+        <max-negative-g>-3.0</max-negative-g> <!-- these values also depend on gear extended or not and stores. Dynamically controlled from JSB. -->
     </limits>
 
     <!--**********************************************************************

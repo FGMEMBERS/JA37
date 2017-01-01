@@ -2551,7 +2551,7 @@ Sim: Weapons now display smoke trail over MP, one at a time. (experimental)
 Sim: Weapons can now also be unguided, GPS or laser guided.
 Sim: Weapon code now has much more documentation.
 Sim: Made dropped munitions keep track of target while in the drop before engine kicks in.
-Sim: Prevented munitions from crusing, if they did not snap up.
+Sim: Prevented munitions from cruising, if they did not snap up.
 Sim: Made sure M71 model is shown also after some from same pylon has exploded.
 Sim: Added vision guided support in weapons code.
 Effect: Reduced armament smoke particles to avoid crashing.
@@ -2586,6 +2586,24 @@ Model: {Pinto} Made retarded M71.
 Sim: Updated firecontrol to be able to fire M71 retarded.
 Sim: M71 and M71r now drop alternating from pylons as per manual.
 Model: {Spectre} New X-Mas livery.
-Sim: Fixed M70 and M55 should fire simultanously, as per dev notes.
+Sim: Fixed M70 and M55 should fire simultaneously, as per dev notes.
 Sim: Made the RB-24 more authentic and less able to hit.
 HUD: Fixed that out of ammo FPI was always shown when M55 selected.
+
+4.012 - 2017 January 1
+=====
+Model: {Spectre} Added 2 Tiger Meet Liveries.
+Sim: New missile lofting system.
+Sim: Adjustments to RB71.
+Sim: Adjustment to missile lofting.
+Sim: RB99 performance drastically changed.
+Animation: Fixed that the zone gauge does not show the correct zone anymore.
+Radar: The type of the selection fed to the HUD would sometimes be off, hopefully no more.
+Sim: Missiles guidance law now predicts the gravity and compensates.
+Sim: Flares now use another MP property. Base chance of being fooled decreased. But chance increased at front aspect.
+GUI: G-force limits now depends on gear extension and total weight, as per manual.
+GUI: Pilot weight can now be adjusted in payload dialog.
+HUD: Fixed that at takeoff the desired altitude lines would rely on barometer, not radar altimeter.
+Radar: Added artificial horizon lines and desired altitude lines.
+Radar: Ordered the elements of which is shown on top of which.
+Sim: Better tube launched simulation.

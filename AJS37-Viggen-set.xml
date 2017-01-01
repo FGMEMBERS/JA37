@@ -14,7 +14,7 @@
         <long-description>
           The Saab AJS-37 Viggen is a Swedish all-weather single-engine attack jet from 1993. It has reverse thrust and very large canards.
         </long-description>
-        <aircraft-version>4.011</aircraft-version>
+        <aircraft-version>4.012</aircraft-version>
 
         <variant-of>JA37-Viggen</variant-of>
 
@@ -549,6 +549,12 @@
                 <lbs>1322.77</lbs>
             </opt>
         </weight>
+        <weight n="7"><!-- manual states due to ejection system min 54, max 100 Kg -->
+            <name type="string">Pilot</name>
+            <weight-lb type="double">158.7328</weight-lb>
+            <min-lb type="double">119</min-lb>
+            <max-lb type="double">220.5</max-lb>
+        </weight>
         <armament>
                 <models type="string">Aircraft/JA37/Models/Armament/Weapons/</models>
                 <msg type="bool">false</msg>
@@ -646,7 +652,7 @@
                     <stage-2-duration-sec type="double">0.0</stage-2-duration-sec><!-- authentic -->
                     <weight-launch-lbs type="double">188</weight-launch-lbs>      <!-- authentic -->
                     <weight-warhead-lbs type="double">20.8</weight-warhead-lbs>   <!-- authentic -->
-                    <weight-fuel-lbm type="double">63</weight-fuel-lbm>           <!-- guess -->
+                    <weight-fuel-lbm type="double">60.4</weight-fuel-lbm>           <!-- guess -->
                     <drag-coeff type="double">0.5</drag-coeff>                   <!-- guesstimate -->
                     <drag-area type="double">0.143</drag-area>                    <!-- sq ft -->
                     <arming-time-sec type="double">1.4</arming-time-sec>          <!-- guess -->
@@ -804,7 +810,7 @@
                     <vol-track type="double">0.15</vol-track>
                     <vol-track-weak type="double">0.1</vol-track-weak>
                     <guidance type="string">radar</guidance>                              <!-- source -->
-                    <navigation type="string">direct</navigation>
+                    <navigation type="string">APN</navigation>
                     <all-aspect type="bool">true</all-aspect>
                     <max-fire-range-nm type="double">17.28</max-fire-range-nm>            <!-- source -->
                     <FCS-field-deg type="int">25</FCS-field-deg>            
@@ -871,7 +877,7 @@
                     <vol-track type="double">0.15</vol-track>
                     <vol-track-weak type="double">0.1</vol-track-weak>
                     <guidance type="string">vision</guidance>
-                    <navigation type="string">direct</navigation>                           
+                    <navigation type="string">APN</navigation>                           
                     <all-aspect type="bool">true</all-aspect>
                     <max-fire-range-nm type="double">12</max-fire-range-nm>              <!-- source -->
                     <FCS-field-deg type="int">25</FCS-field-deg>            

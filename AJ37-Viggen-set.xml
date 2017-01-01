@@ -14,7 +14,7 @@
         <long-description>
           The Saab AJ-37 Viggen is a Swedish all-weather single-engine attack jet from 1971. It has reverse thrust and very large canards.
         </long-description>
-        <aircraft-version>4.011</aircraft-version>
+        <aircraft-version>4.012</aircraft-version>
 
         <variant-of>JA37-Viggen</variant-of>
 
@@ -478,6 +478,12 @@
                 <lbs>1062</lbs>
             </opt>
         </weight>
+        <weight n="7"><!-- manual states due to ejection system min 54, max 100 Kg -->
+            <name type="string">Pilot</name>
+            <weight-lb type="double">158.7328</weight-lb>
+            <min-lb type="double">119</min-lb>
+            <max-lb type="double">220.5</max-lb>
+        </weight>
         <armament>
                 <models type="string">Aircraft/JA37/Models/Armament/Weapons/</models>
                 <msg type="bool">false</msg>
@@ -628,7 +634,7 @@
                     <vol-track type="double">0.15</vol-track>
                     <vol-track-weak type="double">0.1</vol-track-weak>
                     <guidance type="string">gps</guidance>                              
-                    <navigation type="string">direct</navigation>
+                    <navigation type="string">APN</navigation>
                     <all-aspect type="bool">true</all-aspect>
                     <max-fire-range-nm type="double">17.28</max-fire-range-nm>            <!-- source -->
                     <FCS-field-deg type="int">25</FCS-field-deg>            
@@ -695,7 +701,7 @@
                     <vol-track type="double">0.15</vol-track>
                     <vol-track-weak type="double">0.1</vol-track-weak>
                     <guidance type="string">vision</guidance>                             
-                    <navigation type="string">direct</navigation>
+                    <navigation type="string">APN</navigation>
                     <all-aspect type="bool">true</all-aspect>
                     <max-fire-range-nm type="double">12</max-fire-range-nm>              <!-- source -->
                     <FCS-field-deg type="int">25</FCS-field-deg>            
