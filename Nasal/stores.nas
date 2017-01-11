@@ -720,12 +720,12 @@ var trigger_listener = func {
 
 ############ Cannon impact messages #####################
 
-var last_impact = 0;
-
-var hit_count = 0;
+var hits_count = 0;
+var hit_timer  = FALSE;
+var hit_callsign = "";
 
 var impact_listener = func {
-  if (radar_logic.selection != nil and (input.elapsed.getValue()-last_impact) > 1) {
+  if (radar_logic.selection != nil) {
     var ballistic_name = input.impact.getValue();
     var ballistic = props.globals.getNode(ballistic_name, 0);
     if (ballistic != nil) {
@@ -738,20 +738,33 @@ var impact_listener = func {
         var selectionPos = radar_logic.selection.get_Coord();
 
         var distance = impactPos.distance_to(selectionPos);
-        if (distance < 125) {
-          last_impact = input.elapsed.getValue();
-          var phrase =  ballistic.getNode("name").getValue() ~ " hit: " ~ radar_logic.selection.get_Callsign();
-          if (getprop("payload/armament/msg")) {
-            defeatSpamFilter(phrase);
-			      #hit_count = hit_count + 1;
-          } else {
-            setprop("/sim/messages/atc", phrase);
+        if (distance < 75) {
+          var typeOrd = ballistic.getNode("name").getValue();
+          hits_count += 1;
+          if ( hit_timer == FALSE ) {
+            hit_timer = TRUE;
+            hit_callsign = radar_logic.selection.get_Callsign();
+            settimer(func{hitmessage(typeOrd);},1);
           }
         }
       }
     }
   }
 }
+
+var hitmessage = func(typeOrd) {
+  #print("inside hitmessage");
+  var phrase = typeOrd ~ " hit: " ~ hit_callsign ~ ": " ~ hits_count ~ " hits";
+  if (getprop("payload/armament/msg") == TRUE) {
+    defeatSpamFilter(phrase);
+  } else {
+    setprop("/sim/messages/atc", phrase);
+  }
+  hit_callsign = "";
+  hit_timer = 0;
+  hits_count = 0;
+}
+
 
 ############ response to MP messages #####################
 
@@ -764,6 +777,8 @@ var cannon_types = {
     " GAU-8/A hit":           0.10, # 30mm
     " BK27 cannon hit":       0.07, # 27mm
     " GSh-30 hit":            0.10, # 30mm
+    " 7.62 hit":              0.005,# 7.62mm
+    " 50 BMG hit":            0.015,# 12.7mm
 };
     
     
@@ -771,6 +786,7 @@ var cannon_types = {
 var warhead_lbs = {
     "aim-120":              44.00,
     "AIM120":               44.00,
+    "AIM-120":              44.00,
     "RB-99":                44.00,
     "aim-7":                88.00,
     "AIM-7":                88.00,
@@ -810,6 +826,32 @@ var warhead_lbs = {
     "R-60":                  6.60,
     "R-27R1":               85.98,
     "R-27T1":               85.98,
+    "FAB-500":             564.00,
+};
+
+var fireMsgs = {
+  
+    # F14
+    " FOX3 at":       nil, # radar
+    " FOX2 at":       nil, # heat
+    " FOX1 at":       nil, # semi-radar
+
+    # Viggen
+    " Fox 1 at":      nil, # semi-radar
+    " Fox 2 at":      nil, # heat
+    " Fox 3 at":      nil, # radar
+    " Greyhound at":  nil, # cruise missile
+    " Bombs away at": nil, # bombs
+    " Bruiser at":    nil, # anti-ship
+    " Rifle at":      nil, # TV guided
+
+    # SAM and missile frigate
+    " Bird away at":  nil, # G/A
+
+    # F15
+    " aim7 at":       nil,
+    " aim9 at":       nil,
+    " aim120 at":     nil,
 };
 
 var incoming_listener = func {
@@ -828,11 +870,7 @@ var incoming_listener = func {
         # a m2000 is firing at us
         m2000 = TRUE;
       }
-      if (last_vector[1] == " FOX3 at" or last_vector[1] == " FOX2 at" or last_vector[1] == " FOX1 at" or last_vector[1] == " Fox 1 at" or last_vector[1] == " Fox 2 at" or last_vector[1] == " Fox 3 at"
-          or last_vector[1] == " Greyhound at" or last_vector[1] == " Bombs away at" or last_vector[1] == " Bruiser at" or last_vector[1] == " Rifle at" or last_vector[1] == " Bird away at"
-          or last_vector[1] == " aim7 at" or last_vector[1] == " aim9 at"
-          or last_vector[1] == " aim120 at"
-          or m2000 == TRUE) {
+      if (contains(fireMsgs, last_vector[1]) or m2000 == TRUE) {
         # air2air being fired
         if (size(last_vector) > 2 or m2000 == TRUE) {
           #print("Missile launch detected at"~last_vector[2]~" from "~author);
@@ -1720,20 +1758,40 @@ reloadGuns = func {
 
 var drop = func {
     if (getprop("/consumables/fuel/tank[8]/jettisoned") == TRUE) {
-       ja37.popupTip("Drop tank already jettisoned.");
+       screen.log.write("Drop tank already jettisoned.", 0.0, 1.0, 0.0);
        return;
     }  
     if (input.wow0.getValue() > 0.05) {
-       ja37.popupTip("Can not eject drop tank while on ground!"); 
+       screen.log.write("Can not eject drop tank while on ground!", 0.0, 1.0, 0.0);
        return;
     }
     if (getprop("systems/electrical/outputs/dc-voltage") < 23) {
-       ja37.popupTip("Too little DC power to eject drop tank!");
+       screen.log.write("Too little DC power to eject drop tank!", 0.0, 1.0, 0.0);
        return;
     }
     ja37.click();
     setprop("payload/weight[6]/selected", "none");# empty the pylon
-    ja37.popupTip("Drop tank shut off and ejected. Using internal fuel.");
+    screen.log.write("Drop tank shut off and ejected. Using internal fuel.", 0.0, 1.0, 0.0);
+ }
+
+ var dropAll = func {
+    if (input.wow0.getValue() > 0.05) {
+       screen.log.write("Can not jettison stores while on ground!", 0.0, 1.0, 0.0);
+       return;
+    }
+    if (getprop("systems/electrical/outputs/dc-voltage") < 23) {
+       screen.log.write("Too little DC power to jettison!", 0.0, 1.0, 0.0);
+       return;
+    }
+    ja37.click();
+    screen.log.write("All stores jettisoned.", 0.0, 1.0, 0.0);
+    setprop("payload/weight[0]/selected", "none");
+    setprop("payload/weight[1]/selected", "none");
+    setprop("payload/weight[2]/selected", "none");
+    setprop("payload/weight[3]/selected", "none");
+    setprop("payload/weight[4]/selected", "none");
+    setprop("payload/weight[5]/selected", "none");
+    setprop("payload/weight[6]/selected", "none");# empty the pylon
  }
 
 ############ main function #####################

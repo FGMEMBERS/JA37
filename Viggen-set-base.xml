@@ -441,6 +441,15 @@
         <time>
             <full-init type="bool">false</full-init>
         </time>
+        <failure-manager>
+            <controls>
+                <flight>
+                    <speedbrake>
+                        <serviceable type="bool">true</serviceable>
+                    </speedbrake>
+                </flight>
+            </controls>
+        </failure-manager>
     </sim>
     <ja37>
         <accelerations>
@@ -473,6 +482,7 @@
         </radar>
         <effect>
             <landing-light type="double">0</landing-light>
+            <seat type="double">0</seat>
             <smoke type="int">1</smoke>
             <!-- 1: off  2: yellow  3: blue -->
             <smoke-cmd type="int">1</smoke-cmd>
@@ -539,6 +549,7 @@
             <incoming11 type="bool">false</incoming11>
             <incoming12 type="bool">false</incoming12>
             <incoming type="bool">false</incoming>
+            <helmet type="double">0.9</helmet>
         </sound>
         <damage>
             <enabled type="bool">true</enabled>
@@ -557,6 +568,7 @@
             <auto-throttle-on type="bool">false</auto-throttle-on>
             <auto-altitude-on type="bool">false</auto-altitude-on>
             <auto-attitude-on type="bool">false</auto-attitude-on>
+            <auto-altitude-hold-on type="bool">false</auto-altitude-hold-on>
             <fuel-internal-ratio type="double">0.0</fuel-internal-ratio>
             <tankpump type="bool">false</tankpump>
             <xtank type="bool">false</xtank>
@@ -566,11 +578,19 @@
             <temp-halt-ap-roll2 type="bool">true</temp-halt-ap-roll2>
             <temp-halt-ap-pitch type="bool">true</temp-halt-ap-pitch>
             <welcome type="bool">false</welcome>
+            <roll-trim-centered type="bool">true</roll-trim-centered>
         </avionics>
         <systems>
             <oxygen-bottle-pressure type="double">0.0</oxygen-bottle-pressure>
+            <oxygen-manometer type="double">0.0</oxygen-manometer>
             <tertiary-opening type="double">1.0</tertiary-opening>
         </systems>
+        <radio>
+            <kv1>
+                <button-mhz type="bool">true</button-mhz>
+                <switch type="bool">true</switch><!-- set to FM per default -->
+            </kv1>
+        </radio>
     </ja37>
     <ai>
         <submodels>
@@ -605,10 +625,10 @@
                 <yaw-damper>
                     <serviceable type="bool">true</serviceable>
                     <enable type="bool">true</enable>
-                    <yaw-rate-gain type="double">3</yaw-rate-gain>
+                    <yaw-rate-gain type="double">1</yaw-rate-gain>
                     <roll-rate-gain type="double">0.125</roll-rate-gain>
-                    <lateral-acc-gain type="double">-0.05</lateral-acc-gain>
-                    <washout-factor type="double">1.0</washout-factor>
+                    <lateral-acc-gain type="double">-0.010</lateral-acc-gain>
+                    <washout-factor type="double">1.55</washout-factor>
                 </yaw-damper>
                 <pitch-damper>
                     <serviceable type="bool">true</serviceable>
@@ -751,6 +771,7 @@
                     <rudder type="double">      0.010</rudder>                    <!-- at full 25 degrees deflection -->
                     <elevon-left type="double"> 0.015</elevon-left>                    <!-- full 40 degrees upward deflection -->
                     <elevon-right type="double">0.015</elevon-right>                    <!-- full 40 degrees upward deflection -->
+                    <speedbrake type="double">  0.020</speedbrake>                    <!-- fully open -->
                 </drag>
             </aero>
             <inertia>
@@ -766,6 +787,7 @@
                     <zone type="double">0</zone>
                     <zone-factor type="double">1</zone-factor>
                     <aug-flame type="double">0</aug-flame>
+                    <cutoff-commanded type="bool">true</cutoff-commanded>
                 </engine>
             </propulsion>
             <launchbar>
@@ -1220,6 +1242,9 @@
         <blackout>
             <file>Aircraft/JA37/Nasal/blackout.nas</file>
         </blackout>
+        <ch_select>
+            <file>Aircraft/JA37/Nasal/channel-selector.nas</file>
+        </ch_select>
         <!-- Uncomment below to enable FGplot -->
         <!--
         <plot>

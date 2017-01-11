@@ -9,6 +9,7 @@
                 <sum>
                     <property>aero/coefficient/CAtakeoff</property>
                     <property>aero/coefficient/CACanopy</property>
+                    <property>aero/coefficient/CABrake</property>
                     <property>aero/coefficient/CACanopyOff</property>
                     <property>aero/coefficient/CAElevonLeft</property>
                     <property>aero/coefficient/CAElevonRight</property>
@@ -552,9 +553,38 @@
                               85301.8         6.7 <!-- 15000m cabin density alt / 26000m density alt -->
                         </tableData>
                     </table>
+                    <table>
+                        <independentVar lookup="row">/ja37/systems/oxygen-bottle-pressure</independentVar>
+                        <tableData>
+                            <!-- kp/cm2 -->
+                                 15.0         0.0
+                                 40.0         1.0
+                        </tableData>
+                    </table>
                 </product>
             </function>
         </fcs_function>
+
+        <fcs_function name="systems/flight/instr/oxygen-manometer-pre">
+            <function>
+                <product>
+                    <property>/ja37/systems/oxygen-bottle-pressure</property>
+                    <table>
+                        <independentVar lookup="row">/systems/electrical/outputs/ac-instr-voltage</independentVar>
+                        <tableData>
+                                 99.0         0.0
+                                100.0         1.0
+                        </tableData>
+                    </table>
+                </product>
+            </function>
+        </fcs_function>
+
+        <lag_filter name="systems/flight/instr/oxygen-manometer">
+            <input> systems/flight/instr/oxygen-manometer-pre </input>
+            <c1> 5 </c1>
+            <output> /ja37/systems/oxygen-manometer </output>
+        </lag_filter>
 
         <fcs_function name="systems/flight/environment-pressure-kPa">
             <function>
@@ -653,7 +683,7 @@
 
     </channel>
 
-    <channel execrate="4" name="Engine">
+    <channel execrate="1" name="Engine">
 
         <!--
             tertiary engine opening, page 188 of JA37Di manual
@@ -717,25 +747,79 @@
         </kinematic>
 
         <!--
-            Engine reversing, page 189 of JA37Di manual
+            Engine reversing, page 189 of JA37Di manual, page 220 of JA37C manual
 
             Todo: Blow off reverser doors if reversing is active while tertiary is closed or semi-closed.
         -->
-        <switch name="systems/flight/reverse/state-cmd">
-            <default value="systems/flight/reverse/state-cmd"/>
-            <test logic="AND" value="0">
-                <!-- forward thrust -->
-              /ja37/systems/tertiary-opening lt 1
+
+        <switch name="systems/flight/reverse/R1-time">
+            <default value="sim-time-sec"/>
+            <test logic="OR" value="systems/flight/reverse/R1-time">
+                gear/unit[2]/WOW == 1
             </test>
-            <test logic="AND" value="0">
-                <!-- forward thrust -->
-              systems/flight/reverse/state-cmd == 1
-              /controls/engines/engine[0]/reverser-cmd == 0
+        </switch>
+
+        <fcs_function name="systems/flight/reverse/R1-time-release">
+            <function>
+                <sum>
+                    <p>systems/flight/reverse/R1-time</p>
+                    <v>1</v>
+                </sum>
+            </function>
+        </fcs_function>
+
+        <switch name="systems/flight/reverse/R1">
+            <default value="1"/>
+            <test logic="OR" value="0">
+                sim-time-sec gt systems/flight/reverse/R1-time-release
+            </test>
+        </switch>
+
+        <switch name="systems/flight/reverse/R2-time">
+            <default value="sim-time-sec"/>
+            <test logic="OR" value="systems/flight/reverse/R2-time">
+                gear/unit[0]/WOW == 1
+            </test>
+        </switch>
+
+        <fcs_function name="systems/flight/reverse/R2-time-release">
+            <function>
+                <sum>
+                    <p>systems/flight/reverse/R2-time</p>
+                    <v>30</v>
+                </sum>
+            </function>
+        </fcs_function>
+
+        <switch name="systems/flight/reverse/R2">
+            <default value="0"/>
+            <test logic="AND" value="1">
+                sim-time-sec lt systems/flight/reverse/R2-time-release
+                systems/flight/reverse/R2-time lt sim-time-sec
+            </test>
+        </switch>
+
+        <switch name="systems/flight/reverse/state-cmd">
+            <default value="0"/>
+            <test logic="AND" value="1">
+              /ja37/systems/tertiary-opening == 1
+              gear/gear-cmd-norm == 1
+              gear/unit[0]/WOW == 1
+              /controls/engines/engine[0]/reverser-cmd == 1
             </test>
             <test logic="AND" value="1">
-                <!-- reverse thrust -->
-              systems/flight/reverse/state-cmd == 0
               /controls/engines/engine[0]/reverser-cmd == 1
+              /ja37/systems/tertiary-opening == 1
+              gear/unit[2]/WOW == 1
+              gear/gear-cmd-norm == 1
+              systems/flight/reverse/R1 == 1
+            </test>
+            <test logic="AND" value="1">
+              /controls/engines/engine[0]/reverser-cmd == 1
+              /ja37/systems/tertiary-opening == 1
+              gear/unit[2]/WOW == 1
+              gear/gear-cmd-norm == 1
+              systems/flight/reverse/R2 == 1
             </test>
         </switch>
 
@@ -824,6 +908,68 @@
             <gain>1.0</gain>
             <output>/controls/engines/engine/augmentation</output>
         </pure_gain>-->
+
+
+        <!-- inverted flight will make oil pressure drop -->
+
+        <fcs_function name="systems/flight/oil/inverted-flight">
+            <function>
+                <max>
+                    <product>
+                        <cos>
+                            <property>attitude/roll-rad</property>
+                        </cos>
+                        <v>-1</v>
+                    </product>
+                    <v>0</v>
+                </max>
+            </function>
+        </fcs_function>
+
+        <kinematic name="systems/flight/oil/pressure-drop-norm">
+            <input>systems/flight/oil/inverted-flight</input>
+            <noscale/>
+            <traverse>
+                <setting>
+                    <position>0</position>
+                    <time>0.0</time>
+                </setting>
+                <setting>
+                    <position>1</position>
+                    <time>15</time>
+                </setting>
+            </traverse>
+        </kinematic>
+
+        <fcs_function name="systems/flight/oil/pressure-drop-psi">
+            <function>
+                <product>
+                    <property>/engines/engine/oil-pressure-psi</property>
+                    <property>systems/flight/oil/pressure-drop-norm</property>
+                </product>
+            </function>
+        </fcs_function>
+
+        <fcs_function name="propulsion/engine/oil-pressure-psi">
+            <function>
+                <max>
+                    <value>0</value>
+                    <difference>
+                        <property>/engines/engine/oil-pressure-psi</property>
+                        <property>systems/flight/oil/pressure-drop-psi</property>
+                    </difference>
+                </max>
+            </function>
+        </fcs_function>
+
+        <switch name="propulsion/engine/cutoff-actual">
+            <default value="1"/>
+            <test logic="AND" value="0">
+                propulsion/engine/cutoff-commanded == 0
+                systems/flight/oil/pressure-drop-norm lt 0.75
+            </test>
+            <!--<output>/controls/engines/engine[0]/cutoff</output>-->
+        </switch>
 
     </channel>
 

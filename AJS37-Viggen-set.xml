@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--**********************************************************************
 
-                                          Main file for AJ-37 Flightgear aircraft
+                                          Main file for AJS-37 Flightgear aircraft
 
 
 *************************************************************************-->   
@@ -14,7 +14,7 @@
         <long-description>
           The Saab AJS-37 Viggen is a Swedish all-weather single-engine attack jet from 1993. It has reverse thrust and very large canards.
         </long-description>
-        <aircraft-version>4.012</aircraft-version>
+        <aircraft-version>4.014</aircraft-version>
 
         <variant-of>JA37-Viggen</variant-of>
 
@@ -557,6 +557,8 @@
         </weight>
         <armament>
                 <models type="string">Aircraft/JA37/Models/Armament/Weapons/</models>
+                <pylon-offset type="int">1</pylon-offset>
+                <pylon-stations>controls/armament</pylon-stations>
                 <msg type="bool">false</msg>
                 <damage type="bool">false</damage>
                 <rb-24>                    <!-- RB-24 (Swedish version of aim-9b sidewinder) mach 1.5 -->

@@ -5,7 +5,7 @@
 ####### License: GPL 2
 #######
 ####### Authors:
-#######  Alexis Bory, Fabien Barbier, Justin Nicholson, Nikolai V. Chr.
+#######  Alexis Bory, Fabien Barbier, Richard Harrison, Justin Nicholson, Nikolai V. Chr.
 ####### 
 ####### In addition, some code is derived from work by:
 #######  David Culp, Vivian Meazza, M. Franz
@@ -33,7 +33,7 @@
 #   that it also is approaching the target with high speed. In other words, high closing rate. For example the AIM-7, which can hit bombers out at 32 NM,
 #   will often have to be within 3 NM of an escaping target to hit it (source). Missiles typically have significantly less range against an evading
 #   or escaping target than what is commonly believed. I typically fly at 40000 ft at mach 2, approach a target flying head-on with same speed and altitude,
-#   to test max range.
+#   to test max range. Its typically drag that I adjust for that.
 # When you test missiles against aircraft, be sure to do it with a framerate of 25+, else they will not hit very good, especially high speed missiles like
 #   Amraam or Phoenix. Also notice they generally not hit so close against Scenario/AI objects compared to MP aircraft due to the way these are updated.
 # Laser and semi-radar guided munitions need the target to be painted to keep lock. Notice gps guided munition that are all aspect will never lose lock,
@@ -82,7 +82,6 @@
 # GPS guided munitions could have waypoints added.
 # Specify terminal manouvres and preferred impact aspect.
 # Limit guiding if needed so that the missile don't lose sight of target.
-# Change flare to use helicopter property double.
 # Make check for seeker FOV round instead of square.
 # Consider to average the closing speed in proportional navigation. So get it between second last positions and current, instead of last to current.
 # Drag coeff reduction due to exhaust plume.
@@ -150,6 +149,7 @@ var contact = nil;
 # get_Longitude()
 # get_altitude()
 # get_Pitch()
+# get_Speed()
 # get_heading()
 # getFlareNode()  - Used for flares.
 # isPainted()     - Tells if this target is still being tracked by the launch platform, only used in semi-radar and laser guided missiles.
@@ -172,13 +172,12 @@ var AIM = {
 		m.status            = MISSILE_STANDBY; # -1 = stand-by, 0 = searching, 1 = locked, 2 = fired.
 		m.free              = 0; # 0 = status fired with lock, 1 = status fired but having lost lock.
 		m.trackWeak         = 1;
-
 		m.prop              = AcModel.getNode("armament/"~m.type_lc~"/").getChild("msl", 0, 1);
 		m.SwSoundOnOff      = AcModel.getNode("armament/"~m.type_lc~"/sound-on-off");
         m.SwSoundVol        = AcModel.getNode("armament/"~m.type_lc~"/sound-volume");
 		m.PylonIndex        = m.prop.getNode("pylon-index", 1).setValue(p);
 		m.ID                = p;
-		m.pylon_prop        = props.globals.getNode("controls/armament").getChild("station", p+1);
+		m.pylon_prop        = props.globals.getNode(AcModel.getNode("armament/pylon-stations").getValue()).getChild("station", p+AcModel.getNode("armament/pylon-offset").getValue());
 		m.Tgt               = nil;
 		m.callsign          = "Unknown";
 		m.update_track_time = 0;
@@ -2207,6 +2206,10 @@ var defeatSpamFilter = func (str) {
   str = str~":";
   for (var i = 1; i <= spams; i+=1) {
     str = str~".";
+  }
+  var myCallsign = getprop("sim/multiplay/callsign");
+  if (myCallsign != nil and find(myCallsign, str) != -1) {
+  	str = myCallsign~": "~str;
   }
   var newList = [str];
   for (var i = 0; i < size(spamList); i += 1) {

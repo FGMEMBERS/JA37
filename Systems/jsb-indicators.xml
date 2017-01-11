@@ -420,6 +420,34 @@
             </function>
         </fcs_function>
 
+        <!-- Swedish: LUFTBROMS (steady)
+        -->
+
+        <fcs_function name="systems/indicators/speedbrake-primary">
+            <function>
+                <lt>
+                    <property>/sim/failure-manager/controls/flight/speedbrake/serviceable</property>
+                    <value>1</value>
+                </lt>
+            </function>
+        </fcs_function>
+
+        <fcs_function name="systems/indicators/speedbrake-secondary">
+            <function>
+                <gt>
+                    <property>fcs/speedbrake-pos-norm</property>
+                    <value>0</value>
+                </gt>
+            </function>
+        </fcs_function>
+
+        <switch name="systems/indicators/speedbrake">
+            <default value="systems/indicators/speedbrake-secondary"/>
+            <test logic="OR" value="/ja37/blink/ten-Hz/state">
+                /controls/lighting/test-indicator-panels == 1
+                systems/indicators/speedbrake-primary == 1
+            </test>
+        </switch>
                 
         <!-- Swedish: ELFÖRS (blinking)
         -->
@@ -737,10 +765,16 @@
 
         <fcs_function name="systems/indicators/oil-pressure-primary">
             <function>
-                <lt>
-                    <property>/engines/engine[0]/oil-pressure-psi</property>
-                    <value>30</value>
-                </lt>
+                <or>
+                    <lt>
+                        <property>propulsion/engine/oil-pressure-psi</property>
+                        <value>15.0</value>
+                    </lt>
+                    <gt>
+                        <property>systems/flight/oil/pressure-drop-norm</property>
+                        <value>0.66</value>
+                    </gt>
+                </or>
             </function>
         </fcs_function>
 
@@ -1086,7 +1120,7 @@
                     <or>
                         <and>
                             <eq>
-                                <property>/controls/engines/engine[0]/cutoff</property>
+                                <property>propulsion/engine/cutoff-actual</property>
                                 <value>0</value>
                             </eq>
                             <lt>
@@ -1356,7 +1390,7 @@
                     </eq>
                     <lt>
                         <property>/ja37/systems/oxygen-bottle-pressure</property>
-                        <value>50</value><!-- should really be 4Kpa -->
+                        <value>41</value><!-- 4Mpa (41 kp/cm2) -->
                     </lt>
                 </or>
             </function>
@@ -1758,7 +1792,7 @@
             <default value="0"/>
             <test logic="OR" value="/systems/electrical/dc-light">
                 /controls/lighting/test-indicator-panels == 1
-                /engines/engine/is-reversed == 1
+                /controls/engines/engine[0]/reverser-cmd == 1
             </test>
         </switch>
 
@@ -1769,10 +1803,22 @@
             </test>      
             <test logic="AND" value="/systems/electrical/dc-light">
                 propulsion/starter_cmd_copy == 1
-                /controls/engines/engine[0]/cutoff == 1
+                propulsion/engine/cutoff-commanded == 1
                 propulsion/engine/n1 gt 5.2
             </test>
         </switch>
+
+        <switch name="/ja37/avionics/roll-trim-centered">
+            <default value="0"/>
+            <test logic="OR" value="/systems/electrical/dc-light">
+                /controls/lighting/test-indicator-panels == 1
+            </test>
+            <test logic="AND" value="/systems/electrical/dc-light">
+                /controls/flight/aileron-trim lt 0.025
+                /controls/flight/aileron-trim gt -0.025
+            </test>
+        </switch>
+        
 
         <switch name="systems/electrical/battery-charging-test">
             <description>
@@ -1855,6 +1901,26 @@
             </test>
         </switch>
 
+        <fcs_function name="/instrumentation/terrain-warning-hold">
+            <function>
+                <lt>
+                    <quotient>
+                        <property>/instrumentation/altimeter/indicated-altitude-ft</property>
+                        <property>/autopilot/settings/target-altitude-ft</property>                        
+                    </quotient>
+                    <v>0.8</v>
+                </lt>
+            </function>
+        </fcs_function>
+
+        <switch name="/instrumentation/terrain-warning-secondary">
+            <default value="0"/>
+            <test logic="AND" value="1">
+                /instrumentation/terrain-warning-hold == 1
+                /ja37/avionics/auto-altitude-hold-on == 1
+            </test>
+        </switch>
+
         <switch name="/instrumentation/terrain-warning">
             <default value="0"/>
             <test logic="OR" value="/ja37/blink/ten-Hz/state">
@@ -1874,6 +1940,9 @@
             <test logic="OR" value="/systems/electrical/dc-light">
                 /instrumentation/terrain-warning == 1
                 /instrumentation/terrain-warning-test == 1
+            </test>
+            <test logic="OR" value="/systems/electrical/dc-light">
+                /instrumentation/terrain-warning-secondary == 1
             </test>
         </switch>        
 
