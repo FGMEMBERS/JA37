@@ -120,8 +120,9 @@ var HUDnasal = {
   redraw: func() {
     #HUDnasal.main.canvas.del();
     #HUDnasal.main.canvas = canvas.new(HUDnasal.canvas_settings);
+    HUDnasal.inter = FALSE;
     HUDnasal.main.canvas.addPlacement(HUDnasal.main.place);
-    HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.05);
+    HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.025);
     HUDnasal.main.root = HUDnasal.main.canvas.createGroup()
                 .set("font", "LiberationFonts/LiberationMono-Regular.ttf");# If using default font, horizontal alignment is not accurate (bug #1054), also prettier char spacing. 
     
@@ -906,6 +907,7 @@ var HUDnasal = {
         fdroll:           "autopilot/settings/fd-roll-deg",
         fdspeed:          "autopilot/settings/target-speed-kt",
         fiveHz:           "ja37/blink/five-Hz/state",
+        gearCmdNorm:      "/fdm/jsbsim/gear/gear-cmd-norm",
         gearsPos:         "gear/gear/position-norm",
         hdg:              "orientation/heading-magnetic-deg",
         hdgReal:          "orientation/heading-deg",
@@ -1560,56 +1562,72 @@ var HUDnasal = {
   },
 
   displayDigitalAltitude: func (alt, radAlt) {
-    #if (me.input.final.getValue() == TRUE) {
-    #  me.alt.hide();
-    #} else {
-      me.alt.show();
-      # alt and radAlt is in current unit
-      # determine max radar alt in current unit
-      me.radar_clamp = me.input.units.getValue() ==1 ? 100 : 100/feet2meter;
-      me.alt_diff = me.input.units.getValue() ==1 ? 7 : 7/feet2meter;
-      if (radAlt == nil and me.input.ctrlRadar.getValue() == 1) {
-        # Radar alt instrument not initialized yet
+    me.alt.show();
+    # alt and radAlt is in current unit
+    # determine max radar alt in current unit
+    me.radar_clamp = me.input.units.getValue() ==1 ? 100 : 100/feet2meter;
+    me.alt_diff = me.input.units.getValue() ==1 ? 7 : 7/feet2meter;
+    me.INT = FALSE;
+    if (me.input.units.getValue() == FALSE and (me.input.wow2.getValue() == TRUE
+        or (me.inter == TRUE and me.input.gearCmdNorm.getValue() == 0 and me.input.gearsPos.getValue() > 0)
+        or (me.inter == TRUE and me.input.gearsPos.getValue() == 1))) {
+      if (me.input.gearsPos.getValue() == 1 or me.input.fiveHz.getValue() == TRUE) {
+        me.alt.setText("INT");
+      } else {
         me.alt.setText("");
-        countQFE = 0;
-        QFEcalibrated = FALSE;
-        me.input.altCalibrated.setBoolValue(FALSE);
-      } elsif (radAlt != nil and radAlt < me.radar_clamp) {
+      }
+      me.inter = TRUE;
+      me.INT = TRUE;
+    }
+    if (radAlt == nil and me.input.ctrlRadar.getValue() == 1) {
+      # Radar alt instrument not initialized yet
+      if (me.INT == FALSE) {
+        me.inter = FALSE;
+        me.alt.setText("");
+      }
+      countQFE = 0;
+      QFEcalibrated = FALSE;
+      me.input.altCalibrated.setBoolValue(FALSE);
+    } elsif (radAlt != nil and radAlt < me.radar_clamp) {
+      if (me.INT == FALSE) {
+        me.inter = FALSE;
         # in radar alt range
         me.alt.setText("R " ~ sprintf("%3d", clamp(radAlt, 0, me.radar_clamp)));
-        # check for QFE warning
-        me.diff = radAlt - alt;
-        if (countQFE == 0 and (me.diff > me.alt_diff or me.diff < -me.alt_diff)) {
-          #print("QFE warning " ~ countQFE);
-          # is not calibrated, and is not blinking
-          QFEcalibrated = FALSE;
-          me.input.altCalibrated.setBoolValue(FALSE);
-          countQFE = 1;     
-          #print("QFE not calibrated, and is not blinking");     
-        } elsif (me.diff > -me.alt_diff and me.diff < me.alt_diff) {
-            #is calibrated
-          if (QFEcalibrated == FALSE and countQFE < 11) {
-            # was not calibrated before, is now.
-            #print("QFE was not calibrated before, is now. "~countQFE);
-            countQFE = 11;
-          }
-          QFEcalibrated = TRUE;
-          me.input.altCalibrated.setBoolValue(TRUE);
-        } elsif (QFEcalibrated == 1 and (me.diff > me.alt_diff or me.diff < -me.alt_diff)) {
-          # was calibrated before, is not anymore.
-          #print("QFE was calibrated before, is not anymore. "~countQFE);
-          countQFE = 1;
-          QFEcalibrated = FALSE;
-          me.input.altCalibrated.setBoolValue(FALSE);
+      }
+      # check for QFE warning
+      me.diff = radAlt - alt;
+      if (countQFE == 0 and (me.diff > me.alt_diff or me.diff < -me.alt_diff)) {
+        #print("QFE warning " ~ countQFE);
+        # is not calibrated, and is not blinking
+        QFEcalibrated = FALSE;
+        me.input.altCalibrated.setBoolValue(FALSE);
+        countQFE = 1;     
+        #print("QFE not calibrated, and is not blinking");     
+      } elsif (me.diff > -me.alt_diff and me.diff < me.alt_diff) {
+          #is calibrated
+        if (QFEcalibrated == FALSE and countQFE < 11) {
+          # was not calibrated before, is now.
+          #print("QFE was not calibrated before, is now. "~countQFE);
+          countQFE = 11;
         }
-      } else {
-        # is above height for checking for calibration
-        countQFE = 0;
-        #QFE = 0;
         QFEcalibrated = TRUE;
         me.input.altCalibrated.setBoolValue(TRUE);
-        #print("QFE not calibrated, and is not blinking");
-
+      } elsif (QFEcalibrated == 1 and (me.diff > me.alt_diff or me.diff < -me.alt_diff)) {
+        # was calibrated before, is not anymore.
+        #print("QFE was calibrated before, is not anymore. "~countQFE);
+        countQFE = 1;
+        QFEcalibrated = FALSE;
+        me.input.altCalibrated.setBoolValue(FALSE);
+      }
+    } else {
+      # is above height for checking for calibration
+      countQFE = 0;
+      #QFE = 0;
+      QFEcalibrated = TRUE;
+      me.input.altCalibrated.setBoolValue(TRUE);
+      #print("QFE not calibrated, and is not blinking");
+      if (me.INT == FALSE) {
+        me.inter = FALSE;
         me.gElev_ft = me.input.elev_ft.getValue();
         me.gElev_m  = me.input.elev_m.getValue();
 
@@ -1622,7 +1640,7 @@ var HUDnasal = {
           me.alt.setText(sprintf("%4d", clamp(me.terrainAlt, 0, 9999)));
         }
       }
-    #}
+    }
   },
 
   displayDesiredAltitudeLines: func (guideUseLines) {
@@ -2863,6 +2881,7 @@ var init = func() {
     
     #print("HUD initialized.");
     hud_pilot.update();
+    IR_loop();
   }
 };
 
@@ -2873,6 +2892,11 @@ var init2 = setlistener("/sim/signals/reinit", func() {
 #setprop("/systems/electrical/battery", 0);
 id = setlistener("ja37/supported/initialized", init, 0, 0);
 
+var IR_loop = func {
+  reinit(on_backup_power);
+  settimer(IR_loop, 1.5);
+};
+
 var reinit = func(backup = FALSE) {#mostly called to change HUD color
    #reinitHUD = 1;
 
@@ -2880,6 +2904,14 @@ var reinit = func(backup = FALSE) {#mostly called to change HUD color
    var red = backup == FALSE?r:1;
    var green = backup == FALSE?g:0.5;
    var blue = backup == FALSE?b:0;
+
+   var IR = getprop("sim/rendering/shaders/skydome") == TRUE and getprop("sim/rendering/als-filters/use-filtering") == TRUE and getprop("sim/rendering/als-filters/use-IR-vision") == TRUE;
+
+   if (IR) {
+      # IR vision enabled, lets not have a green HUD:
+      red = green;
+      blue = green;
+   }
 
    foreach(var item; artifacts0) {
     item.setColor(red, green, blue, a);
@@ -2900,10 +2932,12 @@ var reinit = func(backup = FALSE) {#mostly called to change HUD color
    }
    hud_pilot.slip_indicator.setColorFill(red, green, blue, a);
    
-   if (backup == FALSE) {
-     HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.05);
+   if (IR) {
+     HUDnasal.main.canvas.setColorBackground(red, green, blue, 0.025);
+   } elsif (backup == FALSE) {
+     HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.025);
    } else {
-     HUDnasal.main.canvas.setColorBackground(red, green, 0.3, 0.05);
+     HUDnasal.main.canvas.setColorBackground(red, green, 0.3, 0.025);
    }
   #print("HUD being reinitialized.");
 };

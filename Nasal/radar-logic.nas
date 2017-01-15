@@ -230,7 +230,11 @@ var RadarLogic = {
             selection = me.trackInfo;
             lookatSelection();
             selection_updated = TRUE;
-            me.paint(selection.getNode(), TRUE);
+            if (selection.get_type() == AIR) {
+              me.paint(selection.getNode(), TRUE);
+            } else {
+              me.paint(selection.getNode(), FALSE);
+            }
           #} elsif (track.getChild("name") != nil and track.getChild("name").getValue() == "RB-24J") {
             #for testing that selection view follows missiles
           #  selection = trackInfo;
@@ -240,7 +244,11 @@ var RadarLogic = {
             # this track is already selected, updating it
             #print("updating target");
             selection = me.trackInfo;
-            me.paint(selection.getNode(), TRUE);
+            if (selection.get_type() == AIR) {
+              me.paint(selection.getNode(), TRUE);
+            } else {
+              me.paint(selection.getNode(), FALSE);
+            }
             selection_updated = TRUE;
           } else {
             #print("end2 "~selection.getUnique()~"=="~unique.getValue());
@@ -504,7 +512,9 @@ var RadarLogic = {
     # Or Hide using anti doppler movements
 
     if (input.dopplerOn.getValue() == FALSE or 
-        (t_node.getNode("velocities/true-airspeed-kt") != nil and t_node.getNode("velocities/true-airspeed-kt").getValue() != nil and t_node.getNode("velocities/true-airspeed-kt").getValue() > 250)
+        (t_node.getNode("velocities/true-airspeed-kt") != nil and t_node.getNode("velocities/true-airspeed-kt").getValue() != nil
+         and t_node.getNode("radar/range-nm") != nil and t_node.getNode("radar/range-nm").getValue() != nil
+         and math.atan2(t_node.getNode("velocities/true-airspeed-kt").getValue(), t_node.getNode("radar/range-nm").getValue()*1000) > 0.025)# if aircraft traverse speed seen from me is high
         ) {
       return TRUE;
     }
@@ -638,7 +648,11 @@ var nextTarget = func () {
       tracks_index = 0;
     }
     selection = tracks[tracks_index];
-    radarLogic.paint(selection.getNode(), TRUE);
+    if (selection.get_type() == AIR) {
+      radarLogic.paint(selection.getNode(), TRUE);
+    } else {
+      radarLogic.paint(selection.getNode(), FALSE);
+    }
     lookatSelection();
   } else {
     tracks_index = -1;
@@ -666,7 +680,11 @@ var centerTarget = func () {
   }
   if (centerMost != nil) {
     selection = centerMost;
-    radarLogic.paint(selection.getNode(), TRUE);
+    if (selection.get_type() == AIR) {
+      radarLogic.paint(selection.getNode(), TRUE);
+    } else {
+      radarLogic.paint(selection.getNode(), FALSE);
+    }
     lookatSelection();
     tracks_index = centerIndex;
   }
