@@ -70,16 +70,20 @@ MiscMonitor.properties = func() {
     { property : "psi2",         name : "Hydraulics 2",          format : "%4.1f", unit : "psi",    halign : "right" },
     { property : "psiR",         name : "Hydraulics Reserve",    format : "%4.1f", unit : "psi",    halign : "right" },
     { property : "oil",          name : "Oil pressure",          format : "%5.1f", unit : "psi",    halign : "right" },
-    { property : "flaps",        name : "Flaps",                 format : "%2.1f", unit : "deg",    halign : "right" },    
-
+    { property : "flaps",        name : "Flaps",                 format : "%2.1f", unit : "deg",    halign : "right" },
+    { property : "gate",         name : "Tertiary gate",         format : "%s"   , unit : ""   ,    halign : "right" },    
+    { property : "ram",          name : "Ram Air Turbine Pos",   format : "%s"   , unit : ""   ,    halign : "right" },
+    { property : "ram-rpm",      name : "Ram Air Turbine",       format : "%2.1f", unit : "r/min",  halign : "right" },
     { property : "AC-major",     name : "Main AC",               format : "%2.1f", unit : "volt",   halign : "right" },
     { property : "AC-minor",     name : "Instrument AC",         format : "%2.1f", unit : "volt",   halign : "right" },
     { property : "DC",           name : "Main DC",               format : "%2.1f", unit : "volt",   halign : "right" },
     { property : "Battery",      name : "Battery",               format : "%2.1f", unit : "volt",   halign : "right" },
     { property : "Battery-charge",name : "Battery charge",       format : "%3d",   unit : "%",      halign : "right" },
     { property : "fuel-ratio",   name : "Fuel quantity",         format : "%3d",   unit : "%",      halign : "right" },
+    { property : "buffet",       name : "Buffeting",             format : "%1.1f", unit : "%",      halign : "right" },
     { property : "maxG",         name : "Max allowed",           format : "%1.1f", unit : "G",      halign : "right" },
     { property : "minG",         name : "Min allowed",           format : "%1.1f", unit : "G",      halign : "right" },
+    { property : "landing",      name : "Landing",               format : "%s",    unit : "",       halign : "right" },
   ]
 }
 
@@ -115,6 +119,39 @@ MiscMonitor.update = func()
   setprop("/sim/gui/dialogs/systems-monitor/fuel-ratio", getprop("/instrumentation/fuel/ratio")*100);
   setprop("/sim/gui/dialogs/systems-monitor/maxG", getprop("fdm/jsbsim/fcs/elevator/cmg-limit-pos"));
   setprop("/sim/gui/dialogs/systems-monitor/minG", getprop("fdm/jsbsim/fcs/elevator/cmg-limit-neg"));
+  var ram = getprop("fdm/jsbsim/systems/electrical/generator-reserve-pos-norm");
+  if (ram == 0) {
+    ram = "retracted";
+  } elsif (ram == 1) {
+    ram = "extended";
+  } else {
+    ram = "transit";
+  }
+  setprop("/sim/gui/dialogs/systems-monitor/ram", ram);
+  setprop("/sim/gui/dialogs/systems-monitor/ram-rpm", getprop("fdm/jsbsim/systems/electrical/generator-reserve-rpm"));
+  setprop("/sim/gui/dialogs/systems-monitor/buffet", getprop("ja37/effect/buffeting")*100);
+  var gate = getprop("/ja37/systems/tertiary-opening");
+  if (gate == 0) {
+    gate = "closed";
+  } elsif (gate == 1) {
+    gate = "open";
+  } else {
+    gate = "transit";
+  }
+  setprop("/sim/gui/dialogs/systems-monitor/gate", gate);
+  var landingMode = "Off/No Route";
+  if(canvas_HUD.mode == canvas_HUD.LANDING) {
+    if (land.mode == 1) {
+      landingMode = "Mode 1";
+    } elsif (land.mode == 2) {
+      landingMode = "Mode 2";
+    } elsif (land.mode == 3) {
+      landingMode = "Mode 3";
+    } elsif (land.mode == 4) {
+      landingMode = "Optical";
+    }
+  }
+  setprop("/sim/gui/dialogs/systems-monitor/landing", landingMode);
 }
 
 MiscMonitor.reinit = func() {

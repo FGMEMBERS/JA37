@@ -1,18 +1,18 @@
 <?xml version="1.0"?>
 <PropertyList>
     <keyboard>
-        <key n="1">
+        <!--<key n="1">
             <name>Shift-Ctrl-A</name>
             <mod-shift>
                 <desc>Autopilot continue on heading/alt</desc>
                 <binding>
                     <command>nasal</command>
                     <script>
-                       ja37.apCont();
+                       auto.apCont();
                     </script>
                 </binding>
             </mod-shift>
-        </key>
+        </key>-->
         <key n="108">
             <name>l</name>
             <desc>Toggle arrester hook</desc>
@@ -333,7 +333,7 @@
             <desc>Set autopilot to follow current target</desc>
             <binding>
                 <command>nasal</command>
-                <script>ja37.follow();</script>
+                <script>auto.follow();</script>
             </binding>
         </key>
         <key n="70">
@@ -341,7 +341,7 @@
             <desc>Set autopilot to stop follow current target</desc>
             <binding>
                 <command>nasal</command>
-                <script>ja37.unfollow();</script>
+                <script>auto.unfollow();</script>
             </binding>
         </key>
         <key n="8">

@@ -10,7 +10,7 @@ var TRUE  = 1;
 var abs = func(n) { n < 0 ? -n : n }
 var sgn = func(n) { n < 0 ? -1 : 1 }
 var g = nil;
-var pixels_max = 256;
+var pixels_max = 512;
 
 # radar canon color
 var black_r = 0.0;
@@ -108,6 +108,22 @@ var radar = {
                .setColor(white_r, white_g, white_b)
                .set("z-index", 5);
 
+    # altitude boxes
+    m.desired_boxes = m.horzGroup.createChild("path")
+                     .moveTo(-(380/1024)*pixels_max, 0)
+                     .vert((50/1024)*pixels_max)
+                     .horiz((10/1024)*pixels_max)
+                     .vert(-(50/1024)*pixels_max)
+                     .horiz(-(10/1024)*pixels_max)
+                     .moveTo((380/1024)*pixels_max, 0)
+                     .vert((50/1024)*pixels_max)
+                     .horiz(-(10/1024)*pixels_max)
+                     .vert(-(50/1024)*pixels_max)
+                     .horiz((10/1024)*pixels_max)
+                     .setStrokeLineWidth((8/1024)*pixels_max)
+                     .setColor(white_r, white_g, white_b)
+                     .set("z-index", 5);
+
     ####################
     # black antennae   #
     ####################
@@ -161,6 +177,13 @@ var radar = {
                .arcSmallCW(m.strokeHeight*0.075, m.strokeHeight*0.075, 0, m.strokeHeight*0.15, 0)
                .arcSmallCW(m.strokeHeight*0.075, m.strokeHeight*0.075, 0, -m.strokeHeight*0.15, 0)
                .setStrokeLineWidth((8/1024)*pixels_max)
+               .setColor(white_r, white_g, white_b)
+               .set("z-index", 8);
+    m.approach_circle = g.createChild("path")
+               .moveTo(-150, 0)
+               .arcSmallCW(150, 150, 0, 300, 0)
+               .arcSmallCW(150, 150, 0, -300, 0)
+               .setStrokeLineWidth((16/1024)*pixels_max)
                .setColor(white_r, white_g, white_b)
                .set("z-index", 8);
                
@@ -392,6 +415,7 @@ var radar = {
       viewNumber:           "sim/current-view/view-number",
       headTrue:             "orientation/heading-deg",
       headMagn:             "orientation/heading-magnetic-deg",
+      twoHz:                "ja37/blink/two-Hz/state",
     };
 
     # setup property nodes for the loop
@@ -458,57 +482,63 @@ var radar = {
       #  }
       #}
 
-      if (me.input.rmActive.getValue() == TRUE) {
-        me.dist = me.input.rmDist.getValue();        
-        me.bearing = me.input.rmTrueBearing.getValue();#true
-        me.heading = me.input.heading.getValue();#true
-        if (me.dist != nil and me.bearing != nil and me.heading != nil) {
-          me.bug = me.bearing - me.heading;
-
-          me.x = math.cos(-(me.bug-90) * D2R) * (me.dist/(me.radarRange * M2NM)) * me.strokeHeight;
-          me.y = math.sin(-(me.bug-90) * D2R) * (me.dist/(me.radarRange * M2NM)) * me.strokeHeight;
+      
+      if (land.show_waypoint_circle == TRUE or land.show_runway_line == TRUE) {
+          me.x = math.cos(-(land.runway_bug-90) * D2R) * (land.runway_dist/(me.radarRange * M2NM)) * me.strokeHeight;
+          me.y = math.sin(-(land.runway_bug-90) * D2R) * (land.runway_dist/(me.radarRange * M2NM)) * me.strokeHeight;
 
           me.dest.setTranslation(pixels_max/2+me.x, me.strokeOriginY-me.y);
+          
 
-          me.dest.show();
+          if (land.show_waypoint_circle == TRUE) {
+              me.dest_circle.show();
+          } else {
+              me.dest_circle.hide();
+          }
 
-          me.name = me.input.rmId.getValue();
-          if (me.name != nil and size(split("-", me.name))>1) {
-            #print(name~"="~dist~" "~me.strokeHeight~" "~(me.radarRange * M2NM));
-            me.name = split("-", me.name);
-            me.icao = me.name[0];
-            me.name = me.name[1];
-            me.name = split("C", split("L", split("R", me.name)[0])[0])[0];
-            me.name = num(me.name);
-            if (me.name != nil and size(me.icao) == 4) {
-              me.head = 10 * me.name;#magnetic
-              me.magDiff = me.input.headTrue.getValue() - me.input.headMagn.getValue();
-              me.head += me.magDiff;#true
-              # 10 20 20 40 Km long line, depending on radar setting, as per manual.
-              me.runway_l = 10000;
-              if (me.radarRange == 120000 or me.radarRange == 180000) {
-                me.runway_l = 40000;
-              } elsif (me.radarRange == 60000) {
-                me.runway_l = 20000;
-              } elsif (me.radarRange == 30000) {
-                me.runway_l = 20000;
-              }
-              me.scale = (me.runway_l/me.radarRange) * me.strokeHeight/50;
-              me.dest_runway.setScale(1, me.scale);
-              me.dest.setRotation((180+me.head-me.heading)*D2R);
-              me.dest_runway.show();
-              } else {
-                me.dest_runway.hide();
-              }
+          if (land.show_runway_line == TRUE) {
+            # 10 20 20 40 Km long line, depending on radar setting, as per manual.
+            me.runway_l = land.line*1000;
+    #        if (me.radarRange == 120000 or me.radarRange == 180000) {
+    #          me.runway_l = 40000;
+    #        } elsif (me.radarRange == 60000) {
+    #          me.runway_l = 20000;
+    #        } elsif (me.radarRange == 30000) {
+    #          me.runway_l = 20000;
+    #        }
+            me.scale = (me.runway_l/me.radarRange) * me.strokeHeight/50;
+            me.dest_runway.setScale(1, me.scale);
+            me.heading = me.input.heading.getValue();#true
+            me.dest.setRotation((180+land.head-me.heading)*D2R);
+            me.dest_runway.show();
+            if (land.show_approach_circle == TRUE) {
+              me.scale = (4100/me.radarRange) * me.strokeHeight/150;
+              me.approach_circle.setStrokeLineWidth(((8/me.scale)/1024)*pixels_max);
+              me.approach_circle.setScale(me.scale);
+              me.acir = radar_logic.ContactGPS.new("circle", land.approach_circle);
+              me.distance = me.acir.get_polar()[0];
+              me.xa_rad   = me.acir.get_polar()[1];
+              me.pixelDistance = -me.distance*((me.strokeOriginY-me.strokeTopY)/me.radarRange); #distance in pixels
+              #translate from polar coords to cartesian coords
+              me.pixelX =  me.pixelDistance * math.cos(me.xa_rad + math.pi/2) + pixels_max/2;
+              me.pixelY =  me.pixelDistance * math.sin(me.xa_rad + math.pi/2) + me.strokeOriginY;
+              me.approach_circle.setTranslation(me.pixelX, me.pixelY);
+              me.approach_circle.show();
+            } else {
+              me.approach_circle.hide();#pitch.......1x.......................................................
+            }            
           } else {
             me.dest_runway.hide();
+            me.approach_circle.hide();
           }
-        } else {
-          me.dest.hide();
-        }
+          me.dest.show();
       } else {
-        me.dest.hide();
+        me.dest_circle.hide();
+        me.dest_runway.hide();
+        me.approach_circle.hide();
       }
+      
+      
 
 
       # show antanea height
@@ -530,12 +560,19 @@ var radar = {
     
       # show horizon lines
       me.horzGroup.setRotation(-me.input.roll.getValue()*D2R);
-
+      me.showBoxes = FALSE;
+      me.showLines = TRUE;
       me.desired_alt_delta_ft = nil;
       if(canvas_HUD.mode == canvas_HUD.TAKEOFF) {
         me.desired_alt_delta_ft = (500*M2FT)-me.input.alt_ft.getValue();
       } elsif (me.input.APLockAlt.getValue() == "altitude-hold" and me.input.APTgtAlt.getValue() != nil) {
         me.desired_alt_delta_ft = me.input.APTgtAlt.getValue()-me.input.alt_ft.getValue();
+        me.showBoxes = TRUE;
+        if (me.input.alt_ft.getValue() * FT2M > 1000) {
+          me.showLines = FALSE;
+        }
+      } elsif(canvas_HUD.mode == canvas_HUD.LANDING and land.mode < 3 and land.mode > 0) {
+        me.desired_alt_delta_ft = (500*M2FT)-me.input.alt_ft.getValue();
       } elsif (me.input.APLockAlt.getValue() == "agl-hold" and me.input.APTgtAgl.getValue() != nil) {
         me.desired_alt_delta_ft = me.input.APTgtAgl.getValue()-me.input.rad_alt.getValue();
       } elsif(me.input.rmActive.getValue() == 1 and me.input.RMCurrWaypoint.getValue() != nil and me.input.RMCurrWaypoint.getValue() >= 0) {
@@ -549,9 +586,20 @@ var radar = {
         me.pos_y = clamp(-(me.desired_alt_delta_ft*FT2M)/10, -(50/1024)*pixels_max, (100/1024)*pixels_max);#500 m up, 1000 m down
 
         me.desired_lines3.setTranslation(0, me.pos_y);
-        me.desired_lines3.show();
+        me.desired_boxes.setTranslation(0, me.pos_y);
+        if (me.showLines == TRUE) {
+          me.desired_lines3.show();
+        } else {
+          me.desired_lines3.hide();
+        }
+        if (me.showBoxes == TRUE and (getprop("fdm/jsbsim/systems/indicators/auto-altitude-secondary") == FALSE or me.input.twoHz.getValue())) {
+          me.desired_boxes.show();
+        } else {
+          me.desired_boxes.hide();
+        }
       } else {
         me.desired_lines3.hide();
+        me.desired_boxes.hide();
       }
 
 
@@ -571,6 +619,7 @@ var radar = {
   update_blip: func(curr_angle, prev_angle) {
         me.b_i=0;
         me.anyLock = FALSE;
+        me.currSelect = radar_logic.selection != nil?radar_logic.selection.getUnique():-1;
         foreach (var mp; radar_logic.tracks) {
           # Node with valid position data (and "distance!=nil").
 
@@ -581,7 +630,7 @@ var radar = {
           if (me.b_i < me.no_blip and me.distance != nil and me.distance < me.radarRange ){#and alt-100 > getprop("/environment/ground-elevation-m")){
               #aircraft is within the radar ray cone
               me.locked = FALSE;
-              if (mp.isPainted() == TRUE) {
+              if (mp.getUnique() == me.currSelect) {
                 me.anyLock = TRUE;
                 me.locked = TRUE;
               }

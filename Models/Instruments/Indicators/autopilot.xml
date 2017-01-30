@@ -37,7 +37,7 @@
             <binding>
                 <command>set-tooltip</command>
                 <tooltip-id>Attitude Indicator</tooltip-id>
-                <label>Automatic Attitude</label>
+                <label>Automatic Attitude/pitch</label>
                 <property>/instrumentation/attitude-indicator</property>
             </binding>
         </hovered>
@@ -48,7 +48,7 @@
             <binding>
                 <command>nasal</command>
                 <script>
-                    ja37.apContAtt();
+                    auto.mode2();
                     ja37.click();
                 </script>
             </binding>
@@ -84,7 +84,7 @@
             <binding>
                 <command>set-tooltip</command>
                 <tooltip-id>Altitude Warning Indicator</tooltip-id>
-                <label>Automatic Altitude</label>
+                <label>Automatic Altitude/attitude</label>
                 <property>/instrumentation/altitude-indicator</property>
             </binding>
         </hovered>
@@ -95,7 +95,7 @@
             <binding>
                 <command>nasal</command>
                 <script>
-                    ja37.apContAlt();
+                    auto.mode3();
                     ja37.click();
                 </script>
             </binding>
@@ -131,7 +131,7 @@
             <binding>
                 <command>set-tooltip</command>
                 <tooltip-id>Spak Indicator</tooltip-id>
-                <label>Flightstick active</label>
+                <label>Dampers active</label>
                 <property>/instrumentation/joystick-indicator</property>
             </binding>
         </hovered>
@@ -142,7 +142,7 @@
             <binding>
                 <command>nasal</command>
                 <script>
-                    ja37.stopAP();
+                    auto.mode1();
                     ja37.click();
                 </script>
             </binding>

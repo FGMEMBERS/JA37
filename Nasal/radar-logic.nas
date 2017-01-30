@@ -1245,7 +1245,14 @@ var ContactGPS = {
     #aircraft angle
     var ya_rad = xg_rad * math.sin(myRoll) + yg_rad * math.cos(myRoll);
     var xa_rad = xg_rad * math.cos(myRoll) - yg_rad * math.sin(myRoll);
+    var xa_rad_corr = xg_rad;
 
+    while (xa_rad_corr < -math.pi) {
+      xa_rad_corr = xa_rad_corr + 2*math.pi;
+    }
+    while (xa_rad_corr > math.pi) {
+      xa_rad_corr = xa_rad_corr - 2*math.pi;
+    }
     while (xa_rad < -math.pi) {
       xa_rad = xa_rad + 2*math.pi;
     }
@@ -1259,9 +1266,9 @@ var ContactGPS = {
       ya_rad = ya_rad + 2*math.pi;
     }
 
-    var distanceRadar = distance/math.cos(myPitch);
+    var distanceRadar = distance;#/math.cos(myPitch);
 
-    return [distanceRadar, xa_rad];
+    return [distanceRadar, xa_rad_corr];
   },
 };
 
@@ -1270,7 +1277,7 @@ var getPitch = func (coord1, coord2) {
   var coord3 = geo.Coord.new(coord1);
   coord3.set_alt(coord2.alt());
   var d12 = coord1.direct_distance_to(coord2);
-  if (d12 > 0.01) {
+  if (d12 > 0.01 and coord1.alt() != coord2.alt()) {# not sure how to cope with same altitudes.
     var d32 = coord3.direct_distance_to(coord2);
     var altD = coord1.alt()-coord3.alt();
     var y = R2D * math.acos((math.pow(d12, 2)+math.pow(altD,2)-math.pow(d32, 2))/(2 * d12 * altD));

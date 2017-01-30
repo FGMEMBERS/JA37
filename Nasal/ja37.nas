@@ -142,6 +142,7 @@ input = {
   servFire:         "engines/engine[0]/fire/serviceable",
   serviceElec:      "systems/electrical/serviceable",
   speedKt:          "/instrumentation/airspeed-indicator/indicated-speed-kt",
+  speedTrueKt:      "fdm/jsbsim/velocities/vtrue-kts",
   speedMach:        "/instrumentation/airspeed-indicator/indicated-mach",
   speedWarn:        "ja37/sound/speed-on",
   srvHead:          "instrumentation/heading-indicator/serviceable",
@@ -309,11 +310,13 @@ var update_loop = func {
     # setprop("gear/gear/compression-wheel", (getprop("gear/gear/compression-ft")*0.3048-1.84812));
 
 
-    # low speed warning (as per manual)
+    # low speed warning (as per manual page 279 in JA37C part 1)
     var lowSpeed = FALSE;
-    if ((input.speedKt.getValue() * 1.85184) < 375) {
+    if (auto.modeT < 2 and (input.speedKt.getValue() * 1.85184) < 375 and input.wow1.getValue() == FALSE) {
       if (input.indAltMeter.getValue() < 1200) {
-        if ((input.gearsPos.getValue() == 1 and (input.rad_alt.getValue() * FT2M) > 30) or input.gearsPos.getValue() != 1) {
+        if (
+          (input.gearsPos.getValue() == 1 and (getprop("controls/altimeter-radar")==TRUE?(input.rad_alt.getValue() * FT2M) > 30:(input.indAltFt.getValue() * FT2M) > 30))
+          or input.gearsPos.getValue() != 1) {
           if (getprop("fdm/jsbsim/fcs/throttle-pos-deg") < 19 or input.reversed.getValue() == TRUE or input.engineRunning.getValue() == FALSE) {
             lowSpeed = TRUE;
           }
@@ -474,6 +477,7 @@ var slow_loop = func () {
 
   var acSetting = getprop("controls/ventilation/airconditioning-type");
   if (acSetting != 0) {
+    # 12 second of cold or hot air has been selected.
     if (acPrev != acSetting) {
       acTimer = input.elapsed.getValue();
     } elsif (acTimer+12 < input.elapsed.getValue()) {
@@ -510,21 +514,26 @@ var slow_loop = func () {
   # If the AC is turned on and on auto setting, it will slowly move the cockpit temperature toward its temperature setting.
   # The dewpoint inside the cockpit depends on the outside dewpoint and how the AC is working.
   var tempOutside = getprop("environment/temperature-degc");
-  var tempInside = getprop("environment/aircraft-effects/temperature-inside-degC");
+  var ramRise     = (input.speedTrueKt.getValue()*input.speedTrueKt.getValue())/(87*87);#this is called the ram rise formula
+  tempOutside    += ramRise;
+  var tempInside  = getprop("environment/aircraft-effects/temperature-inside-degC");
   var tempOutsideDew = getprop("environment/dewpoint-degc");
   var tempInsideDew = getprop("/environment/aircraft-effects/dewpoint-inside-degC");
   var tempACDew = 5;# aircondition dew point target. 5 = dry
   var ACRunning = input.dcVolt.getValue() > 23 and getprop("controls/ventilation/airconditioning-enabled") == TRUE;
 
   # calc inside temp
+  var hotAir_deg_min = 2.0;# how fast does the sources heat up cockpit.
+  var AC_deg_min     = 6.0;
+  var pilot_deg_min  = 0.2;
   var knob = getprop("controls/ventilation/windshield-hot-air-knob");
   var hotAirOnWindshield = input.dcVolt.getValue() > 23?knob:0;
   if (input.canopyPos.getValue() > 0 or input.canopyHinge.getValue() == FALSE) {
     tempInside = tempOutside;
   } else {
-    tempInside = tempInside + hotAirOnWindshield * 0.05; # having hot air on windshield will also heat cockpit
+    tempInside = tempInside + hotAirOnWindshield * (hotAir_deg_min/(60/LOOP_SLOW_RATE)); # having hot air on windshield will also heat cockpit (10 degs/5 mins).
     if (tempInside < 37) {
-      tempInside = tempInside + 0.005; # pilot will also heat cockpit with 1 deg per 5 mins
+      tempInside = tempInside + (pilot_deg_min/(60/LOOP_SLOW_RATE)); # pilot will also heat cockpit with 1 deg per 5 mins
     }
     # outside temp will influence inside temp:
     var coolingFactor = clamp(abs(tempInside - tempOutside)*0.005, 0, 0.10);# 20 degrees difference will cool/warm with 0.10 Deg C every 1.5 second
@@ -536,9 +545,9 @@ var slow_loop = func () {
     if (ACRunning == TRUE) {
       # AC is running and will work to adjust to influence the inside temperature
       if (tempInside < tempAC) {
-        tempInside = clamp(tempInside+0.15, -1000, tempAC);
+        tempInside = clamp(tempInside+(AC_deg_min/(60/LOOP_SLOW_RATE)), -1000, tempAC);
       } elsif (tempInside > tempAC) {
-        tempInside = clamp(tempInside-0.15, tempAC, 1000);
+        tempInside = clamp(tempInside-(AC_deg_min/(60/LOOP_SLOW_RATE)), tempAC, 1000);
       }
     }
   }
@@ -583,8 +592,10 @@ var slow_loop = func () {
   }
   var frostSpeedInside = clamp(-tempGlass, -60, 60)/600 + (tempGlass<0?fogNormInside/50:0);
   var frostSpeedOutside = clamp(-tempGlass, -60, 60)/600 + (tempGlass<0?(fogNormOutside/50 + rain/50):0);
-  frostNormOutside = clamp(frostNormOutside + frostSpeedOutside, 0, 1);
-  frostNormInside = clamp(frostNormInside + frostSpeedInside, 0, 1);
+  var maxFrost = clamp(1 + ((tempGlass + 5) / (0 + 5)) * (0 - 1), 0, 1);# -5 is full frost, 0 is no frost
+  var maxFrostInside = clamp(maxFrost - clamp(tempInside/30,0,1), 0, 1);# frost having harder time to form while being constantly thawed.
+  frostNormOutside = clamp(frostNormOutside + frostSpeedOutside, 0, maxFrost);
+  frostNormInside = clamp(frostNormInside + frostSpeedInside, 0, maxFrostInside);
   var frostNorm = frostNormOutside>frostNormInside?frostNormOutside:frostNormInside;
   #var frostNorm = clamp((tempGlass-0)*-0.05, 0, 1);# will freeze below 0
 
@@ -780,7 +791,7 @@ var theShakeEffect = func{
       factor += 1*densFactor;
     }
     if (wow == TRUE and rSpeed > 100) {
-      factor += map(rSpeed,100,200,0,1);
+      factor += map(rSpeed,100,200,0,0.50);
     }    
     factor = clamp(factor,0,1);
     if (near == TRUE) {
@@ -789,8 +800,10 @@ var theShakeEffect = func{
     if (explode == TRUE) {
       factor += 3.5;
     }
+    setprop("ja37/effect/buffeting", factor);
     input.viewYOffset.setDoubleValue(defaultView+input.buffOut.getValue()*factor); 
   } elsif (input.viewName.getValue() == "Cockpit View") {
+    setprop("ja37/effect/buffeting", 0);
     input.viewYOffset.setDoubleValue(defaultView);
   } 
 }
@@ -1145,7 +1158,7 @@ var re_init = func {
   # asymmetric vortex detachment
   asymVortex();
   repair(FALSE);
-  stopAP();
+  auto.stopAP();
   setprop("/controls/gear/gear-down", 1);
   setprop("/controls/gear/brake-parking", 1);
 
@@ -1256,15 +1269,18 @@ var autostarttimer = func {
 }
 
 var stopAutostart = func {
+  setprop("/controls/electric/main", FALSE);
+  setprop("/controls/electric/battery", FALSE);
+  settimer(stopFinal, 5, 1);#allow time for ram air and flaps to retract
+}
+
+stopFinal = func {
   setprop("fdm/jsbsim/propulsion/engine/cutoff-commanded", TRUE);
   setprop("/controls/engines/engine[0]/starter-cmd", FALSE);
   setprop("/controls/engines/engine[0]/starter-cmd-hold", FALSE);
   setprop("/controls/electric/engine[0]/generator", FALSE);
-  setprop("/controls/electric/main", FALSE);
-  setprop("/controls/electric/battery", FALSE);
   setprop("fdm/jsbsim/systems/electrical/external/switch", FALSE);
   setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", FALSE);
-
   autostarting = FALSE;
 }
 
@@ -1276,16 +1292,25 @@ var startSupply = func {
     click();
     setprop("fdm/jsbsim/systems/electrical/external/switch", TRUE);
     setprop("/controls/electric/main", TRUE);
+    setprop("controls/electric/reserve", FALSE);
     notice("Enabling power using external supply.");
-  } else {
+    settimer(endSupply, 1.5, 1);
+  } elsif (getprop("fdm/jsbsim/systems/electrical/battery-producing-dc") > 23) {
     # using battery
     click();
     setprop("/controls/electric/battery", TRUE);
     setprop("/controls/electric/main", TRUE);
+    setprop("controls/electric/reserve", FALSE);
     notice("Enabling power using battery.");
+    settimer(endSupply, 1.5, 1);
+  } else {
+    # using reserve power, hope for enough speed for hydraulics
+    setprop("controls/electric/reserve", TRUE);
+    setprop("/controls/electric/main", TRUE);
+    setprop("/controls/gear/gear-down", FALSE);
+    notice("Enabling power using ram air turbine..gears will retract.");
+    settimer(endSupply, 10, 1);
   }
-  setprop("controls/electric/reserve", FALSE);
-  settimer(endSupply, 1.5, 1);
 }
 
 var endSupply = func {
@@ -1801,8 +1826,14 @@ var loadIFail = func () {
 }
 
 var resetView = func () {
-  setprop("sim/current-view/field-of-view", getprop("sim/current-view/config/default-field-of-view-deg"));
-  setprop("sim/current-view/heading-offset-deg", getprop("sim/current-view/config/heading-offset-deg"));
-  setprop("sim/current-view/pitch-offset-deg", getprop("sim/current-view/config/pitch-offset-deg"));
-  setprop("sim/current-view/roll-offset-deg", getprop("sim/current-view/config/roll-offset-deg"));
+  var hd = getprop("sim/current-view/heading-offset-deg");
+  var hd_t = getprop("sim/current-view/config/heading-offset-deg");
+  if (hd > 180) {
+    hd_t = hd_t + 360;
+  }
+  interpolate("sim/current-view/field-of-view", getprop("sim/current-view/config/default-field-of-view-deg"), 0.66);
+  interpolate("sim/current-view/heading-offset-deg", hd_t,0.66);
+  interpolate("sim/current-view/pitch-offset-deg", getprop("sim/current-view/config/pitch-offset-deg"),0.66);
+  interpolate("sim/current-view/roll-offset-deg", getprop("sim/current-view/config/roll-offset-deg"),0.66);
+  interpolate("sim/current-view/x-offset-m", 0, 1);
 }

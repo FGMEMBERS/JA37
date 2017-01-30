@@ -639,12 +639,27 @@ var HUDnasal = {
                      .setStrokeLineWidth(w)
                      .setColor(r,g,b, a);
 
+    # altitude boxes
+    HUDnasal.main.desired_boxes = HUDnasal.main.desired_lines_group.createChild("path")
+                     .moveTo(-(215/1024)*canvasWidth + w/2, 0)
+                     .vert(2.5*pixelPerDegreeY)
+                     .horiz((30/1024)*canvasWidth)
+                     .vert(-2.5*pixelPerDegreeY)
+                     .horiz((-30/1024)*canvasWidth)
+                     .moveTo((215/1024)*canvasWidth - w/2, 0)
+                     .vert(2.5*pixelPerDegreeY)
+                     .horiz((-30/1024)*canvasWidth)
+                     .vert(-2.5*pixelPerDegreeY)
+                     .horiz((30/1024)*canvasWidth)
+                     .setStrokeLineWidth(w)
+                     .setColor(r,g,b, a);
+
     HUDnasal.main.landing_line = HUDnasal.main.horizon_group2.createChild("path")
-                     .moveTo(-(200/1024)*canvasWidth, pixelPerDegreeY*2.86)
+                     .moveTo(-(200/1024)*canvasWidth, 0)
                      .horiz((160/1024)*canvasWidth)
-                     .moveTo((40/1024)*canvasWidth, pixelPerDegreeY*2.86)
+                     .moveTo((40/1024)*canvasWidth, 0)
                      .horiz((160/1024)*canvasWidth)
-                     .moveTo(0, pixelPerDegreeY*2.86)
+                     .moveTo(0, 0)
                      .arcSmallCW((4/1024)*canvasWidth, (4/1024)*canvasWidth, 0, -(8/1024)*canvasWidth, 0)
                      .arcSmallCW((4/1024)*canvasWidth, (4/1024)*canvasWidth, 0,  (8/1024)*canvasWidth, 0)
                      .setStrokeLineWidth(w)
@@ -847,7 +862,7 @@ var HUDnasal = {
              HUDnasal.main.alt_scale_high, HUDnasal.main.alt_scale_med, HUDnasal.main.alt_scale_low, HUDnasal.main.slip_indicator,
              HUDnasal.main.alt_scale_line, HUDnasal.main.aim_reticle_fin, HUDnasal.main.reticle_cannon, HUDnasal.main.desired_lines2,
              HUDnasal.main.alt_pointer, HUDnasal.main.rad_alt_pointer, HUDnasal.main.target_air, HUDnasal.main.target_sea, HUDnasal.main.target_ground, HUDnasal.main.desired_lines3, HUDnasal.main.horizon_line_gap,
-             HUDnasal.main.reticle_no_ammo, HUDnasal.main.takeoff_symbol, HUDnasal.main.horizon_line, HUDnasal.main.horizon_dots, HUDnasal.main.diamond,
+             HUDnasal.main.desired_boxes, HUDnasal.main.reticle_no_ammo, HUDnasal.main.takeoff_symbol, HUDnasal.main.horizon_line, HUDnasal.main.horizon_dots, HUDnasal.main.diamond,
              tower, ccip, HUDnasal.main.aim_reticle, HUDnasal.main.targetSpeed, HUDnasal.main.mySpeed, HUDnasal.main.distanceScale, HUDnasal.main.targetDistance1,
              HUDnasal.main.targetDistance2, HUDnasal.main.landing_line, HUDnasal.main.heading_bug_horz];
 
@@ -916,6 +931,7 @@ var HUDnasal = {
         mach:             "instrumentation/airspeed-indicator/indicated-mach",
         mode:             "ja37/hud/mode",
         nav0GSNeedleDefl: "instrumentation/nav[0]/gs-needle-deflection-norm",
+        nav0GSNeedleDeflD:"instrumentation/nav[0]/gs-needle-deflection-deg",
         nav0GSInRange:    "instrumentation/nav[0]/gs-in-range",
         nav0HasGS:        "instrumentation/nav[0]/has-gs",
         nav0Heading:      "instrumentation/nav[0]/heading-deg",
@@ -938,6 +954,7 @@ var HUDnasal = {
         speed_n:          "velocities/speed-north-fps",
         station:          "controls/armament/station-select",
         tenHz:            "ja37/blink/ten-Hz/state",
+        twoHz:            "ja37/blink/two-Hz/state",
         terrainOn:        "ja37/sound/terrain-on",
         TILS:             "ja37/hud/TILS",
         towerAlt:         "sim/tower/altitude-ft",
@@ -1064,6 +1081,8 @@ var HUDnasal = {
       } else {
         me.out_of_ammo = TRUE;
       }
+
+      me.finalVisual = me.input.ctrlRadar.getValue() == 1? (me.input.rad_alt.getValue() * FT2M) < 15 : (me.input.alt_ft.getValue() * FT2M) < 35;
 
       # ground collision warning
       me.displayGroundCollisionArrow(mode);
@@ -1231,9 +1250,7 @@ var HUDnasal = {
 
   displayHeadingBug: func () {
     me.desired_mag_heading = nil;
-    if (mode == LANDING and me.input.nav0InRange.getValue() == TRUE) {
-      me.desired_mag_heading = me.input.nav0Heading.getValue();
-    } elsif (me.input.APLockHeading.getValue() == "dg-heading-hold") {
+    if (me.input.APLockHeading.getValue() == "dg-heading-hold") {
       me.desired_mag_heading = me.input.APHeadingBug.getValue();
     } elsif (me.input.APLockHeading.getValue() == "true-heading-hold") {
       me.desired_mag_heading = me.input.APTrueHeadingErr.getValue()+me.input.hdg.getValue();#getprop("autopilot/settings/true-heading-deg")+
@@ -1242,6 +1259,9 @@ var HUDnasal = {
     } elsif( me.input.RMActive.getValue() == 1) {
       #var i = getprop("autopilot/route-manager/current-wp");
       me.desired_mag_heading = me.input.RMWaypointBearing.getValue();
+    } elsif (me.input.nav0InRange.getValue() == TRUE) {
+      # bug to VOR, ADF or ILS
+      me.desired_mag_heading = me.input.nav0Heading.getValue();# TODO: is this really mag?
     }
     if(me.desired_mag_heading != nil) {
       #print("desired "~desired_mag_heading);
@@ -1331,7 +1351,7 @@ var HUDnasal = {
     me.pixelPerFeet = nil;
     # determine which alt scale to use
     if(me.metric == 1) {
-      me.pixelPerFeet = altimeterScaleHeight/50;
+      me.pixelPerFeet = altimeterScaleHeight/(50*M2FT);
       if (alt_scale_mode == -1) {
         if (alt < 45) {
           alt_scale_mode = 0;
@@ -1339,7 +1359,7 @@ var HUDnasal = {
           alt_scale_mode = 1;
         } else {
           alt_scale_mode = 2;
-          me.pixelPerFeet = altimeterScaleHeight/100;
+          me.pixelPerFeet = altimeterScaleHeight/(100*M2FT);
         }
       } elsif (alt_scale_mode == 0) {
         if (alt < 45) {
@@ -1352,7 +1372,7 @@ var HUDnasal = {
           alt_scale_mode = 1;
         } else if (alt >= 90) {
           alt_scale_mode = 2;
-          me.pixelPerFeet = altimeterScaleHeight/100;
+          me.pixelPerFeet = altimeterScaleHeight/(100*M2FT);
         } else if (alt < 40) {
           alt_scale_mode = 0;
         } else {
@@ -1361,7 +1381,7 @@ var HUDnasal = {
       } elsif (alt_scale_mode == 2) {
         if (alt >= 85) {
           alt_scale_mode = 2;
-          me.pixelPerFeet = altimeterScaleHeight/100;
+          me.pixelPerFeet = altimeterScaleHeight/(100*M2FT);
         } else {
           alt_scale_mode = 1;
         }
@@ -1646,10 +1666,18 @@ var HUDnasal = {
   displayDesiredAltitudeLines: func (guideUseLines) {
     if (guideUseLines == FALSE) {
       me.desired_alt_delta_ft = nil;
+      me.showBoxes = FALSE;
+      me.showLines = TRUE;
       if(mode == TAKEOFF) {
         me.desired_alt_delta_ft = (500*M2FT)-me.input.alt_ft.getValue();
       } elsif (me.input.APLockAlt.getValue() == "altitude-hold" and me.input.APTgtAlt.getValue() != nil) {
         me.desired_alt_delta_ft = me.input.APTgtAlt.getValue()-me.input.alt_ft.getValue();
+        me.showBoxes = TRUE;
+        if (me.input.alt_ft.getValue() * FT2M > 1000) {
+          me.showLines = FALSE;
+        }
+      } elsif(mode == LANDING and land.mode < 3 and land.mode > 0) {
+        me.desired_alt_delta_ft = (500*M2FT)-me.input.alt_ft.getValue();
       } elsif (me.input.APLockAlt.getValue() == "agl-hold" and me.input.APTgtAgl.getValue() != nil) {
         me.desired_alt_delta_ft = me.input.APTgtAgl.getValue()-me.input.rad_alt.getValue();
       } elsif(me.input.RMActive.getValue() == 1 and me.input.RMCurrWaypoint.getValue() != nil and me.input.RMCurrWaypoint.getValue() >= 0) {
@@ -1663,31 +1691,40 @@ var HUDnasal = {
         me.pos_y = clamp(-me.desired_alt_delta_ft*me.pixelPerFeet, -2.5*pixelPerDegreeY, 2.5*pixelPerDegreeY);
 
         me.desired_lines3.setTranslation(0, me.pos_y);
-        me.desired_lines3.show();
+        me.desired_boxes.setTranslation(0, me.pos_y);
+        if (me.showLines == TRUE) {
+          me.desired_lines3.show();
+        } else {
+          me.desired_lines3.hide();
+        }
+        if (me.showBoxes == TRUE and (getprop("fdm/jsbsim/systems/indicators/auto-altitude-secondary") == FALSE or me.input.twoHz.getValue())) {
+          me.desired_boxes.show();
+        } else {
+          me.desired_boxes.hide();
+        }
       } else {
         me.desired_lines3.hide();
+        me.desired_boxes.hide();
       }
       me.desired_lines2.hide();
     } else {
       me.desired_lines2.show();
       me.desired_lines3.show();
+      me.desired_boxes.hide();# todo: show them
     }
   },
 
   displayLandingGuide: func (mode, deflect) {
     me.guideUseLines = FALSE;
-    if(mode == LANDING) {
-      me.deg = deflect;
-      if (me.input.nav0InRange.getValue() == TRUE or me.input.TILS.getValue() == TRUE) {
-        me.deg = me.input.nav0HeadingDefl.getValue()*0.8;# -10 to +10, showed as -8 till +8
+    if(mode == LANDING and ((me.input.nav0InRange.getValue() == TRUE and land.mode < 1) or land.mode > 2)) {
+      me.deg = clamp(deflect, -8, 6);
+      
+      if (me.finalVisual == FALSE and me.input.nav0InRange.getValue() == TRUE) {
+        me.deg = clamp(me.input.nav0HeadingDefl.getValue(), -8, 6);# -10 to +10, clamped as -8 till +6
 
         if (me.input.nav0HasGS.getValue() == TRUE and me.input.nav0GSInRange.getValue() == TRUE) {
-          me.factor = me.input.nav0GSNeedleDefl.getValue() * -1;
-          if (me.factor < 0) {
-            # manual states that they can move one length down and half length up. This is to limit to half up.
-            # Maybe should clip instead of scale, not sure.
-            me.factor *= 0.5;
-          }
+          me.factor = clamp(me.input.nav0GSNeedleDefl.getValue() * -1, -0.5, 1);
+          
           me.dev3 = me.factor * 5 * pixelPerDegreeY +2.86*pixelPerDegreeY;
           me.dev2 = me.factor * 3 * pixelPerDegreeY +2.86*pixelPerDegreeY;
           me.desired_lines3.setTranslation(pixelPerDegreeX*me.deg, me.dev3);
@@ -1695,7 +1732,13 @@ var HUDnasal = {
           me.guideUseLines = TRUE;
         }
       }
-      HUDnasal.main.landing_line.setTranslation(pixelPerDegreeX*me.deg, 0);
+      me.desiredSink_deg = 2.86;
+      if (me.finalVisual == TRUE) {
+        me.sinkRateMax_mps = 2.8;
+        me.groundspeed_mps = me.input.gs.getValue() != 0?me.input.gs.getValue() * KT2FPS * FT2M:0.0001;
+        me.desiredSink_deg = math.asin(clamp(me.sinkRateMax_mps/me.groundspeed_mps,-1,1))*R2D;
+      }
+      HUDnasal.main.landing_line.setTranslation(pixelPerDegreeX*me.deg, me.desiredSink_deg*pixelPerDegreeY);
       HUDnasal.main.landing_line.show();
     } else {
       HUDnasal.main.landing_line.hide();
@@ -2121,28 +2164,29 @@ var HUDnasal = {
         me.reticle_group.setTranslation(me.pos_x, me.pos_y);
                 
         if (mode == LANDING) {
-          # move fin to alpha
-          me.alpha = me.input.alphaJSB.getValue();
-          me.speed = me.input.ias.getValue();
-          me.speed_min = 105;
-          me.speed_max = 134;
-          me.translation_speed = 0;
-          if (me.speed < me.speed_min) {
-            # too low landing speed
-            me.translation_speed = (me.speed_min - me.speed)*2;
-          } elsif (me.speed > me.speed_max) {
-            # too high landing speed
-            me.translation_speed = (me.speed_max - me.speed)*2;
-          }
-          me.translation = (me.alpha-16.5)*4;#16.5 is ideal AoA for landing
-          if (math.abs(me.translation) < math.abs(me.translation_speed)) {
-            # using speed as guide for tail
-            me.translation = me.translation_speed;
-          }
-          me.translation = clamp(me.translation, -400, 400);
+          # move fin to alpha or speed
+          me.gearsDown = me.input.gearsPos.getValue();
+
+          if (me.gearsDown == TRUE) {
+            me.alpha = me.input.alphaJSB.getValue();
+            me.highAlpha = getprop("ja37/avionics/high-alpha");
+            me.idealAlpha = 15.5;# the ideal aoa for landing.
+            if (me.highAlpha == FALSE) {
+              me.myWeight = getprop("fdm/jsbsim/inertia/weight-lbs");
+              me.idealAlpha = 9 + ((me.myWeight - 28000) / (38000 - 28000)) * (12 - 9);#is 9-12 depending on weight
+              me.idealAlpha = ja37.clamp(me.idealAlpha, 9, 12);
+            }
+            me.translation = (me.alpha-me.idealAlpha)*6.5;
+          } else {
+            me.speed = me.input.ias.getValue();
+            me.speed_goal = 297;
+            me.translation = (me.speed_goal - me.speed)*2;
+          }        
+
+          me.translation = clamp(me.translation, -60, 30);
           me.reticle_fin_group.setTranslation(0, (me.translation/1024)*canvasWidth);
-          if (me.alpha > 20) {
-            # blink the fin if alpha is high
+          if (me.gearsDown == TRUE and me.alpha > me.idealAlpha+3) {
+            # blink the fin if alpha is way too high
             if(me.input.tenHz.getValue() == TRUE) {
               me.aim_reticle_fin.show();
             } else {

@@ -10,6 +10,7 @@ GUI: Option to switch off hitting stuff above ground. (switched off now, might c
 Aero: Make recoil not assume that FDM rate is 120 Hz.
 Aero: Tune speedbrake better.
 Control: Disable failure system from freezing surfaces (remove failure mode bug in 3.2- prevents)
+Control: Make bigger factor in pitch normal comparison. (beware of oscillations)
 Model: Make minimal polygon model for multiplayer LOD.
 Model: Make liveries that is not 59, able to not have to use base texture.
 Model: Ext. power truck more mil style textures.
@@ -25,10 +26,16 @@ Model: Fix z-fighting on HUD brightness-knob, M71-rail and M90. (strange, might 
 Model: A/P control in cockpit: A/T on throttle, A/P disengage on stick.
 Model: Review all indicator lights. For example the A/T light should blink by malfunctions or disengagements.
 Model: Model speedbrakes.
-Model: Fuze panel.
+Model: Fuze panel. Right side.
+Model: Radar panel. Left side.
+Model: Radio panel. Left side.
+Model: Airspeed indicator should have mach number also.
+Model: Stores jettisoned indicator on top right of front panel?
+Model: Switch ALT CISI, altitude source. (Only in AJ variants)
 Animation: Proper animation of gear doors and gear retraction.
 Animation: Make rear boogie rotate at takeoff/landing rotation.
 Animation: Make jettison drop-tank/rocket pod actually fall down like other stores do.
+Engine: Switch aug. type in engine?
 Sim: Improve autopilot further.
 Sim: Make autopilot depend fully on instrument properties not true properties. (95% done)
 Sim: Implement ejection seat. (with parachute?)
@@ -43,14 +50,14 @@ Sim: Missiles should lock onto flares from other mil plane types.
 Sim: Lock warning when another plane get radar lock. (ja37, m2000-5, f-14b, f-15)
 Sim: Complete hydraulic dependencies: Brakes.
 Sim: Hydraulic drain.
+Sim: Electric drain.
 Sim: Shift-m should be a key without shift instead for convenience.
 Sim: Specific damage to gears in crash code, speed of impact and vertical speed separate. (terrain type?)
 Sim: Make the weapon mode dial operational: simulated mode, operational mode and reduced mode.
 Sim: Make data-link between Viggens.
 Sim: Replace MP hit and fire messages with something else, so can leave civilian traffic in peace.
 Sim: Implement maximum speed reactions - Vne.
-Sim: Implement navigation controls into the cockpit.
-Sim: Engine fire: reduced thrust, stuck throttle.
+Sim: Engine fire improvement: reduced thrust, stuck throttle.
 Sim: Make missile code generic to be used on helis also.
 Sim: Include Shinobis missile changes into missile code. (heat)
 Sim: Stop auto-selecting when in tactical mode.
@@ -62,27 +69,37 @@ Sim: A/P does auto trim of roll.
 Sim: Review A/P working property use. Also in jsb for stick control.
 Sim: Make weapons hit all nearby targets.
 Sim: Make m71 bombs not require a target.
-Sim: When inverted for more than 10 secs, let oil pressure be affected, and disrupt engine operations.
 Sim: Make schedule for max climb rate with A/P at slow speed different when gears is down (or A/T AoA hold).
 Sim: Review all replay signals.
 Sim: Only send properties over MP when they change, will save up property space.
 Sim: Set 4 M71 to fire in ripple at each trigger press.
+Sim: Make data and nav panel functional.
+Sim: After exiting transonic the altitude hold is recomputed. 
+Sim: AC power on before pushbuttons light up?
+Sim: To disengage A/P to mode 0 press switch on stick or pull fuse (will also disengage A/T).
+Sim: OPT FIX button pressed will make the current destination selected moved to right under the aircraft at push time. (datapanel rensa will set it back to what was programmed)
+Sim: Select L on systems panel to select preprogrammed landing base. LB then for long approach, LF for short.
+Sim: Pitot depend on AC.
+Sim: Some systems should get DC power directly from batt., some only when main power switch is on. Check diagram.
 Effect: Rembrandt landing lightcone.
 Effect: Make pilot G-loc/die due to G-forces.
 Effect: Make tires burst if too high speed with parking brakes.
 Sound: More annunciater warnings and other sounds. (transonic)
-Sound: Make sounds when taking damage in bombable.
 Sound: Adjust the volume of the explosion of nearby missile, depending on distance.
 Sound: Rework how missile buzz and growl works.
+Sound: Make greeting at full volume in 2017.1.1
 Radar: Make database of RCS of common aircrafts.
+Radar: Memory button, for freezing image.
 Radar: When ILS and DME is tuned to airport, show it on radar with a 20km centerline?
-HUD: Make boxes for desired pitch.
 HUD: Alt scale follow pitch lines at more than 1 degree roll from level flight. (swedish pilots seems able to read upside down, not sure I will make this)
 HUD: All track semi circles and semi box should have a line in them. (might degrade performance)
 HUD: Fix that HUD selects diamond_node, not radar logic, so HUD can be turned off in external view.
 HUD: When DME are enabled at the same time as ILS with glideslope, the distance scale make the ILS view confusing.
 HUD: Make crossing out of hud when armament not ready to fire and trigger is pressed.
 HUD: Make use of Richards new wrapper, to improve terrain warning. (2017.1.1)
+HUD: Slave-SI centers the landing guide. And hides the attitude ind. ILS needles. (only AJ variants)
+
+
 
 
 
@@ -110,6 +127,7 @@ Sim: {Pinto} After fire M70, and reload, they will fire again. [might be fixed]
 Sim: {Pinto} Has experienced that 2 engine directories were created under engines. That leads to error in performance monitor.
 Sound: If at the end of non-looped replay view mode is fly-by-view, sounds will continue looping. [not reproduced]
 Effect: Firing many M70 rockets in quick succession will make FG crash. [Probably fixed]
+Sim: A/T at high alpha does not work for Pinto, too high alpha. (3k ft, 30% fuel, no reverse)
 
 
 Issues with FG:

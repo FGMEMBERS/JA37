@@ -8,7 +8,14 @@ inputAP = {
   indAT:            "ja37/avionics/auto-throttle-on",
   hydr1On:          "fdm/jsbsim/systems/hydraulics/system1/pressure",
   dcVolt:           "systems/electrical/outputs/dc-voltage",
+  acMainVolt:       "systems/electrical/outputs/ac-main-voltage",
+  elapsed:          "sim/time/elapsed-sec",
 };
+
+var FALSE = 0;
+var TRUE = 1;
+
+var DEBUG_OUT = FALSE;
 
 # setup property nodes for the loop
 foreach(var name; keys(inputAP)) {
@@ -18,13 +25,14 @@ foreach(var name; keys(inputAP)) {
 var follow = func () {
   setprop("/autopilot/target-tracking-ja37/enable", FALSE);
   if(radar_logic.selection != nil and radar_logic.selection.getNode() != nil) {
+    mode = ja37.clamp(mode, 0, 1);
     var target = radar_logic.selection.getNode();
     setprop("/autopilot/target-tracking-ja37/target-root", target.getPath());
     #this is done in -set file: /autopilot/target-tracking-ja37/min-speed-kt
     setprop("/autopilot/target-tracking-ja37/enable", TRUE);
     var range = 0.075;
     setprop("/autopilot/target-tracking-ja37/goal-range-nm", range);
-    popupTip("A/P follow: ON");
+    ja37.popupTip("A/P follow: ON");
 
     setprop("autopilot/settings/target-altitude-ft", 10000);# set some default values until the follow script sets them.
     setprop("autopilot/settings/heading-bug-deg", 0);
@@ -35,26 +43,79 @@ var follow = func () {
     setprop("/autopilot/locks/heading", "dg-heading-hold");
   } else {
     setprop("/autopilot/target-tracking-ja37/enable", FALSE);
-    popupTip("A/P follow: no valid target.");
+    ja37.popupTip("A/P follow: no valid target.");
     setprop("/autopilot/locks/speed", "");
     setprop("/autopilot/locks/altitude", "");
     setprop("/autopilot/locks/heading", "");
   }
 }
 
+var lostAC_sec = -1;
+var lostAC_time = 0;
+
+var lostDC_sec = -1;
+var lostDC_time = 0;
+
+var outside_bounds_sec = -1;
+var outside_bounds_time = 0;
+
+var transonic_sec = -1;
+var transonic_time = 0;
+
 var hydr1Lost = func {
   #if hydraulic system1 loses pressure or too low voltage then disengage A/P.
-  if (inputAP.hydr1On.getValue() == 0 or inputAP.dcVolt.getValue() < 23) {
-    setprop("ja37/avionics/autopilot", FALSE);
-    #stopAP();
-  } else {
-    setprop("ja37/avionics/autopilot", TRUE);
+  var ap = TRUE;
+  if (inputAP.hydr1On.getValue() == 0) {
+    ap = FALSE;
   }
-  settimer(hydr1Lost, 1);
+  if (inputAP.dcVolt.getValue() < 23) {
+    ap = FALSE;
+    if (lostDC_sec == -1) {
+      lostDC_sec = 0;
+      lostDC_time = inputAP.elapsed.getValue();
+    } else {
+      lostDC_sec = inputAP.elapsed.getValue() - lostDC_time;
+    }
+  } else {
+    lostDC_sec = -1;
+  }
+  if (lostAC_sec == -1 and inputAP.acMainVolt.getValue() < 150) {
+    lostAC_sec = 0;
+    lostAC_time = inputAP.elapsed.getValue();
+  } elsif (lostAC_sec != -1 and inputAP.acMainVolt.getValue() < 150) {
+    lostAC_sec = inputAP.elapsed.getValue() - lostAC_time;
+  } else {
+    lostAC_sec = -1;
+  }
+  var outside = getprop("controls/flight/aileron-cmd-ap") == 0 and math.abs(getprop("controls/flight/elevator-cmd-ap")) < 0.075 and (math.abs(getprop("orientation/roll-deg")) > 66 or getprop("orientation/pitch-deg") > 60);
+  if (outside_bounds_sec == -1 and outside) {
+    outside_bounds_sec = 0;
+    outside_bounds_time = inputAP.elapsed.getValue();
+  } elsif (outside_bounds_sec != -1 and outside) {
+    outside_bounds_sec = inputAP.elapsed.getValue() - outside_bounds_time;
+  } else {
+    outside_bounds_sec = -1;
+  }
+  var transonic = getprop("/instrumentation/airspeed-indicator/indicated-mach") > 0.97 and getprop("/instrumentation/airspeed-indicator/indicated-mach") < 1.05;
+  if (transonic_sec == -1 and transonic) {
+    transonic_sec = 0;
+    transonic_time = inputAP.elapsed.getValue();
+  } elsif (transonic_sec != -1 and transonic) {
+    transonic_sec = inputAP.elapsed.getValue() - transonic_time;
+  } else {
+    transonic_sec = -1;
+  }
+  
+  setprop("ja37/avionics/autopilot", ap);
+  setprop("ja37/avionics/lost-ac-sec", lostAC_sec);
+  setprop("ja37/avionics/lost-dc-sec", lostDC_sec);
+  setprop("ja37/avionics/transonic-sec", transonic_sec);
+  setprop("ja37/avionics/ap-outside-bounds-sec", outside_bounds_sec);
+  settimer(hydr1Lost, 0.5);
 }
 
 var unfollow = func () {
-  popupTip("A/P follow: OFF");
+  ja37.popupTip("A/P follow: OFF");
   stopAP();
 }
 
@@ -63,10 +124,11 @@ var stopAP = func {
   setprop("/autopilot/locks/speed", "");
   setprop("/autopilot/locks/altitude", "");
   setprop("/autopilot/locks/heading", "");
+  mode = ja37.clamp(mode, 0,1);
 }
 
 var lostfollow = func () {
-  popupTip("A/P follow: lost target.");
+  ja37.popupTip("A/P follow: lost target.");
   stopAP();
 }
 
@@ -83,57 +145,200 @@ var apCont = func {
   screen.log.write("A/P continuing on current heading, speed and altitude.", 0.0, 1.0, 0.0);
 }
 
+var mode = 1;
+var modeT = 0;
+var prevMode = 1;
+var softWarn = FALSE;
+setprop("/autopilot/locks/speed", "");
+setprop("/autopilot/locks/altitude", "");
+setprop("/autopilot/locks/heading", "");
+var lockThrottle = getprop("/autopilot/locks/speed");
+var lockAtt      = getprop("/autopilot/locks/heading");
+var lockPitch    = getprop("/autopilot/locks/altitude");
+
+var menuOff = func {
+  lockThrottle = getprop("/autopilot/locks/speed");
+  lockAtt      = getprop("/autopilot/locks/heading");
+  lockPitch    = getprop("/autopilot/locks/altitude"); 
+  menu = FALSE; 
+}
+
+var mode1 = func {
+  setprop("/autopilot/target-tracking-ja37/enable", FALSE);
+  if (mode == 0) {
+    apContDamp();
+  } elsif (mode > 1) {
+    softWarn = TRUE;
+  }
+  mode = 1;  
+  if (DEBUG_OUT) print("button cmd mode "~mode);
+  menuOff();
+};
+
+var mode2 = func {
+  setprop("/autopilot/target-tracking-ja37/enable", FALSE);
+  if (mode == 3) {
+    softWarn = TRUE;
+  } elsif (mode == 0) {
+    apContDamp();
+  }
+  mode = 2;
+  if (DEBUG_OUT) print("button cmd mode "~mode);
+  menuOff();
+};
+
+var mode3 = func {
+  setprop("/autopilot/target-tracking-ja37/enable", FALSE);
+  if (mode == 0) {
+    apContDamp();
+  }
+  mode = 3;
+  if (DEBUG_OUT) print("button cmd mode "~mode);
+  menuOff();
+};
+
+var apContDamp = func {
+  setprop("fdm/jsbsim/fcs/pitch-damper/enable", TRUE);
+  setprop("fdm/jsbsim/fcs/roll-damper/enable", TRUE);
+  setprop("fdm/jsbsim/fcs/yaw-damper/enable", TRUE);
+};
+
+var apStopDamp = func {
+  setprop("fdm/jsbsim/fcs/pitch-damper/enable", FALSE);
+  setprop("fdm/jsbsim/fcs/roll-damper/enable", FALSE);
+  setprop("fdm/jsbsim/fcs/yaw-damper/enable", FALSE);
+};
+
 var apContAtt = func {
   setprop("/autopilot/target-tracking-ja37/enable", FALSE);
 
-  if (!(getprop("/autopilot/locks/heading") == "" or getprop("/autopilot/locks/heading") == nil)) {
-    setprop("/autopilot/locks/heading", "");
-  } else {
-    if(getprop("orientation/pitch-deg") < 60) {
-      if((getprop("orientation/roll-deg") < -7 and getprop("orientation/roll-deg") > -66) or (getprop("orientation/roll-deg") > 7 and getprop("orientation/roll-deg") < 66) or getprop("gear/gear/position-norm") == 1) {
-        # roll lock
-        setprop("/autopilot/locks/heading", "");
-        setprop("autopilot/internal/target-roll-deg", getprop("orientation/roll-deg"));
-        setprop("/autopilot/locks/heading", "dg-roll-hold");
-      } else {
-        # heading lock
-        setprop("autopilot/settings/heading-bug-deg", getprop("orientation/heading-magnetic-deg"));
-        setprop("/autopilot/locks/heading", "dg-heading-hold");
-      }
+  if(getprop("orientation/pitch-deg") < 60) {
+    if((getprop("orientation/roll-deg") < -7 and getprop("orientation/roll-deg") > -66) or (getprop("orientation/roll-deg") > 7 and getprop("orientation/roll-deg") < 66) or getprop("gear/gear/position-norm") == 1) {
+      apContRoll();
+    } else {
+      apContHead();
     }
-  }
+    apContPitch();
+  }  
 }
 
+var apStopAtt = func {
+  setprop("/autopilot/locks/heading", "");
+  setprop("/autopilot/locks/altitude", "");
+  lockAtt   = "";
+  lockPitch = "";
+}
+
+var apContRoll = func {
+  # roll lock
+  setprop("/autopilot/locks/heading", "");
+  setprop("autopilot/internal/target-roll-deg", getprop("orientation/roll-deg"));
+  setprop("/autopilot/locks/heading", "dg-roll-hold");
+  lockAtt = "dg-roll-hold";
+};
+
+var apContHead = func {
+  # heading lock
+  setprop("autopilot/settings/heading-bug-deg", getprop("orientation/heading-magnetic-deg"));
+  setprop("/autopilot/locks/heading", "dg-heading-hold");
+  lockAtt = "dg-heading-hold";
+};
+
+var apContPitch = func {
+  # pitch lock
+  setprop("/autopilot/locks/altitude", "pitch-hold");
+  setprop("/autopilot/settings/target-pitch-deg", getprop("/orientation/pitch-deg"));
+  lockPitch = "pitch-hold";
+};
+
+var apStopPitch = func {
+  # pitch lock
+  setprop("/autopilot/locks/altitude", "");
+  lockPitch = "";
+};
+
 var apContAlt = func {
-  if (!(getprop("/autopilot/locks/altitude") == "" or getprop("/autopilot/locks/altitude") == nil)) {
-    setprop("/autopilot/locks/altitude", "");
-  } else {
-    setprop("/autopilot/target-tracking-ja37/enable", FALSE);
-    setprop("autopilot/settings/target-altitude-ft", getprop("instrumentation/altimeter/indicated-altitude-ft"));
-    setprop("/autopilot/locks/altitude", "altitude-hold");
-  }
+  # alt lock
+  setprop("/autopilot/target-tracking-ja37/enable", FALSE);
+  setprop("autopilot/settings/target-altitude-ft", getprop("instrumentation/altimeter/indicated-altitude-ft"));
+  setprop("/autopilot/locks/altitude", "altitude-hold");
+  lockPitch = "altitude-hold";
+}
+
+var apStopAlt = func {
+  # alt lock
+  setprop("/autopilot/locks/altitude", "");
+  lockPitch = "";
 }
 
 var apContSpeed = func {
+  # a/t lock
   if (!(getprop("/autopilot/locks/speed") == "" or getprop("/autopilot/locks/speed") == nil)) {
-    setprop("/autopilot/locks/speed", "");
+    apStopAT();
   } else {
     setprop("/autopilot/target-tracking-ja37/enable", FALSE);
     setprop("autopilot/settings/target-speed-kt", getprop("instrumentation/airspeed-indicator/indicated-speed-kt"));
     setprop("/autopilot/locks/speed", "speed-with-throttle");
+    modeT = 1;
+    lockThrottle = "speed-with-throttle";
   }
 }
 
 var apStopAT = func {
   # stop auto throttle
   setprop("/autopilot/locks/speed", "");
+  modeT = 0;
 }
 
 var lock = "";
 var lockP = "";
 var usedStick = 0;
+var menu = FALSE;
 
 var apLoop = func {
+    if (DEBUG_OUT) print("looping:");
+    if (getprop("fdm/jsbsim/systems/indicators/master-warning/ap-downgrade") == 1) {
+      # downgrade warning has been clicked away, remove it:
+      setprop("/ja37/avionics/autopilot-soft-warn", FALSE);
+    }
+    if (mode > 0 and (getprop("fdm/jsbsim/fcs/pitch-damper/enable") == FALSE   or getprop("fdm/jsbsim/fcs/pitch-damper/serviceable") == FALSE 
+                      or getprop("fdm/jsbsim/fcs/roll-damper/enable") == FALSE or getprop("fdm/jsbsim/fcs/roll-damper/serviceable") == FALSE
+                      or getprop("fdm/jsbsim/fcs/yaw-damper/enable") == FALSE  or getprop("fdm/jsbsim/fcs/yaw-damper/serviceable") == FALSE)) {
+      softWarn = TRUE;
+      mode = 0;
+      if (DEBUG_OUT) print("lack of dampers cmd mode "~mode);
+    }
+    if (mode == 0 and getprop("fdm/jsbsim/fcs/pitch-damper/enable") == TRUE and getprop("fdm/jsbsim/fcs/pitch-damper/serviceable") == TRUE
+                  and getprop("fdm/jsbsim/fcs/roll-damper/enable")  == TRUE and getprop("fdm/jsbsim/fcs/roll-damper/serviceable") == TRUE
+                  and getprop("fdm/jsbsim/fcs/yaw-damper/enable")   == TRUE and getprop("fdm/jsbsim/fcs/yaw-damper/serviceable") == TRUE) {
+      mode = 1;
+      if (DEBUG_OUT) print("dampers cmd mode "~mode);
+    }
+    if (lostDC_sec > 6) {
+      # if dc lost then A/P wont function, it will resume at dc unless 6 secs has passed:
+      mode = mode == 0?0:1;
+      if (DEBUG_OUT) print("loss of DC cmd mode "~mode);
+    }
+    if (getprop("fdm/jsbsim/systems/indicators/auto-altitude-primary") == 1) {
+      # 
+      mode = ja37.clamp(mode, 0, 2);
+      if (DEBUG_OUT) print("alt indicator cmd mode "~mode);
+    }
+    if (getprop("fdm/jsbsim/systems/indicators/auto-attitude-primary") == 1) {
+      # 
+      mode = ja37.clamp(mode, 0, 1);
+      if (DEBUG_OUT) print("att indicator cmd mode "~mode);
+    }
+    if (getprop("fdm/jsbsim/systems/indicators/flightstick-primary") == 1) {
+      # 
+      #mode = 0;
+      #apStopDamp();
+    }
+    if (inputAP.hydr1On.getValue() == 0) {
+      # 
+      mode = ja37.clamp(mode, 0, 1);
+      if (DEBUG_OUT) print("hydr cmd mode "~mode);
+    }
 
     # auto-pilot engaged
 
@@ -161,11 +366,66 @@ var apLoop = func {
       }
     }
 
-  if(getprop("gear/gear[2]/wow") == 1) {
+  #
+  # menu intervention
+  #
+  if (inputAP.apLockSpeed.getValue() != lockThrottle) {
+    modeT = 0;
+  }
+  if (inputAP.apLockHead.getValue() != lockAtt) {
+    mode = mode==0?0:1;
+    menu = TRUE;
+    if (DEBUG_OUT) print("menu head cmd mode "~mode);
+  }
+  if (inputAP.apLockAlt.getValue() != lockPitch) {
+    mode = mode==0?0:1;
+    menu = TRUE;
+    if (DEBUG_OUT) print("menu pitch cmd mode "~mode~" "~inputAP.apLockAlt.getValue()~" != "~lockPitch);
+  }
+
+  #
+  # modes
+  #
+  if (prevMode != mode and menu == FALSE) {
+    if (mode < 3) {
+      apStopAlt();
+    }
+    if (mode < 2) {
+      apStopAtt();
+    }
+    if (mode < 1) {
+      #apStopDamp();  don't have any controls for this yet.
+    }
+    if (mode == 3) {
+      apContDamp();
+      apContAtt();
+      apStopPitch();
+      apContAlt();
+    }
+    if (mode == 2) {
+      apContDamp();
+      apContAtt();
+    }
+    if (mode == 1) {
+      apContDamp();
+    }
+  }
+  setprop("/ja37/avionics/autopilot-mode", mode);
+  prevMode = mode;
+  if (softWarn == TRUE) {
+    setprop("/ja37/avionics/autopilot-soft-warn", TRUE);
+    softWarn = FALSE;
+  }
+
+  #
+  # Auto-throttle
+  #
+  if(getprop("gear/gear[2]/wow") == 1 or (getprop("/autopilot/locks/speed") == "speed-with-throttle" and lostAC_sec > 6) or (getprop("/autopilot/locks/speed") == "constant-AoA" and lostAC_sec > 2)) {
     apStopAT();
   } elsif (getprop("/autopilot/locks/speed") == "speed-with-throttle") {
     if(getprop("fdm/jsbsim/autopilot/AoA-hold") == 1) {
       setprop("/autopilot/locks/speed", "constant-AoA");
+      lockThrottle = "constant-AoA";
     } elsif (getprop("/autopilot/settings/target-speed-kt") < 297) {
       setprop("/autopilot/settings/target-speed-kt", 297);
     }
@@ -173,16 +433,28 @@ var apLoop = func {
     if(getprop("fdm/jsbsim/autopilot/AoA-hold") == 0) {
       setprop("autopilot/settings/target-speed-kt", getprop("instrumentation/airspeed-indicator/indicated-speed-kt"));
       setprop("/autopilot/locks/speed", "speed-with-throttle");
+      lockThrottle = "speed-with-throttle";
+      modeT = 1;
     } elsif (getprop("ja37/avionics/high-alpha") == 1) {
       setprop("/autopilot/settings/target-aoa", 15.5);
+      modeT = 3;
     } else {
       var weight = getprop("fdm/jsbsim/inertia/weight-lbs");
       var aoa = 9 + ((weight - 28000) / (38000 - 28000)) * (12 - 9);
-      aoa = clamp(aoa, 9, 12);
+      aoa = ja37.clamp(aoa, 9, 12);
       setprop("/autopilot/settings/target-aoa", aoa);#is 9-12 depending on weight
+      modeT = 2;
     }
   }
 
+  #
+  # Auto-roll
+  #
+  if (mode > 1 and getprop("/autopilot/locks/heading") == "dg-heading-hold" and getprop("gear/gear/position-norm") == 1) {
+    # we no longer have conditions for heading hold in mode 2/3, we switch to roll hold.
+    apContRoll();
+    if (DEBUG_OUT) print("switched to roll hold due to gears got extended");
+  }
   var trimCmd = getprop("controls/flight/trim-yaw");
   var rollCmd = getprop("controls/flight/aileron-cmd-ap");
   if (trimCmd == nil) {
