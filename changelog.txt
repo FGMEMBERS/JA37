@@ -2738,3 +2738,16 @@ HUD: Made the lateral movement of landing guide clamp to 6 degs to right, to not
 HUD: Fixed that altitude lines/boxes did not match the scale when in metric mode.
 GUI: Added landing mode to systems monitor.
 GUI: Made option for changing quality of G-suit.
+
+4.017 - 2017 February 19
+=====
+HUD: Now always show landing guide when no route to runway has been programmed and in landing mode.
+Effect: Added rust effect to cockpit and fuselage, enabled in options.
+Sound: Made welcome msg. delayed for FG 2017.1
+Sim: Added GSh-23 to damage.
+Effect: Put cockpit shader on pedals.
+Animation: Fixed that DME indicator would get stuck if dme/waypoint is more than 40 KM out.
+Sim: Made canopy not be able to make opening/closing sound when broken off.
+Animation: Made A/P pushbutton be powered by DC voltage.
+Sim: Oil pressure when inverted now is detected by negative G, not roll.
+Sim: Decreased rate of oxygen consumption.

@@ -125,9 +125,22 @@ var ORDNANCE = 3;
 
 var g_fps        = 9.80665 * M2FT;
 var slugs_to_lbm = 32.1740485564;
-var const_e = 2.71828183;
+var const_e      = 2.71828183;
 
 var first_in_air = FALSE;# first missile is in the air, other missiles should not write to blade[x].
+
+var versionString = getprop("sim/version/flightgear");
+var version = split(".", versionString);
+var major = num(version[0]);
+var minor = num(version[1]);
+var pickingMethod = FALSE;
+if (major >= 2025 and minor > -1) {#change this when 2017.1 comes out if the method is merged into fg main git branch
+	pickingMethod = TRUE;
+}
+var offsetMethod = FALSE;
+if (major >= 2025 and minor > -1) {
+	offsetMethod = TRUE;
+}
 
 #
 # The radar will make sure to keep this variable updated.
@@ -342,7 +355,10 @@ var AIM = {
 		m.rail_speed_into_wind = 0;
 
 		# stats
-		m.maxMach     = 0;
+		m.maxMach      = 0;
+		m.maxMach1     = 0;#stage 1
+		m.maxMach2     = 0;#stage 2
+		m.maxMach3     = 0;#stage 2 end
 		m.energyBleedKt = 0;
 
 		m.lastFlare = 0;
@@ -350,10 +366,11 @@ var AIM = {
 		m.explodeSound = TRUE;
 		m.first = FALSE;
 
-		# these 3 is used for limiting spam to console:
+		# these 4 is used for limiting spam to console:
 		m.heatLostLock = FALSE;
 		m.semiLostLock = FALSE;
 		m.tooLowSpeed  = FALSE;
+		m.lostLOS      = FALSE;
 
 		m.SwSoundOnOff.setBoolValue(FALSE);
 		m.SwSoundFireOnOff.setBoolValue(FALSE);
@@ -483,7 +500,15 @@ var AIM = {
 		me.x = me.pylon_prop.getNode("offsets/x-m").getValue();
 		me.y = me.pylon_prop.getNode("offsets/y-m").getValue();
 		me.z = me.pylon_prop.getNode("offsets/z-m").getValue();
-		var init_coord = me.getGPS(me.x, me.y, me.z, ac_pitch);
+		var init_coord = nil;
+		if (offsetMethod == TRUE) {
+			var pos = aircraftToCart({x:-me.x, y:me.y, z: -me.z});
+			init_coord = geo.Coord.new();
+			init_coord.set_xyz(pos.x, pos.y, pos.z);
+		} else {
+			init_coord = me.getGPS(me.x, me.y, me.z, ac_pitch);
+		}	
+
 
 		# Set submodel initial position:
 		var mlat = init_coord.lat();
@@ -784,6 +809,15 @@ var AIM = {
 		if (me.speed_m > me.maxMach) {
 			me.maxMach = me.speed_m;
 		}
+		if (me.speed_m > me.maxMach1 and me.life_time > me.drop_time and me.life_time <= (me.drop_time + me.stage_1_duration)) {
+			me.maxMach1 = me.speed_m;
+		}
+		if (me.speed_m > me.maxMach2 and me.life_time > (me.drop_time + me.stage_1_duration) and me.life_time <= (me.drop_time + me.stage_1_duration + me.stage_2_duration)) {
+			me.maxMach2 = me.speed_m;
+		}
+		if (me.maxMach3 == 0 and me.life_time > (me.drop_time + me.stage_1_duration + me.stage_2_duration)) {
+			me.maxMach3 = me.speed_m;
+		}
 
 		me.Cd = me.drag(me.speed_m);
 
@@ -888,7 +922,13 @@ var AIM = {
 		} else {
 			# missile on rail, lets move it on the rail
 			if (me.rail_pitch_deg == 90 or me.rail_forward == TRUE) {
-				me.coord = me.getGPS(me.x, me.y, me.z, OurPitch.getValue());
+				var init_coord = nil;
+				if (offsetMethod == TRUE) {
+					me.geodPos = aircraftToCart({x:-me.x, y:me.y, z: -me.z});
+					me.coord.set_xyz(me.geodPos.x, me.geodPos.y, me.geodPos.z);
+				} else {
+					me.coord = me.getGPS(me.x, me.y, me.z, OurPitch.getValue());
+				}				
 			} else {
 				# kind of a hack, but work
 				me.coord = me.getGPS(me.x, me.y, me.z, OurPitch.getValue()+me.rail_pitch_deg);
@@ -955,7 +995,8 @@ var AIM = {
 #printf("Alt %05.1f ft , distance to target %02.1f NM", me.alt_ft, me.direct_dist_m*M2NM);			
 			
 			if (me.exploded == TRUE) {
-				printf("%s max absolute %.2f Mach. Max relative %.2f Mach. Max alt %6d ft.", me.type, me.maxMach, me.maxMach-me.startMach, me.maxAlt);
+				printf("%s max absolute %.2f Mach. Max relative %.2f Mach. Max alt %6d ft. Terminal %.2f mach.", me.type, me.maxMach, me.maxMach-me.startMach, me.maxAlt, me.speed_m);
+				printf(" Absolute %.2f Mach in stage 1. Absolute %.2f Mach in stage 2. Absolute %.2f mach propulsion end.", me.maxMach1, me.maxMach2, me.maxMach3);
 				printf(" Fired at %s from %.1f Mach, %5d ft at %3d NM distance. Flew %0.1f NM.", me.callsign, me.startMach, me.startAlt, me.startDist * M2NM, me.ac_init.direct_distance_to(me.coord)*M2NM);
 				# We exploded, and start the sound propagation towards the plane
 				me.sndSpeed = me.sound_fps;
@@ -1146,6 +1187,8 @@ var AIM = {
 
 		me.checkForSun();
 
+		me.checkForLOS();
+
 		me.checkForGuidance();
 
 		me.canSeekerKeepUp();
@@ -1218,6 +1261,45 @@ var AIM = {
 				me.free = TRUE;
 			}
 		}
+	},
+
+	checkForLOS: func () {#GCD
+		if (pickingMethod == TRUE and me.guidance != "gps" and me.guidance != "unguided") {
+			me.xyz          = {"x":me.coord.x(),                  "y":me.coord.y(),                 "z":me.coord.z()};
+		    me.directionLOS = {"x":me.t_coord.x()-me.coord.x(),   "y":me.t_coord.y()-me.coord.y(),  "z":me.t_coord.z()-me.coord.z()};
+
+			# Check for terrain between own weapon and target:
+			me.terrainGeod = get_cart_ground_intersection(me.xyz, me.directionLOS);
+			if (me.terrainGeod == nil) {
+				me.lostLOS = FALSE;
+				return;
+			} else {
+				me.terrain = geo.Coord.new();
+				me.terrain.set_latlon(me.terrainGeod.lat, me.terrainGeod.lon, me.terrainGeod.elevation);
+				me.maxDist = me.coord.direct_distance_to(me.t_coord);
+				me.terrainDist = me.coord.direct_distance_to(me.terrain);
+				if (me.terrainDist > me.maxDist) {
+					me.lostLOS = FALSE;
+					return;
+				}
+			}
+			if (me.guidance == "semi-radar" or me.guidance == "laser" or me.guidance == "heat" or me.guidance == "vision") {
+				if (me.lostLOS == FALSE) {
+					print(me.type~": Not guiding (lost line of sight, trying to reaquire)");
+				}
+				me.lostLOS = TRUE;
+				me.guiding = FALSE;
+				return;
+			} elsif(me.guidance == "radar") {
+				if (me.lostLOS == FALSE) {
+					print(me.type~": Gave up (lost line of sight)");
+				}
+				me.lostLOS = TRUE;
+				me.free = TRUE;
+				return;
+			}
+		}
+		me.lostLOS = FALSE;
 	},
 
 	checkForGuidance: func () {#GCD
@@ -1783,7 +1865,7 @@ var AIM = {
 				me.tagt = contact; # In the radar range and horizontal field.
 				me.rng = me.tagt.get_range();
 				me.total_elev  = deviation_normdeg(OurPitch.getValue(), me.tagt.getElevation()); # deg.
-				me.total_horiz = deviation_normdeg(OurHdg.getValue(), me.tagt.get_bearing());         # deg.
+				me.total_horiz = deviation_normdeg(OurHdg.getValue(), me.tagt.get_bearing());    # deg.
 				# Check if in range and in the (square shaped here) seeker FOV.
 				me.abs_total_elev = math.abs(me.total_elev);
 				me.abs_dev_deg = math.abs(me.total_horiz);

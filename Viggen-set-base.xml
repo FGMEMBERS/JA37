@@ -8,7 +8,7 @@
 
 <PropertyList include="Systems/ja37-engines-off.xml">    <!-- change this to 'on' for fast testing/debugging -->
     <sim>
-        <aircraft-version>4.016</aircraft-version>
+        <aircraft-version>4.017</aircraft-version>
 
         <rating>
             <FDM type="int">4</FDM>
@@ -112,6 +112,7 @@
         <panel_2>
             <visibility>false</visibility>
         </panel_2>
+
 
         <hud>
             <!-- Backup HUD, when custom HUD is disabled -->
@@ -477,6 +478,7 @@
             <ubershader type="bool">false</ubershader>
             <fuel-temp type="bool">true</fuel-temp>
             <new-marker type="bool">true</new-marker>
+            <picking type="bool">false</picking>
         </supported>
         <failures>
             <installed type="bool">false</installed>
@@ -488,6 +490,7 @@
             <look-through-terrain type="bool">true</look-through-terrain>
             <doppler-enabled type="bool">true</doppler-enabled>
             <min-doppler-speed-kt type="double">50.0</min-doppler-speed-kt>
+            <time-till-crash type="double">15</time-till-crash>
         </radar>
         <effect>
             <landing-light type="double">0</landing-light>
@@ -506,6 +509,8 @@
                 <color type="double">0</color>
             </heatblur>
             <g-suit type="int">3</g-suit>
+            <rust-outside type="int">0</rust-outside>
+            <rust-inside type="int">0</rust-inside>
         </effect>
         <blink>
             <two-Hz>
@@ -1273,6 +1278,13 @@
         <land>
             <file>Aircraft/JA37/Nasal/landing-mode.nas</file>
         </land>
+        <vector>
+            <file>Aircraft/JA37/Nasal/vector.nas</file>
+        </vector>
+        <rcs>
+            <file>Aircraft/JA37/Nasal/rcs.nas</file>
+        </rcs>
+        
         <!-- Uncomment below to enable FGplot -->
         <!--
         <plot>
