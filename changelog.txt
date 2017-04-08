@@ -2751,3 +2751,40 @@ Sim: Made canopy not be able to make opening/closing sound when broken off.
 Animation: Made A/P pushbutton be powered by DC voltage.
 Sim: Oil pressure when inverted now is detected by negative G, not roll.
 Sim: Decreased rate of oxygen consumption.
+
+4.018 - 2017 March 23
+=====
+Sim: Check for 2018+ FG for now picking is off.
+HUD: Increased texel resolution.
+HUD: Applied Thorstens new HUD shader.
+Model: Unify fuselage material between variants.
+GUI: Fix thumbnail for 2017.2.0
+Control: At gear deployment at loss of hydr1 they now only go down by positive gravity.
+Model: Adjusted some fuselage materials.
+Model: Made bare metal parts of aircraft more dark.
+Effect: Small change to bare-metal shader.
+Model: Moved UV of all bare metal into same place on base texture.
+
+4.019 - 2017 April 8
+=====
+Sim: Fixed that 0 G not -1 G was regarded as inverted flight. Oil pressure would drop too often.
+Sound: Added speedbrakes sound.
+Aero: Added speedbrakes, ram air turbine and open canopy to normal forces.
+Aero: Made speedbrakes have more drag.
+HUD: Changed conditions on when to switch from takeoff mode as per manual.
+HUD: Changed when distancescale showing rotation speed should shut off, as per manual.
+HUD: When HUD declutters, tower and sideslip indicator now goes away.
+HUD: Digital airspeed is now only shown above 75 Km/h as per manual.
+GUI: Ctrl-s now toggles auto throttle always.
+Sim: Made check to ensure max allowed G for weapons never go below 0.25 G.
+Sound: Added wind sound from speedbrakes.
+GUI: Added weather presets for ISA atmospheres.
+Engine: Updated idle thrust for RM-8A and RM-8B.
+Engine: Lowered mil thrust fuel consumption for RM-8A.
+GUI: Made warning if maximum allowed rolling speed is exceeded.
+Sound: Made small sound explosion when gears break due to too high speed.
+Animation: {Richard} Limit radar compass to rate-limit specified in manuals.
+Animation: {Richard} Limit radar compass heading bug to rate-limit specified in manuals.
+Model: Made radar compass heading bug, have flood-light also.
+GUI: Made CTRL-y ask tower for runway local QFE pressure.
+GUI: Ask tower now also returns ILS freq. if available.

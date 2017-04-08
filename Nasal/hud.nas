@@ -50,7 +50,7 @@ var HUDBottom = 0.63; # position of bottom of HUD in meters. 0.63
 #var HUDHoriz = -4.0; # position of HUD on x axis in meters. -4.0
 var HUDHoriz = -4.06203;#pintos new hud
 var HUDHeight = HUDTop - HUDBottom; # height of HUD
-var canvasWidth = 256;
+var canvasWidth = 512;
 var max_width = (450/1024)*canvasWidth;
 # HUD z is 0.63 - 0.77. Height of HUD is 0.14m
 # Therefore each pixel is 0.14 / 1024 = 0.00013671875m or each meter is 7314.2857142857142857142857142857 pixels.
@@ -85,9 +85,9 @@ var sideslipPlaceYFinal = 0;
 var missile_aim_position = centerOffset+0.03*pixelPerMeter;
 var QFE_position = centerOffset+(5.5*pixelPerDegreeY);
 var dig_alt_position = centerOffset+(9.0*pixelPerDegreeY);
-var r = 0.6;#HUD colors
+var r = 0.0;#HUD colors
 var g = 1.0;
-var b = 0.6;
+var b = 0.0;
 var a = 1.0;
 var w = (getprop("ja37/hud/stroke-linewidth")/1024)*canvasWidth;  #line stroke width (saved between sessions)
 var ar = 1.0;#font aspect ratio, less than 1 make more wide.
@@ -122,7 +122,8 @@ var HUDnasal = {
     #HUDnasal.main.canvas = canvas.new(HUDnasal.canvas_settings);
     HUDnasal.inter = FALSE;
     HUDnasal.main.canvas.addPlacement(HUDnasal.main.place);
-    HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.025);
+    #HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.025);
+    HUDnasal.main.canvas.setColorBackground(r, g, b, 0.0);
     HUDnasal.main.root = HUDnasal.main.canvas.createGroup()
                 .set("font", "LiberationFonts/LiberationMono-Regular.ttf");# If using default font, horizontal alignment is not accurate (bug #1054), also prettier char spacing. 
     
@@ -1016,29 +1017,48 @@ var HUDnasal = {
     centerOffset = -1 * ((512/1024)*canvasWidth - (me.fromTop * pixelPerMeter));
 
     # since mode is used outside of the HUD also, the mode is calculated before we determine if the HUD should be updated:
-    me.takeoffForbidden = me.input.pitch.getValue() > 3 or me.input.mach.getValue() > 0.35 or me.input.gearsPos.getValue() != 1;
-    if(mode != TAKEOFF and !me.takeoffForbidden and me.input.wow0.getValue() == TRUE and me.input.wow0.getValue() == TRUE and me.input.wow0.getValue() == TRUE and me.input.dev.getValue() != TRUE) {
+    me.hasRotated = FALSE;
+    if (me.input.mach.getValue() > 0.1) {
+      # we are moving, calc the flight path angle
+      me.vel_gh = math.sqrt(me.input.speed_n.getValue()*me.input.speed_n.getValue()+me.input.speed_e.getValue()*me.input.speed_e.getValue());
+      me.vel_gv = -me.input.speed_d.getValue();
+      me.hasRotated = math.atan2(me.vel_gv, me.vel_gh)*R2D > 3;
+    }
+    me.takeoffForbidden = me.hasRotated or me.input.mach.getValue() > 0.35 or me.input.gearsPos.getValue() != 1;
+    if(mode != TAKEOFF and !me.takeoffForbidden and me.input.wow0.getValue() == TRUE and me.input.dev.getValue() != TRUE) {
+      # nosewheel touch runway, so we switch to TAKEOFF
       mode = TAKEOFF;
       modeTimeTakeoff = -1;
     } elsif (me.input.dev.getValue() == TRUE and me.input.combat.getValue() == 1) {
+      # developer mode is active with tactical request, so we switch to COMBAT
       mode = COMBAT;
       modeTimeTakeoff = -1;
-    } elsif (mode == TAKEOFF and modeTimeTakeoff == -1 and me.takeoffForbidden) {
+    } elsif (mode == TAKEOFF and modeTimeTakeoff == -1 and me.input.wow0.getValue() == FALSE) {
+      # Nosewheel lifted off, so we start the 4 second counter
       modeTimeTakeoff = me.input.elapsedSec.getValue();
-    } elsif (modeTimeTakeoff != -1 and me.input.elapsedSec.getValue() - modeTimeTakeoff > 3) {
-      if (me.input.gearsPos.getValue() == 1 or me.input.landingMode.getValue() == TRUE) {
-        mode = LANDING;
+    } elsif (modeTimeTakeoff != -1 and me.input.elapsedSec.getValue() - modeTimeTakeoff > 4) {
+      if (me.takeoffForbidden == TRUE) {
+        # time to switch away from TAKEOFF mode.
+        if (me.input.gearsPos.getValue() == 1 or me.input.landingMode.getValue() == TRUE) {
+          mode = LANDING;
+        } else {
+          mode = me.input.combat.getValue() == 1 ? COMBAT : NAV;
+        }
+        modeTimeTakeoff = -1;
       } else {
-        mode = me.input.combat.getValue() == 1 ? COMBAT : NAV;
+        # 4 second has passed since frontgear touched runway, but conditions to switch from TAKEOFF has still not been met.
+        mode = TAKEOFF;
       }
-      modeTimeTakeoff = -1;
     } elsif ((mode == COMBAT or mode == NAV) and (me.input.gearsPos.getValue() == 1 or me.input.landingMode.getValue() == TRUE)) {
+      # Switch to LANDING
       mode = LANDING;
       modeTimeTakeoff = -1;
     } elsif (mode == COMBAT or mode == NAV) {
+      # determine if we should have COMBAT or NAV
       mode = me.input.combat.getValue() == 1 ? COMBAT : NAV;
       modeTimeTakeoff = -1;
     } elsif (mode == LANDING and me.input.gearsPos.getValue() == 0 and me.input.landingMode.getValue() == FALSE) {
+      # switch from LANDING to COMBAT/NAV
       mode = me.input.combat.getValue() == 1 ? COMBAT : NAV;
       modeTimeTakeoff = -1;
     }
@@ -1757,14 +1777,24 @@ var HUDnasal = {
         me.airspeed.setText(sprintf("%.2f", me.mach));
       } else {
         me.speed = air2ground == TRUE?me.input.gs.getValue()*kts2kmh:me.input.ias.getValue() * kts2kmh;
-        me.airspeed.setText(sprintf("%03d", me.speed));
+        if (me.input.ias.getValue() * kts2kmh > 75) {
+          me.airspeed.setText(sprintf("%03d", me.speed));
+        } else {
+          me.airspeed.setText("");
+        }
       }
     } elsif (mode == LANDING or mode == TAKEOFF or me.mach < 0.5) {
+      # interoperability without mach
       me.airspeedInt.hide();
-      me.speed = air2ground == TRUE?me.input.gs.getValue():me.input.ias.getValue();
-      me.type  = air2ground == TRUE?"GS":"KT";
-      me.airspeed.setText(sprintf(me.type~"%03d", me.speed));
+      if (me.input.ias.getValue() * kts2kmh > 75) {
+        me.speed = air2ground == TRUE?me.input.gs.getValue():me.input.ias.getValue();
+        me.type  = air2ground == TRUE?"GS":"KT";
+        me.airspeed.setText(sprintf(me.type~"%03d", me.speed));
+      } else {
+        me.airspeed.setText("");
+      }
     } else {
+      # interoperability with mach
       me.speed = air2ground == TRUE?me.input.gs.getValue():me.input.ias.getValue();
       me.type  = air2ground == TRUE?"GS":"KT";
       me.airspeedInt.setText(sprintf(me.type~"%03d", me.speed));
@@ -1809,7 +1839,7 @@ var HUDnasal = {
   },
 
   displayTurnCoordinator: func () {
-    if (me.input.sideslipOn.getValue() == TRUE) {
+    if (me.input.sideslipOn.getValue() == TRUE and me.final == FALSE) {
       if(me.input.srvTurn.getValue() == 1) {
         #me.t_rot.setRotation(getprop("/orientation/roll-deg") * deg2rads * 0.5);
         me.slip_indicator.setTranslation(clamp(me.input.beta.getValue()*20, -(150/1024)*canvasWidth, (150/1024)*canvasWidth), 0);
@@ -2211,36 +2241,40 @@ var HUDnasal = {
 
   showDistanceScale: func (mode, fallTime) {
     if(mode == TAKEOFF) {
-      me.line = (200/1024)*canvasWidth;
+      if (me.input.pitch.getValue() < 5) {
+        me.line = (200/1024)*canvasWidth;
 
-      # rotation speeds:
-      #28725 lbm -> 250 km/h
-      #40350 lbm -> 280 km/h
-      # extra/inter-polation:
-      # f(x) = y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
-      me.weight = getprop("fdm/jsbsim/inertia/weight-lbs");
-      me.rotationSpeed = 250+((me.weight-28725)/(40350-28725))*(280-250);#km/h
-      # as per manual, minimum rotation speed is 250:
-      me.rotationSpeed = ja37.clamp(me.rotationSpeed, 250, 1000);
-      #rotationSpeed = getprop("fdm/jsbsim/systems/flight/rotation-speed");
-      me.pixelPerKmh = (2/3*me.line)/me.rotationSpeed;
-      if(me.input.ias.getValue() < 75/kts2kmh) {
-        me.mySpeed.setTranslation(me.pixelPerKmh*75, 0);
+        # rotation speeds:
+        #28725 lbm -> 250 km/h
+        #40350 lbm -> 280 km/h
+        # extra/inter-polation:
+        # f(x) = y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
+        me.weight = getprop("fdm/jsbsim/inertia/weight-lbs");
+        me.rotationSpeed = 250+((me.weight-28725)/(40350-28725))*(280-250);#km/h
+        # as per manual, minimum rotation speed is 250:
+        me.rotationSpeed = ja37.clamp(me.rotationSpeed, 250, 1000);
+        #rotationSpeed = getprop("fdm/jsbsim/systems/flight/rotation-speed");
+        me.pixelPerKmh = (2/3*me.line)/me.rotationSpeed;
+        if(me.input.ias.getValue() < 75/kts2kmh) {
+          me.mySpeed.setTranslation(me.pixelPerKmh*75, 0);
+        } else {
+          me.pos = me.pixelPerKmh*me.input.ias.getValue()*kts2kmh;
+          if(me.pos > me.line) {
+            me.pos = me.line;
+          }
+          me.mySpeed.setTranslation(me.pos, 0);
+        }      
+        me.targetSpeed.setTranslation(2/3*me.line, 0);
+        me.targetSpeed.show();
+        me.mySpeed.show();
+        me.targetDistance1.hide();
+        me.targetDistance2.hide();
+        me.distanceText.hide();
+        me.distanceScale.show();
+        me.dist_scale_group.show();
       } else {
-        me.pos = me.pixelPerKmh*me.input.ias.getValue()*kts2kmh;
-        if(me.pos > me.line) {
-          me.pos = me.line;
-        }
-        me.mySpeed.setTranslation(me.pos, 0);
-      }      
-      me.targetSpeed.setTranslation(2/3*me.line, 0);
-      me.targetSpeed.show();
-      me.mySpeed.show();
-      me.targetDistance1.hide();
-      me.targetDistance2.hide();
-      me.distanceText.hide();
-      me.distanceScale.show();
-      me.dist_scale_group.show();
+        me.dist_scale_group.hide();
+      }
     } elsif (mode == COMBAT) {
       if (radar_logic.selection != nil) {
         me.line = (200/1024)*canvasWidth;
@@ -2429,7 +2463,7 @@ var HUDnasal = {
     me.towerAlt = me.input.towerAlt.getValue();
     me.towerLat = me.input.towerLat.getValue();
     me.towerLon = me.input.towerLon.getValue();
-    if(mode != COMBAT and me.towerAlt != nil and me.towerLat != nil and me.towerLon != nil) {# and me.final == FALSE
+    if(mode != COMBAT and me.towerAlt != nil and me.towerLat != nil and me.towerLon != nil and me.final == FALSE) {# and me.final == FALSE
       me.towerPos = geo.Coord.new();
       me.towerPos.set_latlon(me.towerLat, me.towerLon, me.towerAlt*FT2M);
       me.showme = TRUE;
@@ -2941,13 +2975,24 @@ var IR_loop = func {
   settimer(IR_loop, 1.5);
 };
 
+setlistener("sim/rendering/shaders/skydome", func {reinit(on_backup_power);});
+
 var reinit = func(backup = FALSE) {#mostly called to change HUD color
    #reinitHUD = 1;
+
+   if (getprop("sim/rendering/shaders/skydome") == TRUE) {
+     r = 0;
+     b = 0;
+   } else {
+     r = 0.6;
+     b = 0.6;
+   }
 
    # if on backup power then amber will be the colour
    var red = backup == FALSE?r:1;
    var green = backup == FALSE?g:0.5;
    var blue = backup == FALSE?b:0;
+   var alpha = backup == FALSE?a:clamp(a,0,0.85);
 
    var IR = getprop("sim/rendering/shaders/skydome") == TRUE and getprop("sim/rendering/als-filters/use-filtering") == TRUE and getprop("sim/rendering/als-filters/use-IR-vision") == TRUE;
 
@@ -2958,48 +3003,43 @@ var reinit = func(backup = FALSE) {#mostly called to change HUD color
    }
 
    foreach(var item; artifacts0) {
-    item.setColor(red, green, blue, a);
+    item.setColor(red, green, blue, alpha);
     item.setStrokeLineWidth((getprop("ja37/hud/stroke-linewidth")/1024)*canvasWidth);
    }
 
    foreach(var item; artifacts1) {
-    item.setColor(red, green, blue, a);
+    item.setColor(red, green, blue, alpha);
     item.setStrokeLineWidth((getprop("ja37/hud/stroke-linewidth")/1024)*canvasWidth);
    }
 
    foreach(var item; artifactsText0) {
-    item.setColor(red, green, blue, a);
+    item.setColor(red, green, blue, alpha);
    }
 
    foreach(var item; artifactsText1) {
-    item.setColor(red, green, blue, a);
+    item.setColor(red, green, blue, alpha);
    }
-   hud_pilot.slip_indicator.setColorFill(red, green, blue, a);
+   hud_pilot.slip_indicator.setColorFill(red, green, blue, alpha);
    
    if (IR) {
-     HUDnasal.main.canvas.setColorBackground(red, green, blue, 0.025);
+     HUDnasal.main.canvas.setColorBackground(red, green, blue, 0);
    } elsif (backup == FALSE) {
-     HUDnasal.main.canvas.setColorBackground(0.36, g, 0.3, 0.025);
+     HUDnasal.main.canvas.setColorBackground(red, green, blue, 0);
    } else {
-     HUDnasal.main.canvas.setColorBackground(red, green, 0.3, 0.025);
+     HUDnasal.main.canvas.setColorBackground(red, green, blue, 0);
    }
   #print("HUD being reinitialized.");
 };
 
 var cycle_brightness = func () {
   if(getprop("ja37/hud/mode") > 0) {
-    g += 0.2;
-    if(g > 1.0 and r == 0.6) {
+    #var br = getprop("ja37/hud/brightness");
+    a += 0.15;
+    if(a > 1.0) {
       #reset
-      g = 0.2;
-      r = 0.0;
-      b = 0.0;
-    } elsif (g > 1.0) {
-      r += 0.6;
-      g =  1.0;
-      b += 0.6;
+      a = 0.55;
     }
-    setprop("controls/lighting/hud", r+g);
+    #setprop("ja37/hud/brightness", br);
     reinit(on_backup_power);
     ja37.click();
   } else {

@@ -570,6 +570,16 @@
           </binding>
          </key>
 
+         <key n="25">
+            <name>CTRL-Y</name>
+            <desc>Ask tower for landing info</desc>
+            <repeatable>false</repeatable>
+            <binding>
+                <command>nasal</command>
+                <script>land.askTower()</script>
+            </binding>
+        </key>
+
          <key n="97">
           <name>a</name>
           <desc>Increase speed-up</desc>
@@ -1256,6 +1266,18 @@
               <max>0.8</max>
             </binding>
           </mod-shift>
+         </key>
+
+         <key n="19">
+          <name>Ctrl-S</name>
+          <desc>Toggle auto-throttle lock</desc>
+          <binding>
+           <command>nasal</command>
+           <script>
+                auto.apContSpeed();
+                ja37.click();
+            </script>
+          </binding>
          </key>
     </keyboard>
 </PropertyList>

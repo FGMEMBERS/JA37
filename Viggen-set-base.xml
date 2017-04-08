@@ -8,7 +8,7 @@
 
 <PropertyList include="Systems/ja37-engines-off.xml">    <!-- change this to 'on' for fast testing/debugging -->
     <sim>
-        <aircraft-version>4.017</aircraft-version>
+        <aircraft-version>4.019</aircraft-version>
 
         <rating>
             <FDM type="int">4</FDM>
@@ -537,6 +537,12 @@
             <stroke-linewidth userarchive="y" type="double">4.0</stroke-linewidth>
             <TILS type="bool">false</TILS>
             <landing-mode type="bool">false</landing-mode>
+            <brightness type="double">1.0</brightness>
+            <overlay type="bool">true</overlay>
+            <overlay-alpha type="double">0.35</overlay-alpha>
+            <overlay-glare type="double">0.40</overlay-glare>
+            <mask type="bool">true</mask>
+            <emission type="double">1</emission>
         </hud>
         <sound>
             <click-on type="bool">false</click-on>
@@ -568,6 +574,7 @@
             <incoming12 type="bool">false</incoming12>
             <incoming type="bool">false</incoming>
             <helmet type="double">0.9</helmet>
+            <fuel-low-on type="bool">false</fuel-low-on>
         </sound>
         <damage>
             <enabled type="bool">true</enabled>
@@ -587,6 +594,7 @@
             <autopilot-mode type="int">1</autopilot-mode>
             <auto-throttle-on type="bool">false</auto-throttle-on>
             <auto-throttle-max type="double">0.58333</auto-throttle-max>
+            <heading-magnetic-limited-deg type="double">0</heading-magnetic-limited-deg>
             <auto-altitude-on type="bool">false</auto-altitude-on>
             <auto-attitude-on type="bool">false</auto-attitude-on>
             <auto-altitude-hold-on type="bool">false</auto-altitude-hold-on>
@@ -798,7 +806,7 @@
                     <rudder type="double">      0.010</rudder>                    <!-- at full 25 degrees deflection -->
                     <elevon-left type="double"> 0.015</elevon-left>                    <!-- full 40 degrees upward deflection -->
                     <elevon-right type="double">0.015</elevon-right>                    <!-- full 40 degrees upward deflection -->
-                    <speedbrake type="double">  0.020</speedbrake>                    <!-- fully extended -->
+                    <speedbrake type="double">  0.030</speedbrake>                    <!-- fully extended -->
                     <ram-air-turbine type="double">0.0025</ram-air-turbine>                    <!-- fully extended -->
                 </drag>
             </aero>
@@ -984,6 +992,26 @@
             <clip-distance type="double">1.75</clip-distance>
         </precipitation-control>
         <pressure-inhg type="double">30</pressure-inhg>
+        <weather-scenarios>
+            <scenario n="17">
+                <description type="string">ISA standard atmosphere.
+                    Be sure to use basic weather for flight testing with this.</description>
+                <metar type="string">XXXX 012345Z 00000KT 35SM 15/05 Q1013.25 NOSIG</metar>
+                <name type="string">ISA</name>
+            </scenario>
+            <scenario n="18">
+                <description type="string">ISA +10 standard atmosphere.
+                    Be sure to use basic weather for flight testing with this.</description>
+                <metar type="string">XXXX 012345Z 00000KT 35SM 25/15 Q1013.25 NOSIG</metar>
+                <name type="string">ISA +10</name>
+            </scenario>
+            <scenario n="19">
+                <description type="string">ISA -15 standard atmosphere.
+                    Be sure to use basic weather for flight testing with this.</description>
+                <metar type="string">XXXX 012345Z 00000KT 35SM 00/M10 Q1013.25 NOSIG</metar>
+                <name type="string">ISA -15</name>
+            </scenario>
+        </weather-scenarios>
     </environment>
     <autopilot>
         <target-tracking-ja37>
@@ -996,6 +1024,7 @@
 		<route-manager>
 			<wp>
 				<bearing-deg-rel type="double">0</bearing-deg-rel>
+                <bearing-deg-rel-rate type="double">0</bearing-deg-rel-rate>
 			</wp>
 		</route-manager>
         <internal>
@@ -1140,6 +1169,7 @@
         <max-gear-extension-speed>334.77</max-gear-extension-speed>        <!-- as per manual -->
         <max-positive-g>7.0</max-positive-g>  <!-- Pilots were usually not allowed to exceed this -->
         <max-negative-g>-3.0</max-negative-g> <!-- these values also depend on gear extended or not and stores. Dynamically controlled from JSB. -->
+        <vroll>172.8</vroll> <!-- source: SFI Fragår JA37 -->
     </limits>
 
     <!--**********************************************************************

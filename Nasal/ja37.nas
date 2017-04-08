@@ -385,7 +385,6 @@ var update_loop = func {
 	  if (input.rmActive.getValue() == TRUE and input.srvHead.getValue() == TRUE) {
 	    # sets the proper degree of the yellow waypoint heading indicator on the compass that surrounds the radar.
 	    input.rmBearingRel.setDoubleValue(input.rmBearing.getValue() - input.headingMagn.getValue());
-      
     }
 
     if(getprop("ja37/systems/variant") != 0 and getprop("/instrumentation/radar/range") == 180000) {
@@ -703,6 +702,13 @@ var slow_loop = func () {
       }
     }
   }
+
+  #warning if max rolling speed is exceeded
+  var max = getprop("limits/vroll");
+  if ((input.wow0.getValue() == TRUE or input.wow2.getValue() == TRUE) and max != nil and getprop("velocities/groundspeed-kt") > max) {
+    screen.log.write("Maximum allowed rolling speed exceeded!", 1.0, 0.0, 0.0);
+  }
+
   settimer(slow_loop, LOOP_SLOW_RATE);
 }
 
