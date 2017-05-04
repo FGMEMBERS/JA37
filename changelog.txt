@@ -2788,3 +2788,60 @@ Animation: {Richard} Limit radar compass heading bug to rate-limit specified in 
 Model: Made radar compass heading bug, have flood-light also.
 GUI: Made CTRL-y ask tower for runway local QFE pressure.
 GUI: Ask tower now also returns ILS freq. if available.
+
+4.020 - 2017 April 23
+=====
+GUI: Hotfix for ctrl-y request.
+Engine: Increased slightly aug thrust fuel consumption for RM-8A.
+Sim: Fixed that Dynamic View Manager concluded that the Viggen was a helicopter.
+Radar: JA37 max range setting lowered to 120 Km. (source: former JA37 pilot)
+Sim: Fixed AoA indicator would not work in replay.
+Sim: Did an overhaul of replay recording.
+Model: Fixed AoA indicator needle would z-fight on Linux.
+GUI: Made calc of static margin more readable.
+Control: Increased response to longitudinal stick input.
+Aero: Audit of mass and balance, found an issue.
+Aero: Decreased speedbrake drag. (source: former JA37 pilot)
+Aero: Disabled pitch due to inlet mass flow number, due to it being wrong.
+Sim: The Viggens autostart should no longer be interupted by filling fuel or stores.
+Sound: Annunciator now also has a failure mode.
+Radar: Screen is now darker background green.
+Radar: Screen brightness is now also controlled by instrument light knob.
+Model: Fixed that callsign on frontpanel would be lit bright all the time.
+Radar: Made font of radar range bigger.
+Radar: Moved radar picture a bit upwards.
+Radar: Changed font of radar range.
+Sim: Updated tags.
+Effect: Replaced navigation light with procedural lights in ALS.
+Aero: Reenabled pitch due to inlet mass flow number.
+Sim: Adjusted the lower EPR ratings.
+Effect: Update to HUD effect so it works with filters.
+
+4.100 - 2017 May 3
+=====
+Effect: Removed frost from HUD.
+Model: {Pinto} Added model for MI display.
+Model: {Pinto} Added model for TI display.
+MI: Made MI display canvas.
+TI: Made TI display canvas.
+Radar: Removed auto selecting echoes.
+Sim: Pitched cockpit view down by 1 degree.
+Model: Removed the inverted shadow map above MI panel.
+GUI: CTRL-q now looks down at displays.
+Animation: Made aug stages lit up at lamp test.
+Model: {Pinto} Did new mount and placement for JA fuel gauge.
+Model: Rearranged frontpanel and part of right panel for JA37Di.
+Sim: {Onox} Removed unused config in autopilot.
+GUI: Added option for only showing TI menu items that is functional.
+Sim: Fixed that landing system would think some steerpoints were airports.
+Animation: Fuel gauge second needle is no longer showing droptank fuel. It really was used for something else. Pretty sure this is the second time I fixed that, strange.
+Sim: The JA-37 has been renamed to JA-37Di.
+Model: {Onox} Added mouse wheel zooming to certain exterior views.
+Model: {pinto} New gear well.
+Model: {pinto} New hi-def inlet.
+Animation: Animated Pintos new gear doors.
+Model: Changed switch on kv1 to nav/comm, temp. measure.
+GUI: New option to disable using Internet to update the TI map.
+Effect: Fixed floodlight does not work with hudRestPlaque.
+Model: Made tooltip for airspeed indicator show indicated, not true airspeed.
+GUI: {Swamp} Nice new splash for JA.

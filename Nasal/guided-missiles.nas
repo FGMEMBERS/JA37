@@ -234,6 +234,7 @@ var AIM = {
         m.class                 = getprop("payload/armament/"~m.type_lc~"/class");                      # put in letters here that represent the types the missile can fire at. A=air, M=marine, G=ground
         m.brevity               = getprop("payload/armament/"~m.type_lc~"/fire-msg");                   # what the pilot will call out over the comm when he fires this weapon
         m.reportDist            = getprop("payload/armament/"~m.type_lc~"/max-report-distance");        # Interpolation hit: max distance from target it report it exploded, not passed. Trig hit: Distance where it will trigger.
+        m.data                  = getprop("payload/armament/"~m.type_lc~"/telemetry");                  # length of tube/rail
 
         m.useHitInterpolation   = getprop("payload/armament/hit-interpolation");#false to use 5H1N0B1 trigonometry, true to use Leto interpolation.
         # three variables used for trigonometry hit calc:
@@ -241,6 +242,9 @@ var AIM = {
         m.tpsApproch     = 0;
         m.usedChance     = FALSE;
 
+        if (m.data == nil) {
+        	m.data = FALSE;
+        }
 
         m.useModelCase          = getprop("payload/armament/modelsUseCase");
         m.useModelUpperCase     = getprop("payload/armament/modelsUpperCase");
@@ -296,7 +300,10 @@ var AIM = {
 			}
 		}
 		m.ai = n.getChild(m.type_lc, i, 1);
-
+		if(m.data == TRUE) {
+			m.ai.getNode("ETA", 1).setIntValue(-1);
+			m.ai.getNode("hit", 1).setIntValue(-1);
+		}
 		m.ai.getNode("valid", 1).setBoolValue(0);
 		m.ai.getNode("name", 1).setValue(type);
 		m.ai.getNode("sign", 1).setValue(sign);
@@ -409,6 +416,8 @@ var AIM = {
 		m.SwSoundFireOnOff.setBoolValue(FALSE);
 		m.SwSoundVol.setDoubleValue(m.vol_search);
 		#me.trackWeak = 1;
+
+		m.horz_closing_rate_fps = -1;
 
 		return AIM.active[m.ID] = m;
 	},
@@ -1069,6 +1078,41 @@ var AIM = {
 		}
 		#printf("weight %0.1f", me.weight_current);
 		me.mass = me.weight_current / slugs_to_lbm;
+
+		# telemetry
+		if (me.data == TRUE) {
+			me.eta = me.free == TRUE or me.horz_closing_rate_fps == -1?-1:(me.dist_curr*M2FT)/me.horz_closing_rate_fps;
+			me.hit = 50;# in percent
+			if (me.life_time > me.drop_time+me.stage_1_duration) {
+				# little less optimistic after reaching topspeed
+				if (me.selfdestruct_time-me.life_time < me.eta) {
+					# reduce alot if eta later than lifespan
+					me.hit -= 75;
+				} elsif (me.eta != -1 and (me.selfdestruct_time-me.life_time) != 0) {
+					# if its hitting late in life, then reduce
+					me.hit -= (me.eta / (me.selfdestruct_time-me.life_time)) * 25;
+				}
+				if (me.eta > 0) {
+					# penalty if eta is high
+					me.hit -= me.clamp(40*me.eta/(me.life_time*0.85), 0, 40);
+				}
+			}
+			if (me.curr_deviation_h != nil and me.dist_curr > 50) {
+				# penalty for target being off-bore
+				me.hit -= math.abs(me.curr_deviation_h)/2.5;
+			}
+			if (me.guiding == TRUE and me.old_speed_fps > me.t_speed and me.t_speed != 0) {
+				# bonus for traveling faster than target
+				me.hit += me.clamp((me.old_speed_fps / me.t_speed)*15,-25,50);
+			}			
+			if (me.free == TRUE) {
+				# penalty for not longer guiding
+				me.hit -= 75;
+			}
+			me.hit = int(me.clamp(me.hit, 0, 90));
+			me.ai.getNode("ETA").setIntValue(me.eta);
+			me.ai.getNode("hit").setIntValue(me.hit);
+		}
 
 		me.last_dt = me.dt;
 		settimer(func me.flight(), update_loop_time, SIM_TIME);		
@@ -1950,7 +1994,7 @@ var AIM = {
 		  me.coord3.set_alt(coord2.alt());
 		  me.d12 = coord1.direct_distance_to(coord2);
 		  me.d32 = me.coord3.direct_distance_to(coord2);
-		  if (me.d12 > 0.01) {
+		  if (me.d12 > 0.1 and coord1.alt() != coord2.alt()) {
 		  	me.altDi = coord1.alt()-me.coord3.alt();
 		  	me.yyy = R2D * math.acos((math.pow(me.d12, 2)+math.pow(me.altDi,2)-math.pow(me.d32, 2))/(2 * me.d12 * me.altDi));
 		  	me.pitchC = -1* (90 - me.yyy);

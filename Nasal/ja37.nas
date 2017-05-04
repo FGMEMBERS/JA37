@@ -220,7 +220,8 @@ var update_loop = func {
   	 ## Sets fuel gauge needles rotation ##
   	 
      if(input.tank8LvlNorm.getValue() != nil) {
-       input.fuelNeedleB.setDoubleValue(input.tank8LvlNorm.getValue()*230);
+       #input.fuelNeedleB.setDoubleValue(input.tank8LvlNorm.getValue()*230);
+       input.fuelNeedleB.setDoubleValue(0);
      }     
 
     var current = input.tank0LvlGal.getValue()
@@ -508,8 +509,16 @@ var slow_loop = func () {
       }
     }
     TILSprev = TRUE;
+    setprop("ja37/hud/TILS-on", TRUE);
   } else {
+    setprop("ja37/hud/TILS-on", FALSE);
     TILSprev = FALSE;
+  }
+
+  if (getprop("sim/replay/replay-state") == 0 and input.acInstrVolt.getValue() > 100) {
+    setprop("ja37/avionics/record-on", TRUE);
+  } else {
+    setprop("ja37/avionics/record-on", FALSE);
   }
 
   ###########################################################
@@ -969,9 +978,9 @@ var test_support = func {
   var minor = num(version[1]);
   var detail = num(version[2]);
   if (major < 2) {
-    notice("JA-37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
+    notice("Saab 37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
       setprop("ja37/supported/radar", FALSE);
-      setprop("ja37/supported/hud", FALSE);
+      setprop("ja37/supported/canvas", FALSE);
       setprop("ja37/supported/options", FALSE);
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/supported/popuptips", 0);
@@ -989,18 +998,18 @@ var test_support = func {
     setprop("ja37/supported/new-marker", FALSE);
     setprop("ja37/supported/picking", FALSE);
     if(minor < 7) {
-      notice("JA-37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
+      notice("Saab 37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
       setprop("ja37/supported/radar", FALSE);
-      setprop("ja37/supported/hud", FALSE);
+      setprop("ja37/supported/canvas", FALSE);
       setprop("ja37/supported/options", FALSE);
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/supported/popuptips", 0);
       setprop("ja37/supported/crash-system", 0);
       setprop("ja37/supported/ubershader", FALSE);
     } elsif(minor < 9) {
-      notice("JA-37 Canvas Radar and HUD is only supported in Flightgear version 2.10 and upwards. They have been disabled.");
+      notice("Saab 37 Canvas Radar and HUD is only supported in Flightgear version 2.10 and upwards. They have been disabled.");
       setprop("ja37/supported/radar", FALSE);
-      setprop("ja37/supported/hud", FALSE);
+      setprop("ja37/supported/canvas", FALSE);
       setprop("ja37/supported/options", FALSE);
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/hud/mode", 0);
@@ -1009,7 +1018,7 @@ var test_support = func {
       setprop("ja37/supported/ubershader", FALSE);
     } elsif(minor < 11) {
       setprop("ja37/supported/radar", TRUE);
-      setprop("ja37/supported/hud", TRUE);
+      setprop("ja37/supported/canvas", TRUE);
       setprop("ja37/supported/options", FALSE);
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/supported/popuptips", 0);
@@ -1017,7 +1026,7 @@ var test_support = func {
       setprop("ja37/supported/ubershader", TRUE);
     } else {
       setprop("ja37/supported/radar", TRUE);
-      setprop("ja37/supported/hud", TRUE);
+      setprop("ja37/supported/canvas", TRUE);
       setprop("ja37/supported/options", FALSE);
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/supported/popuptips", 1);
@@ -1027,7 +1036,7 @@ var test_support = func {
   } elsif (major == 3) {
     setprop("ja37/supported/options", TRUE);
     setprop("ja37/supported/radar", TRUE);
-    setprop("ja37/supported/hud", TRUE);
+    setprop("ja37/supported/canvas", TRUE);
     setprop("ja37/supported/old-custom-fails", 2);
     setprop("ja37/supported/landing-light", TRUE);
     setprop("ja37/supported/popuptips", 2);
@@ -1060,7 +1069,7 @@ var test_support = func {
   } elsif (major == 2016) {
     setprop("ja37/supported/options", TRUE);
     setprop("ja37/supported/radar", TRUE);
-    setprop("ja37/supported/hud", TRUE);
+    setprop("ja37/supported/canvas", TRUE);
     setprop("ja37/supported/old-custom-fails", 2);
     setprop("ja37/supported/landing-light", TRUE);
     setprop("ja37/supported/popuptips", 2);
@@ -1076,7 +1085,7 @@ var test_support = func {
   } elsif (major == 2017) {
     setprop("ja37/supported/options", TRUE);
     setprop("ja37/supported/radar", TRUE);
-    setprop("ja37/supported/hud", TRUE);
+    setprop("ja37/supported/canvas", TRUE);
     setprop("ja37/supported/old-custom-fails", 2);
     setprop("ja37/supported/landing-light", TRUE);
     setprop("ja37/supported/popuptips", 2);
@@ -1093,7 +1102,7 @@ var test_support = func {
     # future proof
     setprop("ja37/supported/options", TRUE);
     setprop("ja37/supported/radar", TRUE);
-    setprop("ja37/supported/hud", TRUE);
+    setprop("ja37/supported/canvas", TRUE);
     setprop("ja37/supported/old-custom-fails", 2);
     setprop("ja37/supported/landing-light", TRUE);
     setprop("ja37/supported/popuptips", 2);
@@ -1219,7 +1228,7 @@ var main_init = func {
 
 # re init
 var re_init = func {
-  print("Re-initializing JA-37 Viggen systems");
+  print("Re-initializing Saab 37 Viggen systems");
   
   setprop("sim/time/elapsed-at-init-sec", getprop("sim/time/elapsed-sec"));
 
@@ -1912,3 +1921,32 @@ var resetView = func () {
   interpolate("sim/current-view/roll-offset-deg", getprop("sim/current-view/config/roll-offset-deg"),0.66);
   interpolate("sim/current-view/x-offset-m", 0, 1);
 }
+
+var HDDView = func () {
+  if (getprop("sim/current-view/view-number") == 0) {
+    var hd = getprop("sim/current-view/heading-offset-deg");
+    var hd_t = 340;
+    if (hd < 180) {
+      hd_t = hd_t - 360;
+    }
+    interpolate("sim/current-view/field-of-view", 60, 0.66);
+    interpolate("sim/current-view/heading-offset-deg", hd_t,0.66);
+    interpolate("sim/current-view/pitch-offset-deg", -46,0.66);
+    interpolate("sim/current-view/roll-offset-deg", getprop("sim/current-view/config/roll-offset-deg"),0.66);
+    interpolate("sim/current-view/x-offset-m", 0, 1); 
+  }
+}
+
+dynamic_view.register(func {
+              me.default_plane();      # uncomment one of these if you want
+#           # me.default_helicopter(); # to base your code on the defaults
+#
+#                                      # positive values rotate (deg) or move (m)
+#           me.heading_offset = ...    #     left
+#           me.pitch_offset = ...      #     up
+#           me.roll_offset = ...       #     right
+#           me.x_offset = ...          #     right     (transversal axis)
+#           me.y_offset = ...          #     up        (vertical axis)
+#           me.z_offset = ...          #     back/aft  (longitudinal axis)
+#           me.fov_offset = ...        #     zoom out  (field of view)
+   });

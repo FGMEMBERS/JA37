@@ -23,9 +23,9 @@ var white_g = 1.0;
 var white_b = 0.7;
 
 # background color
-var green_r = 0.4;
-var green_g = 0.9;
-var green_b = 0.4;
+var green_r = 0.2;
+var green_g = 0.65;
+var green_b = 0.2;
 
 var opaque = 1.0;
 
@@ -62,12 +62,13 @@ var radar = {
     # ... and place it on the object called Screen
     m.canvas.addPlacement({"node": "radarScreen", "texture": "radar-canvas.png"});
     m.canvas.setColorBackground(green_r, green_g, green_b);
+    m.canvas.set("font", "LiberationFonts/LiberationMono-Regular.ttf");
     g = m.canvas.createGroup();
     
     var g_tf = g.createTransform();
 
-    m.strokeOriginY = (975/1024) * pixels_max;
-    m.strokeTopY = (200/1024) * pixels_max;
+    m.strokeOriginY = (900/1024) * pixels_max;
+    m.strokeTopY = (150/1024) * pixels_max;
     m.strokeHeight = (m.strokeOriginY - m.strokeTopY);
 
     m.lineGroup = g.createChild("group")
@@ -267,8 +268,8 @@ var radar = {
     m.rangeText = m.lineGroup.createChild("text")
       .setText("120")
       .setAlignment("center-center")
-      .setFontSize((37.5/1024)*pixels_max, 1.0)
-      .setTranslation((280/1024)*pixels_max, (-110/1024)*pixels_max)
+      .setFontSize((64/1024)*pixels_max, 1.0)
+      .setTranslation((280/1024)*pixels_max, (-80/1024)*pixels_max)
       .setColor(black_r, black_g, black_b)
       .set("z-index", 4);
 
@@ -497,7 +498,7 @@ var radar = {
           }
 
           if (land.show_runway_line == TRUE) {
-            # 10 20 20 40 Km long line, depending on radar setting, as per manual.
+            # 10 20 20 40 Km long line, depending on radar setting, as per AJ manual.
             me.runway_l = land.line*1000;
     #        if (me.radarRange == 120000 or me.radarRange == 180000) {
     #          me.runway_l = 40000;

@@ -13,7 +13,7 @@ var Dialog = {
         var font = { name: "FIXED_8x13" };
 
         me.dialog = nil;
-        me.name = "JA-37 Options";
+        me.name = "Saab 37 Options";
 
 #        me.listeners=[];
 #        append(me.listeners, setlistener("/sim/signals/reinit-gui", func me._redraw_()));
@@ -205,19 +205,19 @@ var Dialog = {
 #          me.dialog.tracksButton.setBinding("nasal", "ja37.Dialog.tracksToggle()");
 
           ######   HUD bank indicator button   #####
-          var bankRow = topRow.addChild("group");
-          bankRow.set("layout", "hbox");
-          bankRow.set("pref-height", 25);
-          bankRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
+#          var bankRow = topRow.addChild("group");
+#          bankRow.set("layout", "hbox");
+#          bankRow.set("pref-height", 25);
+#          bankRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
           #tracksRow.set("valign", "center");
           
-          var bankText = bankRow.addChild("text").set("label", "HUD turn coordinator: (not authentic)");
-          bankRow.addChild("empty").set("stretch", 1);
-          me.dialog.bankButton = bankRow.addChild("button");
-          me.dialog.bankButton.set("halign", "right");
-          me.dialog.bankButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
+#          var bankText = bankRow.addChild("text").set("label", "HUD turn coordinator: (not authentic)");
+#          bankRow.addChild("empty").set("stretch", 1);
+#          me.dialog.bankButton = bankRow.addChild("button");
+#          me.dialog.bankButton.set("halign", "right");
+#          me.dialog.bankButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
           #topRow.addChild("empty").set("stretch", 1);
-          me.dialog.bankButton.setBinding("nasal", "ja37.Dialog.bankToggle()");
+#          me.dialog.bankButton.setBinding("nasal", "ja37.Dialog.bankToggle()");
 
           ######   Yaw damper button   #####
           var yawRow = topRow.addChild("group");
@@ -412,6 +412,34 @@ var Dialog = {
           me.dialog.rustButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
           me.dialog.rustButton.setBinding("nasal", "ja37.Dialog.rustToggle()");
 
+          ######   menu button   #####
+          var menuRow = topRow.addChild("group");
+          menuRow.set("layout", "hbox");
+          menuRow.set("pref-height", 25);
+          menuRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
+          #hitRow.set("valign", "center");
+          
+          var menuText = menuRow.addChild("text").set("label", "TI Display: show only working menu items");
+          menuRow.addChild("empty").set("stretch", 1);
+          me.dialog.menuButton = menuRow.addChild("button");
+          me.dialog.menuButton.set("halign", "right");
+          me.dialog.menuButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
+          me.dialog.menuButton.setBinding("nasal", "ja37.Dialog.menuToggle()");
+
+          ######   map INternet button   #####
+          var mapRow = topRow.addChild("group");
+          mapRow.set("layout", "hbox");
+          mapRow.set("pref-height", 25);
+          mapRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
+          #hitRow.set("valign", "center");
+          
+          var mapText = mapRow.addChild("text").set("label", "TI Display; Use Internet to fetch map:");
+          mapRow.addChild("empty").set("stretch", 1);
+          me.dialog.mapButton = mapRow.addChild("button");
+          me.dialog.mapButton.set("halign", "right");
+          me.dialog.mapButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
+          me.dialog.mapButton.setBinding("nasal", "ja37.Dialog.mapToggle()");
+
           ######   terrain can hide radar tracks button   #####
           var realRadarRow = topRow.addChild("group");
           realRadarRow.set("layout", "hbox");
@@ -489,7 +517,7 @@ var Dialog = {
 
           #HUD brightness
           var hudRow = workArea.addChild("group");
-          hudRow.set("layout", "hbox");
+          hudRow.set("layout", "vbox");
           hudRow.set("pref-height", 25);
           hudRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
           #hudRow.set("valign", "center");
@@ -599,6 +627,18 @@ var Dialog = {
     bankToggle: func {
       var enabled = getprop("ja37/hud/bank-indicator");
       setprop("ja37/hud/bank-indicator", !enabled);
+      me.refreshButtons();
+    },
+    
+    menuToggle: func {
+      var enabled = getprop("ja37/displays/show-full-menus");
+      setprop("ja37/displays/show-full-menus", !enabled);
+      me.refreshButtons();
+    },
+
+    mapToggle: func {
+      var enabled = getprop("ja37/displays/live-map");
+      setprop("ja37/displays/live-map", !enabled);
       me.refreshButtons();
     },
 
@@ -804,13 +844,13 @@ var Dialog = {
 #      }
 #      me.dialog.tracksButton.node.setValues({"legend": legend});
 
-      enabled = getprop("ja37/hud/bank-indicator");
-      if(enabled == 1) {
-        legend = "Enabled";
-      } else {
-        legend = "Disabled";
-      }
-      me.dialog.bankButton.node.setValues({"legend": legend});
+#      enabled = getprop("ja37/hud/bank-indicator");
+#      if(enabled == 1) {
+#        legend = "Enabled";
+#      } else {
+#        legend = "Disabled";
+#      }
+#      me.dialog.bankButton.node.setValues({"legend": legend});
 
       enabled = getprop("fdm/jsbsim/fcs/yaw-damper/enable");
       if(enabled == 1) {
@@ -827,6 +867,14 @@ var Dialog = {
         legend = "Disabled";
       }
       me.dialog.pitchButton.node.setValues({"legend": legend});
+
+      enabled = getprop("ja37/displays/show-full-menus");
+      if(enabled == 1) {
+        legend = "Full";
+      } else {
+        legend = "Functional";
+      }
+      me.dialog.menuButton.node.setValues({"legend": legend});
 
       enabled = getprop("fdm/jsbsim/fcs/roll-damper/enable");
       if(enabled == 1) {
@@ -950,14 +998,24 @@ var Dialog = {
       }
       me.dialog.rustButton.node.setValues({"legend": legend});
 
+      enabled = getprop("ja37/displays/live-map");
+      if(enabled == 1) {
+        legend = "Online";
+      } elsif (enabled == 0) {
+        legend = "Offline";
+      }
+      me.dialog.mapButton.node.setValues({"legend": legend});
+
+      
+
       #props.dump(me.dialog.prop()); # handy command, don't forget it.
 
       # this is commented out cause it needs a trigger (e.g. button to activate):
       # me.dialog.setBinding("dialog-close", props.Node.new({"dialog-name": "JA-37 Options"}));
       # me.dialog.setBinding("dialog-show",  props.Node.new({"dialog-name": "JA-37 Options"}));
       # this does the same, refresh the dialog:
-      fgcommand("dialog-close", props.Node.new({"dialog-name": "JA-37 Options"}));
-      fgcommand("dialog-show", props.Node.new({"dialog-name": "JA-37 Options"}));
+      fgcommand("dialog-close", props.Node.new({"dialog-name": "Saab 37 Options"}));
+      fgcommand("dialog-show", props.Node.new({"dialog-name": "Saab 37 Options"}));
     },
 
     del: func {

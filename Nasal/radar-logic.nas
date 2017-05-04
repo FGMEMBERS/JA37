@@ -6,7 +6,7 @@ var rad2deg = 180.0/math.pi;
 var kts2kmh = 1.852;
 var feet2meter = 0.3048;
 
-var radarRange = getprop("ja37/systems/variant") == 0?180000:120000;#meter, is estimate. The AJ(S)-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
+var radarRange = getprop("ja37/systems/variant") == 0?120000:120000;#meter, is estimate. The AJ(S)-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
 
 var self = nil;
 var myAlt = nil;
@@ -19,6 +19,9 @@ var selection_updated = FALSE;
 var tracks_index = 0;
 var tracks = [];
 var callsign_struct = {};
+
+var lockLog  = events.LogBuffer.new(echo: 0);#compatible with older FG?
+var lockLast = nil;
 
 var AIR = 0;
 var MARINE = 1;
@@ -154,9 +157,9 @@ var RadarLogic = {
         me.trackInfo = nil;
   #debug.benchmark("radar trackitemcalc", func {
         if(missile == FALSE) {
-          me.trackInfo = me.trackItemCalc(track, radarRange, carrier, mp, type);
+          me.trackInfo = me.trackItemCalc(track, getprop("instrumentation/radar/range"), carrier, mp, type);
         } else {
-          me.trackInfo = me.trackMissileCalc(track, radarRange, carrier, mp, type);
+          me.trackInfo = me.trackMissileCalc(track, getprop("instrumentation/radar/range"), carrier, mp, type);
         }
   #});
   #debug.benchmark("radar process", func {
@@ -234,7 +237,7 @@ var RadarLogic = {
 
           append(tracks, me.trackInfo);
 
-          if(selection == nil) {
+          if(1==0 and selection == nil and getprop("ja37/avionics/cursor-on") != FALSE) {
             #this is first tracks in radar field, so will be default selection
             selection = me.trackInfo;
             lookatSelection();
@@ -346,7 +349,7 @@ var RadarLogic = {
       #print("Received invalid position data: dist "~distance);
       #target_circle[track_index+maxTargetsMP].hide();
       #print(i~" invalid pos.");
-    } elsif (me.distanceDirect < range) {#is max radar range of ja37
+    } elsif (me.distanceDirect < range or node.getName() == "rb-99") {#is max radar range of ja37
       # Node with valid position data (and "distance!=nil").
       #distance = distance*kts2kmh*1000;
       me.aircraftAlt = aircraftPos.alt(); #altitude in meters
@@ -396,7 +399,7 @@ var RadarLogic = {
         me.ya_rad = me.ya_rad + 2*math.pi;
       }
 
-      if(me.ya_rad > -61.5 * D2R and me.ya_rad < 61.5 * D2R and me.xa_rad > -61.5 * D2R and me.xa_rad < 61.5 * D2R) {
+      if(node.getName() == "rb-99" or (me.ya_rad > -61.5 * D2R and me.ya_rad < 61.5 * D2R and me.xa_rad > -61.5 * D2R and me.xa_rad < 61.5 * D2R)) {
         #is within the radar cone
         # AJ37 manual: 61.5 deg sideways.
 
@@ -420,19 +423,19 @@ var RadarLogic = {
           }
         }
 
-        me.distanceRadar = me.distance/math.cos(myPitch);
+        me.distanceRadar = me.distance;#*math.cos(myPitch); hmm
         me.hud_pos_x = canvas_HUD.pixelPerDegreeX * me.xa_rad * rad2deg;
         me.hud_pos_y = canvas_HUD.centerOffset + canvas_HUD.pixelPerDegreeY * -me.ya_rad * rad2deg;
 
         me.contact = Contact.new(node, type);
-        me.contact.setPolar(me.distanceRadar, me.xa_rad_corr);
+        me.contact.setPolar(me.distanceRadar, me.xa_rad_corr, me.xa_rad, me.ya_rad);
         me.contact.setCartesian(me.hud_pos_x, me.hud_pos_y);
         return me.contact;
 
       } elsif (carrier == TRUE) {
         # need to return carrier even if out of radar cone, due to carrierNear calc
         me.contact = Contact.new(node, type);
-        me.contact.setPolar(900000, me.xa_rad_corr);
+        me.contact.setPolar(900000, me.xa_rad_corr, me.xa_rad, me.ya_rad);
         me.contact.setCartesian(900000, 900000);# 900000 used in hud to know if out of radar cone.
         return me.contact;
       }
@@ -678,6 +681,7 @@ var RadarLogic = {
 };
 
 var nextTarget = func () {
+  if (getprop("ja37/avionics/cursor-on") != FALSE){
   var max_index = size(tracks)-1;
   if(max_index > -1) {
     if(tracks_index < max_index) {
@@ -698,9 +702,11 @@ var nextTarget = func () {
       radarLogic.paint(selection.getNode(), FALSE);
     }
   }
+}
 };
 
 var centerTarget = func () {
+  if (getprop("ja37/avionics/cursor-on") != FALSE) {
   var centerMost = nil;
   var centerDist = 99999;
   var centerIndex = -1;
@@ -726,6 +732,7 @@ var centerTarget = func () {
     lookatSelection();
     tracks_index = centerIndex;
   }
+}
 };
 
 var lookatSelection = func () {
@@ -787,6 +794,9 @@ var Contact = {
         obj.painted         = c.getNode("painted");
         obj.unique          = c.getNode("unique");
         obj.validTree       = 0;
+
+        obj.eta             = c.getNode("ETA");
+        obj.hit             = c.getNode("hit");
 #});
 #debug.benchmark("radar process5", func {        
         #obj.transponderID   = c.getNode("instrumentation/transponder/transmitted-id");
@@ -812,6 +822,20 @@ var Contact = {
         obj.cartesian       = [0,0];
         
         return obj;
+    },
+
+    getETA: func {
+      if (me.eta != nil) {
+        return me.eta.getValue();
+      }
+      return nil;
+    },
+
+    getHitChance: func {
+      if (me.hit != nil) {
+        return me.hit.getValue();
+      }
+      return nil;
     },
 
     isValid: func () {
@@ -869,8 +893,8 @@ var Contact = {
       return me.node.getNode("rotors/main/blade[3]/flap-deg");
     },
 
-    setPolar: func(dist, angle) {
-      me.polar = [dist,angle];
+    setPolar: func(dist, angle, angleX, angleY) {
+      me.polar = [dist,angle,angleX,angleY];
     },
 
     setCartesian: func(x, y) {
@@ -1108,6 +1132,14 @@ var ContactGPS = {
       return me.coord;
   },
 
+  getETA: func {
+      return nil;
+    },
+
+    getHitChance: func {
+      return nil;
+    },
+
   get_Callsign: func(){
       return me.callsign;
   },
@@ -1306,7 +1338,7 @@ var ContactGPS = {
 
     var distanceRadar = distance;#/math.cos(myPitch);
 
-    return [distanceRadar, xa_rad_corr];
+    return [distanceRadar, xa_rad_corr, xa_rad, ya_rad];
   },
 };
 
@@ -1315,7 +1347,7 @@ var getPitch = func (coord1, coord2) {
   var coord3 = geo.Coord.new(coord1);
   coord3.set_alt(coord2.alt());
   var d12 = coord1.direct_distance_to(coord2);
-  if (d12 > 0.01 and coord1.alt() != coord2.alt()) {# not sure how to cope with same altitudes.
+  if (d12 > 0.1 and coord1.alt() != coord2.alt()) {# not sure how to cope with same altitudes.
     var d32 = coord3.direct_distance_to(coord2);
     var altD = coord1.alt()-coord3.alt();
     var y = R2D * math.acos((math.pow(d12, 2)+math.pow(altD,2)-math.pow(d32, 2))/(2 * d12 * altD));

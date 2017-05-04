@@ -7,12 +7,13 @@ Features and improvements:
 GUI: Option to turn off verbose popups.
 GUI: Improve Checklists.
 GUI: Option to switch off hitting stuff above ground. (switched off now, might confuse users)
-GUI: AT some point switch to new thrumbnails format.
+GUI: AT some point switch to new thumbnails format.
 Aero: Make recoil not assume that FDM rate is 120 Hz.
 Aero: Tune speedbrake better.
 Aero: Make cannon ammo have pointweight.
 Control: Disable failure system from freezing surfaces (remove failure mode bug in 3.2- prevents)
 Control: Make bigger factor in pitch normal comparison. (beware of oscillations)
+Control: Limit elevator deflection due to servo-moment being smaller than moment of air-pressure. Page 19-20 in AK III.
 Model: Make minimal polygon model for multiplayer LOD.
 Model: Make liveries that is not 59, able to not have to use base texture.
 Model: Ext. power truck more mil style textures.
@@ -33,10 +34,13 @@ Model: Radio panel. Left side.
 Model: Airspeed indicator should have mach number also.
 Model: Stores jettisoned indicator on top right of front panel?
 Model: Switch ALT CISI, altitude source. (Only in AJ variants)
-Animation: Proper animation of gear doors and gear retraction.
+Model: The KURS gauge in the JA was more complex, needs making.
+Model: The mount for the 3 autopilot buttons on frontpanel was different in the JA, needs making.
+Model: In the JA there was 2 knobs under the hudRestPlaque to control HUD brightness, needs making.
 Animation: Make rear boogie rotate at takeoff/landing rotation.
 Animation: Make jettison drop-tank/rocket pod actually fall down like other stores do.
 Engine: Switch aug. type in engine?
+Engine: Model compressor surge/stall including bang sound.
 Sim: Improve autopilot further.
 Sim: Make autopilot depend fully on instrument properties not true properties. (95% done)
 Sim: Implement ejection seat. (with parachute?)
@@ -59,7 +63,7 @@ Sim: Make data-link between Viggens.
 Sim: Replace MP hit and fire messages with something else, so can leave civilian traffic in peace.
 Sim: Implement maximum speed reactions - Vne.
 Sim: Engine fire improvement: reduced thrust, stuck throttle.
-Sim: Stop auto-selecting when in tactical mode.
+Sim: Stop auto-selecting when in tactical mode. (semi-done)
 Sim: RB99 will be rail launched if sitting on a rail instead of always dropped.
 Sim: Be able to notch the rb71 again.
 Sim: Make speed, roll, Nz and altitude limits on firing missiles.
@@ -85,13 +89,12 @@ Sim: Fix that when changing airport location, battery gets drained, and therefor
 Effect: Rembrandt landing lightcone.
 Effect: Make pilot G-loc/die due to G-forces.
 Effect: Make tires burst if too high speed with parking brakes.
+Effect: Replace beacon, landing and strobe lights with procedural lights in ALS.
 Sound: More annunciater warnings and other sounds. (transonic)
 Sound: Adjust the volume of the explosion of nearby missile, depending on distance.
 Sound: Rework how missile buzz and growl works.
 Sound: Sound from wind hitting the gears when extended.
 Radar: Make database of RCS of common aircrafts.
-Radar: Memory button, for freezing image.
-Radar: When ILS and DME is tuned to airport, show it on radar with a 20km centerline?
 Radar: Make rb71 notchable again, by introducing 3 diff painted properties instead of one.
 HUD: Alt scale follow pitch lines at more than 1 degree roll from level flight. (swedish pilots seems able to read upside down, not sure I will make this)
 HUD: All track semi circles and semi box should have a line in them. (might degrade performance)
@@ -101,8 +104,27 @@ HUD: Make crossing out of hud when armament not ready to fire and trigger is pre
 HUD: Enable Richards new wrapper, to improve terrain warning. (2018.1.1)
 HUD: Slave-SI centers the landing guide. And hides the attitude ind. ILS needles. (only AJ variants)
 HUD: Altitude scale should only be shown when engine is running due to it need AC power.
-
-
+TI: Show lat/lon grid in menu UDAT.
+TI: Move cursor between TI and MI.
+TI: Slew cursor.
+TI: Edit route.
+TI: Change runway symbol.
+TI: Show near small airports as stipled.
+TI: Show/edit bullseye.
+TI: Implement Sidvy.
+TI: Show fligthtime in menu UD-UT.
+TI: More TRAP logs.
+TI: Selects self.
+TI: Brightness and position buttons should do nothing when not active.
+MI: Show ECM on TI [M2]
+MI: Slew cursor.
+MI: Implement radar sweep.
+MI: Improve mark event [X3]
+MI: Improve BIT test. [X1]
+MI: Make to switch off link rb99. [X2]
+MI: Make TNF to stop/start intial nav.
+CI: Memory button, for freezing image.
+CI: Slew cursor.
 
 
 
@@ -115,7 +137,7 @@ HUD: When autostarting is in progress, the HUD will switch off for a fraction of
 HUD: When the altitude difference to a track is much larger than the horizontal distance, the track positions are off.
 HUD: {JazzTp} When FG HUD is in 2nd or 3rd mode, it does not go away when switching to custom. [reproduced]
 Model: CTRL-X in HUD view will not zoom to correct level.
-Model: Droptank indicator should really be a steerpoint indicator.
+Model: AJ Droptank indicator should really be a steerpoint indicator.
 Model: In FG 2.12 radar screen does not work as it should. (no canvas replacement)
 Model: All shader use of <use> does not work over MP.
 Sim: Find out why cannon and sidewinder fire randomly after instant replay.
@@ -131,6 +153,7 @@ Sim: {Pinto} Has experienced that 2 engine directories were created under engine
 Sound: If at the end of non-looped replay view mode is fly-by-view, sounds will continue looping. [not reproduced]
 Effect: Firing many M70 rockets in quick succession will make FG crash. [Probably fixed]
 Sim: A/T at high alpha does not work for Pinto, too high alpha. (3k ft, 30% fuel, no reverse)
+
 
 
 Issues with FG:

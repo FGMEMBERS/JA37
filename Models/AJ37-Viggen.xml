@@ -1755,10 +1755,10 @@
 		<object-name>gearFrontDoorsOpenLeft</object-name>
 		<object-name>gearFrontDoorsOpenRight</object-name>
 		<object-name>gearFrontDoorsClosed</object-name>
-		<object-name>gearLeftDoorsOpen</object-name>
-		<object-name>gearLeftDoorsClosed</object-name>
-		<object-name>gearRightDoorsOpen</object-name>
-		<object-name>gearRightDoorsClosed</object-name>
+		<object-name>gearLeftOuterDoor</object-name>
+    <object-name>gearLeftInnerDoor</object-name>
+    <object-name>gearRightOuterDoor</object-name>
+    <object-name>gearRightInnerDoor</object-name>
 		<!--<object-name>gunpod</object-name>-->
 		<object-name>bottomAirInlet</object-name>
 		<!--<object-name>gearFront</object-name>
@@ -1899,7 +1899,7 @@
   <model>
     <name>interior</name>
     <usage>interior</usage>
-    <path>Aircraft/JA37/Models/ja37-interior.xml</path>
+    <path>Aircraft/JA37/Models/aj37-interior.xml</path>
   </model>
 
   <animation>
@@ -1983,14 +1983,14 @@
     <object-name>gearLeftBottom</object-name>
     <object-name>gearLeftTop</object-name>
     <object-name>gearLeftHinge</object-name>
-    <object-name>gearLeftDoorsOpen</object-name>
-    <object-name>gearLeftDoorsClosed</object-name>
     <object-name>gearRightMid</object-name>
     <object-name>gearRightBottom</object-name>
     <object-name>gearRightTop</object-name>
     <object-name>gearRightHinge</object-name>
-    <object-name>gearRightDoorsOpen</object-name>
-    <object-name>gearRightDoorsClosed</object-name>
+    <object-name>gearLeftOuterDoor</object-name>
+    <object-name>gearLeftInnerDoor</object-name>
+    <object-name>gearRightOuterDoor</object-name>
+    <object-name>gearRightInnerDoor</object-name>
     <object-name>bottomAirInlet</object-name>
   </effect>
 
@@ -2274,7 +2274,7 @@
     <value>23</value>
    </greater-than>
   </condition>
-  <property>orientation/heading-magnetic-deg</property>
+  <property>ja37/avionics/heading-magnetic-limited-deg</property>
   <factor>-1.0</factor>
   <!--<center>
    <x-m>-3.98169</x-m>
@@ -2313,11 +2313,11 @@
  <animation>
   <type>material</type> 
   <object-name>radarScreen</object-name>
-  <emission>  
-   <red>0.7</red> 
-   <green>0.7</green> 
-   <blue>0.7</blue>
-   <factor-prop>systems/electrical/dc-light</factor-prop>
+  <emission>
+      <red>1</red>
+      <green>1</green>
+      <blue>1</blue>
+      <factor-prop>controls/lighting/instruments-norm</factor-prop>
   </emission>
  </animation>
 
@@ -2470,7 +2470,7 @@
  <!--<animation>
   <type>select</type>
   <condition>
-    <property>ja37/supported/hud</property>
+    <property>ja37/supported/canvas</property>
   </condition>
   <object-name>hud</object-name>
   <object-name>hudStruts</object-name>
@@ -2480,7 +2480,7 @@
   <type>scale</type>
   <object-name>hud</object-name>
   <object-name>hudStruts</object-name>
-  <property>ja37/supported/hud</property>
+  <property>ja37/supported/canvas</property>
   <interpolation>
    <entry>
     <ind> 0.00 </ind>
@@ -3101,18 +3101,6 @@
 <!-- left  -->
 
 
- <animation>
-  <type>select</type>
-  <condition>
-    <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
-   <equals>
-    <property>gear/gear[1]/position-norm</property>
-    <value>0.0</value>
-   </equals>
-  </condition>
-  <object-name>gearLeftDoorsClosed</object-name>
- </animation>
-
  <!--<animation>
   <type>scale</type>
   <object-name>gearLeftDoorsClosed</object-name>
@@ -3221,7 +3209,6 @@
   <object-name>gearLeftWheel2</object-name>
   <object-name>gearLeftLight</object-name>
   <object-name>leftLandingLightGlare</object-name>
-  <object-name>gearLeftDoorsOpen</object-name>
   <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
   <interpolation>
    <entry>
@@ -3255,12 +3242,8 @@
   <type>select</type>
   <condition>
    <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
-   <greater-than>
-    <property>gear/gear[1]/position-norm</property>
-    <value>0.0</value>
-   </greater-than>
   </condition>
-  <object-name>gearLeftDoorsOpen</object-name>
+  <object-name>gearLeftOuterDoor</object-name>
  </animation>
 
  <!--<animation>
@@ -3413,31 +3396,65 @@
 
 <animation>
   <type>rotate</type>
-  <object-name>gearLeftDoorsOpen</object-name>
+  <object-name>gearLeftOuterDoor</object-name>
   <property>gear/gear[1]/position-norm</property><!-- auto MP transmit -->
   <interpolation>
    <entry>
     <ind> 0.0</ind>
-    <dep> 85.0</dep>
+    <dep> 0.0</dep>
    </entry>
    <entry>
     <ind> 0.75</ind>
-    <dep> 0.0</dep>
+    <dep> 92.5</dep>
    </entry>
    <entry>
     <ind> 1.0</ind>
-    <dep> 0.0</dep>
+    <dep>92.5</dep>
    </entry>
   </interpolation>
   <min-deg>0</min-deg>
-  <max-deg>90</max-deg>
+  <max-deg>92.5</max-deg>
   <axis>   
-   <x2-m>  3.10500 </x2-m>
-   <y2-m> -2.27236 </y2-m>
-   <z2-m> -0.40247 </z2-m>
-   <x1-m>  2.41235 </x1-m>
-   <y1-m> -2.27238 </y1-m>
-   <z1-m> -0.40247 </z1-m>
+   <x1-m>  3.15291 </x1-m>
+   <y1-m> -2.26718 </y1-m>
+   <z1-m> -0.37753 </z1-m>
+   <x2-m>  2.24979 </x2-m>
+   <y2-m> -2.26655 </y2-m>
+   <z2-m> -0.37756 </z2-m>
+  </axis>
+ </animation>
+
+  <animation>
+  <type>rotate</type>
+  <object-name>gearLeftInnerDoor</object-name>
+  <property>gear/gear[2]/position-norm</property><!-- auto MP transmit -->
+  <interpolation>
+   <entry>
+    <ind> 0.0</ind>
+    <dep> 0.0</dep>
+   </entry>
+   <entry>
+    <ind> 0.20</ind>
+    <dep> -130</dep>
+   </entry>
+   <entry>
+    <ind> 0.75</ind>
+    <dep> -130</dep>
+   </entry>
+   <entry>
+    <ind> 1.0</ind>
+    <dep>  0</dep>
+   </entry>
+  </interpolation>
+  <min-deg>-130</min-deg>
+  <max-deg>0</max-deg>
+  <axis>   
+   <x1-m>  3.05949 </x1-m>
+   <y1-m> -0.62357 </y1-m>
+   <z1-m> -0.66289 </z1-m>
+   <x2-m>  1.55473 </x2-m>
+   <y2-m> -0.62357 </y2-m>
+   <z2-m> -0.77957 </z2-m>
   </axis>
  </animation>
 
@@ -3633,18 +3650,6 @@
 
 <!--      right       -->
 
-  <animation>
-  <type>select</type>
-  <condition>
-    <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
-   <equals>
-    <property>gear/gear[2]/position-norm</property>
-    <value>0.0</value>
-   </equals>
-  </condition>
-  <object-name>gearRightDoorsClosed</object-name>
- </animation>
-
  <!--<animation>
   <type>scale</type>
   <object-name>gearRightDoorsClosed</object-name>
@@ -3781,12 +3786,8 @@
   <type>select</type>
   <condition>
    <property>sim/multiplay/generic/int[2]</property><!-- fdm/jsbsim/fcs/wings/serviceable -->
-   <greater-than>
-    <property>gear/gear[2]/position-norm</property>
-    <value>0.0</value>
-   </greater-than>
   </condition>
-  <object-name>gearRightDoorsOpen</object-name>
+  <object-name>gearRightOuterDoor</object-name>
  </animation>
 
  <!--<animation>
@@ -3910,6 +3911,7 @@
   <object-name>gearRightWheel1</object-name>
   <object-name>gearRightWheel2</object-name>
   <object-name>gearRightLight</object-name>
+  <object-name>gearRightHinge</object-name>
   <object-name>rightLandingLightGlare</object-name>
   <property>gear/gear[2]/position-norm</property><!-- auto MP transmit -->
   <interpolation>
@@ -3938,31 +3940,65 @@
 
 <animation>
   <type>rotate</type>
-  <object-name>gearRightDoorsOpen</object-name>
+  <object-name>gearRightOuterDoor</object-name>
   <property>gear/gear[2]/position-norm</property><!-- auto MP transmit -->
   <interpolation>
    <entry>
     <ind> 0.0</ind>
-    <dep> 80.0</dep>
+    <dep> 0.0</dep>
    </entry>
    <entry>
     <ind> 0.75</ind>
-    <dep> 0.0</dep>
+    <dep> -92.5</dep>
    </entry>
    <entry>
     <ind> 1.0</ind>
+    <dep>-92.5</dep>
+   </entry>
+  </interpolation>
+  <min-deg>-92.5</min-deg>
+  <max-deg>0</max-deg>
+  <axis>   
+   <x1-m>  3.15291 </x1-m>
+   <y1-m>  2.26718 </y1-m>
+   <z1-m> -0.37753 </z1-m>
+   <x2-m>  2.24979 </x2-m>
+   <y2-m>  2.26655 </y2-m>
+   <z2-m> -0.37756 </z2-m>
+  </axis>
+ </animation>
+
+ <animation>
+  <type>rotate</type>
+  <object-name>gearRightInnerDoor</object-name>
+  <property>gear/gear[2]/position-norm</property><!-- auto MP transmit -->
+  <interpolation>
+   <entry>
+    <ind> 0.0</ind>
     <dep> 0.0</dep>
+   </entry>
+   <entry>
+    <ind> 0.2</ind>
+    <dep> 130</dep>
+   </entry>
+   <entry>
+    <ind> 0.75</ind>
+    <dep> 130</dep>
+   </entry>
+   <entry>
+    <ind> 1.0</ind>
+    <dep>  0</dep>
    </entry>
   </interpolation>
   <min-deg>0</min-deg>
-  <max-deg>90</max-deg>
+  <max-deg>130</max-deg>
   <axis>   
-   <x1-m>  3.10500 </x1-m>
-   <y1-m>  2.27236 </y1-m>
-   <z1-m> -0.40247 </z1-m>
-   <x2-m>  2.41235 </x2-m>
-   <y2-m>  2.27238 </y2-m>
-   <z2-m> -0.40247 </z2-m>
+   <x1-m>  3.05949 </x1-m>
+   <y1-m>  0.62357 </y1-m>
+   <z1-m> -0.66289 </z1-m>
+   <x2-m>  1.55473 </x2-m>
+   <y2-m>  0.62357 </y2-m>
+   <z2-m> -0.77957 </z2-m>
   </axis>
  </animation>
 
@@ -4910,6 +4946,56 @@
   </model>
 
 <!-- Navigation lights -->
+
+  <model>
+    <path>Aircraft/JA37/Models/Effects/proc-als-lights/nav-light-left.xml</path>
+    <name>lightGlowALSLeft</name>
+        <offsets>
+          <x-m> 5.65783</x-m>
+          <y-m> -5.09762</y-m>
+          <z-m> -0.3954</z-m>
+        </offsets>
+  </model>
+
+  <model>
+    <path>Aircraft/JA37/Models/Effects/proc-als-lights/nav-light-right.xml</path>
+    <name>lightGlowALSRight</name>
+        <offsets>
+          <x-m> 5.65783</x-m>
+          <y-m> 5.09762</y-m>
+          <z-m> -0.3954</z-m>
+        </offsets>
+  </model>
+
+  <animation>
+    <type>select</type>
+    <object-name>lightGlowALSLeft</object-name>
+    <object-name>lightGlowALSRight</object-name>
+    <condition>
+      <equals>
+          <property>sim/rendering/shaders/skydome</property>
+          <value>1</value>
+      </equals>
+      <or><!-- nav: bit 3 -->
+        <equals>
+          <property>sim/multiplay/generic/int[9]</property>
+          <value>4</value>
+        </equals>
+        <equals>
+          <property>sim/multiplay/generic/int[9]</property>
+          <value>5</value>
+        </equals>
+        <equals>
+          <property>sim/multiplay/generic/int[9]</property>
+          <value>6</value>
+        </equals>            
+        <equals>
+          <property>sim/multiplay/generic/int[9]</property>
+          <value>7</value>
+        </equals>       
+      </or>
+    </condition>
+   </animation>
 
   <model>
     <path>Aircraft/JA37/Models/Effects/nav-light-glow-right.xml</path>

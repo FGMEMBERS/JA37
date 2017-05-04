@@ -37,6 +37,7 @@
                     <property>aero/coefficient/CNGnd</property>
                     <property>aero/coefficient/CNGndElevator</property>
                     <property>aero/coefficient/CNflaps</property>
+                    <property>aero/coefficient/CNgear</property>
                     <property>aero/coefficient/CNwave</property>
                     <property>aero/coefficient/CNBrake</property>
                     <property>aero/coefficient/CNTurbine</property>
@@ -80,6 +81,38 @@
                         </cos>
                     </product>
                 </sum>
+            </function>
+        </fcs_function>
+
+        <fcs_function name="systems/flight/drag-force-tank-lb">
+            <function>
+                    <product>
+                        <property>aero/coefficient/CATank</property>
+                        <cos>
+                            <property>aero/alpha-rad</property>
+                        </cos>
+                    </product>
+            </function>
+        </fcs_function>
+
+        <fcs_function name="systems/flight/drag-force-N">
+            <function>
+                <product>
+                    <property>systems/flight/drag-force-lb</property>
+                    <value>4.44822</value>
+                </product>
+            </function>
+        </fcs_function>
+
+        <fcs_function name="systems/flight/drag-force-clean-N">
+            <function>
+                <product>
+                    <difference>
+                        <property>systems/flight/drag-force-lb</property>
+                        <property>systems/flight/drag-force-tank-lb</property>
+                    </difference>
+                    <value>4.44822</value>
+                </product>
             </function>
         </fcs_function>
 
@@ -482,20 +515,109 @@
 
     </channel>
 
+    <channel execrate="4" name="investigate-intake-flow">
+
+        <!--<fcs_function name="propulsion/engine/intake-flow-number-factor">
+            <description>
+                         mil*factor
+                CA = ____________________________
+                     rho*intakeArea*freeflowspeed
+
+                     For mach 0.4 (AJ37):
+                CA = 1.3
+                intakeArea = 0.6 m^2 / 6.46 ft^2
+                freeflowspeed = velocities/uBody-fps
+                rho = atmosphere/rho-slugs_ft3
+                mil = propulsion/engine/MilThrust
+
+                          CA*rho*area*speed
+                factor = __________________
+                                mil
+
+
+                Test:
+                  fly 0.4M
+                  full mil thrust
+                  0m alt
+                  ISA conditions
+                  factor = 0.0001395
+            </description>
+            <function>
+                <quotient>
+                    <product>
+                        <value>1.3</value>
+                        <value>6.46</value>
+                        <property>atmosphere/rho-slugs_ft3</property>
+                        <property>/velocities/uBody-fps</property>
+                    </product>
+                    <property>propulsion/engine/mil-rate</property>
+                </quotient>
+            </function>
+        </fcs_function>-->
+
+    </channel>
+
     <channel execrate="4" name="instruments">
 
         <!-- used for animating epr gauge -->
 
+        <fcs_function name="propulsion/engine/mil-rate">
+            <function>
+                <!-- looked in JSBSim source code to find this formula for milthrust,
+                     for the AJ I use also JA max mil value as its only a factor -->
+                <product>
+                    <table>
+                        <independentVar lookup="row">propulsion/engine/n2</independentVar>
+                        <tableData>
+                             56.9 0
+                             57   1
+                        </tableData>
+                    </table>
+                    <sum>
+                        <product>
+                            <p>propulsion/engine/IdleThrust</p>
+                            <v>72100</v>
+                        </product>
+                        <product>
+                            <product>
+                                <difference>
+                                    <v>72100</v>
+                                    <product>
+                                        <p>propulsion/engine/IdleThrust</p>
+                                        <v>72100</v>
+                                    </product>
+                                </difference>
+                                <p>propulsion/engine/MilThrust</p>
+                            </product>
+                            <quotient>
+                                <difference>
+                                    <p>propulsion/engine/n2</p>
+                                    <v>57</v>
+                                </difference>
+                                <v>43</v>
+                            </quotient>
+                            <quotient>
+                                <difference>
+                                    <p>propulsion/engine/n2</p>
+                                    <v>57</v>
+                                </difference>
+                                <v>43</v>
+                            </quotient>
+                        </product>
+                    </sum>
+                </product>
+            </function>
+        </fcs_function>
+
         <fcs_function name="propulsion/engine/p7-p2">
             <function>
                 <table>
-                    <independentVar lookup="row">propulsion/engine/MilThrust</independentVar>
-                    <independentVar lookup="column">propulsion/engine/n2</independentVar>
+                    <independentVar lookup="row">propulsion/engine/mil-rate</independentVar>
                     <tableData>
-                                   57     100 
-                        0         1.0     1.00
-                        1         1.0     2.06 <!-- AJS-37 manual part 1, engine section -->
-                        1.6       1.0     2.70 <!-- extrapolated -->
+                         1650     1.00 <!-- extrapolated -->
+                         3000     1.02
+                        72100     2.06 <!-- AJS-37 manual part 1, engine section -->
+                       115000    2.705 <!-- extrapolated -->
                     </tableData>
                 </table>
             </function>
@@ -888,9 +1010,10 @@
             </test>
         </switch>
 
-        <lag_filter name="systems/flight/aoa-indicator">
+        <lag_filter name="systems/flight/aoa-indicator-locked">
             <input> systems/flight/aoa-indicator-direct </input>
             <c1> 5 </c1>
+            <output> systems/flight/aoa-indicator </output>
         </lag_filter>
 
         <!-- AJS-37 manual part 2, page 173 -->

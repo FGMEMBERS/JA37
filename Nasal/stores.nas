@@ -11,6 +11,9 @@ var MISSILE_FLYING = 2;
 var flareCount = -1;
 var flareStart = -1;
 
+var fireLog = events.LogBuffer.new(echo: 0);#compatible with older FG?
+var ecmLog = events.LogBuffer.new(echo: 0);#compatible with older FG?
+
 var jettisonAll = FALSE;
 
 input = {
@@ -691,6 +694,7 @@ var trigger_listener = func {
         } else {
           setprop("/sim/messages/atc", phrase);
         }
+        fireLog.push("Self: "~phrase);
         var next = TRUE;
         if (fired == "M71 Bomblavett" or fired == "M71 Bomblavett (Retarded)") {
           var ammo = getprop("payload/weight["~(armSelect-1)~"]/ammo");
@@ -900,6 +904,7 @@ var incoming_listener = func {
           #print("Missile launch detected at"~last_vector[2]~" from "~author);
           if (m2000 == TRUE or last_vector[2] == " "~callsign) {
             # its being fired at me
+
             #print("Incoming!");
             var enemy = radar_logic.getCallsign(author);
             if (enemy != nil) {
@@ -916,6 +921,7 @@ var incoming_listener = func {
                 while(clock > 360) {
                   clock = clock - 360;
                 }
+                ecmLog.push(last~sprintf("%d deg.", clock));
                 #print("incoming from "~clock);
                 if (clock >= 345 or clock < 15) {
                   playIncomingSound("12");
@@ -963,6 +969,19 @@ var incoming_listener = func {
                 }
                 if (clock >= 285 or clock <= 15) {
                   incomingLamp("11");
+                }
+
+                if (clock >= 345 or clock <= 105) {
+                  incomingLamp("2");
+                } 
+                if (clock >= 75 and clock <= 195) {
+                  incomingLamp("4");
+                }
+                if (clock >= 165 and clock <= 285) {
+                  incomingLamp("8");
+                }
+                if (clock >= 255 and clock <= 15) {
+                  incomingLamp("10");
                 }
                 return;
               }
@@ -1197,6 +1216,16 @@ var hasRockets = func (station) {
     loaded = ammo;
   }
   return loaded;
+}
+
+var count99 = func () {
+  for (var i = 0;i<6;i+=1) {
+    var type = getprop("payload/weight["~i~"]/selected");
+    if (type == "RB 99 Amraam") {
+      return ammoCount(i+1);
+    }
+  }
+  return 0;
 }
 
 var ammoCount = func (station) {
@@ -1844,6 +1873,7 @@ var main_weapons = func {
 }
 
 var selectNextWaypoint = func () {
+  if (getprop("ja37/avionics/cursor-on") != FALSE) {
   var active_wp = getprop("autopilot/route-manager/current-wp");
 
   if (active_wp == nil or active_wp < 0) {
@@ -1880,6 +1910,7 @@ var selectNextWaypoint = func () {
   var contact = radar_logic.ContactGPS.new(name.getValue(), coord);
 
   radar_logic.selection = contact;
+}
 }
 
 setprop("/sim/failure-manager/display-on-screen", FALSE);

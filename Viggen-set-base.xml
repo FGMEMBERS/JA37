@@ -8,7 +8,7 @@
 
 <PropertyList include="Systems/ja37-engines-off.xml">    <!-- change this to 'on' for fast testing/debugging -->
     <sim>
-        <aircraft-version>4.019</aircraft-version>
+        <aircraft-version>4.100</aircraft-version>
 
         <rating>
             <FDM type="int">4</FDM>
@@ -18,16 +18,18 @@
         </rating>
 
         <tags>
-            <!--<tag>saab</tag>
-        <tag>1-engine</tag>
-        <tag>1990s</tag>
-        <tag>combat</tag>-->
+            <!--<tag>saab</tag>-->
+            <tag>single-engine</tag>
             <tag>jet</tag>
             <tag>retractable-gear</tag>
             <tag>supersonic</tag>
             <tag>coldwar</tag>
             <tag>fighter</tag>
+            <tag>tricycle</tag>
+            <tag>1970s</tag>
             <tag>1980s</tag>
+            <tag>1990s</tag>
+            <tag>2000s</tag>
             <tag>stol</tag>
             <tag>cannard</tag>
             <tag>delta</tag>
@@ -81,6 +83,7 @@
             <path>ja37/hud/stroke-linewidth</path>
             <path>ai/submodels/submodel[2]/random</path>
             <path>ai/submodels/submodel[3]/random</path>
+            <path>ja37/displays/live-map</path>
             <!--<path>sim/model/livery/file</path>-->
         </aircraft-data>
 
@@ -141,10 +144,19 @@
             <z-offset-m type="double">-3.6</z-offset-m>
         </current-view>-->
 
+        <current-view>
+            <!-- Settings for mouse scroll wheel -->
+            <z-offset-dec-step type="double">0.0</z-offset-dec-step>
+            <z-offset-inc-step type="double">0.0</z-offset-inc-step>
+            <can-change-z-offset type="bool">false</can-change-z-offset>
+            <z-offset-min-m type="float">30.0</z-offset-min-m>
+            <z-offset-max-m type="float">300.0</z-offset-max-m>
+        </current-view>
+
         <view n="0">
             <internal userarchive="n">true</internal>
             <config>
-                <pitch-offset-deg type="double" userarchive="n">-25</pitch-offset-deg>
+                <pitch-offset-deg type="double" userarchive="n">-26</pitch-offset-deg>
                 <x-offset-m type="double" userarchive="n">0</x-offset-m>
                 <y-offset-m type="double" userarchive="n">0.74</y-offset-m>
                 <!-- remember to change eyepoint in JSB when changing this -->
@@ -301,6 +313,8 @@
             </dynamic>
         </view>
 
+        <crashed type="bool">false</crashed>
+
         <!--**********************************************************************
 
                                           Rendering
@@ -425,6 +439,9 @@
               <name>altitude_agl-m</name>
               <path>Aircraft/JA37/Systems/rules-misc.xml</path>
             </property-rule>
+            <property-rule n="102">
+                <path>Aircraft/JA37/Systems/mice-views.xml</path>
+            </property-rule>
         </systems>
 
         <!--**********************************************************************
@@ -436,10 +453,10 @@
         
         <replay>
             <buffer>
-                <high-res-time type="double">600</high-res-time>               <!-- default:   60 -->
+                <high-res-time type="double">60</high-res-time>               <!-- default:   60 -->
                 <medium-res-time type="double">1200</medium-res-time>          <!-- default:  600 -->
                 <low-res-time type="double">3600</low-res-time>                <!-- default: 3600 -->
-                <medium-res-sample-dt type="double">0.5</medium-res-sample-dt> <!-- default:  0.5 -->
+                <medium-res-sample-dt type="double">0.15</medium-res-sample-dt> <!-- default:  0.5 -->
                 <low-res-sample-dt type="double">5</low-res-sample-dt>         <!-- default:    5 -->
             </buffer>
         </replay>
@@ -468,7 +485,7 @@
         <autoReverseThrust userarchive="y" type="bool">false</autoReverseThrust>
         <supported>
             <old-custom-fails type="int">0</old-custom-fails>
-            <hud type="bool">false</hud>
+            <canvas type="bool">false</canvas>
             <radar type="bool">false</radar>
             <options type="bool">false</options>
             <landing-light type="bool">false</landing-light>
@@ -583,6 +600,7 @@
             <altimeters-calibrated type="bool">0</altimeters-calibrated>
             <primaryData type="bool">false</primaryData>
             <TN type="bool">false</TN>
+            <record-on type="bool">false</record-on>
             <vid type="bool">false</vid>
             <ignitionSys type="bool">false</ignitionSys>
             <startSys type="bool">false</startSys>
@@ -613,7 +631,14 @@
             <temp-halt-ap-pitch type="bool">true</temp-halt-ap-pitch>
             <welcome type="bool">false</welcome>
             <roll-trim-centered type="bool">true</roll-trim-centered>
+            <annunciator>
+                <serviceable type="bool">true</serviceable>
+            </annunciator>
         </avionics>
+        <displays>
+            <show-full-menus type="bool">true</show-full-menus>
+            <live-map userarchive="y" type="bool">true</live-map>
+        </displays>
         <systems>
             <oxygen-bottle-pressure type="double">0.0</oxygen-bottle-pressure>
             <oxygen-manometer type="double">0.0</oxygen-manometer>
@@ -796,9 +821,10 @@
                     <vortex type="double">1.0</vortex>
                 </function>
                 <drag>
-                    <!-- drag - Notice fuselage is about 0.024 at alpha=0 -->
-                    <gear type="double">        0.020</gear>                    <!-- fully extended -->
-                    <flaps type="double">       0.010</flaps>                    <!-- full 30 degrees downward deflection of canard flaps -->
+                    <!-- drag - Notice fuselage is about 0.010 at alpha=2 -->
+                    <!-- drag: flaps, gears and fuselage at 2 deg alpha must give 0.058 together to match data.-->
+                    <gear type="double">        0.045</gear>                    <!-- fully extended -->
+                    <flaps type="double">       0.0036</flaps>                    <!-- full 30 degrees downward deflection of canard flaps -->
                     <missile type="double">     0.0001444</missile> <!-- aim-9 -->
                     <drop-tank type="double">   0.0015</drop-tank>
                     <canopy type="double">      0.025</canopy>                    <!-- fully open -->
@@ -1219,10 +1245,14 @@
             <range>15000</range>            <!-- 15 Km -->
             <serviceable type="bool">true</serviceable>
             <twr1 type="bool">false</twr1>
+            <twr2 type="bool">false</twr2>
             <twr3 type="bool">false</twr3>
+            <twr4 type="bool">false</twr4>
             <twr5 type="bool">false</twr5>
             <twr7 type="bool">false</twr7>
+            <twr8 type="bool">false</twr8>
             <twr9 type="bool">false</twr9>
+            <twr10 type="bool">false</twr10>
             <twr11 type="bool">false</twr11>
         </radar>
         <head-up-display>
@@ -1256,12 +1286,17 @@
             <file>Aircraft/JA37/Nasal/ja37.nas</file>
             <file>Aircraft/JA37/Nasal/tyresmoke.nas</file>
             <file>Aircraft/JA37/Nasal/liveries.nas</file>
-            <file>Aircraft/JA37/Nasal/radar.nas</file>
             <file>Aircraft/JA37/Nasal/options.nas</file>
             <file>Aircraft/JA37/Nasal/chronograph.nas</file>
             <file>Aircraft/JA37/Nasal/track_target.nas</file>
             <file>Aircraft/JA37/Nasal/callsign.nas</file>
         </ja37>
+        <land>
+            <file>Aircraft/JA37/Nasal/landing-mode.nas</file>
+        </land>
+        <displays>
+            <file>Aircraft/JA37/Nasal/common-displays.nas</file>
+        </displays>
         <canvas_HUD>
             <file>Aircraft/JA37/Nasal/hud.nas</file>
         </canvas_HUD>
@@ -1305,9 +1340,6 @@
         <auto>
             <file>Aircraft/JA37/Nasal/autopilot.nas</file>
         </auto>
-        <land>
-            <file>Aircraft/JA37/Nasal/landing-mode.nas</file>
-        </land>
         <vector>
             <file>Aircraft/JA37/Nasal/vector.nas</file>
         </vector>
@@ -1462,7 +1494,7 @@
             <property>logging/missile/thrust-lbf</property>
            </entry>
         </log>-->
-        <log>
+        <!--<log>
            <filename>C:/Users/Nikolai/Documents/ja37_missile_test.csv</filename>
            <enabled>false</enabled>
            <interval-ms>10</interval-ms>
@@ -1476,6 +1508,32 @@
             <enabled>true</enabled>
             <title>LOSr</title>
             <property>logging/missile/LOS-rate</property>
+           </entry>
+        </log>-->
+        <log>
+           <filename>C:/Users/Nikolai/Documents/ja37_drag_test.csv</filename>
+           <enabled>false</enabled>
+           <interval-ms>100</interval-ms>
+           <delimiter>,</delimiter>
+           <entry>
+            <enabled>true</enabled>
+            <title>Cd-N</title>
+            <property>fdm/jsbsim/systems/flight/drag-force-N</property>
+           </entry>
+           <entry>
+            <enabled>true</enabled>
+            <title>Cd-c-N</title>
+            <property>fdm/jsbsim/systems/flight/drag-force-clean-N</property>
+           </entry>
+           <entry>
+            <enabled>true</enabled>
+            <title>AoA</title>
+            <property>orientation/alpha-deg</property>
+           </entry>
+           <entry>
+            <enabled>true</enabled>
+            <title>Vi</title>
+            <property>instrumentation/airspeed-indicator/indicated-speed-kmh</property>
            </entry>
         </log>
         <time-log type="string">0:0:0</time-log>
