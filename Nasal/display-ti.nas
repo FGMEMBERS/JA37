@@ -128,6 +128,17 @@ var FLIGHTDATA_OFF = 0;
 var CLEANMAP = 0;
 var PLACES   = 1;
 
+var MAIN_WEAPONS       =  8;
+var MAIN_SYSTEMS       =  9;
+var MAIN_DISPLAY       = 10;
+var MAIN_MISSION_DATA  = 11;
+var MAIN_FAILURES      = 12;
+var MAIN_CONFIGURATION = 13;
+
+var SVY_ELKA = 0;
+var SVY_RMAX = 1;
+var SVY_MI   = 2;
+
 var brightness = func {
 	bright += 1;
 };
@@ -174,10 +185,6 @@ var bGB = 0.75;
 var a = 1.0;#alpha
 var w = 1.0;#stroke width
 
-var fpi_min = 3;
-var fpi_med = 6;
-var fpi_max = 9;
-
 var maxTracks   = 32;# how many radar tracks can be shown at once in the TI (was 16)
 var maxMissiles = 6;
 var maxThreats  = 5;
@@ -191,8 +198,11 @@ var roundabout = func(x) {
 
 var clamp = func(v, min, max) { v < min ? min : v > max ? max : v };
 
+var circlePos = func (deg, radius) {
+	return [radius*math.cos(deg*D2R),radius*math.sin(deg*D2R)];
+}
 
-
+# notice the Swedish letter are missing accents {ÅÖÄ} due to them not being always read correct by Nasal/Canvas.
 
 var dictSE = {
 	'HORI': {'0': [TRUE, "AV"], '1': [TRUE, "RENS"], '2': [TRUE, "PA"]},
@@ -203,11 +213,14 @@ var dictSE = {
 	 		'1': [TRUE, "SLACK"], '2': [TRUE, "DL"], '4': [TRUE, "B"], '5': [TRUE, "UPOL"], '6': [TRUE, "TRAP"], '7': [TRUE, "MENY"],
 	 		'14': [TRUE, "JAKT"], '15': [FALSE, "HK"],'16': [FALSE, "APOL"], '17': [FALSE, "LA"], '18': [FALSE, "LF"], '19': [FALSE, "LB"],'20': [FALSE, "L"]},
 	'TRAP':{'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
-	 		'2': [TRUE, "INLA"], '3': [TRUE, "AVFY"], '4': [TRUE, "FALL"], '5': [TRUE, "MAN"], '6': [FALSE, "SATT"], '7': [TRUE, "MENY"], '14': [TRUE, "RENS"], '17': [FALSE, "ALLA"], '19': [TRUE, "NED"], '20': [TRUE, "UPP"]},
+	 		'2': [TRUE, "INLA"], '3': [TRUE, "AVFY"], '4': [TRUE, "FALL"], '5': [TRUE, "MAN"], '6': [FALSE, "SATT"], '7': [TRUE, "MENY"], '14': [TRUE, "RENS"],
+	 		'17': [FALSE, "ALLA"], '19': [TRUE, "NED"], '20': [TRUE, "UPP"]},
 	'10':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
-			'3': [TRUE, "ORTS"], '4': [TRUE, "TMAD"], '6': [TRUE, "SKAL"], '7': [TRUE, "MENY"], '14': [FALSE, "EOMR"], '15': [FALSE, "EOMR"], '16': [TRUE, "TID"], '17': [TRUE, "HORI"], '18': [FALSE, "HKM"], '19': [TRUE, "DAG"]},
+			'3': [TRUE, "ELKA"], '4': [TRUE, "ELKA"], '6': [TRUE, "SKAL"], '7': [TRUE, "MENY"], '14': [TRUE, "EOMR"], '15': [FALSE, "EOMR"], '16': [TRUE, "TID"],
+			'17': [TRUE, "HORI"], '18': [FALSE, "HKM"], '19': [TRUE, "DAG"]},
 	'11':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
-			'4': [FALSE, "EDIT"], '6': [FALSE, "EDIT"], '7': [TRUE, "MENY"], '14': [FALSE, "EDIT"], '15': [FALSE, "APOL"], '16': [FALSE, "EDIT"], '17': [FALSE, "UPOL"], '18': [FALSE, "EDIT"], '19': [TRUE, "EGLA"], '20': [FALSE, "KMAN"]},
+			'4': [FALSE, "EDIT"], '6': [FALSE, "EDIT"], '7': [TRUE, "MENY"], '14': [FALSE, "EDIT"], '15': [FALSE, "APOL"], '16': [FALSE, "EDIT"],
+			'17': [FALSE, "UPOL"], '18': [FALSE, "EDIT"], '19': [TRUE, "EGLA"], '20': [FALSE, "KMAN"]},
 	'12':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
 	 		'7': [TRUE, "MENY"], '19': [TRUE, "NED"], '20': [TRUE, "UPP"]},
 	'13':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
@@ -215,31 +228,34 @@ var dictSE = {
 	'GPS': {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
 			'7': [TRUE, "MENU"], '14': [TRUE, "FIX"], '15': [TRUE, "INIT"]},
 	'SVY': {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
-			'5': [FALSE, "FOST"], '6': [FALSE, "VISA"], '7': [TRUE, "MENU"], '14': [FALSE, "SKAL"], '15': [FALSE, "RMAX"], '16': [FALSE, "HMAX"]},
+			'5': [TRUE, "FOST"], '6': [TRUE, "VISA"], '7': [TRUE, "MENU"], '14': [TRUE, "SKAL"], '15': [TRUE, "RMAX"], '16': [TRUE, "HMAX"]},
 };
 
 var dictEN = {
 	'HORI': {'0': [TRUE, "OFF"], '1': [TRUE, "CLR"], '2': [TRUE, "ON"]},
-	'0':   {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "FLDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"]},
+	'0':   {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"]},
 	'8':   {'8': [TRUE, "T7L"], '9': [TRUE, "W7L"], '10': [TRUE, "F7L"], '11': [TRUE, "F7R"], '12': [TRUE, "W7R"], '13': [TRUE, "T7R"],
 			'7': [TRUE, "MENU"], '14': [TRUE, "AKAN"], '15': [FALSE, "CLR"]},
-    '9':   {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "FLDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
+    '9':   {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
 	 		'1': [TRUE, "OFF"], '2': [TRUE, "DL"], '4': [TRUE, "ROUT"], '5': [TRUE, "POLY"], '6': [TRUE, "TRAP"], '7': [TRUE, "MENU"],
 	 		'14': [TRUE, "FGHT"], '15': [FALSE, "ACRV"],'16': [FALSE, "APOL"], '17': [FALSE, "STPT"], '18': [FALSE, "LT"], '19': [FALSE, "LS"],'20': [FALSE, "L"]},
-	'TRAP':{'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "FLDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
-	 		'2': [TRUE, "LOCK"], '3': [TRUE, "FIRE"], '4': [TRUE, "ECM"], '5': [TRUE, "MAN"], '6': [FALSE, "LAND"], '7': [TRUE, "MENU"], '14': [TRUE, "CLR"], '17': [FALSE, "ALL"], '19': [TRUE, "DOWN"], '20': [TRUE, "UP"]},
-	'10':  {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "FLDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
-			'3': [TRUE, "TEXT"], '4': [TRUE, "AIRP"], '6': [TRUE, "SCAL"], '7': [TRUE, "MENU"], '14': [FALSE, "HSTL"], '15': [FALSE, "FRND"], '16': [TRUE, "TIME"], '17': [TRUE, "HORI"], '18': [FALSE, "CURS"], '19': [TRUE, "DAY"]},
-	'11':  {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "FLDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
-			'4': [FALSE, "EDIT"], '6': [FALSE, "EDIT"], '7': [TRUE, "MENU"], '14': [FALSE, "EDIT"], '15': [FALSE, "POLY"], '16': [FALSE, "EDIT"], '17': [FALSE, "UPOL"], '18': [FALSE, "EDIT"], '19': [TRUE, "MYPS"], '20': [FALSE, "MMAN"]},
-	'12':  {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "FLDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
+	'TRAP':{'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
+	 		'2': [TRUE, "LOCK"], '3': [TRUE, "FIRE"], '4': [TRUE, "ECM"], '5': [TRUE, "MAN"], '6': [FALSE, "LAND"], '7': [TRUE, "MENU"], '14': [TRUE, "CLR"],
+	 		'17': [FALSE, "ALL"], '19': [TRUE, "DOWN"], '20': [TRUE, "UP"]},
+	'10':  {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
+			'3': [TRUE, "EMAP"], '4': [TRUE, "EMAP"], '6': [TRUE, "SCAL"], '7': [TRUE, "MENU"], '14': [TRUE, "AAA"], '15': [FALSE, "AAA"], '16': [TRUE, "TIME"],
+			'17': [TRUE, "HORI"], '18': [FALSE, "CURS"], '19': [TRUE, "DAY"]},
+	'11':  {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
+			'4': [FALSE, "EDIT"], '6': [FALSE, "EDIT"], '7': [TRUE, "MENU"], '14': [FALSE, "EDIT"], '15': [FALSE, "LPOL"], '16': [FALSE, "EDIT"],
+			'17': [FALSE, "MPOL"], '18': [FALSE, "EDIT"], '19': [TRUE, "MYPS"], '20': [FALSE, "MMAN"]},
+	'12':  {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
 	 		'7': [TRUE, "MENU"], '19': [TRUE, "DOWN"], '20': [TRUE, "UP"]},
-	'13':  {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "FLDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
-			'5': [TRUE, "SIDE"], '6': [TRUE, "FR28"], '7': [TRUE, "MENU"], '14': [TRUE, "GPS"], '19': [FALSE, "LOCK"]},
-	'GPS': {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "FLDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
+	'13':  {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
+			'5': [TRUE, "SIDV"], '6': [TRUE, "FR28"], '7': [TRUE, "MENU"], '14': [TRUE, "GPS"], '19': [FALSE, "LOCK"]},
+	'GPS': {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
 			'7': [TRUE, "MENU"], '14': [TRUE, "FIX"], '15': [TRUE, "INIT"]},
-	'SIDE': {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "FLDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
-			'5': [FALSE, "WIN"], '6': [FALSE, "SHOW"], '7': [TRUE, "MENU"], '14': [FALSE, "SCAL"], '15': [FALSE, "RMAX"], '16': [FALSE, "AMAX"]},
+	'SIDV': {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
+			'5': [TRUE, "WIN"], '6': [TRUE, "SHOW"], '7': [TRUE, "MENU"], '14': [TRUE, "SCAL"], '15': [TRUE, "RMAX"], '16': [TRUE, "AMAX"]},
 };
 
 var TI = {
@@ -953,9 +969,31 @@ var TI = {
 		for(var i = 0; i < maxBases; i+=1) {
 			append(me.baseSmall,
 				me.base_grp.createChild("path")
-	               .moveTo(-15, 0)
-	               .arcSmallCW(15, 15, 0, 30, 0)
-	               .arcSmallCW(15, 15, 0, -30, 0)
+					# stipled circle
+	               .moveTo(circlePos(5, 15)[0], circlePos(5, 15)[1])
+	               .arcSmallCW(15, 15, 0, circlePos(40, 15)[0]-circlePos(5, 15)[0], circlePos(40, 15)[1]-circlePos(5, 15)[1])
+
+	               .moveTo(circlePos(50, 15)[0], circlePos(50, 15)[1])
+	               .arcSmallCW(15, 15, 0, circlePos(85, 15)[0]-circlePos(50, 15)[0], circlePos(85, 15)[1]-circlePos(50, 15)[1])
+
+	               .moveTo(circlePos(95, 15)[0], circlePos(95, 15)[1])
+	               .arcSmallCW(15, 15, 0, circlePos(130, 15)[0]-circlePos(95, 15)[0], circlePos(130, 15)[1]-circlePos(95, 15)[1])
+
+	               .moveTo(circlePos(140, 15)[0], circlePos(140, 15)[1])
+	               .arcSmallCW(15, 15, 0, circlePos(175, 15)[0]-circlePos(140, 15)[0], circlePos(175, 15)[1]-circlePos(140, 15)[1])
+
+	               .moveTo(circlePos(185, 15)[0], circlePos(185, 15)[1])
+	               .arcSmallCW(15, 15, 0, circlePos(220, 15)[0]-circlePos(185, 15)[0], circlePos(220, 15)[1]-circlePos(185, 15)[1])
+
+	               .moveTo(circlePos(230, 15)[0], circlePos(230, 15)[1])
+	               .arcSmallCW(15, 15, 0, circlePos(265, 15)[0]-circlePos(230, 15)[0], circlePos(265, 15)[1]-circlePos(230, 15)[1])
+
+	               .moveTo(circlePos(275, 15)[0], circlePos(275, 15)[1])
+	               .arcSmallCW(15, 15, 0, circlePos(310, 15)[0]-circlePos(275, 15)[0], circlePos(310, 15)[1]-circlePos(275, 15)[1])
+
+	               .moveTo(circlePos(320, 15)[0], circlePos(320, 15)[1])
+	               .arcSmallCW(15, 15, 0, circlePos(355, 15)[0]-circlePos(320, 15)[0], circlePos(355, 15)[1]-circlePos(320, 15)[1])
+
 	               .setStrokeLineWidth(w)
 	               .setColor(rTyrk,gTyrk,bTyrk, a));
 			append(me.baseSmallText,
@@ -1057,6 +1095,65 @@ var TI = {
     		.setTranslation(width, 4)
     		.set("z-index", 7)
     		.setFontSize(13, 1);
+
+    	me.rootSVY = root.createChild("group")
+    	    .set("z-index", 1);
+    	me.svy_grp = me.rootSVY.createChild("group");
+    	me.svy_grp2 = me.svy_grp.createChild("group")
+    		.set("z-index", 1);
+    	me.echoesAircraftSvy = [];
+		me.echoesAircraftSvyVector = [];
+		for (var i = 0; i < maxTracks; i += 1) {
+			var grp = me.svy_grp.createChild("group")
+				.set("z-index", maxTracks-i);
+			var vector = grp.createChild("path")
+			  .moveTo(0,  0)
+			  .lineTo(0, -1*MM2TEX)
+			  .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
+		      .setStrokeLineWidth(w);
+			grp.createChild("path")
+		      .moveTo(-5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 0,         0*MM2TEX)
+		      .moveTo( 5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 0,         0*MM2TEX)
+		      .moveTo(-5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 5*MM2TEX, 15*MM2TEX)
+		      .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
+		      .setStrokeLineWidth(w);
+		    append(me.echoesAircraftSvy, grp);
+		    append(me.echoesAircraftSvyVector, vector);
+		}
+		me.selfSymbolSvy = me.svy_grp.createChild("path")
+		      .moveTo(-5*MM2TEX,  15*MM2TEX)
+		      .lineTo( 0,       0*MM2TEX)
+		      .moveTo( 5*MM2TEX,  15*MM2TEX)
+		      .lineTo( 0,       0*MM2TEX)
+		      .moveTo(-5*MM2TEX,  15*MM2TEX)
+		      .lineTo( 5*MM2TEX,  15*MM2TEX)
+		      .setColor(rWhite,gWhite,bWhite, a)
+		      .set("z-index", 10)
+		      .setStrokeLineWidth(w);
+		me.selfVectorSvy = me.svy_grp.createChild("path")
+			  .moveTo(0,  0)
+			  .set("z-index", 10)
+			  .lineTo(1*MM2TEX, 0)
+			  .setColor(rWhite,gWhite,bWhite, a)
+		      .setStrokeLineWidth(w);
+
+		me.textSvyY = me.svy_grp.createChild("text")
+    		.setText("40 KM")
+    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setAlignment("left-bottom")
+    		.setTranslation(0, 0)
+    		.set("z-index", 7)
+    		.setFontSize(13, 1);
+    	me.textSvyX = me.svy_grp.createChild("text")
+    		.setText("120 KM")
+    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setAlignment("right-top")
+    		.setTranslation(0, 0)
+    		.set("z-index", 7)
+    		.setFontSize(13, 1);
 	},
 
 	new: func {
@@ -1128,7 +1225,7 @@ var TI = {
 
 		ti.menuShowMain = FALSE;
 		ti.menuShowFast = FALSE;
-		ti.menuMain     = -9;
+		ti.menuMain     = -MAIN_SYSTEMS;
 		ti.menuTrap     = FALSE;
 		ti.menuSvy      = FALSE;
 		ti.menuGPS      = FALSE;
@@ -1137,6 +1234,13 @@ var TI = {
 		ti.trapMan      = FALSE;
 		ti.trapLock     = FALSE;
 		ti.trapECM      = FALSE;
+
+		# SVY
+		ti.SVYactive    = FALSE;
+		ti.SVYscale     = SVY_ELKA;
+		ti.SVYrmax      = 120;# 15 -120
+		ti.SVYhmax      = 20;# 5, 10, 20 or 40 KM
+		ti.SVYsize      = 2;#size 1-3
 
 		ti.upText = FALSE;
 		ti.logPage = 0;
@@ -1164,7 +1268,7 @@ var TI = {
 		ti.BITok3 = FALSE;
 		ti.BITok4 = FALSE;
 		ti.active = TRUE;
-		
+		ti.showSAMs = TRUE;
 
       	return ti;
 	},
@@ -1213,6 +1317,7 @@ var TI = {
 		me.updateMap();
 		me.showMapScale();
 		M2TEX = 1/(meterPerPixel[zoom]*math.cos(getprop('/position/latitude-deg')*D2R));
+		me.updateSVY();# must be before displayRadarTracks and showselfvector
 		me.showSelfVector();
 		me.displayRadarTracks();
 		me.showRunway();
@@ -1224,8 +1329,7 @@ var TI = {
 		me.showSteerPointInfo();
 		me.showPoly();#must be under showSteerPoints
 		me.showTargetInfo();#must be after displayRadarTracks
-		me.showBasesNear();
-		
+		me.showBasesNear();		
 
 		settimer(func me.loop(), 0.5);
 	},
@@ -1276,7 +1380,7 @@ var TI = {
 				if (me.input.timeElapsed.getValue() - me.quickTimer > me.quickOpen) {
 					# close quick menu after 20 seconds, or after 3 seconds of a sidebutton press.
 					me.menuShowFast = FALSE;
-					me.menuMain = -9;
+					me.menuMain = -MAIN_SYSTEMS;
 					me.menuNoSub();
 				}
 			}
@@ -1299,7 +1403,7 @@ var TI = {
 			} else {
 				me.menuFastRoot.hide();
 			}
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == TRUE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
 				if (me.trapFire == TRUE) {
 					me.hideMap();
 					me.logRoot.show();
@@ -1351,7 +1455,7 @@ var TI = {
 				} else{
 					me.showMap();
 				}
-			} elsif (me.menuMain == 12) {
+			} elsif (me.menuMain == MAIN_FAILURES) {
 				# failure menu
 				me.hideMap();
 				me.logRoot.show();
@@ -1419,6 +1523,7 @@ var TI = {
 		me.logPage = 0;
 		me.mapCentrum.show();
 		me.rootCenter.show();
+		me.rootSVY.show();
 		me.logRoot.hide();
 		me.navBugs.show();
 		me.bottom_text_grp.show();
@@ -1429,6 +1534,7 @@ var TI = {
 		#
 		# Hide map and its overlays (due to a log page being displayed)
 		#
+		me.rootSVY.hide();
 		me.mapCentrum.hide();
 		me.rootCenter.hide();
 		me.bottom_text_grp.hide();
@@ -1440,9 +1546,9 @@ var TI = {
 		#
 		# Update the display of the main menus
 		#
-		for(var i = 8; i <= 13; i+=1) {
+		for(var i = MAIN_WEAPONS; i <= MAIN_CONFIGURATION; i+=1) {
 			me.menuButton[i].setText(me.compileMainMenu(i));
-			if (me.menuMain == 8) {
+			if (me.menuMain == MAIN_WEAPONS) {
 				me.updateMainMenuTextWeapons(i);
 			} else {
 				if (me.menuMain == i) {
@@ -1452,7 +1558,7 @@ var TI = {
 				}
 			}
 		}
-		if (me.menuMain == 8) {
+		if (me.menuMain == MAIN_WEAPONS) {
 			if (me.input.station.getValue() == 5) {
 				me.menuButtonBox[8].show();
 			} else {
@@ -1512,7 +1618,7 @@ var TI = {
 		if (me.interoperability == displays.METRIC) {
 			str = dictSE[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":''~math.abs(me.menuMain)))];
 		} else {
-			str = dictEN[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDE":''~math.abs(me.menuMain)))];
+			str = dictEN[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":''~math.abs(me.menuMain)))];
 		}
 		if (str != nil) {
 			str = str[''~button];
@@ -1535,10 +1641,10 @@ var TI = {
 			me.menuButton[i].setText(me.compileFastMenu(i));
 			me.menuButtonBox[i].hide();
 		}
-		if (me.menuMain == 8 and me.input.station.getValue() == 0) {
+		if (me.menuMain == MAIN_WEAPONS and me.input.station.getValue() == 0) {
 			me.menuButtonBox[14].show();
 		}
-		if (math.abs(me.menuMain) == 9) {
+		if (math.abs(me.menuMain) == MAIN_SYSTEMS) {
 			if (me.menuTrap == FALSE and me.dataLink == TRUE) {
 				me.menuButtonBox[2].show();
 			}
@@ -1579,19 +1685,15 @@ var TI = {
 				me.menuButtonBox[5].show();
 			}
 		}
-		if (me.menuMain == 10 and me.displayTime == TRUE) {
-			me.menuButtonBox[16].show();
+		if (me.menuMain == MAIN_DISPLAY) {
+			if (me.displayTime == TRUE) {
+				me.menuButtonBox[16].show();
+			}
+			if (me.day == TRUE) {
+				me.menuButtonBox[19].show();
+			}
 		}
-		if (me.menuMain == 10 and me.day == TRUE) {
-			me.menuButtonBox[19].show();
-		}
-		if (me.menuMain == 10 and me.mapPlaces == TRUE) {
-			me.menuButtonBox[3].show();
-		}
-		if (me.menuMain == 10 and me.basesEnabled == TRUE) {
-			me.menuButtonBox[4].show();
-		}
-		if (me.menuMain == 13 and me.menuGPS == TRUE and me.GPSinit == TRUE) {
+		if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == TRUE and me.GPSinit == TRUE) {
 			me.menuButtonBox[15].show();
 			if (radar_logic.selection != nil and radar_logic.selection.get_Callsign() == "FIX") {
 				me.menuButtonBox[14].show();
@@ -1604,7 +1706,7 @@ var TI = {
 		if (me.interoperability == displays.METRIC) {
 			str = dictSE[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":''~math.abs(me.menuMain)))];
 		} else {
-			str = dictEN[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDE":''~math.abs(me.menuMain)))];
+			str = dictEN[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":''~math.abs(me.menuMain)))];
 		}
 		if (str != nil) {
 			str = str[''~button];
@@ -1642,10 +1744,10 @@ var TI = {
 		if (me.interoperability == displays.METRIC) {
 			seven = me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":(dictSE['0'][''~math.abs(me.menuMain)][1])));
 		} else {
-			seven = me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDE":(dictEN['0'][''~math.abs(me.menuMain)][1])));
+			seven = me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":(dictEN['0'][''~math.abs(me.menuMain)][1])));
 		}
 		me.menuButtonSub[7].setText(me.vertStr(seven));
-		if (me.menuMain == 10) {
+		if (me.menuMain == MAIN_DISPLAY) {
 			#show flight data
 			me.menuButtonSub[17].show();
 			me.menuButtonSubBox[17].show();
@@ -1669,8 +1771,32 @@ var TI = {
 			if (me.day == FALSE) {
 				me.menuButtonSubBox[19].show();
 			}
+
+			# place names overlay
+			me.menuButtonSub[3].setText(me.vertStr("MAX"));
+			me.menuButtonSub[3].show();
+			if (me.mapPlaces == TRUE) {
+				me.menuButtonSubBox[3].show();
+			}
+
+			# airports overlay
+			me.menuButtonSub[4].setText(me.vertStr(me.interoperability == displays.METRIC?"TMAD":"AIRP"));
+			me.menuButtonSub[4].show();
+			if (me.basesEnabled == TRUE) {
+				me.menuButtonSubBox[4].show();
+			}
+
+			# airports overlay
+			me.menuButtonSub[14].setText(me.vertStr(me.interoperability == displays.METRIC?"FI":"HSTL"));
+			me.menuButtonSub[14].show();
+			if (me.showSAMs == TRUE) {
+				me.menuButtonSubBox[14].show();
+			}
+
+			me.menuButtonSub[15].setText(me.vertStr(me.interoperability == displays.METRIC?"EGET":"FRND"));
+			me.menuButtonSub[15].show();
 		}
-		if (math.abs(me.menuMain) == 9 and me.menuTrap == FALSE) {
+		if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 			# radar in attack or fight mode
 			var ft = nil;
 			if (me.interoperability == displays.METRIC) {
@@ -1684,7 +1810,7 @@ var TI = {
 			}
 			me.menuButtonSub[14].show();
 		}
-		if (me.menuMain == 13 and me.menuGPS == FALSE and me.menuSvy == FALSE) {
+		if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == FALSE and me.menuSvy == FALSE) {
 			# use top or belly antaenna
 			var ant = nil;
 			if (me.interoperability == displays.METRIC) {
@@ -1695,6 +1821,34 @@ var TI = {
 			me.menuButtonSub[6].setText(me.vertStr(ant));
 			me.menuButtonSub[6].show();
 			me.menuButtonSubBox[6].show();
+		}
+		if (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == TRUE) {
+			# side view configuration
+			me.menuButtonSub[5].setText(me.vertStr(""~me.SVYsize));
+			me.menuButtonSub[5].show();
+			me.menuButtonSubBox[5].show();
+
+			me.menuButtonSub[6].setText(me.vertStr(me.interoperability == displays.METRIC?"ALLT":"ALL"));
+			me.menuButtonSub[6].show();
+			me.menuButtonSubBox[6].show();
+
+			var skal = nil;
+			if (me.interoperability == displays.METRIC) {
+				skal = me.SVYscale==SVY_ELKA?"ELKA":(me.SVYscale==SVY_MI?"MI":"RMAX");
+			} else {
+				skal = me.SVYscale==SVY_ELKA?"EMAP":(me.SVYscale==SVY_MI?"MI":"RMAX");
+			}
+			me.menuButtonSub[14].setText(me.vertStr(skal));
+			me.menuButtonSub[14].show();
+			me.menuButtonSubBox[14].show();
+
+			me.menuButtonSub[15].setText(me.vertStr(sprintf("%d", me.SVYrmax*1000*M2NM)));
+			me.menuButtonSub[15].show();
+			me.menuButtonSubBox[15].show();
+
+			me.menuButtonSub[16].setText(me.vertStr(sprintf("%d", me.SVYhmax*M2FT)));
+			me.menuButtonSub[16].show();
+			me.menuButtonSubBox[16].show();
 		}
 	},
 
@@ -1728,11 +1882,7 @@ var TI = {
 	showSVY: func {
 		# side view
 		if (!me.active) return;
-		me.menuMain = 13;
-		me.menuNoSub();			
-		me.menuSvy = TRUE;
-		me.menuShowMain = TRUE;
-		me.menuShowFast = TRUE;
+		me.SVYactive = !me.SVYactive;
 	},
 
 	showECM: func {
@@ -1740,7 +1890,7 @@ var TI = {
 		if (!me.active) return;
 
 		# tact ecm report (todo: show current ecm instead)
-		me.menuMain = 9;
+		me.menuMain = MAIN_SYSTEMS;
 		me.menuNoSub();
 		me.menuTrap = TRUE;
 		me.menuShowFast = TRUE;
@@ -1799,7 +1949,50 @@ var TI = {
 	########################################################################################################
 	########################################################################################################
 
-	
+	updateSVY: func {
+		# update and display side view
+		if (me.SVYactive == TRUE) {
+			me.svy_grp2.removeAllChildren();
+			me.svy_grp2.createChild("path")
+				.moveTo(width*0.05, height*0.05)
+				.vert(height*0.125+height*0.125*me.SVYsize-height*0.10)
+				.horiz(width*0.90)
+				.setStrokeLineWidth(w)
+				.setColor(rWhite,gWhite,bWhite,a);
+
+			me.SVYoriginX = width*0.05;
+			me.SVYoriginY = height*0.125+height*0.125*me.SVYsize-height*0.05;
+			me.SVYwidth   = width*0.90;
+			me.SVYheight  = height*0.125+height*0.125*me.SVYsize-height*0.10;
+			me.SVYalt     = me.SVYhmax*1000;#meter
+			me.SVYrange   = me.SVYscale==SVY_MI?me.input.radarRange.getValue():(me.SVYscale==SVY_RMAX?me.SVYrmax*1000:me.SVYwidth/M2TEX);#meter
+
+			me.selfSymbolSvy.setTranslation(me.SVYoriginX, me.SVYoriginY-me.SVYheight*me.input.alt_ft.getValue()*FT2M/me.SVYalt);
+			me.selfSymbolSvy.setRotation(90*D2R);
+			me.selfVectorSvy.setTranslation(me.SVYoriginX, me.SVYoriginY-me.SVYheight*me.input.alt_ft.getValue()*FT2M/me.SVYalt);
+			#me.selfVectorSvy.setRotation(90*D2R);
+
+			var textX = "";
+
+			if (me.interoperability == displays.METRIC) {
+				textX = sprintf("%d KM" ,me.SVYrange*0.001);
+				textY = sprintf("%d KM" ,me.SVYhmax);
+			} else {
+				textX = sprintf("%d NM" ,me.SVYrange*M2NM);
+				textY = sprintf("%dK FT" ,me.SVYhmax*M2FT);
+			}
+
+			me.textSvyX.setText(textX);
+			me.textSvyY.setText(textY);
+			me.textSvyY.setTranslation(me.SVYoriginX, height*0.05);
+			me.textSvyX.setTranslation(width*0.95, height*0.125+height*0.125*me.SVYsize-height*0.05);
+
+			me.svy_grp.update();
+			me.svy_grp.show();
+		} else {
+			me.svy_grp.hide();
+		}
+	},
 
 	updateBasesNear: func {
 		if (me.basesEnabled == TRUE) {
@@ -1872,208 +2065,81 @@ var TI = {
 	},
 
 	showMapScale: func {
-		# improve this bloated code
 		if (me.mapshowing == TRUE and me.menuShowFast == FALSE) {
+			var tick1 = 0;
+			var tick2 = 0;
+			var tick3 = 0;
 			if (me.interoperability == displays.METRIC) {
 				if (zoom == 4) {
-					me.mapScaleTick1.setTranslation(0, -1000000*M2TEX);
-					me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -1000000*M2TEX);
-					me.mapScaleTick2.setTranslation(0, -2000000*M2TEX);
-					me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -2000000*M2TEX);
-					me.mapScaleTick3.setTranslation(0, -3000000*M2TEX);
-					me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -3000000*M2TEX);
-					me.mapScaleTick1Txt.setText("1000");
-					me.mapScaleTick2Txt.setText("2000");
-					me.mapScaleTick3Txt.setText("3000");
-					me.mapScaleTickM1.setTranslation(0, 1000000*M2TEX);
-					me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, 1000000*M2TEX);
-					me.mapScaleTickM2.setTranslation(0, 2000000*M2TEX);
-					me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, 2000000*M2TEX);
-					me.mapScaleTickM3.setTranslation(0, 3000000*M2TEX);
-					me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, 3000000*M2TEX);
-					me.mapScaleTickM1Txt.setText("-1000");
-					me.mapScaleTickM2Txt.setText("-2000");
-					me.mapScaleTickM3Txt.setText("-3000");
+					tick1 = 1000;
 				} elsif (zoom == 7) {
-					me.mapScaleTick1.setTranslation(0, -100000*M2TEX);
-					me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -100000*M2TEX);
-					me.mapScaleTick2.setTranslation(0, -200000*M2TEX);
-					me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -200000*M2TEX);
-					me.mapScaleTick3.setTranslation(0, -300000*M2TEX);
-					me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -300000*M2TEX);
-					me.mapScaleTick1Txt.setText("100");
-					me.mapScaleTick2Txt.setText("200");
-					me.mapScaleTick3Txt.setText("300");
-					me.mapScaleTickM1.setTranslation(0, 100000*M2TEX);
-					me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, 100000*M2TEX);
-					me.mapScaleTickM2.setTranslation(0, 200000*M2TEX);
-					me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, 200000*M2TEX);
-					me.mapScaleTickM3.setTranslation(0, 300000*M2TEX);
-					me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, 300000*M2TEX);
-					me.mapScaleTickM1Txt.setText("-100");
-					me.mapScaleTickM2Txt.setText("-200");
-					me.mapScaleTickM3Txt.setText("-300");
+					tick1 = 150;
 				} elsif (zoom == 9) {
-					me.mapScaleTick1.setTranslation(0, -25000*M2TEX);
-					me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -25000*M2TEX);
-					me.mapScaleTick2.setTranslation(0, -50000*M2TEX);
-					me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -50000*M2TEX);
-					me.mapScaleTick3.setTranslation(0, -75000*M2TEX);
-					me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -75000*M2TEX);
-					me.mapScaleTick1Txt.setText("25");
-					me.mapScaleTick2Txt.setText("50");
-					me.mapScaleTick3Txt.setText("75");
-					me.mapScaleTickM1.setTranslation(0, 25000*M2TEX);
-					me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, 25000*M2TEX);
-					me.mapScaleTickM2.setTranslation(0, 50000*M2TEX);
-					me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, 50000*M2TEX);
-					me.mapScaleTickM3.setTranslation(0, 75000*M2TEX);
-					me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, 75000*M2TEX);
-					me.mapScaleTickM1Txt.setText("-25");
-					me.mapScaleTickM2Txt.setText("-50");
-					me.mapScaleTickM3Txt.setText("-75");
+					tick1 = 35;
 				} elsif (zoom == 11) {
-					me.mapScaleTick1.setTranslation(0, -5000*M2TEX);
-					me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -5000*M2TEX);
-					me.mapScaleTick2.setTranslation(0, -10000*M2TEX);
-					me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -10000*M2TEX);
-					me.mapScaleTick3.setTranslation(0, -15000*M2TEX);
-					me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -15000*M2TEX);
-					me.mapScaleTick1Txt.setText("5");
-					me.mapScaleTick2Txt.setText("10");
-					me.mapScaleTick3Txt.setText("15");
-					me.mapScaleTickM1.setTranslation(0, 5000*M2TEX);
-					me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, 5000*M2TEX);
-					me.mapScaleTickM2.setTranslation(0, 10000*M2TEX);
-					me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, 10000*M2TEX);
-					me.mapScaleTickM3.setTranslation(0, 15000*M2TEX);
-					me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, 15000*M2TEX);
-					me.mapScaleTickM1Txt.setText("-5");
-					me.mapScaleTickM2Txt.setText("-10");
-					me.mapScaleTickM3Txt.setText("-15");
+					tick1 = 10;
 				} elsif (zoom == 13) {
-					me.mapScaleTick1.setTranslation(0, -2000*M2TEX);
-					me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -2000*M2TEX);
-					me.mapScaleTick2.setTranslation(0, -4000*M2TEX);
-					me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -4000*M2TEX);
-					me.mapScaleTick3.setTranslation(0, -6000*M2TEX);
-					me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -6000*M2TEX);
-					me.mapScaleTick1Txt.setText("2");
-					me.mapScaleTick2Txt.setText("4");
-					me.mapScaleTick3Txt.setText("6");
-					me.mapScaleTickM1.setTranslation(0, 2000*M2TEX);
-					me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, 2000*M2TEX);
-					me.mapScaleTickM2.setTranslation(0, 4000*M2TEX);
-					me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, 4000*M2TEX);
-					me.mapScaleTickM3.setTranslation(0, 6000*M2TEX);
-					me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, 6000*M2TEX);
-					me.mapScaleTickM1Txt.setText("-2");
-					me.mapScaleTickM2Txt.setText("-4");
-					me.mapScaleTickM3Txt.setText("-6");
+					tick1 = 2;
 				}
+				tick2 = tick1*2;
+				tick3 = tick1*3;
+				me.mapScaleTick1.setTranslation(0, -tick1*M2TEX*1000);
+				me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -tick1*M2TEX*1000);
+				me.mapScaleTick2.setTranslation(0, -tick2*M2TEX*1000);
+				me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -tick2*M2TEX*1000);
+				me.mapScaleTick3.setTranslation(0, -tick3*M2TEX*1000);
+				me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -tick3*M2TEX*1000);
+				me.mapScaleTick1Txt.setText(""~tick1);
+				me.mapScaleTick2Txt.setText(""~tick2);
+				me.mapScaleTick3Txt.setText(""~tick3);
+				me.mapScaleTickM1.setTranslation(0, tick1*M2TEX*1000);
+				me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, tick1*M2TEX*1000);
+				me.mapScaleTickM2.setTranslation(0, tick2*M2TEX*1000);
+				me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, tick2*M2TEX*1000);
+				me.mapScaleTickM3.setTranslation(0, tick3*M2TEX*1000);
+				me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, tick3*M2TEX*1000);
+				me.mapScaleTickM1Txt.setText("-"~tick1);
+				me.mapScaleTickM2Txt.setText("-"~tick2);
+				me.mapScaleTickM3Txt.setText("-"~tick3);
 			} else {
 				if (zoom == 4) {
-					me.mapScaleTick1.setTranslation(0, -500*M2TEX*NM2M);
-					me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -500*M2TEX*NM2M);
-					me.mapScaleTick2.setTranslation(0, -1000*M2TEX*NM2M);
-					me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -1000*M2TEX*NM2M);
-					me.mapScaleTick3.setTranslation(0, -1500*M2TEX*NM2M);
-					me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -1500*M2TEX*NM2M);
-					me.mapScaleTick1Txt.setText("500");
-					me.mapScaleTick2Txt.setText("1000");
-					me.mapScaleTick3Txt.setText("1500");
-					me.mapScaleTickM1.setTranslation(0, 500*M2TEX*NM2M);
-					me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, 500*M2TEX*NM2M);
-					me.mapScaleTickM2.setTranslation(0, 1000*M2TEX*NM2M);
-					me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, 1000*M2TEX*NM2M);
-					me.mapScaleTickM3.setTranslation(0, 1500*M2TEX*NM2M);
-					me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, 1500*M2TEX*NM2M);
-					me.mapScaleTickM1Txt.setText("-500");
-					me.mapScaleTickM2Txt.setText("-1000");
-					me.mapScaleTickM3Txt.setText("-1500");
+					tick1 = 500;
 				} elsif (zoom == 7) {
-					me.mapScaleTick1.setTranslation(0, -75*M2TEX*NM2M);
-					me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -75*M2TEX*NM2M);
-					me.mapScaleTick2.setTranslation(0, -150*M2TEX*NM2M);
-					me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -150*M2TEX*NM2M);
-					me.mapScaleTick3.setTranslation(0, -225*M2TEX*NM2M);
-					me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -225*M2TEX*NM2M);
-					me.mapScaleTick1Txt.setText("75");
-					me.mapScaleTick2Txt.setText("150");
-					me.mapScaleTick3Txt.setText("225");
-					me.mapScaleTickM1.setTranslation(0, 75*M2TEX*NM2M);
-					me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, 75*M2TEX*NM2M);
-					me.mapScaleTickM2.setTranslation(0, 150*M2TEX*NM2M);
-					me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, 150*M2TEX*NM2M);
-					me.mapScaleTickM3.setTranslation(0, 225*M2TEX*NM2M);
-					me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, 225*M2TEX*NM2M);
-					me.mapScaleTickM1Txt.setText("-75");
-					me.mapScaleTickM2Txt.setText("-150");
-					me.mapScaleTickM3Txt.setText("-225");
+					tick1 =  75;
 				} elsif (zoom == 9) {
-					me.mapScaleTick1.setTranslation(0, -20*M2TEX*NM2M);
-					me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -20*M2TEX*NM2M);
-					me.mapScaleTick2.setTranslation(0, -40*M2TEX*NM2M);
-					me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -40*M2TEX*NM2M);
-					me.mapScaleTick3.setTranslation(0, -60*M2TEX*NM2M);
-					me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -60*M2TEX*NM2M);
-					me.mapScaleTick1Txt.setText("20");
-					me.mapScaleTick2Txt.setText("40");
-					me.mapScaleTick3Txt.setText("60");
-					me.mapScaleTickM1.setTranslation(0, 20*M2TEX*NM2M);
-					me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, 20*M2TEX*NM2M);
-					me.mapScaleTickM2.setTranslation(0, 40*M2TEX*NM2M);
-					me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, 40*M2TEX*NM2M);
-					me.mapScaleTickM3.setTranslation(0, 60*M2TEX*NM2M);
-					me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, 60*M2TEX*NM2M);
-					me.mapScaleTickM1Txt.setText("-20");
-					me.mapScaleTickM2Txt.setText("-40");
-					me.mapScaleTickM3Txt.setText("-60");
+					tick1 =  20;
 				} elsif (zoom == 11) {
-					me.mapScaleTick1.setTranslation(0, -4*M2TEX*NM2M);
-					me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -4*M2TEX*NM2M);
-					me.mapScaleTick2.setTranslation(0, -8*M2TEX*NM2M);
-					me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -8*M2TEX*NM2M);
-					me.mapScaleTick3.setTranslation(0, -12*M2TEX*NM2M);
-					me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -12*M2TEX*NM2M);
-					me.mapScaleTick1Txt.setText("4");
-					me.mapScaleTick2Txt.setText("8");
-					me.mapScaleTick3Txt.setText("12");
-					me.mapScaleTickM1.setTranslation(0, 4*M2TEX*NM2M);
-					me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, 4*M2TEX*NM2M);
-					me.mapScaleTickM2.setTranslation(0, 8*M2TEX*NM2M);
-					me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, 8*M2TEX*NM2M);
-					me.mapScaleTickM3.setTranslation(0, 12*M2TEX*NM2M);
-					me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, 12*M2TEX*NM2M);
-					me.mapScaleTickM1Txt.setText("-4");
-					me.mapScaleTickM2Txt.setText("-8");
-					me.mapScaleTickM3Txt.setText("-12");
+					tick1 =   4;
 				} elsif (zoom == 13) {
-					me.mapScaleTick1.setTranslation(0, -1*M2TEX*NM2M);
-					me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -1*M2TEX*NM2M);
-					me.mapScaleTick2.setTranslation(0, -2*M2TEX*NM2M);
-					me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -2*M2TEX*NM2M);
-					me.mapScaleTick3.setTranslation(0, -3*M2TEX*NM2M);
-					me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -3*M2TEX*NM2M);
-					me.mapScaleTick1Txt.setText("1");
-					me.mapScaleTick2Txt.setText("2");
-					me.mapScaleTick3Txt.setText("3");
-					me.mapScaleTickM1.setTranslation(0, 1*M2TEX*NM2M);
-					me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, 1*M2TEX*NM2M);
-					me.mapScaleTickM2.setTranslation(0, 2*M2TEX*NM2M);
-					me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, 2*M2TEX*NM2M);
-					me.mapScaleTickM3.setTranslation(0, 3*M2TEX*NM2M);
-					me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, 3*M2TEX*NM2M);
-					me.mapScaleTickM1Txt.setText("-1");
-					me.mapScaleTickM2Txt.setText("-2");
-					me.mapScaleTickM3Txt.setText("-3");
+					tick1 =   1;
 				}
+				tick2 = tick1*2;
+				tick3 = tick1*3;
+				me.mapScaleTick1.setTranslation(0, -tick1*M2TEX*NM2M);
+				me.mapScaleTick1Txt.setTranslation(me.mapScaleTickPosTxtX, -tick1*M2TEX*NM2M);
+				me.mapScaleTick2.setTranslation(0, -tick2*M2TEX*NM2M);
+				me.mapScaleTick2Txt.setTranslation(me.mapScaleTickPosTxtX, -tick2*M2TEX*NM2M);
+				me.mapScaleTick3.setTranslation(0, -tick3*M2TEX*NM2M);
+				me.mapScaleTick3Txt.setTranslation(me.mapScaleTickPosTxtX, -tick3*M2TEX*NM2M);
+				me.mapScaleTick1Txt.setText(""~tick1);
+				me.mapScaleTick2Txt.setText(""~tick2);
+				me.mapScaleTick3Txt.setText(""~tick3);
+				me.mapScaleTickM1.setTranslation(0, tick1*M2TEX*NM2M);
+				me.mapScaleTickM1Txt.setTranslation(me.mapScaleTickPosTxtX, tick1*M2TEX*NM2M);
+				me.mapScaleTickM2.setTranslation(0, tick2*M2TEX*NM2M);
+				me.mapScaleTickM2Txt.setTranslation(me.mapScaleTickPosTxtX, tick2*M2TEX*NM2M);
+				me.mapScaleTickM3.setTranslation(0, tick3*M2TEX*NM2M);
+				me.mapScaleTickM3Txt.setTranslation(me.mapScaleTickPosTxtX, tick3*M2TEX*NM2M);
+				me.mapScaleTickM1Txt.setText("-"~tick1);
+				me.mapScaleTickM2Txt.setText("-"~tick2);
+				me.mapScaleTickM3Txt.setText("-"~tick3);
 			}
 			me.mapScale.show();
 		} else {
 			me.mapScale.hide();
 		}
 	},
+
 	showTargetInfo: func {
 		if (me.mapshowing == TRUE and me.input.currentMode.getValue() == displays.COMBAT and radar_logic.selection != nil and radar_logic.selection.isPainted() == TRUE) {
 			# this is info about the locked target.
@@ -2264,7 +2330,7 @@ var TI = {
 
   	showTime: func {
 		if (me.displayTime == TRUE) {
-			me.textTime.setText(getprop("sim/time/gmt-string")~" Z");# should really be local time
+			me.textTime.setText(getprop("sim/time/gmt-string")~" Z  ");# should really be local time
 			me.textTime.show();
 		} else {
 			me.textTime.hide();
@@ -2370,9 +2436,11 @@ var TI = {
 
 	showBottomText: func {
 		#clip is in canvas coordinates
-		me.clip2 = 0~"px, "~width~"px, "~(height-height*0.1-height*0.025*me.upText)~"px, "~0~"px";
+		me.clip2 = (me.SVYactive*height*0.125+me.SVYactive*height*0.125*me.SVYsize)~"px, "~width~"px, "~(height-height*0.1-height*0.025*me.upText)~"px, "~0~"px";
 		me.rootCenter.set("clip", "rect("~me.clip2~")");#top,right,bottom,left
 		me.mapCentrum.set("clip", "rect("~me.clip2~")");#top,right,bottom,left
+		me.clip3 = 0~"px, "~width~"px, "~(me.SVYactive*height*0.125+me.SVYactive*height*0.125*me.SVYsize)~"px, "~0~"px";
+		me.svy_grp.set("clip", "rect("~me.clip3~")");#top,right,bottom,left
 		me.bottom_text_grp.setTranslation(0,-height*0.025*me.upText);
 		me.textBArmType.setText(displays.common.currArmNameSh);
 		me.ammo = armament.ammoCount(me.input.station.getValue());
@@ -2572,9 +2640,9 @@ var TI = {
 	displayRadarTracks: func () {
 
 	  	var mode = canvas_HUD.mode;
-		me.threatIndex = -1;
+		me.threatIndex  = -1;
 		me.missileIndex = -1;
-	    me.track_index = 1;
+	    me.track_index  = 1;
 	    me.isGPS = FALSE;
 	    me.selection_updated = FALSE;
 	    me.tgt_dist = 1000000;
@@ -2597,6 +2665,7 @@ var TI = {
 				#hide the the rest unused echoes
 				for(var i = me.track_index; i < maxTracks ; i+=1) {
 			  		me.echoesAircraft[i].hide();
+			  		me.echoesAircraftSvy[i].hide();
 				}
 			}
 			if(me.threatIndex < maxThreats-1) {
@@ -2613,6 +2682,9 @@ var TI = {
 			}
 			if(me.selection_updated == FALSE) {
 				me.echoesAircraft[0].hide();
+				if (me.SVYactive == TRUE) {
+					me.echoesAircraftSvy[0].hide();
+				}
 				me.tgt_dist = nil;
 	          	me.tgt_alt  = nil;
 			} else {
@@ -2656,6 +2728,7 @@ var TI = {
 		    	me.gpsSymbol.show();
 		    	me.isGPS = TRUE;
 		    	me.echoesAircraft[me.currentIndexT].hide();
+		    	me.echoesAircraftSvy[me.currentIndexT].hide();
 		    } elsif (me.ordn == FALSE) {
 		    	me.echoesAircraft[me.currentIndexT].setTranslation(me.pos_xx, me.pos_yy);
 			    if (me.tgtHeading != nil) {
@@ -2670,6 +2743,27 @@ var TI = {
 		    	}
 				me.echoesAircraft[me.currentIndexT].show();
 				me.echoesAircraft[me.currentIndexT].update();
+				if (me.SVYactive == TRUE) {
+					me.altsvy  = contact.get_altitude()*FT2M;
+					me.distsvy = contact.get_Coord().distance_to(geo.aircraft_position());
+					me.echoesAircraftSvy[me.currentIndexT].setTranslation(me.SVYoriginX+me.SVYwidth*me.distsvy/me.SVYrange, me.SVYoriginY-me.SVYheight*me.altsvy/me.SVYalt);
+				    if (me.tgtHeading != nil) {
+				        me.relHeading = me.tgtHeading - me.myHeading;
+				        #me.relHeading -= 180;
+				        var rot = 90;
+				        if (math.abs(geo.normdeg180(me.relHeading)) > 90) {
+				        	rot = -90;
+				        }
+				        me.echoesAircraftSvy[me.currentIndexT].setRotation(rot * D2R);
+				    }
+				    if (me.tgtSpeed != nil) {
+				    	me.echoesAircraftSvyVector[me.currentIndexT].setScale(1, clamp(((me.tgtSpeed/60)*NM2M/me.SVYrange)*me.SVYwidth, 1, 750*MM2TEX));
+			    	} else {
+			    		me.echoesAircraftSvyVector[me.currentIndexT].setScale(1, 1);
+			    	}
+					me.echoesAircraftSvy[me.currentIndexT].show();
+					me.echoesAircraftSvy[me.currentIndexT].update();
+				}
 			} else {
 				if (me.missileIndex < maxMissiles-1) {
 					me.missileIndex += 1;
@@ -2688,6 +2782,7 @@ var TI = {
 			    	me.missiles[me.missileIndex].update();
 			    }
 				me.echoesAircraft[me.currentIndexT].hide();
+				me.echoesAircraftSvy[me.currentIndexT].hide();
 			}
 			if(me.currentIndexT != 0) {
 				me.track_index += 1;
@@ -2695,14 +2790,14 @@ var TI = {
 					me.track_index = -1;
 				}
 			}
-			if (contact.get_model() == "missile_frigate" and me.threatIndex < maxThreats-1) {
+			if (me.showSAMs == TRUE and contact.get_model() == "missile_frigate" and me.threatIndex < maxThreats-1) {
 				me.threatIndex += 1;
 				me.threats[me.threatIndex].setTranslation(me.pos_xx, me.pos_yy);
 				me.scale = 60*NM2M*M2TEX/100;
 		      	me.threats[me.threatIndex].setStrokeLineWidth(w/me.scale);
 		      	me.threats[me.threatIndex].setScale(me.scale);
 				me.threats[me.threatIndex].show();
-			} elsif (contact.get_model() == "buk-m2" and me.threatIndex < maxThreats-1) {
+			} elsif (me.showSAMs == TRUE and contact.get_model() == "buk-m2" and me.threatIndex < maxThreats-1) {
 				me.threatIndex += 1;
 				me.threats[me.threatIndex].setTranslation(me.pos_xx, me.pos_yy);
 				me.scale = 20*NM2M*M2TEX/100;
@@ -2717,6 +2812,9 @@ var TI = {
 		# length = time to travel in 60 seconds.
 		var spd = getprop("velocities/airspeed-kt");# true airspeed so can be compared with other aircrafts speed. (should really be ground speed)
 		me.selfVector.setScale(1, clamp((spd/60)*NM2M*M2TEX, 1, 750*MM2TEX));
+		if (me.SVYactive == TRUE) {
+			me.selfVectorSvy.setScale(clamp(((spd/60)*NM2M/me.SVYrange)*me.SVYwidth, 1, 750*MM2TEX),1);
+		}
 		if (me.GPSinit == TRUE) {
 			me.selfSymbol.hide();
 			me.selfSymbolGPS.show()
@@ -2847,7 +2945,7 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == FALSE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 				me.off = !me.off;
 				MI.mi.off = me.off;
 				me.active = !me.off;
@@ -2864,11 +2962,11 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == FALSE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 				# datalink / STRILL
 				me.dataLink = !me.dataLink;
 			}
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == TRUE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
 				# tact lock report
 				me.trapLock = TRUE;
 				me.trapFire = FALSE;
@@ -2889,7 +2987,7 @@ var TI = {
 				me.quickOpen = 3;
 			}
 			
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == TRUE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
 				# tact fire report
 				me.trapFire = TRUE;
 				me.trapMan = FALSE;
@@ -2897,7 +2995,7 @@ var TI = {
 				me.trapLock = FALSE;
 				me.quickOpen = 10000;
 			}		
-			if (me.menuMain == 10) {
+			if (me.menuMain == MAIN_DISPLAY) {
 				# place names on map
 				me.mapPlaces = !me.mapPlaces;
 				if (me.mapPlaces == PLACES) {
@@ -2920,10 +3018,10 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == FALSE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 				me.showSteers = !me.showSteers;
 			}
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == TRUE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
 				# tact lock report
 				me.trapECM = TRUE;
 				me.trapLock = FALSE;
@@ -2950,7 +3048,7 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == TRUE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
 				# event report
 				me.trapMan = TRUE;
 				me.trapFire = FALSE;
@@ -2958,12 +3056,17 @@ var TI = {
 				me.trapLock = FALSE;
 				me.quickOpen = 10000;
 			}	
-			if (math.abs(me.menuMain) == 9) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS) {
 				me.showSteerPoly = !me.showSteerPoly;
 			}
-			if (me.menuMain == 13 and me.menuSvy == FALSE and me.menuGPS == FALSE) {
+			if (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == FALSE and me.menuGPS == FALSE) {
 				# side view
 				me.menuSvy = TRUE;
+			} elsif (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == TRUE) {
+				me.SVYsize += 1;
+				if (me.SVYsize > 3) {
+					me.SVYsize = 1;
+				}
 			}
 		}
 	},
@@ -2977,16 +3080,16 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == FALSE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 				# tactical report
 				me.quickOpen = 20;
 				me.menuTrap = TRUE;
 			}
-			if (me.menuMain == 10) {
+			if (me.menuMain == MAIN_DISPLAY) {
 				# change zoom
 				zoomIn();
 			}
-			if (me.menuMain == 13 and me.menuGPS == FALSE and me.menuSvy == FALSE) {
+			if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == FALSE and me.menuSvy == FALSE) {
 				me.fr28Top = !me.fr28Top;
 			}
 		}
@@ -3007,12 +3110,12 @@ var TI = {
 	b8: func {
 		# weapons
 		if (!me.active) return;
-		if (me.menuShowMain == TRUE and me.menuMain != 8) {
-			me.menuMain = 8;
+		if (me.menuShowMain == TRUE and me.menuMain != MAIN_WEAPONS) {
+			me.menuMain = MAIN_WEAPONS;
 			me.menuShowFast = TRUE;
 			me.menuNoSub();
 		} else {
-			if (me.menuMain == 8) {
+			if (me.menuMain == MAIN_WEAPONS) {
 				me.input.station.setIntValue(5);
 			} else {
 				me.menuShowMain = !me.menuShowMain;
@@ -3026,12 +3129,12 @@ var TI = {
 	b9: func {
 		# system
 		if (!me.active) return;
-		if (me.menuShowMain == TRUE and me.menuMain != 8) {
-			me.menuMain = 9;
+		if (me.menuShowMain == TRUE and me.menuMain != MAIN_WEAPONS) {
+			me.menuMain = MAIN_SYSTEMS;
 			me.menuShowFast = TRUE;
 			me.menuNoSub();
 		} else {
-			if (me.menuMain == 8) {
+			if (me.menuMain == MAIN_WEAPONS) {
 				me.input.station.setIntValue(1);
 			} else {
 				me.menuShowMain = !me.menuShowMain;
@@ -3045,12 +3148,12 @@ var TI = {
 	b10: func {
 		# display
 		if (!me.active) return;
-		if (me.menuShowMain == TRUE and me.menuMain != 8) {
-			me.menuMain = 10;
+		if (me.menuShowMain == TRUE and me.menuMain != MAIN_WEAPONS) {
+			me.menuMain = MAIN_DISPLAY;
 			me.menuShowFast = TRUE;
 			me.menuNoSub();
 		} else {
-			if (me.menuMain == 8) {
+			if (me.menuMain == MAIN_WEAPONS) {
 				me.input.station.setIntValue(2);
 			} else {
 				me.menuShowMain = !me.menuShowMain;
@@ -3064,12 +3167,12 @@ var TI = {
 	b11: func {
 		# flight data
 		if (!me.active) return;
-		if (me.menuShowMain == TRUE and me.menuMain != 8) {
-			me.menuMain = 11;
+		if (me.menuShowMain == TRUE and me.menuMain != MAIN_WEAPONS) {
+			me.menuMain = MAIN_MISSION_DATA;
 			me.menuShowFast = TRUE;
 			me.menuNoSub();
 		} else {
-			if (me.menuMain == 8) {
+			if (me.menuMain == MAIN_WEAPONS) {
 				me.input.station.setIntValue(4);
 			} else {
 				me.menuShowMain = !me.menuShowMain;
@@ -3083,12 +3186,12 @@ var TI = {
 	b12: func {
 		# errors
 		if (!me.active) return;
-		if (me.menuShowMain == TRUE and me.menuMain != 8) {
-			me.menuMain = 12;
+		if (me.menuShowMain == TRUE and me.menuMain != MAIN_WEAPONS) {
+			me.menuMain = MAIN_FAILURES;
 			me.menuShowFast = TRUE;
 			me.menuNoSub();
 		} else {
-			if (me.menuMain == 8) {
+			if (me.menuMain == MAIN_WEAPONS) {
 				me.input.station.setIntValue(3);
 			} else {
 				me.menuShowMain = !me.menuShowMain;
@@ -3102,12 +3205,12 @@ var TI = {
 	b13: func {
 		# configuration
 		if (!me.active) return;
-		if (me.menuShowMain == TRUE and me.menuMain != 8) {
-			me.menuMain = 13;
+		if (me.menuShowMain == TRUE and me.menuMain != MAIN_WEAPONS) {
+			me.menuMain = MAIN_CONFIGURATION;
 			me.menuShowFast = TRUE;
 			me.menuNoSub();
 		} else {
-			if (me.menuMain == 8) {
+			if (me.menuMain == MAIN_WEAPONS) {
 				me.input.station.setIntValue(6);
 			} else {
 				me.menuShowMain = !me.menuShowMain;
@@ -3127,13 +3230,13 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if (me.menuMain == 8) {
+			if (me.menuMain == MAIN_WEAPONS) {
 				me.input.station.setIntValue(0);
 			}
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == FALSE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 				me.ModeAttack = !me.ModeAttack;
 			}
-			if (math.abs(me.menuMain) == 9 and me.menuTrap == TRUE) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
 				# clear tact reports
 				armament.fireLog.clear();
 				me.logEvents.clear();
@@ -3141,7 +3244,7 @@ var TI = {
 				radar_logic.lockLog.clear();
 				armament.ecmLog.clear();
 			}
-			if (me.menuMain == 13 and me.menuGPS == TRUE) {
+			if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == TRUE) {
 				# GPS fix
 				if (me.GPSinit == TRUE) {
 					  var coord = geo.aircraft_position();
@@ -3156,10 +3259,24 @@ var TI = {
 					  radar_logic.selection = contact;
 				}
 			}
-			if (me.menuMain == 13 and me.menuGPS == FALSE and me.menuSvy == FALSE) {
+			if (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == TRUE) {
+				# svy scale
+				if (me.SVYscale == SVY_ELKA) {
+					me.SVYscale = SVY_RMAX;
+				} elsif (me.SVYscale == SVY_RMAX) {
+					me.SVYscale = SVY_MI;
+				} elsif (me.SVYscale == SVY_MI) {
+					me.SVYscale = SVY_ELKA;
+				}
+			}
+			if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == FALSE and me.menuSvy == FALSE) {
 				# GPS settings
 				me.menuGPS = TRUE;
 			}
+			if (me.menuMain == MAIN_DISPLAY) {
+				# show threat circles
+				me.showSAMs = !me.showSAMs;
+			}			
 		}
 	},
 
@@ -3172,14 +3289,20 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if (me.menuMain == 8) {
+			if (me.menuMain == MAIN_WEAPONS) {
 				#clear weapon selection
 			}
-			if (me.menuMain == 13 and me.menuGPS == TRUE) {
+			if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == TRUE) {
 				me.GPSinit = !me.GPSinit;
 				if (me.GPSinit == FALSE and radar_logic.selection != nil and radar_logic.selection.get_Callsign() == "FIX") {
 					# clear the FIX if gps is turned off
 					radar_logic.selection = nil;
+				}
+			}
+			if (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == TRUE) {
+				me.SVYrmax *= 2;
+				if (me.SVYrmax > 120) {
+					me.SVYrmax = 15;
 				}
 			}
 		}
@@ -3194,8 +3317,14 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if (me.menuMain == 10) {
+			if (me.menuMain == MAIN_DISPLAY) {
 				me.displayTime = !me.displayTime;
+			}
+			if (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == TRUE) {
+				me.SVYhmax *= 2;
+				if (me.SVYhmax > 40) {
+					me.SVYhmax = 5;
+				}
 			}
 		}
 	},
@@ -3209,7 +3338,7 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if(me.menuMain == 10) {
+			if(me.menuMain == MAIN_DISPLAY) {
 				me.displayFlight += 1;
 				if (me.displayFlight == 3) {
 					me.displayFlight = 0;
@@ -3239,13 +3368,13 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if(math.abs(me.menuMain) == 9 and me.menuTrap == TRUE and (me.trapFire == TRUE or me.trapMan == TRUE or me.trapLock == TRUE or me.trapECM == TRUE)) {
+			if(math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE and (me.trapFire == TRUE or me.trapMan == TRUE or me.trapLock == TRUE or me.trapECM == TRUE)) {
 				me.logPage += 1;
 			}
-			if(me.menuMain == 10) {
+			if(me.menuMain == MAIN_DISPLAY) {
 				me.day = !me.day;
 			}
-			if(me.menuMain == 11) {
+			if(me.menuMain == MAIN_MISSION_DATA) {
 				if (me.ownPosition < 0.25) {
 					me.ownPosition = 0.25;
 				} elsif (me.ownPosition < 0.50) {
@@ -3258,7 +3387,7 @@ var TI = {
 					me.ownPosition = 0;
 				}
 			}
-			if(me.menuMain == 12) {
+			if(me.menuMain == MAIN_FAILURES) {
 				me.logPage += 1;
 			}			
 		}
@@ -3273,13 +3402,13 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if(math.abs(me.menuMain) == 9 and me.menuTrap == TRUE and (me.trapFire == TRUE or me.trapMan == TRUE or me.trapLock == TRUE or me.trapECM == TRUE)) {
+			if(math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE and (me.trapFire == TRUE or me.trapMan == TRUE or me.trapLock == TRUE or me.trapECM == TRUE)) {
 				me.logPage -= 1;
 				if (me.logPage < 0) {
 					me.logPage = 0;
 				}
 			}
-			if(me.menuMain == 12) {
+			if(me.menuMain == MAIN_FAILURES) {
 				me.logPage -= 1;
 				if (me.logPage < 0) {
 					me.logPage = 0;
