@@ -8,7 +8,7 @@
 
 <PropertyList include="Systems/ja37-engines-off.xml">    <!-- change this to 'on' for fast testing/debugging -->
     <sim>
-        <aircraft-version>4.101</aircraft-version>
+        <aircraft-version>4.102</aircraft-version>
 
         <rating>
             <FDM type="int">4</FDM>
@@ -18,7 +18,7 @@
         </rating>
 
         <tags>
-            <!--<tag>saab</tag>-->
+            <tag>saab</tag>
             <tag>single-engine</tag>
             <tag>jet</tag>
             <tag>retractable-gear</tag>

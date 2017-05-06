@@ -1,12 +1,4 @@
-# todo:
-# servicable, indicated
-# buttons functions
-# geo grid
-# radar echoes types
-# runway proper styles
-# steerpoint symbols: # ?
-# full OOP
-# use Pinto's model
+
 var (width,height) = (381,512);#381.315
 
 
@@ -22,7 +14,7 @@ var TRUE = 1;
 #  print("Cleaning up window:","TI","\n");
   #update_timer.stop();
 #  gone = TRUE;
-# explanation for the call() technique at: http://wiki.flightgear.org/Object_oriented_programming_in_Nasal#Making_safer_base-class_calls
+# 
 #  call(canvas.Window.del, [], me);
 #};
 #var root = window.getCanvas(1).createGroup();
@@ -30,11 +22,11 @@ var mycanvas = nil;
 var root = nil;
 var setupCanvas = func {
 	mycanvas = canvas.new({
-	  "name": "TI",   # The name is optional but allow for easier identification
-	  "size": [height, height], # Size of the underlying texture (should be a power of 2, required) [Resolution]
-	  "view": [height, height],  # Virtual resolution (Defines the coordinate system of the canvas [Dimensions]
-	                        # which will be stretched the size of the texture, required)
-	  "mipmapping": 0       # Enable mipmapping (optional)
+	  "name": "TI",   
+	  "size": [height, height], 
+	  "view": [height, height], 
+	                       
+	  "mipmapping": 0       
 	});
 	root = mycanvas.createGroup();
 	root.set("font", "LiberationFonts/LiberationMono-Regular.ttf");
@@ -121,7 +113,7 @@ var lastDay   = TRUE;
 
 # stuff
 
-var FLIGHTDATA_ON = 2;
+var FLIGHTDATA_ON  = 2;
 var FLIGHTDATA_CLR = 1;
 var FLIGHTDATA_OFF = 0;
 
@@ -139,8 +131,14 @@ var SVY_ELKA = 0;
 var SVY_RMAX = 1;
 var SVY_MI   = 2;
 
-var brightness = func {
-	bright += 1;
+var brightnessP = func {
+	if (ti.active == FALSE) return;
+	ti.brightness += 0.25;
+};
+
+var brightnessM = func {
+	if (ti.active == FALSE) return;
+	ti.brightness -= 0.25;
 };
 
 var bright = 0;
@@ -213,7 +211,7 @@ var dictSE = {
 	 		'1': [TRUE, "SLACK"], '2': [TRUE, "DL"], '4': [TRUE, "B"], '5': [TRUE, "UPOL"], '6': [TRUE, "TRAP"], '7': [TRUE, "MENY"],
 	 		'14': [TRUE, "JAKT"], '15': [FALSE, "HK"],'16': [FALSE, "APOL"], '17': [FALSE, "LA"], '18': [FALSE, "LF"], '19': [FALSE, "LB"],'20': [FALSE, "L"]},
 	'TRAP':{'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
-	 		'2': [TRUE, "INLA"], '3': [TRUE, "AVFY"], '4': [TRUE, "FALL"], '5': [TRUE, "MAN"], '6': [FALSE, "SATT"], '7': [TRUE, "MENY"], '14': [TRUE, "RENS"],
+	 		'2': [TRUE, "INLA"], '3': [TRUE, "AVFY"], '4': [TRUE, "FALL"], '5': [TRUE, "MAN"], '6': [TRUE, "SATT"], '7': [TRUE, "MENY"], '14': [TRUE, "RENS"],
 	 		'17': [FALSE, "ALLA"], '19': [TRUE, "NED"], '20': [TRUE, "UPP"]},
 	'10':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
 			'3': [TRUE, "ELKA"], '4': [TRUE, "ELKA"], '6': [TRUE, "SKAL"], '7': [TRUE, "MENY"], '14': [TRUE, "EOMR"], '15': [FALSE, "EOMR"], '16': [TRUE, "TID"],
@@ -240,7 +238,7 @@ var dictEN = {
 	 		'1': [TRUE, "OFF"], '2': [TRUE, "DL"], '4': [TRUE, "ROUT"], '5': [TRUE, "POLY"], '6': [TRUE, "TRAP"], '7': [TRUE, "MENU"],
 	 		'14': [TRUE, "FGHT"], '15': [FALSE, "ACRV"],'16': [FALSE, "APOL"], '17': [FALSE, "STPT"], '18': [FALSE, "LT"], '19': [FALSE, "LS"],'20': [FALSE, "L"]},
 	'TRAP':{'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
-	 		'2': [TRUE, "LOCK"], '3': [TRUE, "FIRE"], '4': [TRUE, "ECM"], '5': [TRUE, "MAN"], '6': [FALSE, "LAND"], '7': [TRUE, "MENU"], '14': [TRUE, "CLR"],
+	 		'2': [TRUE, "LOCK"], '3': [TRUE, "FIRE"], '4': [TRUE, "ECM"], '5': [TRUE, "MAN"], '6': [TRUE, "LAND"], '7': [TRUE, "MENU"], '14': [TRUE, "CLR"],
 	 		'17': [FALSE, "ALL"], '19': [TRUE, "DOWN"], '20': [TRUE, "UP"]},
 	'10':  {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
 			'3': [TRUE, "EMAP"], '4': [TRUE, "EMAP"], '6': [TRUE, "SCAL"], '7': [TRUE, "MENU"], '14': [TRUE, "AAA"], '15': [FALSE, "AAA"], '16': [TRUE, "TIME"],
@@ -1198,14 +1196,17 @@ var TI = {
 	        acInstrVolt:      	  "systems/electrical/outputs/ac-instr-voltage",
 	        nav0InRange:      	  "instrumentation/nav[0]/in-range",
 	        fullMenus:            "ja37/displays/show-full-menus",
-	        APLockHeading:    "autopilot/locks/heading",
-	        APTrueHeadingErr: "autopilot/internal/true-heading-error-deg",
-	        APnav0HeadingErr: "autopilot/internal/nav1-heading-error-deg",
-	        APHeadingBug:     "autopilot/settings/heading-bug-deg",
-	        RMWaypointBearing:"autopilot/route-manager/wp/bearing-deg",
-	        RMActive:         "autopilot/route-manager/active",
-	        nav0Heading:      "instrumentation/nav[0]/heading-deg",
-	        ias:              "instrumentation/airspeed-indicator/indicated-speed-kt",
+	        APLockHeading:    	  "autopilot/locks/heading",
+	        APTrueHeadingErr: 	  "autopilot/internal/true-heading-error-deg",
+	        APnav0HeadingErr: 	  "autopilot/internal/nav1-heading-error-deg",
+	        APHeadingBug:     	  "autopilot/settings/heading-bug-deg",
+	        RMWaypointBearing:	  "autopilot/route-manager/wp/bearing-deg",
+	        RMActive:             "autopilot/route-manager/active",
+	        nav0Heading:          "instrumentation/nav[0]/heading-deg",
+	        ias:                  "instrumentation/airspeed-indicator/indicated-speed-kt",
+	        wow0:                 "fdm/jsbsim/gear/unit[0]/WOW",
+        	wow1:                 "fdm/jsbsim/gear/unit[1]/WOW",
+        	wow2:                 "fdm/jsbsim/gear/unit[2]/WOW",
       	};
    
       	foreach(var name; keys(ti.input)) {
@@ -1234,6 +1235,7 @@ var TI = {
 		ti.trapMan      = FALSE;
 		ti.trapLock     = FALSE;
 		ti.trapECM      = FALSE;
+		ti.trapLand     = FALSE;
 
 		# SVY
 		ti.SVYactive    = FALSE;
@@ -1261,6 +1263,7 @@ var TI = {
 		ti.basesEnabled = FALSE;
 		ti.logEvents  = events.LogBuffer.new(echo: 0);#compatible with older FG?		
 		ti.logBIT     = events.LogBuffer.new(echo: 0);#compatible with older FG?
+		ti.logLand    = events.LogBuffer.new(echo: 0);#compatible with older FG?
 		ti.BITon = FALSE;
 		ti.BITtime = 0;
 		ti.BITok1 = FALSE;
@@ -1269,10 +1272,20 @@ var TI = {
 		ti.BITok4 = FALSE;
 		ti.active = TRUE;
 		ti.showSAMs = TRUE;
+		ti.newFails = FALSE;
+		ti.lastFailBlink = TRUE;
+		ti.landed = TRUE;
+
+		ti.startFailListener();
 
       	return ti;
 	},
 
+
+	startFailListener: func {
+		#this will run entire session, so no need to unsubscribe.
+		FailureMgr.events["trigger-fired"].subscribe(func {call(func{me.newFails = 1}, nil, me, me)});
+	},
 
 
 	########################################################################################################
@@ -1292,13 +1305,12 @@ var TI = {
 		#}
 		me.interoperability = me.input.units.getValue();
 
-		if (bright > 0) {
-			bright -= 1;
-			me.brightness -= 0.25;
-			if (me.brightness < 0.25) {
-				me.brightness = 1;
-			}
+		if (me.brightness < 0.25) {
+			me.brightness = 0.25;
+		} elsif (me.brightness > 1) {
+			me.brightness = 1;
 		}
+
 		if (me.input.acInstrVolt.getValue() < 100 or me.off == TRUE) {
 			setprop("ja37/avionics/brightness-ti", 0);
 			#setprop("ja37/avionics/cursor-on", FALSE);
@@ -1342,6 +1354,7 @@ var TI = {
 		}
 		me.updateFlightData();
 		me.showHeadingBug();
+		me.testLanding();
 
 		settimer(func me.loopFast(), 0.05);
 	},
@@ -1440,6 +1453,18 @@ var TI = {
 						me.errorList.setText(str);
 					});
 					me.clipLogPage();
+				} elsif (me.trapLand == TRUE) {
+					me.hideMap();
+					me.logRoot.show();
+					call(func {
+						var buffer = me.logLand.get_buffer();
+						var str = "       Landing log:\n";
+		    			foreach(entry; buffer) {
+		      				str = str~"    "~entry.time~" "~entry.message~"\n";
+		    			}
+						me.errorList.setText(str);
+					});
+					me.clipLogPage();
 				} elsif (me.trapECM == TRUE) {
 					me.hideMap();
 					me.logRoot.show();
@@ -1467,6 +1492,7 @@ var TI = {
 	    			}
 					me.errorList.setText(str);
 				});
+				me.newFails = FALSE;
 				me.clipLogPage();
 			} else {
 				me.showMap();
@@ -1547,7 +1573,12 @@ var TI = {
 		# Update the display of the main menus
 		#
 		for(var i = MAIN_WEAPONS; i <= MAIN_CONFIGURATION; i+=1) {
-			me.menuButton[i].setText(me.compileMainMenu(i));
+			if (i != MAIN_FAILURES or me.menuMain == MAIN_WEAPONS or me.newFails == FALSE or me.lastFailBlink == FALSE) {
+				me.menuButton[i].setText(me.compileMainMenu(i));
+			} else {
+				# blink failure menu
+				me.menuButton[i].setText("");
+			}
 			if (me.menuMain == MAIN_WEAPONS) {
 				me.updateMainMenuTextWeapons(i);
 			} else {
@@ -1558,6 +1589,7 @@ var TI = {
 				}
 			}
 		}
+		me.lastFailBlink = !me.lastFailBlink;
 		if (me.menuMain == MAIN_WEAPONS) {
 			if (me.input.station.getValue() == 5) {
 				me.menuButtonBox[8].show();
@@ -1645,44 +1677,46 @@ var TI = {
 			me.menuButtonBox[14].show();
 		}
 		if (math.abs(me.menuMain) == MAIN_SYSTEMS) {
-			if (me.menuTrap == FALSE and me.dataLink == TRUE) {
-				me.menuButtonBox[2].show();
-			}
-			if (me.menuTrap == FALSE and me.showSteers == TRUE) {
-				me.menuButtonBox[4].show();
-			}
-			if (me.menuTrap == FALSE and me.ModeAttack == FALSE) {
-				me.menuButtonBox[14].show();
-			}
-			if (me.menuTrap == FALSE and me.showFullMenus == TRUE) {
-				if (land.mode < 3 and land.mode > 0) {
-					# landing before descent
-					me.menuButtonBox[19].show();
-				} elsif (land.mode > 2) {
-					# landing descent
-					me.menuButtonBox[18].show();
-				} elsif (me.input.currentMode.getValue() == displays.LANDING) {
-					# generic landing mode
-					me.menuButtonBox[20].show();
-				} elsif (me.showSteers == TRUE and me.input.rmActive.getValue() == TRUE) {
-					# following route
-					me.menuButtonBox[17].show();
+			if (me.menuTrap == FALSE) {
+				if (me.dataLink == TRUE) {
+					me.menuButtonBox[2].show();
 				}
-			}
-			if (me.menuTrap == TRUE and me.trapLock == TRUE) {
-				me.menuButtonBox[2].show();
-			}
-			if (me.menuTrap == TRUE and me.trapFire == TRUE) {
-				me.menuButtonBox[3].show();
-			}
-			if (me.menuTrap == TRUE and me.trapECM == TRUE) {
-				me.menuButtonBox[4].show();
-			}
-			if (me.menuTrap == TRUE and me.trapMan == TRUE) {
-				me.menuButtonBox[5].show();
-			}
-			if (me.showSteerPoly == TRUE and me.menuTrap == FALSE) {
-				me.menuButtonBox[5].show();
+				if (me.showSteers == TRUE) {
+					me.menuButtonBox[4].show();
+				}
+				if (me.ModeAttack == FALSE) {
+					me.menuButtonBox[14].show();
+				}
+				if (me.showFullMenus == TRUE) {
+					if (land.mode < 3 and land.mode > 0) {
+						# landing before descent
+						me.menuButtonBox[19].show();
+					} elsif (land.mode > 2) {
+						# landing descent
+						me.menuButtonBox[18].show();
+					} elsif (me.input.currentMode.getValue() == displays.LANDING) {
+						# generic landing mode
+						me.menuButtonBox[20].show();
+					} elsif (me.showSteers == TRUE and me.input.rmActive.getValue() == TRUE) {
+						# following route
+						me.menuButtonBox[17].show();
+					}
+				}
+				if (me.showSteerPoly == TRUE) {
+					me.menuButtonBox[5].show();
+				}
+			} else {
+				if (me.trapLock == TRUE) {
+					me.menuButtonBox[2].show();
+				} elsif (me.trapFire == TRUE) {
+					me.menuButtonBox[3].show();
+				} elsif (me.trapECM == TRUE) {
+					me.menuButtonBox[4].show();
+				} elsif (me.trapMan == TRUE) {
+					me.menuButtonBox[5].show();
+				} elsif (me.trapLand == TRUE) {
+					me.menuButtonBox[6].show();
+				}			
 			}
 		}
 		if (me.menuMain == MAIN_DISPLAY) {
@@ -1786,15 +1820,18 @@ var TI = {
 				me.menuButtonSubBox[4].show();
 			}
 
-			# airports overlay
+			# threat overlay
 			me.menuButtonSub[14].setText(me.vertStr(me.interoperability == displays.METRIC?"FI":"HSTL"));
 			me.menuButtonSub[14].show();
 			if (me.showSAMs == TRUE) {
 				me.menuButtonSubBox[14].show();
 			}
 
-			me.menuButtonSub[15].setText(me.vertStr(me.interoperability == displays.METRIC?"EGET":"FRND"));
-			me.menuButtonSub[15].show();
+			# friendly AAA
+			if (me.showFullMenus == TRUE) {
+				me.menuButtonSub[15].setText(me.vertStr(me.interoperability == displays.METRIC?"EGET":"FRND"));
+				me.menuButtonSub[15].show();
+			}
 		}
 		if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 			# radar in attack or fight mode
@@ -1860,9 +1897,10 @@ var TI = {
 		me.menuSvy  = FALSE;
 		me.menuGPS  = FALSE;
 		me.trapFire = FALSE;
-		me.trapMan = FALSE;
+		me.trapMan  = FALSE;
 		me.trapLock = FALSE;
 		me.trapECM  = FALSE;
+		me.trapLand = FALSE;
 	},
 
 
@@ -1890,22 +1928,14 @@ var TI = {
 		if (!me.active) return;
 
 		# tact ecm report (todo: show current ecm instead)
-		me.menuMain = MAIN_SYSTEMS;
-		me.menuNoSub();
-		me.menuTrap = TRUE;
-		me.menuShowFast = TRUE;
-		me.menuShowMain = TRUE;
-		me.trapECM = TRUE;
-		me.trapLock = FALSE;
-		me.trapFire = FALSE;
-		me.trapMan = FALSE;
-		me.quickOpen = 10000;
+		print("TI ECM page not implemented yet, coming soon^tm.");
 	},
 
 	showLNK: func {
 		# show RB99 link
 		if (!me.active) return;
-		
+
+		print("TI RB99 link not implemented yet, coming soon^tm.");
 	},
 
 	doBIT: func {
@@ -1927,12 +1957,13 @@ var TI = {
 		if(radar_logic.selection != nil) {
 			tgt = radar_logic.selection.get_Callsign();
 		}
+		var echoes = size(radar_logic.tracks);
 		var message = sprintf("\n      IAS: %d kt\n      Heading: %d deg\n      Alt: %d ft\n      Selected: %s\n      Echoes: %d\n      Lat: %.4f deg\n      Lon: %.4f deg",
 			me.input.ias.getValue(),
 			me.input.headMagn.getValue(),
 			me.input.alt_ft.getValue(),
-			tgt,
-			size(radar_logic.tracks),
+			echoes==0?"":tgt,
+			echoes,
 			getprop("position/latitude-deg"),
 			getprop("position/longitude-deg")
 			);
@@ -1949,23 +1980,52 @@ var TI = {
 	########################################################################################################
 	########################################################################################################
 
+	testLanding: func {
+		var wow = me.input.wow0.getValue() and me.input.wow0.getValue() and me.input.wow0.getValue();
+		if (me.landed == FALSE and wow == TRUE) {
+			me.logLand.push("Has landed.");
+			me.landed = TRUE;
+		} elsif (wow == FALSE) {
+			me.landed = FALSE;
+		}
+	},
+
 	updateSVY: func {
 		# update and display side view
 		if (me.SVYactive == TRUE) {
 			me.svy_grp2.removeAllChildren();
-			me.svy_grp2.createChild("path")
-				.moveTo(width*0.05, height*0.05)
-				.vert(height*0.125+height*0.125*me.SVYsize-height*0.10)
-				.horiz(width*0.90)
-				.setStrokeLineWidth(w)
-				.setColor(rWhite,gWhite,bWhite,a);
-
-			me.SVYoriginX = width*0.05;
-			me.SVYoriginY = height*0.125+height*0.125*me.SVYsize-height*0.05;
-			me.SVYwidth   = width*0.90;
-			me.SVYheight  = height*0.125+height*0.125*me.SVYsize-height*0.10;
+			
+			me.SVYoriginX = width*0.05;#texel
+			me.SVYoriginY = height*0.125+height*0.125*me.SVYsize-height*0.05;#texel
+			me.SVYwidth   = width*0.90;#texel
+			me.SVYheight  = height*0.125+height*0.125*me.SVYsize-height*0.10;#texel
 			me.SVYalt     = me.SVYhmax*1000;#meter
 			me.SVYrange   = me.SVYscale==SVY_MI?me.input.radarRange.getValue():(me.SVYscale==SVY_RMAX?me.SVYrmax*1000:me.SVYwidth/M2TEX);#meter
+			me.SVYticksize= width*0.01;#texel
+
+			# not the most efficient code..
+			me.svy_grp2.createChild("path")
+				.moveTo(me.SVYoriginX, height*0.05)
+				.vert(me.SVYheight)
+				.horiz(me.SVYwidth)
+				.moveTo(me.SVYoriginX-me.SVYticksize, height*0.05)
+				.horiz(me.SVYticksize*2)
+				.moveTo(me.SVYoriginX-me.SVYticksize, height*0.05+me.SVYheight*0.5)
+				.horiz(me.SVYticksize*2)
+				.moveTo(me.SVYoriginX-me.SVYticksize, height*0.05+me.SVYheight*0.75)
+				.horiz(me.SVYticksize*2)
+				.moveTo(me.SVYoriginX-me.SVYticksize, height*0.05+me.SVYheight*0.25)
+				.horiz(me.SVYticksize*2)
+				.moveTo(me.SVYoriginX+me.SVYwidth, me.SVYoriginY-me.SVYticksize)
+				.vert(me.SVYticksize*2)
+				.moveTo(me.SVYoriginX+me.SVYwidth*0.5, me.SVYoriginY-me.SVYticksize)
+				.vert(me.SVYticksize*2)
+				.moveTo(me.SVYoriginX+me.SVYwidth*0.75, me.SVYoriginY-me.SVYticksize)
+				.vert(me.SVYticksize*2)
+				.moveTo(me.SVYoriginX+me.SVYwidth*0.25, me.SVYoriginY-me.SVYticksize)
+				.vert(me.SVYticksize*2)
+				.setStrokeLineWidth(w)
+				.setColor(rWhite,gWhite,bWhite,a);
 
 			me.selfSymbolSvy.setTranslation(me.SVYoriginX, me.SVYoriginY-me.SVYheight*me.input.alt_ft.getValue()*FT2M/me.SVYalt);
 			me.selfSymbolSvy.setRotation(90*D2R);
@@ -1973,6 +2033,7 @@ var TI = {
 			#me.selfVectorSvy.setRotation(90*D2R);
 
 			var textX = "";
+			var textY = "";
 
 			if (me.interoperability == displays.METRIC) {
 				textX = sprintf("%d KM" ,me.SVYrange*0.001);
@@ -1984,8 +2045,8 @@ var TI = {
 
 			me.textSvyX.setText(textX);
 			me.textSvyY.setText(textY);
-			me.textSvyY.setTranslation(me.SVYoriginX, height*0.05);
-			me.textSvyX.setTranslation(width*0.95, height*0.125+height*0.125*me.SVYsize-height*0.05);
+			me.textSvyY.setTranslation(me.SVYoriginX, height*0.05-w);
+			me.textSvyX.setTranslation(width*0.95, height*0.125+height*0.125*me.SVYsize-height*0.05+me.SVYticksize+w);
 
 			me.svy_grp.update();
 			me.svy_grp.show();
@@ -2341,13 +2402,6 @@ var TI = {
 		me.fData = FALSE;
 		if (getprop("ja37/sound/terrain-on") == TRUE) {
 			me.fData = TRUE;
-#			if (me.menuMain == 12 or (me.menuTrap == TRUE and me.trapFire == TRUE)) {
-#				me.menuShowMain = FALSE;
-#				me.menuShowFast = FALSE;
-#				me.menuNoSub();
-#				me.menuTrap = TRUE;
-#				me.menuMain = 9;
-#			}
 		} elsif (me.displayFlight == FLIGHTDATA_ON) {
 			me.fData = TRUE;
 		} elsif (me.displayFlight == FLIGHTDATA_CLR and (me.input.alt_ft.getValue()*FT2M < 1000 or getprop("orientation/pitch-deg") > 10 or math.abs(getprop("orientation/roll-deg")) > 45)) {
@@ -2595,15 +2649,7 @@ var TI = {
 		  }
 
 		  if (land.show_runway_line == TRUE) {
-		    # 10 20 20 40 Km long line, depending on radar setting, as per AJ manual.
 		    me.runway_l = land.line*1000;
-		#        if (me.radarRange == 120000 or me.radarRange == 180000) {
-		#          me.runway_l = 40000;
-		#        } elsif (me.radarRange == 60000) {
-		#          me.runway_l = 20000;
-		#        } elsif (me.radarRange == 30000) {
-		#          me.runway_l = 20000;
-		#        }
 		    me.scale = me.runway_l*M2TEX;
 		    me.dest_runway.setScale(1, me.scale);
 		    me.heading = me.input.heading.getValue();#true
@@ -2932,6 +2978,14 @@ var TI = {
 		me.quickOpen = 20;
 	},
 
+	closeTraps: func {
+		me.trapLock  = FALSE;
+		me.trapFire  = FALSE;
+		me.trapMan   = FALSE;
+		me.trapECM   = FALSE;
+		me.trapLand  = FALSE;
+	},
+
 
 	b1: func {
 		if (me.off == TRUE) {
@@ -2968,10 +3022,8 @@ var TI = {
 			}
 			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
 				# tact lock report
+				me.closeTraps();
 				me.trapLock = TRUE;
-				me.trapFire = FALSE;
-				me.trapMan = FALSE;
-				me.trapECM = FALSE;
 				me.quickOpen = 10000;
 			}	
 		}
@@ -2989,10 +3041,8 @@ var TI = {
 			
 			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
 				# tact fire report
+				me.closeTraps();
 				me.trapFire = TRUE;
-				me.trapMan = FALSE;
-				me.trapECM = FALSE;
-				me.trapLock = FALSE;
 				me.quickOpen = 10000;
 			}		
 			if (me.menuMain == MAIN_DISPLAY) {
@@ -3022,11 +3072,9 @@ var TI = {
 				me.showSteers = !me.showSteers;
 			}
 			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
-				# tact lock report
+				# tact ecm report
+				me.closeTraps();
 				me.trapECM = TRUE;
-				me.trapLock = FALSE;
-				me.trapFire = FALSE;
-				me.trapMan = FALSE;
 				me.quickOpen = 10000;
 			}
 			if (me.menuMain == 10) {
@@ -3050,10 +3098,8 @@ var TI = {
 			}
 			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
 				# event report
+				me.closeTraps();
 				me.trapMan = TRUE;
-				me.trapFire = FALSE;
-				me.trapECM = FALSE;
-				me.trapLock = FALSE;
 				me.quickOpen = 10000;
 			}	
 			if (math.abs(me.menuMain) == MAIN_SYSTEMS) {
@@ -3084,6 +3130,11 @@ var TI = {
 				# tactical report
 				me.quickOpen = 20;
 				me.menuTrap = TRUE;
+			} elsif (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
+				# land report
+				me.closeTraps();
+				me.trapLand  = TRUE;
+				me.quickOpen = 10000;
 			}
 			if (me.menuMain == MAIN_DISPLAY) {
 				# change zoom
@@ -3241,6 +3292,7 @@ var TI = {
 				armament.fireLog.clear();
 				me.logEvents.clear();
 				me.logBIT.clear();
+				me.logLand.clear();
 				radar_logic.lockLog.clear();
 				armament.ecmLog.clear();
 			}
@@ -3368,7 +3420,7 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if(math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE and (me.trapFire == TRUE or me.trapMan == TRUE or me.trapLock == TRUE or me.trapECM == TRUE)) {
+			if(math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE and (me.trapFire == TRUE or me.trapMan == TRUE or me.trapLock == TRUE or me.trapECM == TRUE or me.trapLand  == TRUE)) {
 				me.logPage += 1;
 			}
 			if(me.menuMain == MAIN_DISPLAY) {
@@ -3402,7 +3454,7 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			if(math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE and (me.trapFire == TRUE or me.trapMan == TRUE or me.trapLock == TRUE or me.trapECM == TRUE)) {
+			if(math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE and (me.trapFire == TRUE or me.trapMan == TRUE or me.trapLock == TRUE or me.trapECM == TRUE or me.trapLand == TRUE)) {
 				me.logPage -= 1;
 				if (me.logPage < 0) {
 					me.logPage = 0;

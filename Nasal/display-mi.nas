@@ -1,11 +1,3 @@
-# todo:
-# servicable, indicated
-# power supply, on off, brightness (emmision)
-# heading bug?
-# steerpoint symbols: #
-# nez indicator
-# full OOP
-# use Pinto's model
 var (width,height) = (512,512);#341
 
 #var gone = 0;
@@ -16,7 +8,7 @@ var (width,height) = (512,512);#341
 #  print("Cleaning up window:","MI","\n");
   #update_timer.stop();
 #  gone = TRUE;
-# explanation for the call() technique at: http://wiki.flightgear.org/Object_oriented_programming_in_Nasal#Making_safer_base-class_calls
+# 
 #  call(canvas.Window.del, [], me);
 #};
 #var root = window.getCanvas(1).createGroup();
@@ -27,11 +19,11 @@ var mycanvas = nil;
 var root = nil;
 var setupCanvas = func {
 	mycanvas = canvas.new({
-	  "name": "MI",   # The name is optional but allow for easier identification
-	  "size": [width, height], # Size of the underlying texture (should be a power of 2, required) [Resolution]
-	  "view": [width, height],  # Virtual resolution (Defines the coordinate system of the canvas [Dimensions]
-	                        # which will be stretched the size of the texture, required)
-	  "mipmapping": 1       # Enable mipmapping (optional)
+	  "name": "MI",  
+	  "size": [width, height], 
+	  "view": [width, height],  
+	                        
+	  "mipmapping": 1       
 	});
 	root = mycanvas.createGroup();
 	mycanvas.setColorBackground(0, 0, 0, 1.0);
@@ -96,13 +88,6 @@ var pressM2 = func {
 var pressX3 = func {
 	# mark event
 	#
-	# record:
-	#  selection
-	#  echoes
-	#  time
-	#  orientation
-	#  velocities
-	#  position
 	TI.ti.recordEvent();
 };
 
@@ -891,11 +876,13 @@ var MI = {
 	},
 
     showTgtName: func {
-  	  	if (me.input.tracks_enabled.getValue() == TRUE) {
+    	if (TI.ti.newFails == TRUE) {
+    		me.diamond_name.setText(me.interoperability == displays.METRIC?"FÖ":"Failure");
+  	  	} elsif (me.input.tracks_enabled.getValue() == TRUE) {
   			me.diamond_name.setText(me.tgt_callsign);
   		} else {
   			# radar is off, so silent mode
-  			me.diamond_name.setText("..Silent..");
+  			me.diamond_name.setText(me.interoperability == displays.METRIC?"..TYST..":"..Silent..");
   		}
     },
 
