@@ -25,8 +25,7 @@ var setupCanvas = func {
 	  "name": "TI",   
 	  "size": [height, height], 
 	  "view": [height, height], 
-	                       
-	  "mipmapping": 0       
+	  "mipmapping": 0
 	});
 	root = mycanvas.createGroup();
 	root.set("font", "LiberationFonts/LiberationMono-Regular.ttf");
@@ -184,10 +183,10 @@ var a = 1.0;#alpha
 var w = 1.0;#stroke width
 
 var maxTracks   = 32;# how many radar tracks can be shown at once in the TI (was 16)
-var maxMissiles = 6;
-var maxThreats  = 5;
-var maxSteers   =50;
-var maxBases    =50;
+var maxMissiles =  6;
+var maxThreats  =  5;
+var maxSteers   = 50;
+var maxBases    = 50;
 
 var roundabout = func(x) {
   var y = x - int(x);
@@ -200,33 +199,50 @@ var circlePos = func (deg, radius) {
 	return [radius*math.cos(deg*D2R),radius*math.sin(deg*D2R)];
 }
 
-# notice the Swedish letter are missing accents {ÅÖÄ} due to them not being always read correct by Nasal/Canvas.
+var circlePosH = func (deg, radius) {
+	# compensate for heading going opposite unit circle and 0 deg being forward
+	return [radius*math.cos((-deg+90)*D2R),-radius*math.sin((-deg+90)*D2R)];
+}
+
+var containsVector = func (vec, item) {
+	foreach(test; vec) {
+		if (test == item) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+# notice the Swedish letter are missing accents in vertical menu items {ÅÖÄ} due to them not being always read correct by Nasal substr().
+# Å = \xC3\x85
+# Ö = \xC3\x96
+# Ä = \xC3\x84
 
 var dictSE = {
-	'HORI': {'0': [TRUE, "AV"], '1': [TRUE, "RENS"], '2': [TRUE, "PA"]},
-	'0':   {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"]},
+	'HORI': {'0': [TRUE, "AV"], '1': [TRUE, "RENS"], '2': [TRUE, "P\xC3\x85"]},
+	'0':   {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"]},
 	'8':   {'8': [TRUE, "R7V"], '9': [TRUE, "V7V"], '10': [TRUE, "S7V"], '11': [TRUE, "S7H"], '12': [TRUE, "V7H"], '13': [TRUE, "R7H"],
 			'7': [TRUE, "MENY"], '14': [TRUE, "AKAN"], '15': [FALSE, "RENS"]},
-	'9':   {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
-	 		'1': [TRUE, "SLACK"], '2': [TRUE, "DL"], '4': [TRUE, "B"], '5': [TRUE, "UPOL"], '6': [TRUE, "TRAP"], '7': [TRUE, "MENY"],
-	 		'14': [TRUE, "JAKT"], '15': [FALSE, "HK"],'16': [FALSE, "APOL"], '17': [FALSE, "LA"], '18': [FALSE, "LF"], '19': [FALSE, "LB"],'20': [FALSE, "L"]},
-	'TRAP':{'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
-	 		'2': [TRUE, "INLA"], '3': [TRUE, "AVFY"], '4': [TRUE, "FALL"], '5': [TRUE, "MAN"], '6': [TRUE, "SATT"], '7': [TRUE, "MENY"], '14': [TRUE, "RENS"],
+	'9':   {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
+	 		'1': [TRUE, "SL\xC3\x84CK"], '2': [TRUE, "DL"], '4': [TRUE, "B"], '5': [TRUE, "UPOL"], '6': [TRUE, "TRAP"], '7': [TRUE, "MENY"],
+	 		'14': [TRUE, "JAKT"], '15': [FALSE, "HK"],'16': [FALSE, "\xC3\x85POL"], '17': [FALSE, "L\xC3\x85"], '18': [FALSE, "LF"], '19': [FALSE, "LB"],'20': [FALSE, "L"]},
+	'TRAP':{'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
+	 		'2': [TRUE, "INL\xC3\x84"], '3': [TRUE, "AVFY"], '4': [TRUE, "FALL"], '5': [TRUE, "MAN"], '6': [TRUE, "S\xC3\x84TT"], '7': [TRUE, "MENY"], '14': [TRUE, "RENS"],
 	 		'17': [FALSE, "ALLA"], '19': [TRUE, "NED"], '20': [TRUE, "UPP"]},
-	'10':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
+	'10':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
 			'3': [TRUE, "ELKA"], '4': [TRUE, "ELKA"], '6': [TRUE, "SKAL"], '7': [TRUE, "MENY"], '14': [TRUE, "EOMR"], '15': [FALSE, "EOMR"], '16': [TRUE, "TID"],
 			'17': [TRUE, "HORI"], '18': [FALSE, "HKM"], '19': [TRUE, "DAG"]},
-	'11':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
-			'4': [FALSE, "EDIT"], '6': [FALSE, "EDIT"], '7': [TRUE, "MENY"], '14': [FALSE, "EDIT"], '15': [FALSE, "APOL"], '16': [FALSE, "EDIT"],
+	'11':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
+			'4': [FALSE, "EDIT"], '6': [FALSE, "EDIT"], '7': [TRUE, "MENY"], '14': [FALSE, "EDIT"], '15': [FALSE, "\xC3\x85POL"], '16': [FALSE, "EDIT"],
 			'17': [FALSE, "UPOL"], '18': [FALSE, "EDIT"], '19': [TRUE, "EGLA"], '20': [FALSE, "KMAN"]},
-	'12':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
+	'12':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
 	 		'7': [TRUE, "MENY"], '19': [TRUE, "NED"], '20': [TRUE, "UPP"]},
-	'13':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
-			'5': [TRUE, "SVY"], '6': [TRUE, "FR28"], '7': [TRUE, "MENY"], '14': [TRUE, "GPS"], '19': [FALSE, "LAS"]},
-	'GPS': {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
+	'13':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
+			'5': [TRUE, "SVY"], '6': [TRUE, "FR28"], '7': [TRUE, "MENY"], '14': [TRUE, "GPS"], '19': [FALSE, "L\xC3\x84S"]},
+	'GPS': {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
 			'7': [TRUE, "MENU"], '14': [TRUE, "FIX"], '15': [TRUE, "INIT"]},
-	'SVY': {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "FO"], '13': [TRUE, "KONF"],
-			'5': [TRUE, "FOST"], '6': [TRUE, "VISA"], '7': [TRUE, "MENU"], '14': [TRUE, "SKAL"], '15': [TRUE, "RMAX"], '16': [TRUE, "HMAX"]},
+	'SVY': {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
+			'5': [TRUE, "F\xC3\x96ST"], '6': [TRUE, "VISA"], '7': [TRUE, "MENU"], '14': [TRUE, "SKAL"], '15': [TRUE, "RMAX"], '16': [TRUE, "HMAX"]},
 };
 
 var dictEN = {
@@ -259,6 +275,7 @@ var dictEN = {
 var TI = {
 
 	setupCanvasSymbols: func {
+		# map groups
 		me.mapCentrum = root.createChild("group")
 			.set("z-index", 1)
 			.setTranslation(width/2,height*2/3);
@@ -267,32 +284,15 @@ var TI = {
 		me.mapFinal = me.mapCenter.createChild("group");
 		me.mapFinal.setTranslation(-tile_size*center_tile_offset[0],-tile_size*center_tile_offset[1]);
 
+		# groups
 		me.rootCenter = root.createChild("group")
 			.setTranslation(width/2,height*2/3)
 			.set("z-index",  9);
 		me.rootRealCenter = root.createChild("group")
 			.setTranslation(width/2,height/2)
 			.set("z-index", 10);
-		me.selfSymbol = me.rootCenter.createChild("path")
-		      .moveTo(-5*MM2TEX,  5*MM2TEX)
-		      .lineTo( 0,       -10*MM2TEX)
-		      .moveTo( 5*MM2TEX,  5*MM2TEX)
-		      .lineTo( 0,       -10*MM2TEX)
-		      .moveTo(-5*MM2TEX,  5*MM2TEX)
-		      .lineTo( 5*MM2TEX,  5*MM2TEX)
-		      .setColor(rWhite,gWhite,bWhite, a)
-		      .set("z-index", 10)
-		      .setStrokeLineWidth(w);
-		me.selfSymbolGPS = me.rootCenter.createChild("path")
-		      .moveTo(-5*MM2TEX,  5*MM2TEX)
-		      .lineTo( 0,       -10*MM2TEX)
-		      .lineTo( 5*MM2TEX,  5*MM2TEX)
-		      .lineTo(-5*MM2TEX,  5*MM2TEX)
-		      .setColor(rWhite,gWhite,bWhite, a)
-		      .setColorFill(rWhite,gWhite,bWhite)
-		      .set("z-index", 10)
-		      .setStrokeLineWidth(w);
 
+		# map scale
 		me.mapScaleTickPosX = width*0.975/2;
 		me.mapScaleTickPosTxtX = width*0.975/2-width*0.025/2;
 		me.mapScale = me.rootCenter.createChild("group")
@@ -381,6 +381,7 @@ var TI = {
     		.setFontSize(15, 1);
 
 
+    	# hading bugs and line for direction of travel
 		me.navBugs = root.createChild("group")
 			.set("z-index", 4);
 		# direction of travel indicator
@@ -401,46 +402,170 @@ var TI = {
 		      .setColor(rWhite,gWhite,bWhite, a)
 		      .setStrokeLineWidth(w)
 		      .set("z-index", 5);
+		
+		# own symbol
+		me.selfSymbol = me.rootCenter.createChild("path")
+		      .moveTo(-5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 0,         0*MM2TEX)
+		      .lineTo( 5*MM2TEX, 15*MM2TEX)
+		      .lineTo(-5*MM2TEX, 15*MM2TEX)
+		      .setColor(rWhite,gWhite,bWhite, a)
+		      .set("z-index", 10)
+		      .setStrokeLineWidth(w);
+		me.selfSymbolGPS = me.rootCenter.createChild("path")
+		      .moveTo(-5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 0,         0*MM2TEX)
+		      .lineTo( 5*MM2TEX, 15*MM2TEX)
+		      .lineTo(-5*MM2TEX, 15*MM2TEX)
+		      .setColor(rWhite,gWhite,bWhite, a)
+		      .setColorFill(rWhite,gWhite,bWhite)
+		      .set("z-index", 10)
+		      .setStrokeLineWidth(w);
 		me.selfVectorG = me.rootCenter.createChild("group")
 			.set("z-index", 10)
-			.setTranslation(0,-10*MM2TEX);
+			.setTranslation(0,0);
 		me.selfVector = me.selfVectorG.createChild("path")
+			  .set("z-index", 10)
 			  .moveTo(0,  0)
 			  .lineTo(0, -1*MM2TEX)
 			  .setColor(rWhite,gWhite,bWhite, a)
 		      .setStrokeLineWidth(w);
 
+		# main radar and SVY group
 		me.radar_group = me.rootCenter.createChild("group")
 			.set("z-index", 5);
+
 		me.echoesAircraft = [];
 		me.echoesAircraftVector = [];
-		for (var i = 0; i < maxTracks; i += 1) {
+		# selection
+		var grp = me.radar_group.createChild("group")
+			.set("z-index", maxTracks-0);
+		var grp2 = grp.createChild("group")
+			.setTranslation(0,0);
+		var vector = grp2.createChild("path")
+		  .moveTo(0,  0)
+		  .lineTo(0, -1*MM2TEX)
+		  .setColor(rYellow,gYellow,bYellow, a)
+	      .setStrokeLineWidth(w);
+		grp.createChild("path")
+	       .moveTo(-7.5, 7.5)
+           .arcSmallCW(7.5, 7.5, 0, 15, 0)
+           .arcSmallCW(7.5, 7.5, 0, -15, 0)
+           .moveTo(-3.75, 11.25)
+           .arcSmallCW(3.75, 3.75, 0, 7.5, 0)
+           .arcSmallCW(3.75, 3.75, 0, -7.5, 0)
+	       .setColor(rYellow,gYellow,bYellow, a)
+	       .setStrokeLineWidth(w);
+	    append(me.echoesAircraft, grp);
+	    append(me.echoesAircraftVector, vector);
+	    #unselected
+		for (var i = 1; i < maxTracks; i += 1) {
 			var grp = me.radar_group.createChild("group")
 				.set("z-index", maxTracks-i);
 			var grp2 = grp.createChild("group")
-				.setTranslation(0,-10*MM2TEX);
+				.setTranslation(0, 0);
 			var vector = grp2.createChild("path")
 			  .moveTo(0,  0)
 			  .lineTo(0, -1*MM2TEX)
 			  .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
 		      .setStrokeLineWidth(w);
 			grp.createChild("path")
-		      .moveTo(-5*MM2TEX,  5*MM2TEX)
-		      .lineTo( 0,       -10*MM2TEX)
-		      .moveTo( 5*MM2TEX,  5*MM2TEX)
-		      .lineTo( 0,       -10*MM2TEX)
-		      .moveTo(-5*MM2TEX,  5*MM2TEX)
-		      .lineTo( 5*MM2TEX,  5*MM2TEX)
+		      .moveTo(-5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 0,         0*MM2TEX)
+		      .moveTo( 5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 0,         0*MM2TEX)
+		      .moveTo(-5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 5*MM2TEX, 15*MM2TEX)
 		      .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
 		      .setStrokeLineWidth(w);
 		    append(me.echoesAircraft, grp);
 		    append(me.echoesAircraftVector, vector);
 		}
 
+		# SVY
+		me.rootSVY = root.createChild("group")
+    	    .set("z-index", 1);
+    	me.svy_grp = me.rootSVY.createChild("group");
+    	me.svy_grp2 = me.svy_grp.createChild("group")
+    		.set("z-index", 1);
+    	me.echoesAircraftSvy = [];
+		me.echoesAircraftSvyVector = [];
+		var grpS = me.svy_grp.createChild("group")
+			.set("z-index", maxTracks-0);
+		var grpS2 = grpS.createChild("group")
+			.setTranslation(0,0);
+		var vectorS = grpS2.createChild("path")
+		  .moveTo(0,  0)
+		  .lineTo(0, -1*MM2TEX)
+		  .setColor(rYellow,gYellow,bYellow, a)
+	      .setStrokeLineWidth(w);
+		grpS.createChild("path")
+	       .moveTo(-7.5, 7.5)
+           .arcSmallCW(7.5, 7.5, 0, 15, 0)
+           .arcSmallCW(7.5, 7.5, 0, -15, 0)
+           .moveTo(-3.75, 11.25)
+           .arcSmallCW(3.75, 3.75, 0, 7.5, 0)
+           .arcSmallCW(3.75, 3.75, 0, -7.5, 0)
+	       .setColor(rYellow,gYellow,bYellow, a)
+	       .setStrokeLineWidth(w);
+	    append(me.echoesAircraftSvy, grpS);
+	    append(me.echoesAircraftSvyVector, vectorS);
+		for (var i = 1; i < maxTracks; i += 1) {
+			var grp = me.svy_grp.createChild("group")
+				.set("z-index", maxTracks-i);
+			var vector = grp.createChild("path")
+			  .moveTo(0,  0)
+			  .lineTo(0, -1*MM2TEX)
+			  .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
+		      .setStrokeLineWidth(w);
+			grp.createChild("path")
+		      .moveTo(-5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 0,         0*MM2TEX)
+		      .moveTo( 5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 0,         0*MM2TEX)
+		      .moveTo(-5*MM2TEX, 15*MM2TEX)
+		      .lineTo( 5*MM2TEX, 15*MM2TEX)
+		      .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
+		      .setStrokeLineWidth(w);
+		    append(me.echoesAircraftSvy, grp);
+		    append(me.echoesAircraftSvyVector, vector);
+		}
+		me.selfSymbolSvy = me.svy_grp.createChild("path")
+		      .moveTo(-5*MM2TEX,  15*MM2TEX)
+		      .lineTo( 0,       0*MM2TEX)
+		      .moveTo( 5*MM2TEX,  15*MM2TEX)
+		      .lineTo( 0,       0*MM2TEX)
+		      .moveTo(-5*MM2TEX,  15*MM2TEX)
+		      .lineTo( 5*MM2TEX,  15*MM2TEX)
+		      .setColor(rWhite,gWhite,bWhite, a)
+		      .set("z-index", 10)
+		      .setStrokeLineWidth(w);
+		me.selfVectorSvy = me.svy_grp.createChild("path")
+			  .moveTo(0,  0)
+			  .set("z-index", 10)
+			  .lineTo(1*MM2TEX, 0)
+			  .setColor(rWhite,gWhite,bWhite, a)
+		      .setStrokeLineWidth(w);
+		# SVY coordinate text
+		me.textSvyY = me.svy_grp.createChild("text")
+    		.setText("40 KM")
+    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setAlignment("left-bottom")
+    		.setTranslation(0, 0)
+    		.set("z-index", 7)
+    		.setFontSize(13, 1);
+    	me.textSvyX = me.svy_grp.createChild("text")
+    		.setText("120 KM")
+    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setAlignment("right-top")
+    		.setTranslation(0, 0)
+    		.set("z-index", 7)
+    		.setFontSize(13, 1);
+
+		# runway symbols
 	    me.dest = me.rootCenter.createChild("group")
 	    	.set("z-index", 7)
-            .hide()
-            .set("z-index", 5);
+            .hide();
 	    me.dest_runway = me.dest.createChild("path")
 	               .moveTo(0, 0)
 	               .lineTo(0, -1)
@@ -461,6 +586,7 @@ var TI = {
 	               .setStrokeLineWidth(w)
 	               .setColor(rTyrk,gTyrk,bTyrk, a);
 
+	    # threat circles
 	    me.threats = [];
 	    for (var i = 0; i < maxThreats; i += 1) {
 	    	append(me.threats, me.radar_group.createChild("path")
@@ -471,6 +597,7 @@ var TI = {
 	               .setColor(rRed,gRed,bRed, a));
 	    }
 
+	    # route symbols
 	    me.steerpoint = [];
 	    for (var i = 0; i < maxSteers; i += 1) {
 	    	append(me.steerpoint, me.rootCenter.createChild("path")
@@ -486,6 +613,7 @@ var TI = {
 	    me.steerPoly = me.rootCenter.createChild("group")
 	    			.set("z-index", 6);
 
+	    # missiles
 	    me.missiles = [];
 	    me.missilesVector = [];
 	    for (var i = 0; i < maxMissiles; i += 1) {
@@ -511,6 +639,7 @@ var TI = {
 		    append(me.missilesVector, vector);
 	    }
 
+	    # gps symbol
 	    me.gpsSymbol = me.radar_group.createChild("path")
 		      .moveTo(-10*MM2TEX, 10*MM2TEX)
 		      .vert(            -20*MM2TEX)
@@ -797,9 +926,7 @@ var TI = {
     		.setTranslation(width, height-height*0.085)
     		.setFontSize(17, 1);
 
-    	me.menuMainRoot = root.createChild("group")
-    		.set("z-index", 20)
-    		.hide();
+    	# log pages
     	me.logRoot = root.createChild("group")
     		.set("z-index", 5)
     		.hide();
@@ -810,6 +937,10 @@ var TI = {
     		.setTranslation(0, 20)
     		.setFontSize(10, 1);
 
+    	# menu groups
+    	me.menuMainRoot = root.createChild("group")
+    		.set("z-index", 20)
+    		.hide();
     	me.menuFastRoot = root.createChild("group")
     		.set("z-index", 20);
     		#.hide();
@@ -937,12 +1068,13 @@ var TI = {
 		    		.setStrokeLineWidth(w));
 		}
 
+		# airport overlay
 		me.base_grp = me.rootCenter.createChild("group")
 			.set("z-index", 2);
 
+		# large airports
 		me.baseLargeText = [];
 		me.baseLarge = [];
-
 		for(var i = 0; i < maxBases; i+=1) {
 			append(me.baseLarge,
 				me.base_grp.createChild("path")
@@ -961,9 +1093,73 @@ var TI = {
     				.setFontSize(13, 1));
 		}
 
+		me.ecm_grp = me.rootCenter.createChild("group")
+			.set("z-index", 1);
+		me.ecmRadius = 50;
+		me.ecm12 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(-14, me.ecmRadius)[0], circlePosH(-14, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(14, me.ecmRadius)[0]-circlePosH(-14, me.ecmRadius)[0], circlePosH(14, me.ecmRadius)[1]-circlePosH(-14, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rGreen,gGreen,bGreen, a);
+	    me.ecm1 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(16, me.ecmRadius)[0], circlePosH(16, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(44, me.ecmRadius)[0]-circlePosH(16, me.ecmRadius)[0], circlePosH(44, me.ecmRadius)[1]-circlePosH(16, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rRed,gRed,bRed, a);
+	    me.ecm2 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(46, me.ecmRadius)[0], circlePosH(46, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(74, me.ecmRadius)[0]-circlePosH(46, me.ecmRadius)[0], circlePosH(74, me.ecmRadius)[1]-circlePosH(46, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rYellow,gYellow,bYellow, a);
+	    me.ecm3 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(76, me.ecmRadius)[0], circlePosH(76, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(104, me.ecmRadius)[0]-circlePosH(76, me.ecmRadius)[0], circlePosH(104, me.ecmRadius)[1]-circlePosH(76, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rYellow,gYellow,bYellow, a);
+	    me.ecm4 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(106, me.ecmRadius)[0], circlePosH(106, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(134, me.ecmRadius)[0]-circlePosH(106, me.ecmRadius)[0], circlePosH(134, me.ecmRadius)[1]-circlePosH(106, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rYellow,gYellow,bYellow, a);
+	    me.ecm5 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(136, me.ecmRadius)[0], circlePosH(136, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(164, me.ecmRadius)[0]-circlePosH(136, me.ecmRadius)[0], circlePosH(164, me.ecmRadius)[1]-circlePosH(136, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rYellow,gYellow,bYellow, a);
+	    me.ecm6 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(166, me.ecmRadius)[0], circlePosH(166, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(194, me.ecmRadius)[0]-circlePosH(166, me.ecmRadius)[0], circlePosH(194, me.ecmRadius)[1]-circlePosH(166, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rYellow,gYellow,bYellow, a);
+	    me.ecm7 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(196, me.ecmRadius)[0], circlePosH(196, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(224, me.ecmRadius)[0]-circlePosH(196, me.ecmRadius)[0], circlePosH(224, me.ecmRadius)[1]-circlePosH(196, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rYellow,gYellow,bYellow, a);
+	    me.ecm8 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(226, me.ecmRadius)[0], circlePosH(226, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(254, me.ecmRadius)[0]-circlePosH(226, me.ecmRadius)[0], circlePosH(254, me.ecmRadius)[1]-circlePosH(226, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rYellow,gYellow,bYellow, a);
+	    me.ecm9 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(256, me.ecmRadius)[0], circlePosH(256, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(284, me.ecmRadius)[0]-circlePosH(256, me.ecmRadius)[0], circlePosH(284, me.ecmRadius)[1]-circlePosH(256, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rYellow,gYellow,bYellow, a);
+	    me.ecm10 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(286, me.ecmRadius)[0], circlePosH(286, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(314, me.ecmRadius)[0]-circlePosH(286, me.ecmRadius)[0], circlePosH(314, me.ecmRadius)[1]-circlePosH(286, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rYellow,gYellow,bYellow, a);
+	    me.ecm11 = me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(316, me.ecmRadius)[0], circlePosH(316, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(344, me.ecmRadius)[0]-circlePosH(316, me.ecmRadius)[0], circlePosH(344, me.ecmRadius)[1]-circlePosH(316, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(rYellow,gYellow,bYellow, a);
+
+		# small airports
 		me.baseSmallText = [];
 		me.baseSmall = [];
-
 		for(var i = 0; i < maxBases; i+=1) {
 			append(me.baseSmall,
 				me.base_grp.createChild("path")
@@ -1086,70 +1282,13 @@ var TI = {
 		      .lineTo( me.arr_15*MM2TEX,  me.arr_90*MM2TEX)
 		      .setStrokeLineWidth(w);
 
+
+		# time
 		me.textTime = root.createChild("text")
     		.setText("h:min:s")
     		.setColor(rWhite,gWhite,bWhite, a)
     		.setAlignment("right-top")
     		.setTranslation(width, 4)
-    		.set("z-index", 7)
-    		.setFontSize(13, 1);
-
-    	me.rootSVY = root.createChild("group")
-    	    .set("z-index", 1);
-    	me.svy_grp = me.rootSVY.createChild("group");
-    	me.svy_grp2 = me.svy_grp.createChild("group")
-    		.set("z-index", 1);
-    	me.echoesAircraftSvy = [];
-		me.echoesAircraftSvyVector = [];
-		for (var i = 0; i < maxTracks; i += 1) {
-			var grp = me.svy_grp.createChild("group")
-				.set("z-index", maxTracks-i);
-			var vector = grp.createChild("path")
-			  .moveTo(0,  0)
-			  .lineTo(0, -1*MM2TEX)
-			  .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
-		      .setStrokeLineWidth(w);
-			grp.createChild("path")
-		      .moveTo(-5*MM2TEX, 15*MM2TEX)
-		      .lineTo( 0,         0*MM2TEX)
-		      .moveTo( 5*MM2TEX, 15*MM2TEX)
-		      .lineTo( 0,         0*MM2TEX)
-		      .moveTo(-5*MM2TEX, 15*MM2TEX)
-		      .lineTo( 5*MM2TEX, 15*MM2TEX)
-		      .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
-		      .setStrokeLineWidth(w);
-		    append(me.echoesAircraftSvy, grp);
-		    append(me.echoesAircraftSvyVector, vector);
-		}
-		me.selfSymbolSvy = me.svy_grp.createChild("path")
-		      .moveTo(-5*MM2TEX,  15*MM2TEX)
-		      .lineTo( 0,       0*MM2TEX)
-		      .moveTo( 5*MM2TEX,  15*MM2TEX)
-		      .lineTo( 0,       0*MM2TEX)
-		      .moveTo(-5*MM2TEX,  15*MM2TEX)
-		      .lineTo( 5*MM2TEX,  15*MM2TEX)
-		      .setColor(rWhite,gWhite,bWhite, a)
-		      .set("z-index", 10)
-		      .setStrokeLineWidth(w);
-		me.selfVectorSvy = me.svy_grp.createChild("path")
-			  .moveTo(0,  0)
-			  .set("z-index", 10)
-			  .lineTo(1*MM2TEX, 0)
-			  .setColor(rWhite,gWhite,bWhite, a)
-		      .setStrokeLineWidth(w);
-
-		me.textSvyY = me.svy_grp.createChild("text")
-    		.setText("40 KM")
-    		.setColor(rWhite,gWhite,bWhite, a)
-    		.setAlignment("left-bottom")
-    		.setTranslation(0, 0)
-    		.set("z-index", 7)
-    		.setFontSize(13, 1);
-    	me.textSvyX = me.svy_grp.createChild("text")
-    		.setText("120 KM")
-    		.setColor(rWhite,gWhite,bWhite, a)
-    		.setAlignment("right-top")
-    		.setTranslation(0, 0)
     		.set("z-index", 7)
     		.setFontSize(13, 1);
 	},
@@ -1204,6 +1343,7 @@ var TI = {
 	        RMActive:             "autopilot/route-manager/active",
 	        nav0Heading:          "instrumentation/nav[0]/heading-deg",
 	        ias:                  "instrumentation/airspeed-indicator/indicated-speed-kt",
+	        tas:                  "instrumentation/airspeed-indicator/true-speed-kt",
 	        wow0:                 "fdm/jsbsim/gear/unit[0]/WOW",
         	wow1:                 "fdm/jsbsim/gear/unit[1]/WOW",
         	wow2:                 "fdm/jsbsim/gear/unit[2]/WOW",
@@ -1275,6 +1415,9 @@ var TI = {
 		ti.newFails = FALSE;
 		ti.lastFailBlink = TRUE;
 		ti.landed = TRUE;
+		ti.foes    = [];
+		ti.friends = [];
+		ti.ECMon   = FALSE;
 
 		ti.startFailListener();
 
@@ -1331,6 +1474,7 @@ var TI = {
 		M2TEX = 1/(meterPerPixel[zoom]*math.cos(getprop('/position/latitude-deg')*D2R));
 		me.updateSVY();# must be before displayRadarTracks and showselfvector
 		me.showSelfVector();
+		me.defineEnemies();# must be before displayRadarTracks
 		me.displayRadarTracks();
 		me.showRunway();
 		me.showRadarLimit();
@@ -1342,6 +1486,7 @@ var TI = {
 		me.showPoly();#must be under showSteerPoints
 		me.showTargetInfo();#must be after displayRadarTracks
 		me.showBasesNear();		
+		me.ecmOverlay();
 
 		settimer(func me.loop(), 0.5);
 	},
@@ -1355,8 +1500,8 @@ var TI = {
 		me.updateFlightData();
 		me.showHeadingBug();
 		me.testLanding();
-
-		settimer(func me.loopFast(), 0.05);
+		me.rate = getprop("sim/frame-rate-worst");
+		settimer(func me.loopFast(), me.rate !=nil?clamp(2.1/(me.rate+0.001), 0.05, 0.5):0.5);#0.001 is to prevent divide by zero
 	},
 
 	loopSlow: func {
@@ -1398,7 +1543,6 @@ var TI = {
 				}
 			}
 			if (me.menuShowMain == TRUE) {
-				#me.menuShowFast = TRUE;#figure this out better
 				me.menuMainRoot.show();
 				me.updateMainMenu();
 				me.upText = TRUE;
@@ -1421,60 +1565,60 @@ var TI = {
 					me.hideMap();
 					me.logRoot.show();
 					call(func {
-						var buffer = armament.fireLog.get_buffer();
-						var str = "       Fire log:\n";
-		    			foreach(entry; buffer) {
-		      				str = str~"    "~entry.time~" "~entry.message~"\n";
+						me.buffer = armament.fireLog.get_buffer();
+						me.str = "       Fire log:\n";
+		    			foreach(entry; me.buffer) {
+		      				me.str = me.str~"    "~entry.time~" "~entry.message~"\n";
 		    			}
-						me.errorList.setText(str);
+						me.errorList.setText(me.str);
 					});
 					me.clipLogPage();
 				} elsif (me.trapMan == TRUE) {
 					me.hideMap();
 					me.logRoot.show();
 					call(func {
-						var buffer = me.logEvents.get_buffer();
-						var str = "       Event log:\n";
-		    			foreach(entry; buffer) {
-		      				str = str~"    "~entry.time~" "~entry.message~"\n";
+						me.buffer = me.logEvents.get_buffer();
+						me.str = "       Event log:\n";
+		    			foreach(entry; me.buffer) {
+		      				me.str = me.str~"    "~entry.time~" "~entry.message~"\n";
 		    			}
-						me.errorList.setText(str);
+						me.errorList.setText(me.str);
 					});
 					me.clipLogPage();
 				} elsif (me.trapLock == TRUE) {
 					me.hideMap();
 					me.logRoot.show();
 					call(func {
-						var buffer = radar_logic.lockLog.get_buffer();
-						var str = "       Lock log:\n";
-		    			foreach(entry; buffer) {
-		      				str = str~"    "~entry.time~" "~entry.message~"\n";
+						me.buffer = radar_logic.lockLog.get_buffer();
+						me.str = "       Lock log:\n";
+		    			foreach(entry; me.buffer) {
+		      				me.str = me.str~"    "~entry.time~" "~entry.message~"\n";
 		    			}
-						me.errorList.setText(str);
+						me.errorList.setText(me.str);
 					});
 					me.clipLogPage();
 				} elsif (me.trapLand == TRUE) {
 					me.hideMap();
 					me.logRoot.show();
 					call(func {
-						var buffer = me.logLand.get_buffer();
-						var str = "       Landing log:\n";
-		    			foreach(entry; buffer) {
-		      				str = str~"    "~entry.time~" "~entry.message~"\n";
+						me.buffer = me.logLand.get_buffer();
+						me.str = "       Landing log:\n";
+		    			foreach(entry; me.buffer) {
+		      				me.str = me.str~"    "~entry.time~" "~entry.message~"\n";
 		    			}
-						me.errorList.setText(str);
+						me.errorList.setText(me.str);
 					});
 					me.clipLogPage();
 				} elsif (me.trapECM == TRUE) {
 					me.hideMap();
 					me.logRoot.show();
 					call(func {
-						var buffer = armament.ecmLog.get_buffer();
-						var str = "       ECM log:\n";
-		    			foreach(entry; buffer) {
-		      				str = str~"    "~entry.time~" "~entry.message~"\n";
+						me.buffer = armament.ecmLog.get_buffer();
+						me.str = "       ECM log:\n";
+		    			foreach(entry; me.buffer) {
+		      				me.str = me.str~"    "~entry.time~" "~entry.message~"\n";
 		    			}
-						me.errorList.setText(str);
+						me.errorList.setText(me.str);
 					});
 					me.clipLogPage();
 				} else{
@@ -1485,12 +1629,12 @@ var TI = {
 				me.hideMap();
 				me.logRoot.show();
 				call(func {
-					var buffer = FailureMgr.get_log_buffer();
-					var str = "       Failure log:\n";
-	    			foreach(entry; buffer) {
-	      				str = str~"    "~entry.time~" "~entry.message~"\n";
+					me.buffer = FailureMgr.get_log_buffer();
+					me.str = "       Failure log:\n";
+	    			foreach(entry; me.buffer) {
+	      				me.str = me.str~"    "~entry.time~" "~entry.message~"\n";
 	    			}
-					me.errorList.setText(str);
+					me.errorList.setText(me.str);
 				});
 				me.newFails = FALSE;
 				me.clipLogPage();
@@ -1503,12 +1647,12 @@ var TI = {
 			me.hideMap();
 			me.logRoot.show();
 			call(func {
-				var buffer = me.logBIT.get_buffer();
-				var str = "       RB-99 Build In Test (BIT) log:\n";
-    			foreach(entry; buffer) {
-      				str = str~"    "~entry.time~" "~entry.message~"\n";
+				me.buffer = me.logBIT.get_buffer();
+				me.str = "       RB-99 Build In Test (BIT) log:\n";
+    			foreach(entry; me.buffer) {
+      				me.str = me.str~"    "~entry.time~" "~entry.message~"\n";
     			}
-				me.errorList.setText(str);
+				me.errorList.setText(me.str);
 			});
 			me.clipLogPage();
 
@@ -1625,37 +1769,37 @@ var TI = {
 	},
 
 	updateMainMenuTextWeapons: func (position) {
-		var pyl = 0;
+		me.pyl = 0;
 		if (position == 8) {
-			pyl = 5;
+			me.pyl = 5;
 		} elsif (position == 9) {
-			pyl = 1;
+			me.pyl = 1;
 		} elsif (position == 10) {
-			pyl = 2;
+			me.pyl = 2;
 		} elsif (position == 11) {
-			pyl = 4;
+			me.pyl = 4;
 		} elsif (position == 12) {
-			pyl = 3;
+			me.pyl = 3;
 		} elsif (position == 13) {
-			pyl = 6;
+			me.pyl = 6;
 		}
-		me.pylon = displays.common.armNamePylon(pyl);
+		me.pylon = displays.common.armNamePylon(me.pyl);
 		if (me.pylon != nil) {
 			me.menuButton[position].setText(me.pylon);
 		}
 	},
 
 	compileMainMenu: func (button) {
-		var str = nil;
+		me.str = nil;
 		if (me.interoperability == displays.METRIC) {
-			str = dictSE[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":''~math.abs(me.menuMain)))];
+			me.str = dictSE[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":''~math.abs(me.menuMain)))];
 		} else {
-			str = dictEN[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":''~math.abs(me.menuMain)))];
+			me.str = dictEN[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":''~math.abs(me.menuMain)))];
 		}
-		if (str != nil) {
-			str = str[''~button];
-			if (str != nil and (me.showFullMenus == TRUE or str[0] == TRUE)) {
-				return str[1];
+		if (me.str != nil) {
+			me.str = me.str[''~button];
+			if (me.str != nil and (me.showFullMenus == TRUE or me.str[0] == TRUE)) {
+				return me.str[1];
 			}
 		}
 		return "";
@@ -1736,27 +1880,33 @@ var TI = {
 	},
 
 	compileFastMenu: func (button) {
-		var str = nil;
+		me.str = nil;
 		if (me.interoperability == displays.METRIC) {
-			str = dictSE[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":''~math.abs(me.menuMain)))];
+			me.str = dictSE[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":''~math.abs(me.menuMain)))];
 		} else {
-			str = dictEN[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":''~math.abs(me.menuMain)))];
+			me.str = dictEN[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":''~math.abs(me.menuMain)))];
 		}
-		if (str != nil) {
-			str = str[''~button];
-			if (str != nil and (me.showFullMenus == TRUE or str[0] == TRUE)) {
-				return me.vertStr(str[1]);
+		if (me.str != nil) {
+			me.str = me.str[''~button];
+			if (me.str != nil and (me.showFullMenus == TRUE or me.str[0] == TRUE)) {
+				return me.vertStr(me.str[1]);
 			}
 		}
 		return "";
 	},
 
 	vertStr: func (str) {
-		var compiled = "";
+		me.compiled = "";
 		for(var i = 0; i < size(str); i+=1) {
-			compiled = compiled ~substr(str,i,1)~(i==(size(str)-1)?"":"\n");
+			me.sub = substr(str,i,1);
+			if (me.sub == "\xC3") {
+				# trick to read in Swedish special chars
+				me.sub = substr(str,i,2);
+				i += 1;
+			}
+			me.compiled = me.compiled~me.sub~(i==(size(str)-1)?"":"\n");
 		}
-		return compiled;
+		return me.compiled;
 	},
 
 	updateFastSubMenu: func {
@@ -1774,30 +1924,30 @@ var TI = {
 		# button 7 is always showing stuff
 		me.menuButtonSub[7].show();
 		me.menuButtonSubBox[7].show();
-		var seven = nil;
+		me.seven = nil;
 		if (me.interoperability == displays.METRIC) {
-			seven = me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":(dictSE['0'][''~math.abs(me.menuMain)][1])));
+			me.seven = me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":(dictSE['0'][''~math.abs(me.menuMain)][1])));
 		} else {
-			seven = me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":(dictEN['0'][''~math.abs(me.menuMain)][1])));
+			me.seven = me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":(dictEN['0'][''~math.abs(me.menuMain)][1])));
 		}
-		me.menuButtonSub[7].setText(me.vertStr(seven));
+		me.menuButtonSub[7].setText(me.vertStr(me.seven));
 		if (me.menuMain == MAIN_DISPLAY) {
 			#show flight data
 			me.menuButtonSub[17].show();
 			me.menuButtonSubBox[17].show();
-			var seventeen = nil;
+			me.seventeen = nil;
 			if (me.interoperability == displays.METRIC) {
-				seventeen = dictSE['HORI'][''~me.displayFlight][1];
+				me.seventeen = dictSE['HORI'][''~me.displayFlight][1];
 			} else {
-				seventeen = dictEN['HORI'][''~me.displayFlight][1];
+				me.seventeen = dictEN['HORI'][''~me.displayFlight][1];
 			}
-			me.menuButtonSub[17].setText(me.vertStr(seventeen));
+			me.menuButtonSub[17].setText(me.vertStr(me.seventeen));
 
 			# zoom level
 			me.menuButtonSub[6].show();
 			me.menuButtonSubBox[6].show();
-			var six = zoomLevels[zoom_curr]~"";
-			me.menuButtonSub[6].setText(me.vertStr(six));
+			me.six = zoomLevels[zoom_curr]~"";
+			me.menuButtonSub[6].setText(me.vertStr(me.six));
 
 			# day/night map
 			me.menuButtonSub[19].setText(me.vertStr(me.interoperability == displays.METRIC?"NATT":"NGHT"));
@@ -1835,13 +1985,13 @@ var TI = {
 		}
 		if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 			# radar in attack or fight mode
-			var ft = nil;
+			me.ft = nil;
 			if (me.interoperability == displays.METRIC) {
-				ft = "ATT";
+				me.ft = "ATT";
 			} else {
-				ft = "ATT";
+				me.ft = "ATT";
 			}
-			me.menuButtonSub[14].setText(me.vertStr(ft));
+			me.menuButtonSub[14].setText(me.vertStr(me.ft));
 			if (me.ModeAttack == TRUE) {
 				me.menuButtonSubBox[14].show();
 			}
@@ -1849,13 +1999,13 @@ var TI = {
 		}
 		if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == FALSE and me.menuSvy == FALSE) {
 			# use top or belly antaenna
-			var ant = nil;
+			me.ant = nil;
 			if (me.interoperability == displays.METRIC) {
-				ant = me.fr28Top==TRUE?"RYG":"BUK";
+				me.ant = me.fr28Top==TRUE?"RYG":"BUK";
 			} else {
-				ant = me.fr28Top==TRUE?"OVER":"UNDR";
+				me.ant = me.fr28Top==TRUE?"OVER":"UNDR";
 			}
-			me.menuButtonSub[6].setText(me.vertStr(ant));
+			me.menuButtonSub[6].setText(me.vertStr(me.ant));
 			me.menuButtonSub[6].show();
 			me.menuButtonSubBox[6].show();
 		}
@@ -1869,13 +2019,13 @@ var TI = {
 			me.menuButtonSub[6].show();
 			me.menuButtonSubBox[6].show();
 
-			var skal = nil;
+			me.skal = nil;
 			if (me.interoperability == displays.METRIC) {
-				skal = me.SVYscale==SVY_ELKA?"ELKA":(me.SVYscale==SVY_MI?"MI":"RMAX");
+				me.skal = me.SVYscale==SVY_ELKA?"ELKA":(me.SVYscale==SVY_MI?"MI":"RMAX");
 			} else {
-				skal = me.SVYscale==SVY_ELKA?"EMAP":(me.SVYscale==SVY_MI?"MI":"RMAX");
+				me.skal = me.SVYscale==SVY_ELKA?"EMAP":(me.SVYscale==SVY_MI?"MI":"RMAX");
 			}
-			me.menuButtonSub[14].setText(me.vertStr(skal));
+			me.menuButtonSub[14].setText(me.vertStr(me.skal));
 			me.menuButtonSub[14].show();
 			me.menuButtonSubBox[14].show();
 
@@ -1926,9 +2076,7 @@ var TI = {
 	showECM: func {
 		# ECM and warnings
 		if (!me.active) return;
-
-		# tact ecm report (todo: show current ecm instead)
-		print("TI ECM page not implemented yet, coming soon^tm.");
+		me.ECMon = !me.ECMon;
 	},
 
 	showLNK: func {
@@ -1953,21 +2101,21 @@ var TI = {
 	recordEvent: func {
 		# mark event
 		#
-		var tgt = "";
+		me.tgt = "";
 		if(radar_logic.selection != nil) {
-			tgt = radar_logic.selection.get_Callsign();
+			me.tgt = radar_logic.selection.get_Callsign();
 		}
-		var echoes = size(radar_logic.tracks);
-		var message = sprintf("\n      IAS: %d kt\n      Heading: %d deg\n      Alt: %d ft\n      Selected: %s\n      Echoes: %d\n      Lat: %.4f deg\n      Lon: %.4f deg",
+		me.echoes = size(radar_logic.tracks);
+		me.message = sprintf("\n      IAS: %d kt\n      Heading: %d deg\n      Alt: %d ft\n      Selected: %s\n      Echoes: %d\n      Lat: %.4f deg\n      Lon: %.4f deg",
 			me.input.ias.getValue(),
 			me.input.headMagn.getValue(),
 			me.input.alt_ft.getValue(),
-			echoes==0?"":tgt,
-			echoes,
+			me.echoes==0?"":me.tgt,
+			me.echoes,
 			getprop("position/latitude-deg"),
 			getprop("position/longitude-deg")
 			);
-		me.logEvents.push(message);
+		me.logEvents.push(me.message);
 	},
 
 
@@ -1980,12 +2128,104 @@ var TI = {
 	########################################################################################################
 	########################################################################################################
 
+	ecmOverlay: func {
+		if (me.ECMon == TRUE) {
+			if (getprop("ja37/sound/incoming12") == TRUE) {
+				me.ecm12.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[11] == TRUE) {
+				me.ecm12.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm12.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming1") == TRUE) {
+				me.ecm1.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[0] == TRUE) {
+				me.ecm1.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm1.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming2") == TRUE) {
+				me.ecm2.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[1] == TRUE) {
+				me.ecm2.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm2.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming3") == TRUE) {
+				me.ecm3.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[2] == TRUE) {
+				me.ecm3.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm3.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming4") == TRUE) {
+				me.ecm4.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[3] == TRUE) {
+				me.ecm4.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm4.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming5") == TRUE) {
+				me.ecm5.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[4] == TRUE) {
+				me.ecm5.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm5.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming6") == TRUE) {
+				me.ecm6.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[5] == TRUE) {
+				me.ecm6.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm6.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming7") == TRUE) {
+				me.ecm7.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[6] == TRUE) {
+				me.ecm7.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm7.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming8") == TRUE) {
+				me.ecm8.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[7] == TRUE) {
+				me.ecm8.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm8.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming9") == TRUE) {
+				me.ecm9.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[8] == TRUE) {
+				me.ecm9.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm9.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming10") == TRUE) {
+				me.ecm10.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[9] == TRUE) {
+				me.ecm10.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm10.setColor(rGreen,gGreen,bGreen,a);
+			}
+			if (getprop("ja37/sound/incoming11") == TRUE) {
+				me.ecm11.setColor(rRed,gRed,bRed,a);
+			} elsif (radar_logic.rwr[10] == TRUE) {
+				me.ecm11.setColor(rYellow,gYellow,bYellow,a);
+			} else {
+				me.ecm11.setColor(rGreen,gGreen,bGreen,a);
+			}
+			me.ecm_grp.show();
+		} else {
+			me.ecm_grp.hide();
+		}
+	},
+
 	testLanding: func {
-		var wow = me.input.wow0.getValue() and me.input.wow0.getValue() and me.input.wow0.getValue();
-		if (me.landed == FALSE and wow == TRUE) {
+		me.wow = me.input.wow0.getValue() and me.input.wow0.getValue() and me.input.wow0.getValue();
+		if (me.landed == FALSE and me.wow == TRUE) {
 			me.logLand.push("Has landed.");
 			me.landed = TRUE;
-		} elsif (wow == FALSE) {
+		} elsif (me.wow == FALSE) {
 			me.landed = FALSE;
 		}
 	},
@@ -2032,19 +2272,19 @@ var TI = {
 			me.selfVectorSvy.setTranslation(me.SVYoriginX, me.SVYoriginY-me.SVYheight*me.input.alt_ft.getValue()*FT2M/me.SVYalt);
 			#me.selfVectorSvy.setRotation(90*D2R);
 
-			var textX = "";
-			var textY = "";
+			me.textX = "";
+			me.textY = "";
 
 			if (me.interoperability == displays.METRIC) {
-				textX = sprintf("%d KM" ,me.SVYrange*0.001);
-				textY = sprintf("%d KM" ,me.SVYhmax);
+				me.textX = sprintf("%d KM" ,me.SVYrange*0.001);
+				me.textY = sprintf("%d KM" ,me.SVYhmax);
 			} else {
-				textX = sprintf("%d NM" ,me.SVYrange*M2NM);
-				textY = sprintf("%dK FT" ,me.SVYhmax*M2FT);
+				me.textX = sprintf("%d NM" ,me.SVYrange*M2NM);
+				me.textY = sprintf("%dK FT" ,me.SVYhmax*M2FT);
 			}
 
-			me.textSvyX.setText(textX);
-			me.textSvyY.setText(textY);
+			me.textSvyX.setText(me.textX);
+			me.textSvyY.setText(me.textY);
 			me.textSvyY.setTranslation(me.SVYoriginX, height*0.05-w);
 			me.textSvyX.setTranslation(width*0.95, height*0.125+height*0.125*me.SVYsize-height*0.05+me.SVYticksize+w);
 
@@ -2060,16 +2300,16 @@ var TI = {
 			me.basesNear = [];
 			me.ports = findAirportsWithinRange(75);
 			foreach(var port; me.ports) {
-				var small = size(port.id) < 4;
-			    append(me.basesNear, {"icao": port.id, "lat": port.lat, "lon": port.lon, "elev": port.elevation, "small": small});
+				me.small = size(port.id) < 4;
+			    append(me.basesNear, {"icao": port.id, "lat": port.lat, "lon": port.lon, "elev": port.elevation, "small": me.small});
 			}
 		}
 	},
 
 	showBasesNear: func {
 		if (me.basesEnabled == TRUE and zoom_curr >= 2) {
-			var numL = 0;
-			var numS = 0;
+			me.numL = 0;
+			me.numS = 0;
 			foreach(var base; me.basesNear) {
 				if (base["icao"] != land.icao) {
 					me.coord = geo.Coord.new();
@@ -2087,35 +2327,35 @@ var TI = {
 				      		me.pixelX =  me.pixelDistance * math.cos(me.xa_rad + math.pi/2);
 				      		me.pixelY =  me.pixelDistance * math.sin(me.xa_rad + math.pi/2);
 				      		if (me.small == TRUE) {
-					      		if (numS < maxBases) {
-					      			me.baseSmall[numS].setTranslation(me.pixelX, me.pixelY);
-					      			me.baseSmallText[numS].setTranslation(me.pixelX, me.pixelY);
-					      			me.baseSmallText[numS].setText(me.baseIcao);
-					      			me.baseSmallText[numS].setRotation(-getprop("orientation/heading-deg")*D2R);
-					      			me.baseSmall[numS].show();
-					      			me.baseSmallText[numS].show();
-					      			numS += 1;
+					      		if (me.numS < maxBases) {
+					      			me.baseSmall[me.numS].setTranslation(me.pixelX, me.pixelY);
+					      			me.baseSmallText[me.numS].setTranslation(me.pixelX, me.pixelY);
+					      			me.baseSmallText[me.numS].setText(me.baseIcao);
+					      			me.baseSmallText[me.numS].setRotation(-getprop("orientation/heading-deg")*D2R);
+					      			me.baseSmall[me.numS].show();
+					      			me.baseSmallText[me.numS].show();
+					      			me.numS += 1;
 					      		}
 				      		} else {
-				      			if (numL < maxBases) {
-				      				me.baseLarge[numL].setTranslation(me.pixelX, me.pixelY);
-					      			me.baseLargeText[numL].setTranslation(me.pixelX, me.pixelY);
-					      			me.baseLargeText[numL].setText(me.baseIcao);
-					      			me.baseLargeText[numL].show();
-					      			me.baseLargeText[numL].setRotation(-getprop("orientation/heading-deg")*D2R);
-					      			me.baseLarge[numL].show();
-					      			numL += 1;
+				      			if (me.numL < maxBases) {
+				      				me.baseLarge[me.numL].setTranslation(me.pixelX, me.pixelY);
+					      			me.baseLargeText[me.numL].setTranslation(me.pixelX, me.pixelY);
+					      			me.baseLargeText[me.numL].setText(me.baseIcao);
+					      			me.baseLargeText[me.numL].show();
+					      			me.baseLargeText[me.numL].setRotation(-getprop("orientation/heading-deg")*D2R);
+					      			me.baseLarge[me.numL].show();
+					      			me.numL += 1;
 					      		}
 				      		}
 				      	}
 			    	}
 			    }
 			}
-			for(var i = numL; i < maxBases; i += 1) {
+			for(var i = me.numL; i < maxBases; i += 1) {
 				me.baseLargeText[i].hide();
 				me.baseLarge[i].hide();
 			}
-			for(var i = numS; i < maxBases; i += 1) {
+			for(var i = me.numS; i < maxBases; i += 1) {
 				me.baseSmallText[i].hide();
 				me.baseSmall[i].hide();
 			}
@@ -2260,8 +2500,8 @@ var TI = {
 		  			me.tgtTextSpd.setText("");
 		  		}
 	  		} else {
-	  			me.tgtSpdAlt.setText("");
-	  			me.tgtTextAlt.setText("");
+	  			me.tgtTextSpd.setText("");
+	  			me.tgtTextHei.setText("");
 	  		}
 			me.tgtTextField.show();
 		} else {
@@ -2569,8 +2809,8 @@ var TI = {
 			} else {
 				me.weight = getprop("fdm/jsbsim/inertia/weight-lbs")*0.001;
 			}
-			var weight = getprop("fdm/jsbsim/inertia/weight-lbs");
-			me.alpha   = 9 + ((weight - 28000) / (38000 - 28000)) * (12 - 9);
+			me.weightLBM = getprop("fdm/jsbsim/inertia/weight-lbs");
+			me.alpha   = 9 + ((me.weightLBM - 28000) / (38000 - 28000)) * (12 - 9);
 			me.weightT = me.weightT~sprintf(" %.1f", me.weight);
 			me.alphaT  = me.alphaT~sprintf(" %.1f", me.alpha);
 			me.textBWeight.setText(me.weightT);
@@ -2610,16 +2850,17 @@ var TI = {
 		if (me.input.currentMode.getValue() == canvas_HUD.COMBAT and me.input.tracks_enabled.getValue() == TRUE) {
 			if (me.lastZ != zoom_curr or me.lastRR != me.input.radarRange.getValue() or me.input.timeElapsed.getValue() - me.lastRRT > 1600) {
 				me.radar_limit_grp.removeAllChildren();
-				var rdrField = 61.5*D2R;
-				var radius = M2TEX*me.input.radarRange.getValue();
-				var (leftX, leftY)   = (-math.sin(rdrField)*radius, -math.cos(rdrField)*radius);
+				me.rdrField = 61.5*D2R;
+				me.radius = M2TEX*me.input.radarRange.getValue();
+				me.leftX = -math.sin(me.rdrField)*me.radius;
+				me.leftY = -math.cos(me.rdrField)*me.radius;
 				me.radarLimit = me.radar_limit_grp.createChild("path")
-					.moveTo(leftX, leftY)
-					.arcSmallCW(radius, radius, 0, -leftX*2, 0)
-					.moveTo(leftX, leftY)
-					.lineTo(leftX*0.80, leftY*0.80)
-					.moveTo(-leftX, leftY)
-					.lineTo(-leftX*0.80, leftY*0.80)
+					.moveTo(me.leftX, me.leftY)
+					.arcSmallCW(me.radius, me.radius, 0, -me.leftX*2, 0)
+					.moveTo(me.leftX, me.leftY)
+					.lineTo(me.leftX*0.80, me.leftY*0.80)
+					.moveTo(-me.leftX, me.leftY)
+					.lineTo(-me.leftX*0.80, me.leftY*0.80)
 					.setColor(rTyrk,gTyrk,bTyrk, a)
 			    	.setStrokeLineWidth(w);
 			    me.lastRRT = me.input.timeElapsed.getValue();
@@ -2683,9 +2924,13 @@ var TI = {
 		}
 	},
 
+	defineEnemies: func {
+		me.foes    = [getprop("ja37/faf/foe-1"),getprop("ja37/faf/foe-2"),getprop("ja37/faf/foe-3"),getprop("ja37/faf/foe-4"),getprop("ja37/faf/foe-5"),getprop("ja37/faf/foe-6")];
+		me.friends = [getprop("ja37/faf/friend-1"),getprop("ja37/faf/friend-2"),getprop("ja37/faf/friend-3"),getprop("ja37/faf/friend-4"),getprop("ja37/faf/friend-5"),getprop("ja37/faf/friend-6")];
+	},
+
 	displayRadarTracks: func () {
 
-	  	var mode = canvas_HUD.mode;
 		me.threatIndex  = -1;
 		me.missileIndex = -1;
 	    me.track_index  = 1;
@@ -2769,6 +3014,13 @@ var TI = {
 			me.tgtHeading = contact.get_heading();
 		    me.tgtSpeed = contact.get_Speed();
 		    me.myHeading = me.input.headTrue.getValue();
+		    me.boogie = 0;
+		    if (containsVector(me.friends, contact.get_Callsign())) {
+	    		me.boogie = 1;
+	    	} elsif (containsVector(me.foes, contact.get_Callsign())) {
+	    		me.boogie = -1;
+	    	}
+
 		    if (me.currentIndexT == 0 and contact.parents[0] == radar_logic.ContactGPS) {
 		    	me.gpsSymbol.setTranslation(me.pos_xx, me.pos_yy);
 		    	me.gpsSymbol.show();
@@ -2777,6 +3029,18 @@ var TI = {
 		    	me.echoesAircraftSvy[me.currentIndexT].hide();
 		    } elsif (me.ordn == FALSE) {
 		    	me.echoesAircraft[me.currentIndexT].setTranslation(me.pos_xx, me.pos_yy);
+
+		    	if (me.boogie == 1) {
+		    		me.echoesAircraft[me.currentIndexT].setColor(rGreen,gGreen,bGreen,a);
+		    		me.echoesAircraftVector[me.currentIndexT].setColor(rGreen,gGreen,bGreen,a);
+		    	} elsif (me.boogie == -1) {
+		    		me.echoesAircraft[me.currentIndexT].setColor(rRed,gRed,bRed,a);
+		    		me.echoesAircraftVector[me.currentIndexT].setColor(rRed,gRed,bRed,a);
+		    	} else {
+		    		me.echoesAircraft[me.currentIndexT].setColor(rYellow,gYellow,bYellow,a);
+		    		me.echoesAircraftVector[me.currentIndexT].setColor(rYellow,gYellow,bYellow,a);
+		    	}
+
 			    if (me.tgtHeading != nil) {
 			        me.relHeading = me.tgtHeading - me.myHeading;
 			        #me.relHeading -= 180;
@@ -2791,16 +3055,26 @@ var TI = {
 				me.echoesAircraft[me.currentIndexT].update();
 				if (me.SVYactive == TRUE) {
 					me.altsvy  = contact.get_altitude()*FT2M;
-					me.distsvy = contact.get_Coord().distance_to(geo.aircraft_position());
+					me.distsvy = math.cos(me.angle)*contact.get_Coord().distance_to(geo.aircraft_position());
 					me.echoesAircraftSvy[me.currentIndexT].setTranslation(me.SVYoriginX+me.SVYwidth*me.distsvy/me.SVYrange, me.SVYoriginY-me.SVYheight*me.altsvy/me.SVYalt);
+					if (me.boogie == 1) {
+			    		me.echoesAircraftSvy[me.currentIndexT].setColor(rGreen,gGreen,bGreen,a);
+			    		me.echoesAircraftSvyVector[me.currentIndexT].setColor(rGreen,gGreen,bGreen,a);
+			    	} elsif (me.boogie == -1) {
+			    		me.echoesAircraftSvy[me.currentIndexT].setColor(rRed,gRed,bRed,a);
+			    		me.echoesAircraftSvyVector[me.currentIndexT].setColor(rRed,gRed,bRed,a);
+			    	} else {
+			    		me.echoesAircraftSvy[me.currentIndexT].setColor(rYellow,gYellow,bYellow,a);
+			    		me.echoesAircraftSvyVector[me.currentIndexT].setColor(rYellow,gYellow,bYellow,a);
+			    	}
 				    if (me.tgtHeading != nil) {
 				        me.relHeading = me.tgtHeading - me.myHeading;
 				        #me.relHeading -= 180;
-				        var rot = 90;
+				        me.rot = 90;
 				        if (math.abs(geo.normdeg180(me.relHeading)) > 90) {
-				        	rot = -90;
+				        	me.rot = -90;
 				        }
-				        me.echoesAircraftSvy[me.currentIndexT].setRotation(rot * D2R);
+				        me.echoesAircraftSvy[me.currentIndexT].setRotation(me.rot * D2R);
 				    }
 				    if (me.tgtSpeed != nil) {
 				    	me.echoesAircraftSvyVector[me.currentIndexT].setScale(1, clamp(((me.tgtSpeed/60)*NM2M/me.SVYrange)*me.SVYwidth, 1, 750*MM2TEX));
@@ -2839,6 +3113,11 @@ var TI = {
 			if (me.showSAMs == TRUE and contact.get_model() == "missile_frigate" and me.threatIndex < maxThreats-1) {
 				me.threatIndex += 1;
 				me.threats[me.threatIndex].setTranslation(me.pos_xx, me.pos_yy);
+				if (me.boogie == 1) {
+		    		me.threats[me.threatIndex].setColor(rGreen,gGreen,bGreen,a);
+		    	} else {
+		    		me.threats[me.threatIndex].setColor(rRed,gRed,bRed,a);
+		    	}
 				me.scale = 60*NM2M*M2TEX/100;
 		      	me.threats[me.threatIndex].setStrokeLineWidth(w/me.scale);
 		      	me.threats[me.threatIndex].setScale(me.scale);
@@ -2846,6 +3125,11 @@ var TI = {
 			} elsif (me.showSAMs == TRUE and contact.get_model() == "buk-m2" and me.threatIndex < maxThreats-1) {
 				me.threatIndex += 1;
 				me.threats[me.threatIndex].setTranslation(me.pos_xx, me.pos_yy);
+				if (me.boogie == 1) {
+		    		me.threats[me.threatIndex].setColor(rGreen,gGreen,bGreen,a);
+		    	} else {
+		    		me.threats[me.threatIndex].setColor(rRed,gRed,bRed,a);
+		    	}
 				me.scale = 20*NM2M*M2TEX/100;
 		      	me.threats[me.threatIndex].setStrokeLineWidth(w/me.scale);
 		      	me.threats[me.threatIndex].setScale(me.scale);
@@ -2856,10 +3140,10 @@ var TI = {
 
 	showSelfVector: func {
 		# length = time to travel in 60 seconds.
-		var spd = getprop("velocities/airspeed-kt");# true airspeed so can be compared with other aircrafts speed. (should really be ground speed)
-		me.selfVector.setScale(1, clamp((spd/60)*NM2M*M2TEX, 1, 750*MM2TEX));
+		me.spd = me.input.tas.getValue();# true airspeed so can be compared with other aircrafts speed. (should really be ground speed)
+		me.selfVector.setScale(1, clamp((me.spd/60)*NM2M*M2TEX, 1, 750*MM2TEX));
 		if (me.SVYactive == TRUE) {
-			me.selfVectorSvy.setScale(clamp(((spd/60)*NM2M/me.SVYrange)*me.SVYwidth, 1, 750*MM2TEX),1);
+			me.selfVectorSvy.setScale(clamp(((me.spd/60)*NM2M/me.SVYrange)*me.SVYwidth, 1, 750*MM2TEX),1);
 		}
 		if (me.GPSinit == TRUE) {
 			me.selfSymbol.hide();
@@ -3102,7 +3386,7 @@ var TI = {
 				me.trapMan = TRUE;
 				me.quickOpen = 10000;
 			}	
-			if (math.abs(me.menuMain) == MAIN_SYSTEMS) {
+			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 				me.showSteerPoly = !me.showSteerPoly;
 			}
 			if (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == FALSE and me.menuGPS == FALSE) {
@@ -3299,16 +3583,16 @@ var TI = {
 			if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == TRUE) {
 				# GPS fix
 				if (me.GPSinit == TRUE) {
-					  var coord = geo.aircraft_position();
+					  me.coord = geo.aircraft_position();
 
-					  var ground = geo.elevation(coord.lat(), coord.lon());
-    				  if(ground != nil) {
-      						coord.set_alt(ground);
+					  me.ground = geo.elevation(me.coord.lat(), me.coord.lon());
+    				  if(me.ground != nil) {
+      						coord.set_alt(me.ground);
       				  }
 
-					  var contact = radar_logic.ContactGPS.new("FIX", coord);
+					  me.contact = radar_logic.ContactGPS.new("FIX", me.coord);
 
-					  radar_logic.selection = contact;
+					  radar_logic.selection = me.contact;
 				}
 			}
 			if (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == TRUE) {
@@ -3507,54 +3791,56 @@ var TI = {
 		me.mapCentrum.setTranslation(width/2, height*0.875-(height*0.875)*me.ownPosition);
 		
 		# get current position
-		var lat = getprop('/position/latitude-deg');
-		var lon = getprop('/position/longitude-deg');
+		me.lat = getprop('/position/latitude-deg');
+		me.lon = getprop('/position/longitude-deg');
 
-		var n = math.pow(2, zoom);
-		var offset = [
-			n * ((lon + 180) / 360) - center_tile_offset[0],
-			(1 - math.ln(math.tan(lat * D2R) + 1 / math.cos(lat * D2R)) / math.pi) / 2 * n - center_tile_offset[1]
+		me.n = math.pow(2, zoom);
+		me.offset = [
+			me.n * ((me.lon + 180) / 360) - center_tile_offset[0],
+			(1 - math.ln(math.tan(me.lat * D2R) + 1 / math.cos(me.lat * D2R)) / math.pi) / 2 * me.n - center_tile_offset[1]
 		];
-		var tile_index = [int(offset[0]), int(offset[1])];
+		me.tile_index = [int(me.offset[0]), int(me.offset[1])];
 
-		var ox = tile_index[0] - offset[0];
-		var oy = tile_index[1] - offset[1];
+		me.ox = me.tile_index[0] - me.offset[0];
+		me.oy = me.tile_index[1] - me.offset[1];
 
 		for(var x = 0; x < num_tiles[0]; x += 1) {
 			for(var y = 0; y < num_tiles[1]; y += 1) {
-				tiles[x][y].setTranslation(int((ox + x) * tile_size + 0.5), int((oy + y) * tile_size + 0.5));
+				tiles[x][y].setTranslation(int((me.ox + x) * tile_size + 0.5), int((me.oy + y) * tile_size + 0.5));
 			}
 		}
-		var liveMap = getprop("ja37/displays/live-map");
-		if(tile_index[0] != last_tile[0] or tile_index[1] != last_tile[1] or type != last_type or zoom != last_zoom or liveMap != lastLiveMap or lastDay != me.day)  {
+		me.liveMap = getprop("ja37/displays/live-map");
+		if(me.tile_index[0] != last_tile[0] or me.tile_index[1] != last_tile[1] or type != last_type or zoom != last_zoom or me.liveMap != lastLiveMap or lastDay != me.day)  {
 			for(var x = 0; x < num_tiles[0]; x += 1) {
 		  		for(var y = 0; y < num_tiles[1]; y += 1) {
+		  			# inside here we use 'var' instead of 'me.' due to generator function, should be able to remember it.
 					var pos = {
 						z: zoom,
-						x: int(offset[0] + x),
-						y: int(offset[1] + y),
+						x: int(me.offset[0] + x),
+						y: int(me.offset[1] + y),
 						type: type
 					};
 
-					(func {
+					(func {# generator function
 					    var img_path = makePath(pos);
 					    var tile = tiles[x][y];
 
-					    if( io.stat(img_path) == nil and liveMap == TRUE) { # image not found, save in $FG_HOME
+					    if( io.stat(img_path) == nil and me.liveMap == TRUE) { # image not found, save in $FG_HOME
 					      	var img_url = makeUrl(pos);
 					      	#print('requesting ' ~ img_url);
 					      	http.save(img_url, img_path)
 					      		.done(func(r) {
-					      	  		#print('received image ' ~ img_path~" " ~ r.status ~ " " ~ r.reason);
-					      	  		tile.set("src", img_path);
+					      	  		#print('received image ' ~ me.img_path~" " ~ r.status ~ " " ~ r.reason);
+					      	  		#print(""~(io.stat(me.img_path) != nil));
+					      	  		tile.set("src", img_path);# this sometimes fails with: 'Cannot find image file' if use me. instead of var.
 					      	  		})
 					          #.done(func {print('received image ' ~ img_path); tile.set("src", img_path);})
-					          .fail(func (r) {#print('Failed to get image ' ~ img_path ~ ' ' ~ r.status ~ ': ' ~ r.reason);
+					          .fail(func (r) {#print('Failed to get image ' ~ me.img_path ~ ' ' ~ r.status ~ ': ' ~ r.reason);
 					          				tile.set("src", "Aircraft/JA37/Models/Cockpit/TI/emptyTile.png");
 					      					tile.update();
 					      					});
 					    } elsif (io.stat(img_path) != nil) {# cached image found, reusing
-					      	#print('loading ' ~ img_path);
+					      	#print('loading ' ~ me.img_path);
 					      	tile.set("src", img_path);
 					      	tile.update();
 					    } else {
@@ -3566,10 +3852,10 @@ var TI = {
 		  		}
 			}
 
-		last_tile = tile_index;
+		last_tile = me.tile_index;
 		last_type = type;
 		last_zoom = zoom;
-		lastLiveMap = liveMap;
+		lastLiveMap = me.liveMap;
 		lastDay = me.day;
 		}
 

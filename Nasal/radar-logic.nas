@@ -8,6 +8,24 @@ var feet2meter = 0.3048;
 
 var radarRange = getprop("ja37/systems/variant") == 0?120000:120000;#meter, is estimate. The AJ(S)-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
 
+var containsVector = func (vec, item) {
+  foreach(test; vec) {
+    if (test == item) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+var getClock = func (bearing) {
+    var clock = int(((geo.normdeg(bearing)-15)/30)+1);
+    if (clock == 0) {
+      return 12;
+    } else {
+      return clock;
+    }
+}
+
 var self = nil;
 var myAlt = nil;
 var myPitch = nil;
@@ -19,6 +37,7 @@ var selection_updated = FALSE;
 var tracks_index = 0;
 var tracks = [];
 var callsign_struct = {};
+var rwr = [];
 
 var lockLog  = events.LogBuffer.new(echo: 0);#compatible with older FG?
 var lockLast = nil;
@@ -67,6 +86,8 @@ var RadarLogic = {
     },
 
     findRadarTracks: func () {
+      me.friends = [getprop("ja37/faf/friend-1"),getprop("ja37/faf/friend-2"),getprop("ja37/faf/friend-3"),getprop("ja37/faf/friend-4"),getprop("ja37/faf/friend-5"),getprop("ja37/faf/friend-6")];
+      rwr = [FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE];
       self      =  geo.aircraft_position();
       myPitch   =  input.pitch.getValue()*deg2rads;
       myRoll    =  input.roll.getValue()*deg2rads;
@@ -349,7 +370,34 @@ var RadarLogic = {
       #print("Received invalid position data: dist "~distance);
       #target_circle[track_index+maxTargetsMP].hide();
       #print(i~" invalid pos.");
-    } elsif (me.distanceDirect < range or node.getName() == "rb-99") {#is max radar range of ja37
+      return nil;
+    }
+
+    
+
+    if (me.distance < 120000 and mp == TRUE and node.getNode("callsign") != nil and getprop("ja37/systems/variant") == 0 and TI.ti.ECMon == TRUE) {
+        # if within 120 Km and a multiplayer, we check if its radar beams are detected.
+        var callsign = node.getNode("callsign").getValue();
+        #print("callsign "~callsign);
+        if (!containsVector(me.friends, callsign)) {
+            # its not a friend, so lets do the check
+            if (node.getNode("orientation/true-heading-deg") != nil) {
+                var heading = node.getNode("orientation/true-heading-deg").getValue();
+                var bearing = self.course_to(aircraftPos);
+                var inv_bearing =  bearing+180;
+                var deviation = inv_bearing - heading;
+                #print("dev "~deviation);
+                if (math.abs(geo.normdeg180(deviation)) < 60) {
+                    # we detect its radar is pointed at us
+                    var clock = getClock(bearing-myHeading);
+                    #print("rwr"~clock);
+                    rwr[clock-1] = TRUE;
+                }
+            }
+        }
+    }
+
+    if (me.distanceDirect < range or node.getName() == "rb-99") {#is max radar range of ja37
       # Node with valid position data (and "distance!=nil").
       #distance = distance*kts2kmh*1000;
       me.aircraftAlt = aircraftPos.alt(); #altitude in meters
@@ -361,6 +409,8 @@ var RadarLogic = {
       #ground angle
       me.yg_rad = getPitch(self, aircraftPos)-myPitch;#math.atan2(aircraftAlt-myAlt, distance) - myPitch; 
       me.xg_rad = (self.course_to(aircraftPos) - myHeading) * deg2rads;
+
+      
 
       while (me.xg_rad > math.pi) {
         me.xg_rad = me.xg_rad - 2*math.pi;
@@ -430,7 +480,12 @@ var RadarLogic = {
         me.contact = Contact.new(node, type);
         me.contact.setPolar(me.distanceRadar, me.xa_rad_corr, me.xa_rad, me.ya_rad);
         me.contact.setCartesian(me.hud_pos_x, me.hud_pos_y);
-        return me.contact;
+
+        if (node.getName() == "rb-99" or 1==1 or (rand() < 0.05?rcs.isInRadarRange(me.contact, 65, 1) == TRUE:rcs.wasInRadarRange(me.contact, 65, 1))) {# 40 / 3.2
+          return me.contact;
+        } else {
+          return nil;
+        }        
 
       } elsif (carrier == TRUE) {
         # need to return carrier even if out of radar cone, due to carrierNear calc
@@ -783,6 +838,7 @@ var Contact = {
 #});
 #debug.benchmark("radar process4", func {
         obj.pitch           = obj.oriProp.getNode("pitch-deg");
+        obj.pitch           = obj.oriProp.getNode("roll-deg");
         obj.speed           = obj.velProp.getNode("true-airspeed-kt");
         obj.vSpeed          = obj.velProp.getNode("vertical-speed-fps");
         obj.callsign        = c.getNode("callsign", 1);
@@ -990,6 +1046,11 @@ var Contact = {
         return n;
     },
 
+    get_Roll: func(){
+        var n = me.roll.getValue();
+        return n;
+    },
+
     get_heading : func(){
         var n = me.heading.getValue();
         if(n == nil)
@@ -1164,6 +1225,10 @@ var ContactGPS = {
   },
 
   get_Pitch: func(){
+      return 0;
+  },
+
+  get_Roll: func(){
       return 0;
   },
 

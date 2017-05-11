@@ -8,7 +8,7 @@
 
 <PropertyList include="Systems/ja37-engines-off.xml">    <!-- change this to 'on' for fast testing/debugging -->
     <sim>
-        <aircraft-version>4.102</aircraft-version>
+        <aircraft-version>4.103</aircraft-version>
 
         <rating>
             <FDM type="int">4</FDM>
@@ -84,6 +84,18 @@
             <path>ai/submodels/submodel[2]/random</path>
             <path>ai/submodels/submodel[3]/random</path>
             <path>ja37/displays/live-map</path>
+            <path>ja37/faf/friend-1</path>
+            <path>ja37/faf/friend-2</path>
+            <path>ja37/faf/friend-3</path>
+            <path>ja37/faf/friend-4</path>
+            <path>ja37/faf/friend-5</path>
+            <path>ja37/faf/friend-6</path>
+            <path>ja37/faf/foe-1</path>
+            <path>ja37/faf/foe-2</path>
+            <path>ja37/faf/foe-3</path>
+            <path>ja37/faf/foe-4</path>
+            <path>ja37/faf/foe-5</path>
+            <path>ja37/faf/foe-6</path>
             <!--<path>sim/model/livery/file</path>-->
         </aircraft-data>
 
@@ -412,7 +424,7 @@
         </multiplay>
 
 
-        <checklists include="GUI/viggen-checklists.xml"/>
+        <checklists include="gui/viggen-checklists.xml"/>
 
 
         <!--**********************************************************************
@@ -650,6 +662,20 @@
                 <switch type="bool">true</switch><!-- set to FM per default -->
             </kv1>
         </radio>
+        <faf>
+            <friend-1 userarchive="y" type="string"></friend-1>
+            <friend-2 userarchive="y" type="string"></friend-2>
+            <friend-3 userarchive="y" type="string"></friend-3>
+            <friend-4 userarchive="y" type="string"></friend-4>
+            <friend-5 userarchive="y" type="string"></friend-5>
+            <friend-6 userarchive="y" type="string"></friend-6>
+            <foe-1 userarchive="y" type="string"></foe-1>
+            <foe-2 userarchive="y" type="string"></foe-2>
+            <foe-3 userarchive="y" type="string"></foe-3>
+            <foe-4 userarchive="y" type="string"></foe-4>
+            <foe-5 userarchive="y" type="string"></foe-5>
+            <foe-6 userarchive="y" type="string"></foe-6>
+        </faf>
     </ja37>
     <ai>
         <submodels>
