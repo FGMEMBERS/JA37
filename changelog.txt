@@ -2896,3 +2896,22 @@ TI: Optimized some parts for Nasal GC.
 TI: Fixed that steerpoint polygon could be toggled in TRAP menu.
 Sim: Fixed missile impact report was incompatible with Bombable.
 TI: Fixed that optimizing for GC in map update function could make tiles fail to load.
+
+4.104 - 2017 May 18
+=====
+Animation: Fixed 2 switches was not animated correct.
+GUI: Fixed overlapping buttons in option dialog.
+Radar: Detection if radar view is obscurred by terrain is now faster and better. (only FG 2017.2.1+)
+Sim: Missiles can now lose sight of target if obscured by terrain. (only FG 2017.2.1+)
+Sim: Terrain warning now is much smarter. (only FG 2017.2.1+)
+TI: Map will now show subtle noise when in offline mode.
+Animation: Fixed fuel gauge could change too fast.
+Sim: Prevented new missile report to generate a cannon hit.
+Model: {Spectre} Added livery inspired from song Big Iron.
+GUI: Made the colors of FAF dialog so that cursor can be seen.
+TI: Fixed that when passing longitude 180 meridian line, map would not show across the line till it was passed.
+TI: Fixed that rounding errors would display wrong map tiles at longitude close to -180 when flying on same side of meridian line.
+MI: Transfer link rb99 to TI. [X2] (right side of bottom text field)
+Model: Renamed Big Iron Livery.
+TI: Updated recommended landing alpha according to sources (approxed).
+HUD: Updated recommended landing alpha according to sources (approxed).

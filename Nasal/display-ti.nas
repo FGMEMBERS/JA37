@@ -87,10 +87,10 @@ var maps_base = getprop("/sim/fg-home") ~ '/cache/mapsTI';
 # dark_only_labels
 
 var makeUrl =
-  string.compileTemplate('http://cartodb-basemaps-c.global.ssl.fastly.net/{type}/{z}/{x}/{y}.png');#http://otile2.mqcdn.com/tiles/1.0.0/{type}/{z}/{x}/{y}.jpg'
+  string.compileTemplate('http://cartodb-basemaps-c.global.ssl.fastly.net/{type}/{z}/{x}/{y}.png');
 var makePath =
-  string.compileTemplate(maps_base ~ '/cartoL/{z}/{x}/{y}.png');#/osm-{type}/{z}/{x}/{y}.jpg
-var num_tiles = [5, 5];
+  string.compileTemplate(maps_base ~ '/cartoL/{z}/{x}/{y}.png');
+var num_tiles = [5, 5];# must be uneven, 5x5 will ensure we never see edge of map tiles when canvas is 512px high.
 
 var center_tile_offset = [(num_tiles[0] - 1) / 2,(num_tiles[1] - 1) / 2];#(width/tile_size)/2,(height/tile_size)/2];
 #  (num_tiles[0] - 1) / 2,
@@ -213,6 +213,10 @@ var containsVector = func (vec, item) {
 	return FALSE;
 }
 
+var extrapolate = func (x, x1, x2, y1, y2) {
+    return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1);
+};
+
 # notice the Swedish letter are missing accents in vertical menu items {ÅÖÄ} due to them not being always read correct by Nasal substr().
 # Å = \xC3\x85
 # Ö = \xC3\x96
@@ -282,7 +286,7 @@ var TI = {
 		me.mapCenter = me.mapCentrum.createChild("group");
 		me.mapRot = me.mapCenter.createTransform();
 		me.mapFinal = me.mapCenter.createChild("group");
-		me.mapFinal.setTranslation(-tile_size*center_tile_offset[0],-tile_size*center_tile_offset[1]);
+		#me.mapFinal.setTranslation(-tile_size*center_tile_offset[0],-tile_size*center_tile_offset[1]);
 
 		# groups
 		me.rootCenter = root.createChild("group")
@@ -912,19 +916,19 @@ var TI = {
     		.setColor(rWhite,gWhite,bWhite, a)
     		.setAlignment("left-bottom")
     		.setTranslation(width/2, height-height*0.015)
-    		.setFontSize(30, 1);
+    		.setFontSize(27, 1);
     	me.textBAlpha = me.bottom_text_grp.createChild("text")
     		.setText("ALFA 20,5")
     		.setColor(rWhite,gWhite,bWhite, a)
     		.setAlignment("right-bottom")
     		.setTranslation(width, height-height*0.01)
-    		.setFontSize(17, 1);
+    		.setFontSize(16, 1);
     	me.textBWeight = me.bottom_text_grp.createChild("text")
     		.setText("VIKT 13,4")
     		.setColor(rWhite,gWhite,bWhite, a)
     		.setAlignment("right-top")
     		.setTranslation(width, height-height*0.085)
-    		.setFontSize(17, 1);
+    		.setFontSize(16, 1);
 
     	# log pages
     	me.logRoot = root.createChild("group")
@@ -1418,6 +1422,8 @@ var TI = {
 		ti.foes    = [];
 		ti.friends = [];
 		ti.ECMon   = FALSE;
+		ti.lnk99   = FALSE;
+		ti.tele    = [];
 
 		ti.startFailListener();
 
@@ -2083,7 +2089,7 @@ var TI = {
 		# show RB99 link
 		if (!me.active) return;
 
-		print("TI RB99 link not implemented yet, coming soon^tm.");
+		me.lnk99 = !me.lnk99;
 	},
 
 	doBIT: func {
@@ -2805,14 +2811,33 @@ var TI = {
 			me.alphaT  = me.interoperability == displays.METRIC?"ALFA":"ALPH";
 			me.weightT = me.interoperability == displays.METRIC?"VIKT":"WEIG";
 			if (me.interoperability == displays.METRIC) {
-				me.weight = getprop("fdm/jsbsim/inertia/weight-lbs")*0.453592*0.001;
+				me.weight = getprop("fdm/jsbsim/inertia/weight-lbs")*LB2KG*0.001;
 			} else {
 				me.weight = getprop("fdm/jsbsim/inertia/weight-lbs")*0.001;
 			}
-			me.weightLBM = getprop("fdm/jsbsim/inertia/weight-lbs");
-			me.alpha   = 9 + ((me.weightLBM - 28000) / (38000 - 28000)) * (12 - 9);
+			me.weightKG = getprop("fdm/jsbsim/inertia/weight-lbs")*LB2KG;
+			me.alpha   = clamp(extrapolate(me.weightKG, 15000, 16500, 15.5, 9.0), 9, 20.5);#9 + ((me.weightLBM - 28000) / (38000 - 28000)) * (12 - 9);
 			me.weightT = me.weightT~sprintf(" %.1f", me.weight);
 			me.alphaT  = me.alphaT~sprintf(" %.1f", me.alpha);
+			me.textBWeight.setText(me.weightT);
+			me.textBAlpha.setText(me.alphaT);
+		} elsif (me.lnk99 == TRUE) {
+			me.weightT = "";
+			for (var i = 0; i < 2; i+=1) {
+				if (size(me.tele) > i) {
+					me.weightT = me.weightT~sprintf("|%2ds%2d%%", clamp(me.tele[i][1],-9,99),me.tele[i][0]);
+				} else {
+					me.weightT = me.weightT~"|      ";
+				}
+			}
+			me.alphaT = "";
+			for (var i = 2; i < 4; i+=1) {
+				if (size(me.tele) > i) {
+					me.alphaT = me.alphaT~sprintf("|%2ds%2d%%", clamp(me.tele[i][1],-9,99),me.tele[i][0]);
+				} else {
+					me.alphaT  =  me.alphaT~"|      ";
+				}
+			}
 			me.textBWeight.setText(me.weightT);
 			me.textBAlpha.setText(me.alphaT);
 		} elsif (displays.common.distance_m != -1) {
@@ -2938,6 +2963,7 @@ var TI = {
 	    me.selection_updated = FALSE;
 	    me.tgt_dist = 1000000;
 	    me.tgt_callsign = "";
+	    me.tele = [];
 
 	    if(me.input.tracks_enabled.getValue() == 1 and me.input.radar_serv.getValue() > 0) {
 			me.radar_group.show();
@@ -3085,6 +3111,11 @@ var TI = {
 					me.echoesAircraftSvy[me.currentIndexT].update();
 				}
 			} else {
+				me.eta99 = contact.getETA();
+				me.hit99 = contact.getHitChance();
+				if (me.eta99 != nil) {
+					append(me.tele, [me.hit99, me.eta99]);
+				}
 				if (me.missileIndex < maxMissiles-1) {
 					me.missileIndex += 1;
 					me.missiles[me.missileIndex].setTranslation(me.pos_xx, me.pos_yy);					
@@ -3795,36 +3826,57 @@ var TI = {
 		me.lon = getprop('/position/longitude-deg');
 
 		me.n = math.pow(2, zoom);
-		me.offset = [
-			me.n * ((me.lon + 180) / 360) - center_tile_offset[0],
-			(1 - math.ln(math.tan(me.lat * D2R) + 1 / math.cos(me.lat * D2R)) / math.pi) / 2 * me.n - center_tile_offset[1]
+		me.center_tile_float = [
+			me.n * ((me.lon + 180) / 360),
+			(1 - math.ln(math.tan(me.lat * D2R) + 1 / math.cos(me.lat * D2R)) / math.pi) / 2 * me.n
 		];
-		me.tile_index = [int(me.offset[0]), int(me.offset[1])];
+		# center_tile_offset[1]
+		me.center_tile_int = [int(me.center_tile_float[0]), int(me.center_tile_float[1])];
 
-		me.ox = me.tile_index[0] - me.offset[0];
-		me.oy = me.tile_index[1] - me.offset[1];
+		me.center_tile_fraction_x = me.center_tile_float[0] - me.center_tile_int[0];
+		me.center_tile_fraction_y = me.center_tile_float[1] - me.center_tile_int[1];
+#printf("centertile: %d,%d fraction %.2f,%.2f",me.center_tile_int[0],me.center_tile_int[1],me.center_tile_fraction_x,me.center_tile_fraction_y);
+		me.tile_offset = [int(num_tiles[0]/2), int(num_tiles[1]/2)];
 
-		for(var x = 0; x < num_tiles[0]; x += 1) {
-			for(var y = 0; y < num_tiles[1]; y += 1) {
-				tiles[x][y].setTranslation(int((me.ox + x) * tile_size + 0.5), int((me.oy + y) * tile_size + 0.5));
+		# 3x3 example: (same for both canvas-tiles and map-tiles)
+		#  *************************
+		#  * -1,-1 *  0,-1 *  1,-1 *
+		#  *************************
+		#  * -1, 0 *  0, 0 *  1, 0 *
+		#  *************************
+		#  * -1, 1 *  0, 1 *  1, 1 *
+		#  *************************
+		#
+
+		for(var xxx = 0; xxx < num_tiles[0]; xxx += 1) {
+			for(var yyy = 0; yyy < num_tiles[1]; yyy += 1) {
+				tiles[xxx][yyy].setTranslation(-int((me.center_tile_fraction_x - xxx+me.tile_offset[0]) * tile_size), -int((me.center_tile_fraction_y - yyy+me.tile_offset[1]) * tile_size));
 			}
 		}
 		me.liveMap = getprop("ja37/displays/live-map");
-		if(me.tile_index[0] != last_tile[0] or me.tile_index[1] != last_tile[1] or type != last_type or zoom != last_zoom or me.liveMap != lastLiveMap or lastDay != me.day)  {
+		if(me.center_tile_int[0] != last_tile[0] or me.center_tile_int[1] != last_tile[1] or type != last_type or zoom != last_zoom or me.liveMap != lastLiveMap or lastDay != me.day)  {
 			for(var x = 0; x < num_tiles[0]; x += 1) {
 		  		for(var y = 0; y < num_tiles[1]; y += 1) {
 		  			# inside here we use 'var' instead of 'me.' due to generator function, should be able to remember it.
+		  			var xx = me.center_tile_int[0] + x - me.tile_offset[0];
+		  			if (xx < 0) {
+		  				# when close to crossing 180 longitude meridian line, make sure we see the tiles on the positive side of the line.
+		  				xx = me.n + xx;#print(xx~" from "~(xx-me.n));
+		  			} elsif (xx >= me.n) {
+		  				# when close to crossing 180 longitude meridian line, make sure we dont double load the tiles on the negative side of the line.
+		  				xx = xx - me.n;#print(xx~" from "~(xx+me.n));
+		  			}
 					var pos = {
 						z: zoom,
-						x: int(me.offset[0] + x),
-						y: int(me.offset[1] + y),
+						x: xx,
+						y: me.center_tile_int[1] + y - me.tile_offset[1],
 						type: type
 					};
 
 					(func {# generator function
 					    var img_path = makePath(pos);
 					    var tile = tiles[x][y];
-
+					    #print('showing ' ~ img_path);
 					    if( io.stat(img_path) == nil and me.liveMap == TRUE) { # image not found, save in $FG_HOME
 					      	var img_url = makeUrl(pos);
 					      	#print('requesting ' ~ img_url);
@@ -3833,9 +3885,10 @@ var TI = {
 					      	  		#print('received image ' ~ me.img_path~" " ~ r.status ~ " " ~ r.reason);
 					      	  		#print(""~(io.stat(me.img_path) != nil));
 					      	  		tile.set("src", img_path);# this sometimes fails with: 'Cannot find image file' if use me. instead of var.
+					      	  		tile.update();
 					      	  		})
 					          #.done(func {print('received image ' ~ img_path); tile.set("src", img_path);})
-					          .fail(func (r) {#print('Failed to get image ' ~ me.img_path ~ ' ' ~ r.status ~ ': ' ~ r.reason);
+					          .fail(func (r) {#print('Failed to get image ' ~ img_path ~ ' ' ~ r.status ~ ': ' ~ r.reason);
 					          				tile.set("src", "Aircraft/JA37/Models/Cockpit/TI/emptyTile.png");
 					      					tile.update();
 					      					});
@@ -3844,15 +3897,15 @@ var TI = {
 					      	tile.set("src", img_path);
 					      	tile.update();
 					    } else {
-					    	# internet not allowed, so no tile shown
-					    	tile.set("src", "Aircraft/JA37/Models/Cockpit/TI/emptyTile.png");
+					    	# internet not allowed, so noise tile shown
+					    	tile.set("src", "Aircraft/JA37/Models/Cockpit/TI/noiseTile.png");
 					      	tile.update();
 					    }
 					})();
 		  		}
 			}
 
-		last_tile = me.tile_index;
+		last_tile = me.center_tile_int;
 		last_type = type;
 		last_zoom = zoom;
 		lastLiveMap = me.liveMap;
@@ -3861,10 +3914,6 @@ var TI = {
 
 		me.mapRot.setRotation(-getprop("orientation/heading-deg")*D2R);
 	},
-};
-
-var extrapolate = func (x, x1, x2, y1, y2) {
-    return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1);
 };
 
 var ti = nil;
