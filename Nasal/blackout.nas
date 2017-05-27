@@ -4,7 +4,7 @@
 ##                                                                               ##
 ## Author: Nikolai V. Chr.                                                       ##
 ##                                                                               ##
-## Version 1.0             License: GPL 2.0                                      ##
+## Version 1.04            License: GPL 2.0                                      ##
 ##                                                                               ##
 ###################################################################################
 
@@ -20,7 +20,7 @@ var invert = func (acc) {
 #
 # Customize the values according to the quality of the G-suit the pilot is wearing. The times are in seconds.
 #
-# According to NASA (1979), this should be the blackout values for F-16 block 32:
+# According to NASA (1979), this should be the blackout values for F-16:
 #
 # blackout_onset      =   5;
 # blackout_fast       =   9;
@@ -33,7 +33,7 @@ var invert = func (acc) {
 
 var blackout_onset      =    5;
 var blackout_fast       =    8;
-var redout_onset        = -1.5;
+var redout_onset        =   -2;
 var redout_fast         =   -4;
 
 var blackout_onset_time =  300;
@@ -61,15 +61,71 @@ var redout_fast_log = math.log10(invert(redout_fast));
 var blackout = 0;
 var redout   = 0;
 
+var suit = 3;
 
+var init_suit = func {
+	blackout_onset_log = math.log10(blackout_onset);
+	blackout_fast_log = math.log10(blackout_fast);
+	redout_onset_log = math.log10(invert(redout_onset));
+	redout_fast_log = math.log10(invert(redout_fast));
+}
+
+var changeSuit = func {
+	if (suit == 1) {
+		#1971
+		blackout_onset      =  4.5;
+		blackout_fast       =    7;
+		blackout_onset_time =  300;
+		blackout_fast_time  =   10;
+	} elsif (suit == 2) {
+		#1979
+		blackout_onset      = 4.75;
+		blackout_fast       =    8;
+		blackout_onset_time =  300;
+		blackout_fast_time  =   10;
+	} else {
+		#1997
+		blackout_onset      =    5;
+		blackout_fast       =    8;
+		blackout_onset_time =  300;
+		blackout_fast_time  =   30;
+	}
+	init_suit();
+}
+
+var redout_loop = func {
+	setprop("sim/rendering/redout/enabled", 1);# enable the Fg default redout/blackout system.
+
+	if (suit != getprop("ja37/effect/g-suit")) {
+		suit = getprop("ja37/effect/g-suit");
+		changeSuit();
+	}
+
+	setprop("sim/rendering/redout/parameters/blackout-onset-g", blackout_onset);
+	setprop("sim/rendering/redout/parameters/blackout-complete-g", blackout_fast);
+	setprop("sim/rendering/redout/parameters/redout-onset-g", redout_onset);
+	setprop("sim/rendering/redout/parameters/redout-complete-g", redout_fast);
+	setprop("sim/rendering/redout/parameters/onset-blackout-sec", blackout_onset_time);
+	setprop("sim/rendering/redout/parameters/fast-blackout-sec", blackout_fast_time);
+	setprop("sim/rendering/redout/parameters/onset-redout-sec", redout_onset_time);
+	setprop("sim/rendering/redout/parameters/fast-redout-sec", redout_fast_time);
+	setprop("sim/rendering/redout/parameters/recover-fast-sec", fast_time_recover);
+	setprop("sim/rendering/redout/parameters/recover-slow-sec", slow_time_recover);
+
+    settimer(redout_loop, 0.5);
+}
 
 var blackout_loop = func {
+	if (suit != getprop("ja37/effect/g-suit")) {
+		suit = getprop("ja37/effect/g-suit");
+		changeSuit();
+	}
 	setprop("/sim/rendering/redout/enabled", 0);# disable the Fg default redout/blackout system.
 	var dt = getprop("sim/time/delta-sec");
 	var g = 0;
 	if (fdm == "jsb") {
 		# JSBSim
-		g = getprop("fdm/jsbsim/accelerations/Nz");
+		g = -getprop("accelerations/pilot/z-accel-fps_sec")/32.174;
 	} else {
 		# Yasim
 		g = getprop("/accelerations/pilot-g[0]");
@@ -77,6 +133,7 @@ var blackout_loop = func {
 	if (g == nil) {
 		g = 1;
 	}
+	setprop("/accelerations/pilot-gdamped", g);
 
 	var g_log = g <= 1?0:math.log10(g);
 	if (g < blackout_onset) {
@@ -154,7 +211,11 @@ var blackout_loop = func {
 var blackout_init = func {
 	fdm = getprop("/sim/flight-model");
 
-	blackout_loop();
+	if (getprop("sim/rendering/redout/internal/log/g-force") == nil) {
+		blackout_loop();
+	} else {
+		redout_loop();
+	}
 }
 
 

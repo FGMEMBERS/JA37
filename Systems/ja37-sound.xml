@@ -66,6 +66,7 @@
                 </equals>
             </condition>
             <volume>
+                <property>ja37/sound/helmet</property>
                 <factor>1</factor>
             </volume>
         </welcome>
@@ -572,21 +573,9 @@
 
         <rumble>
             <name>gear rumble</name>
-            <!--<mode>looped</mode>-->
             <path>Sounds/rumble.wav</path>
             <mode>in-transit</mode>
             <property>gear/gear[0]/position-norm</property>
-            <!--<condition>
-                <property>sim/current-view/internal</property>
-                <greater-than>
-                    <property>gear/gear[0]/position-norm</property>
-                    <value>0</value>
-                </greater-than>
-                <less-than>
-                    <property>gear/gear[0]/position-norm</property>
-                    <value>1</value>
-                </less-than>
-            </condition>-->
             <reference-dist>3</reference-dist>
             <max-dist>10</max-dist>
             <position>
@@ -595,13 +584,56 @@
                 <z>-0.6</z>
             </position>
             <pitch>
-                <min>1.05</min>
-                <max>1.051</max>
+                <factor>1.75</factor>
+                <offset>0</offset>
+                <min>0</min>
+                <max>2</max>
             </pitch>
             <volume>
                 <max>0.40</max>
             </volume>
         </rumble>
+
+        <brake>
+            <name>speedbrake</name>
+            <path>Aircraft/JA37/Sounds/speedbrake.wav</path>
+            <mode>in-transit</mode>
+            <property>fdm/jsbsim/fcs/speedbrake-pos-norm</property>
+            <reference-dist>3</reference-dist>
+            <max-dist>10</max-dist>
+            <position>
+                <x>0.01</x>
+                <y>0.01</y>
+                <z>0.01</z>
+            </position>
+            <pitch>
+                <factor>1</factor>
+                <offset>0</offset>
+                <min>0</min>
+                <max>2</max>
+            </pitch>
+            <volume>
+                <max>0.40</max>
+            </volume>
+        </brake>
+
+        <brake-wind>
+            <name>wind</name>
+            <mode>looped</mode>
+            <path>Aircraft/JA37/Sounds/speedbrake-wind.wav</path>
+            <type>avionics</type>
+            <condition>
+                <property>sim/current-view/internal</property>
+                <greater-than>
+                    <property>fdm/jsbsim/fcs/speedbrake-pos-norm</property>
+                    <value>0.5</value>
+                </greater-than>
+            </condition>
+            <volume>
+                <property>velocities/airspeed-kt</property>
+                <factor>0.001</factor>
+            </volume>
+        </brake-wind>
 
         <roll>
             <name>roll on runway</name>
@@ -686,11 +718,89 @@
             </pitch>
         </squeal>
 
+        <gear-explode>
+            <name>gear-nose-damaged</name>
+            <path>Aircraft/JA37/Sounds/aircraft-explode.wav</path>
+            <mode>once</mode>
+            <reference-dist>3</reference-dist>
+            <max-dist>10</max-dist>
+            <condition>
+                <equals>
+                    <property>fdm/jsbsim/gear/unit[0]/z-position</property>
+                    <value>0.001</value>
+                </equals>
+            </condition>
+            <position>
+                <x> -3.37534 </x>
+                <y> 0.01 </y>
+                <z> -2.1 </z>
+            </position>
+            <pitch>
+                <factor>1.20</factor>
+            </pitch>
+            <volume>
+                <factor>0.25</factor>
+                <max>1</max>
+            </volume>
+        </gear-explode>
+
+        <gear-explode>
+            <name>gear-left-damaged</name>
+            <path>Aircraft/JA37/Sounds/aircraft-explode.wav</path>
+            <mode>once</mode>
+            <reference-dist>3</reference-dist>
+            <max-dist>10</max-dist>
+            <condition>
+                <equals>
+                    <property>fdm/jsbsim/gear/unit[1]/z-position</property>
+                    <value>0.001</value>
+                </equals>
+            </condition>
+            <position>
+                <x>  2.64670 </x>
+                <y>  2.15204 </y><!-- in sound xml files this is opposite of aircraft structural coord. system -->
+                <z> -2.1 </z>
+            </position>
+            <pitch>
+                <factor>1.20</factor>
+            </pitch>
+            <volume>
+                <factor>0.25</factor>
+                <max>1</max>
+            </volume>
+        </gear-explode>
+
+        <gear-explode>
+            <name>gear-right-damaged</name>
+            <path>Aircraft/JA37/Sounds/aircraft-explode.wav</path>
+            <mode>once</mode>
+            <reference-dist>3</reference-dist>
+            <max-dist>10</max-dist>
+            <condition>
+                <equals>
+                    <property>fdm/jsbsim/gear/unit[2]/z-position</property>
+                    <value>0.001</value>
+                </equals>
+            </condition>
+            <position>
+                <x> 2.64670 </x>
+                <y> -2.15204 </y><!-- in sound xml files this is opposite of aircraft structural coord. system -->
+                <z> -2.1 </z>
+            </position>
+            <pitch>
+                <factor>1.20</factor>
+            </pitch>
+            <volume>
+                <factor>0.25</factor>
+                <max>1</max>
+            </volume>
+        </gear-explode>
+
         <!--                                          cockpit controls                           -->
 
         <controls>
             <name>click</name>
-            <path>Sounds/click.wav</path>
+            <path>Aircraft/JA37/Sounds/click.wav</path>
             <mode>once</mode>
             <type>avionics</type>
             <condition>
@@ -722,6 +832,7 @@
             <type>avionics</type>
             <condition>
                 <property>sim/current-view/internal</property>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <not>
                     <property>fdm/jsbsim/gear/unit[0]/WOW</property>
                 </not>
@@ -740,7 +851,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </stall>
 
@@ -752,6 +864,7 @@
             <path>Aircraft/JA37/Sounds/warning-very-high-alpha.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <not>
                     <property>gear/gear/position-norm</property>
                 </not>                                        
@@ -795,7 +908,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </alpha>
 
@@ -805,6 +919,7 @@
             <path>Aircraft/JA37/Sounds/caution-high-alpha.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <not>
                     <property>gear/gear/position-norm</property>
                 </not>
@@ -846,7 +961,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>3.5</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </alphawarn>
 
@@ -856,6 +972,7 @@
             <path>Aircraft/JA37/Sounds/warning-very-high-alpha.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>gear/gear/position-norm</property>
                 <greater-than>
                     <property>orientation/alpha-deg</property>
@@ -875,7 +992,8 @@
                 </not>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </takeoffalpha>
 
@@ -885,6 +1003,7 @@
             <path>Aircraft/JA37/Sounds/fuel-low.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/fuel-low-on</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -894,7 +1013,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </bingo>
 
@@ -904,6 +1024,7 @@
             <path>Aircraft/JA37/Sounds/pull-up.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/terrain-on</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -913,7 +1034,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </pullup>
 
@@ -923,6 +1045,7 @@
             <path>Aircraft/JA37/Sounds/warning-low-speed.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/speed-on</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -932,7 +1055,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </lowspeed>
 
@@ -942,6 +1066,7 @@
             <path>Aircraft/JA37/Sounds/warning-master.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>fdm/jsbsim/systems/indicators/master-warning/audio</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -951,7 +1076,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </master>
 
@@ -961,6 +1087,7 @@
             <path>Aircraft/JA37/Sounds/incoming.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -970,7 +1097,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -980,6 +1108,7 @@
             <path>Aircraft/JA37/Sounds/incoming-01.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming1</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -989,7 +1118,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -999,6 +1129,7 @@
             <path>Aircraft/JA37/Sounds/incoming-02.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming2</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1008,7 +1139,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1018,6 +1150,7 @@
             <path>Aircraft/JA37/Sounds/incoming-03.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming3</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1027,7 +1160,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1037,6 +1171,7 @@
             <path>Aircraft/JA37/Sounds/incoming-04.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming4</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1046,7 +1181,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1056,6 +1192,7 @@
             <path>Aircraft/JA37/Sounds/incoming-05.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming5</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1065,7 +1202,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1075,6 +1213,7 @@
             <path>Aircraft/JA37/Sounds/incoming-06.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming6</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1084,7 +1223,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1094,6 +1234,7 @@
             <path>Aircraft/JA37/Sounds/incoming-12.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming12</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1103,7 +1244,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1113,6 +1255,7 @@
             <path>Aircraft/JA37/Sounds/incoming-07.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming7</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1122,7 +1265,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1132,6 +1276,7 @@
             <path>Aircraft/JA37/Sounds/incoming-08.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming8</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1141,7 +1286,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1151,6 +1297,7 @@
             <path>Aircraft/JA37/Sounds/incoming-09.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming9</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1160,7 +1307,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1170,6 +1318,7 @@
             <path>Aircraft/JA37/Sounds/incoming-10.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming10</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1179,7 +1328,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1189,6 +1339,7 @@
             <path>Aircraft/JA37/Sounds/incoming-11.wav</path>
             <type>avionics</type>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ja37/sound/incoming11</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1198,7 +1349,8 @@
                 </greater-than>
             </condition>
             <volume>
-                <factor>4</factor>
+                <property>ja37/sound/helmet</property>
+                <factor>1</factor>
             </volume>
         </incoming>
 
@@ -1428,7 +1580,7 @@
             <path>Aircraft/JA37/Sounds/RB-24J.wav</path>
             <mode>once</mode>
             <condition>
-                <property>controls/armament/station[1]/released</property>
+                <property>payload/armament/rb-24j/sound-fire-on-off</property>
             </condition>
             <reference-dist>25</reference-dist>
             <max-dist>10000</max-dist>
@@ -1447,7 +1599,7 @@
             <path>Aircraft/JA37/Sounds/RB-24J.wav</path>
             <mode>once</mode>
             <condition>
-                <property>controls/armament/station[2]/released</property>
+                <property>payload/armament/rb-74/sound-fire-on-off</property>
             </condition>
             <reference-dist>25</reference-dist>
             <max-dist>10000</max-dist>
@@ -1466,7 +1618,7 @@
             <path>Aircraft/JA37/Sounds/RB-24J.wav</path>
             <mode>once</mode>
             <condition>
-                <property>controls/armament/station[3]/released</property>
+                <property>payload/armament/rb-99/sound-fire-on-off</property>
             </condition>
             <reference-dist>25</reference-dist>
             <max-dist>10000</max-dist>
@@ -1485,7 +1637,7 @@
             <path>Aircraft/JA37/Sounds/RB-24J.wav</path>
             <mode>once</mode>
             <condition>
-                <property>controls/armament/station[4]/released</property>
+                <property>payload/armament/rb-05a/sound-fire-on-off</property>
             </condition>
             <reference-dist>25</reference-dist>
             <max-dist>10000</max-dist>
@@ -1504,7 +1656,7 @@
             <path>Aircraft/JA37/Sounds/RB-24J.wav</path>
             <mode>once</mode>
             <condition>
-                <property>controls/armament/station[5]/released</property>
+                <property>payload/armament/rb-75/sound-fire-on-off</property>
             </condition>
             <reference-dist>25</reference-dist>
             <max-dist>10000</max-dist>
@@ -1523,7 +1675,7 @@
             <path>Aircraft/JA37/Sounds/RB-24J.wav</path>
             <mode>once</mode>
             <condition>
-                <property>controls/armament/station[6]/released</property>
+                <property>payload/armament/rb-04e/sound-fire-on-off</property>
             </condition>
             <reference-dist>25</reference-dist>
             <max-dist>10000</max-dist>
@@ -1542,7 +1694,45 @@
             <path>Aircraft/JA37/Sounds/RB-24J.wav</path>
             <mode>once</mode>
             <condition>
-                <property>controls/armament/station[7]/released</property>
+                <property>payload/armament/m90/sound-fire-on-off</property>
+            </condition>
+            <reference-dist>25</reference-dist>
+            <max-dist>10000</max-dist>
+            <position>
+                <x> -0.09941 </x>
+                <y> 0.01 </y>
+                <z> -0.97819 </z>
+            </position>
+            <volume>
+                <factor>0.75</factor>
+                <max>1</max>
+            </volume>
+        </missile6>
+        <missile6>
+            <name>missile7</name>
+            <path>Aircraft/JA37/Sounds/RB-24J.wav</path>
+            <mode>once</mode>
+            <condition>
+                <property>payload/armament/rb-24/sound-fire-on-off</property>
+            </condition>
+            <reference-dist>25</reference-dist>
+            <max-dist>10000</max-dist>
+            <position>
+                <x> -0.09941 </x>
+                <y> 0.01 </y>
+                <z> -0.97819 </z>
+            </position>
+            <volume>
+                <factor>0.75</factor>
+                <max>1</max>
+            </volume>
+        </missile6>
+        <missile6>
+            <name>missile7</name>
+            <path>Aircraft/JA37/Sounds/RB-24J.wav</path>
+            <mode>once</mode>
+            <condition>
+                <property>payload/armament/rb-15f/sound-fire-on-off</property>
             </condition>
             <reference-dist>25</reference-dist>
             <max-dist>10000</max-dist>
@@ -1862,6 +2052,7 @@
             <type>avionics</type>
             <path>Aircraft/JA37/Sounds/flare.wav</path>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ai/submodels/submodel[0]/flare-release-snd</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1871,6 +2062,7 @@
                 </greater-than>
             </condition>
             <volume>
+                <property>ja37/sound/helmet</property>
                 <factor>1</factor>
                 <max>1</max>
             </volume>
@@ -1882,6 +2074,7 @@
             <type>avionics</type>
             <path>Aircraft/JA37/Sounds/flareOut.wav</path>
             <condition>
+                <property>ja37/avionics/annunciator/serviceable</property>
                 <property>ai/submodels/submodel[0]/flare-release-out-snd</property>
                 <property>sim/current-view/internal</property>
                 <property>ja37/sound/annunciation-enabled</property>
@@ -1891,6 +2084,7 @@
                 </greater-than>
             </condition>
             <volume>
+                <property>ja37/sound/helmet</property>
                 <factor>1</factor>
                 <max>1</max>
             </volume>

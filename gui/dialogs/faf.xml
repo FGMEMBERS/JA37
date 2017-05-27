@@ -1,0 +1,268 @@
+<?xml version="1.0"?>
+<PropertyList>
+	<name>faf</name>
+  	<modal>false</modal>
+  	<layout>vbox</layout>
+  	<draggable>true</draggable>
+    <resizable>true</resizable>
+    <width>250</width>
+    <height>550</height>
+
+    <group>
+		<layout>hbox</layout>
+		<empty><stretch>1</stretch></empty>
+
+		<text>
+			<label>Friends and Foes</label>
+		</text>
+
+		<empty><stretch>1</stretch></empty>
+
+		<button>
+			<pref-width>16</pref-width>
+			<pref-height>16</pref-height>
+			<legend></legend>
+			<default>1</default>
+			<keynum>27</keynum>
+			<border>2</border>
+			<binding>
+				<command>dialog-close</command>
+			</binding>
+			<binding>
+				<command>dialog-apply</command>
+			</binding>
+		</button>
+	</group>
+
+  	<text>
+	    <label>Callsigns:</label>
+	    <height>25</height>
+	</text>
+
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Friend 1</label>
+	  	<property>ja37/faf/friend-1</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>0.5</red>
+      		<green>1</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Friend 2</label>
+	  	<property>ja37/faf/friend-2</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>0.5</red>
+      		<green>1</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Friend 3</label>
+	  	<property>ja37/faf/friend-3</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>0.5</red>
+      		<green>1</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Friend 4</label>
+	  	<property>ja37/faf/friend-4</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>0.5</red>
+      		<green>1</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Friend 5</label>
+	  	<property>ja37/faf/friend-5</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>0.5</red>
+      		<green>1</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Friend 6</label>
+	  	<property>ja37/faf/friend-6</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>0.5</red>
+      		<green>1</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Foe 1</label>
+	  	<property>ja37/faf/foe-1</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>1</red>
+      		<green>0.5</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Foe 2</label>
+	  	<property>ja37/faf/foe-2</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>1</red>
+      		<green>0.5</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Foe 3</label>
+	  	<property>ja37/faf/foe-3</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>1</red>
+      		<green>0.5</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Foe 4</label>
+	  	<property>ja37/faf/foe-4</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>1</red>
+      		<green>0.5</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Foe 5</label>
+	  	<property>ja37/faf/foe-5</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>1</red>
+      		<green>0.5</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<input>
+	  	<width>250</width>
+	  	<height>25</height>
+	  	<label>Foe 6</label>
+	  	<property>ja37/faf/foe-6</property>
+	  	<live>true</live>
+	  	<halign>left</halign>
+        <binding>
+            <command>dialog-apply</command>
+      	</binding>
+      	<color>
+      		<red>1</red>
+      		<green>0.5</green>
+      		<blue>0.5</blue>
+      	</color>
+	</input>
+	<button>
+		<x>0</x>
+		<y>0</y>
+		<legend>Switch</legend>
+		<binding>
+			<command>nasal</command>
+			<script>
+				var h1 = getprop("ja37/faf/foe-1");
+				var h2 = getprop("ja37/faf/foe-2");
+				var h3 = getprop("ja37/faf/foe-3");
+				var h4 = getprop("ja37/faf/foe-4");
+				var h5 = getprop("ja37/faf/foe-5");
+				var h6 = getprop("ja37/faf/foe-6");
+				var f1 = getprop("ja37/faf/friend-1");
+				var f2 = getprop("ja37/faf/friend-2");
+				var f3 = getprop("ja37/faf/friend-3");
+				var f4 = getprop("ja37/faf/friend-4");
+				var f5 = getprop("ja37/faf/friend-5");
+				var f6 = getprop("ja37/faf/friend-6");
+				setprop("ja37/faf/foe-1", f1);
+				setprop("ja37/faf/foe-2", f2);
+				setprop("ja37/faf/foe-3", f3);
+				setprop("ja37/faf/foe-4", f4);
+				setprop("ja37/faf/foe-5", f5);
+				setprop("ja37/faf/foe-6", f6);
+				setprop("ja37/faf/friend-1", h1);
+				setprop("ja37/faf/friend-2", h2);
+				setprop("ja37/faf/friend-3", h3);
+				setprop("ja37/faf/friend-4", h4);
+				setprop("ja37/faf/friend-5", h5);
+				setprop("ja37/faf/friend-6", h6);
+			</script>
+		</binding>
+	</button>
+</PropertyList>

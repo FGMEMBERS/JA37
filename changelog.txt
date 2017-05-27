@@ -1,6 +1,6 @@
-==============================================
-Flightgear Saab JA-37 / AJ-37 Viggen Changelog
-==============================================
+===================================
+Flightgear Saab 37 Viggen Changelog
+===================================
 
 1.0 - Late 2012
 ---
@@ -2490,6 +2490,428 @@ Control: The inner elevons now react more coarse, sluggish than the faster outer
 Control: Elevon hydraulic deflection speed adjusted so roll and pitch deflections use same deg/s.
 GUI: Fixed that performance monitor would show calibrated airspeed instead of true.
 
-4.008 - 2016 November 12
+4.008 - 2016 November 12  (Flightgear 2016.4.1 version)
 =====
+Sim: [Pinto] Improved damage from guns code and added new armament.
 Control: Reverted change in actuation speed for elevator.
+
+4.009 - 2016 November 26
+=====
+GUI: Added 3 thumbnails for new launcher in FG 2017.1.1
+Control: Made pitch control be normal based, as per diagrams of real Viggen FCS.
+Sim: Blackout code now respect default blackout if FG version is 2017.1.0 or larger.
+Sim: Increased G to 8, before FG complains that you are overpulling Gs. Negative set to -2.
+Sim: Tuned altitude A/P.
+Effect: Wingtip vapour is now from canards.
+
+4.010 - 2016 December 12
+=====
+Model: Added VID display (black tube next to HUD) for AJ(S)-37, in real life used to aim RB-75 with.
+Model: {Pinto} Made much better HUDs.
+Model: {Pinto} Adjusted sunscreen to make room for VID in AJ.
+HUD: M71 now has continously computed impact point (CCIP) aiming. (is only aiming mode available, yet..)
+HUD: Made distance scale show flight time for M71, with arming time and max time.
+HUD: Made distancescale blink if M71 flighttime is below arming time, and switch off if above max flight time.
+Sound: Removed explosion sound if weapon did not arm.
+Sim: Made hit message different if weapon did not have time to arm.
+Sim: Made RB-15F anti-ship only, since the F version did not have ground attack capability.
+Sim: Fixed that A/P could influence flight even after A/P was switched off due to timing between A/P code and JSBSim.
+Model: Made VID turn on only when power is available and RB-75 is selected and searching.
+Control: Disabled AoA limiter when A/P altitude hold is active.
+Sim: Fixed altitude hold combined with A/T AoA hold was unstable.
+Animation: Show wheels spinning in MP also.
+Model: Made individual m71 show over MP.
+Sim: Removed support for Bombable.
+Model: Changed default livery for AJS.
+Sim: Made so only AoA throttle hold combined with altitude hold ignores AoA limiter.
+Effect: Fixed regression that cannon would no longer fire.
+Model: Fixed that 2 liveries were mixed together on SAF 01.
+
+4.011 - 2016 December 26
+=====
+Sim: Getting pitch to target now takes curvature of earth into account, in missiles and radar.
+Model: Converted some flat shaded faces to smooth shaded on fuselage.
+Effect: Made buffeting smarter and more correct.
+Effect: Floodlight is now more lit.
+Sim: Armaments now is optimized for Nasal garbage collection.
+Sim: Armaments now makes bigger effort to find impact distance.
+Radar: Converted radar logic to be object oriented.
+Sim: Armament no longer reports bleed in console. But now reports type, in other messages.
+Radar: Radar logic now optimized for Nasal garbage collection.
+Sim: More accurate way of passing target location updates to armament.
+HUD: Reduced texture imprint by 4 times.
+Sim: Better init of armament position.
+Sim: Removed double declaration of variable in missile code.
+Sim: Made RB-15F be terrain following again.
+Effect: Made all weapon smoke trails be unaffected by lightning as it don't work proper anyway.
+Model: Made AoA indicator look more like the real in Viggen.
+Model: The minimum AoA/pitch the indicator should show is now -4 degrees, not -7.
+Sim: Smarter console output for missile code.
+Sim: Weapons now display smoke trail over MP, one at a time. (experimental)
+Sim: Weapons can now also be unguided, GPS or laser guided.
+Sim: Weapon code now has much more documentation.
+Sim: Made dropped munitions keep track of target while in the drop before engine kicks in.
+Sim: Prevented munitions from cruising, if they did not snap up.
+Sim: Made sure M71 model is shown also after some from same pylon has exploded.
+Sim: Added vision guided support in weapons code.
+Effect: Reduced armament smoke particles to avoid crashing.
+Sim: IR missiles now report if missed and if they were fooled by flare.
+Sim: Added possibility to specify navigation system for guided munitions.
+Sim: RB-05 no longer uses APN, but flies direct to target.
+Sim: Guided munitions no longer to take alpha and beta of target into account, it was too unreliable.
+Sim: Rear aspect missiles now easier loses lock without direct view of engine.
+Sim: Made missile code able to support very long range missiles.
+Sim: Missile gravity acc. is now applied differently, should work better.
+Sim: Stopped compensating for beta and alpha twice during release of missile.
+Sim: Missiles now dont pull too many G when lofting or pitching to cruise.
+Sim: Made lofting/cruising smarter and simpler.
+Sim: Made the RB71 loft less.
+Sim: Now also warn when f-14 fires sparrow.
+Sim: Reduced Skyflash max G.
+Sim: If a missile target is less than 10 miles out, lofting and cruising will stop.
+Effect: Redout onset is now -2.
+Radar: On radarscreen is now the set range, as per manual.
+Sim: Munitions code now can optionally consume fuel.
+Sim: More informative console output when missile loses view of target.
+Control: Throttle control was adjusted as per AJS manual.
+Animation: Nozzle-indicator, tachometer, AoA-indicator and epr-gauge now goes to zero when DC voltage is too low.
+Animation: Nozzle-indicator, tachometer, AoA-indicator and epr-gauge is now damped, so the needle wont jump around.
+Sim: Sidewinders seeker total FOV reduced considerably.
+Sim: Sidewinder can now lock onto sun if unlucky.
+Sim: Updated mentioned authors in munitions code.
+Model: {Spectre} New livery: Ferris F21-79
+Sim: Made sidewinders consume fuel.
+Sim: Increased drag for M71 bomblets.
+Model: {Pinto} Made retarded M71.
+Sim: Updated firecontrol to be able to fire M71 retarded.
+Sim: M71 and M71r now drop alternating from pylons as per manual.
+Model: {Spectre} New X-Mas livery.
+Sim: Fixed M70 and M55 should fire simultaneously, as per dev notes.
+Sim: Made the RB-24 more authentic and less able to hit.
+HUD: Fixed that out of ammo FPI was always shown when M55 selected.
+
+4.012 - 2017 January 1
+=====
+Model: {Spectre} Added 2 Tiger Meet Liveries.
+Sim: New missile lofting system.
+Sim: Adjustments to RB71.
+Sim: Adjustment to missile lofting.
+Sim: RB99 performance drastically changed.
+Animation: Fixed that the zone gauge does not show the correct zone anymore.
+Radar: The type of the selection fed to the HUD would sometimes be off, hopefully no more.
+Sim: Missiles guidance law now predicts the gravity and compensates.
+Sim: Flares now use another MP property. Base chance of being fooled decreased. But chance increased at front aspect.
+GUI: G-force limits now depends on gear extension and total weight, as per manual.
+GUI: Pilot weight can now be adjusted in payload dialog.
+HUD: Fixed that at takeoff the desired altitude lines would rely on barometer, not radar altimeter.
+Radar: Added artificial horizon lines and desired altitude lines.
+Radar: Ordered the elements of which is shown on top of which.
+Sim: Better tube launched simulation.
+
+4.013 - 2017 January 2
+=====
+Engine: JA fuel tanks content adjusted as per JA-37D manual.
+Radar: Fixed a nasal error when showing waypoint.
+HUD: Big nasal garbage collection optimizations.
+HUD: Fixed CCIP was not so accurate when in a bank while dropping.
+Radar: Nasal garbage collection optimizations in radar screen code.
+
+4.014 - 2017 January 11
+=====
+Sim: Small improvement to lookup of fire messages for incoming warnings.
+Sim: Add own callsign to fire/hit MP msg if it gets omitted by FG.
+Animation: Rear gears are now compressed at retracting.
+Sim: Thrust reverser now depends on some relays for gear compressions, as per electrical diagram in manual.
+Aero: Speedbrakes added, only deploy beneath mach 0.92. (no external animation though)
+Model: Removed switch and logic for automatic thrust reversal at touchdown, as the handle will do that now.
+Animation: The reversing indicator will now light up anytime the reverse handle is pulled.
+Control: Improved yaw damper.
+Model: Added speedbrake switch.
+Engine: Inverted flight will now make oil pressure drop. Too much, and engine will start to cut out.
+Effect: Made view shake if hit by missile or aircraft explode.
+Animation: Seat can now be raised or lowered.
+GUI: Added cabin pressure to systems monitor.
+Sim: Made oxygen bottle slowly consume oxygen, when used.
+Animation: Decreased the oxygen bottle pressure warning to 41 kp/cm2 as per manual.
+Sim: Increased the oxygen bottle refill to 127 kp/cm2 as per manual.
+Sim: Oxygen supply to mask now depends also on bottle pressure besides altitude density.
+Sound: Adjusted low speed warning to work more accurate like manual.
+Animation: Made oxygen manometer not instantly flip to full when turned on.
+GUI: Made text warnings for temperature and oxygen supply for pilot.
+Model: Added KV1 radio channel selector.
+Model: {Pinto} Added datapanel and navpanel. Not functional yet.
+Animation: The red lamp next to radar screen, now also warns if altitude is somewhat lower than alt-hold.
+Model: Fixed radar range selector glass cover was not scaled.
+Model: Added volume panel.
+Model: Fixed that roll trim switch would only trim right.
+Model: Added roll trim indicator.
+Model: Added button with fliplid to jettison all stores including drop-tank.
+Model: Added button with fliplid to jettison drop-tank.
+Model: Fixed that backup altimeter would not adjust pressure high enough.
+Animation: Fixed pitch trim indicator.
+Model: Fixed that pitch trim switch would not trim down from level.
+Model: Fixed that yaw trim switch worked opposite.
+Model: Pylon selector knob now can do the outer pylons also. (still missing texture)
+Model: Weapon mode selector now can be set to off. It still has no logic though.
+HUD: Fixed that altitude scale vertical zero line was in wrong place.
+
+4.015 - 2017 January 15
+=====
+Animation: The stores will now show being jettisoned and fall down, except drop tank.
+Sound: Removed firing sound when jettisoning stores.
+Model: Added 2 non functional switches to weapons panel.
+Sim: The RB-71 can be notched again.
+GUI: {Pinto} Replaced a splash picture.
+GUI: Fixed tooltips on radio.
+Animation: Cockpit pressure manometer now show differential pressure, not absolute. As per manual.
+Sim: If gear is down and locked and no WOW, cabin pressure system duct now closes, as per manual.
+Sim: Cabin pressure changes no longer happen instantly.
+Animation: Brake manometer now registers brake pressure much more smart.
+HUD: Made HUD a little brighter and now should play nice with ALS filters.
+Model: Text on front panel now plays somewhat nice with IR and night vision.
+HUD: It now shows INT on runway when interoperability is enabled.
+GUI: Fixed that switching to generator power, was missing from checklist.
+Model: Fixed that some parts of radio and primary altimeter was flat shaded.
+Model: Added jettison canopy button.
+Sim: The failure mode for all electrical has been changed to work for only main generator. The specific generator mode is now gone.
+Sim: The ram air turbine now deploys auto if main is damaged.
+Sim: If ram air turbine is deployed and gears extended, DC will be supplied by battery.
+Sim: The ram air turbine will now be damaged if deployed at too high speeds.
+Sim: The ram air turbine now needs hydraulic from system 2 to deploy or retract.
+Aero: The ram air turbine now produces drag.
+Sim: The ram air turbine now extends when taking off, in this state is does not disconnect main generator though.
+Sim: Fixed that auto-start would sometimes fail due to reserve power being on.
+
+4.016 - 2017 January 29
+=====
+Sim: Made sure when auto shutting down, that ram air turbine and flaps is fully retracted.
+GUI: Added buffeting and ram air turbine stats to systems monitor.
+GUI: Added tertiary gate to systems monitor.
+GUI: Made checklist for shutting down.
+GUI: Reseting view with shift-q now is smooth.
+Sound: Low speed warning now depends on baro-altimeter when radar altimeter is switched off.
+Sim: Glass frost now is influenced by ram rise temperature, and glass-temp-index has been reduced.
+Radar: Fixed that radarlock would not show on screen for non-air targets.
+Sim: A/T wont engage AB no longer, as per manual.
+Sim: A/P downgrade is now pressing lower button. Then master warning with sound comes on.
+Sim: Pressing ATT now enable pitch hold also.
+Sim: Pressing STICK engages dampers, lowest A/P mode.
+Sim: Heading hold will switch to roll hold when gears down.
+Sim: Loss of AC for 2 secs disengage A/T AoA.
+Sim: Loss of AC for 6 secs disengage A/T speed.
+Sim: Masterwarning at loss of AC after 2 secs for A/T. If restored, masterwarning cease and A/T resumes.
+Sim: Loss of DC disengages A/P without warning, if comes back within 6 secs, it reengages.
+Sim: A/P mode Pushbuttons powered by DC not AC.
+Sim: ATT/ALT: pitch > 60 bank > 66 then 5 secs, blinking pushbuttons then disengage.
+Sim: Using A/P menu will disengage higher A/P modes and will not give nice indicator warnings if something goes wrong.
+HUD: Ideal landing alpha now depends on switch 15.5 setting or weight.
+Sim: Flying with ALT A/P mode in transonic for more than 60 secs will disengage that mode.
+Sim: Removed support for key CTRL-SHIFT-a.
+HUD: Ideal approach speed now depends on switch 15.5 setting.
+HUD: Landing guide vertical placement now depend on max sink rate 2.8m/s below 15m radar alt (or 35m for baro-alt). At same time guide is lateral fixed to FPI.
+Sim: Indicator 'gears' on left panel will now show steady light also for when gear is down, but all not locked. After 10 secs. it will blink for that also.
+Control: Roll, yaw and pitch damper plus roll limiter now depends on AC power (indirectly).
+GUI: Pressing shift-q now also works smooth for right side.
+Effect: There is now until -5 degrees a cap on how much frost can form.
+Effect: Made the glass have little less insulation quality.
+HUD: Made the FPI fin not move during final visual approach.
+Sim: The engine pressure ratio is now computed manually.
+Radar: Runway line is now augmented by an approach circle in landing mode 1 and start of 2.
+Sim: Fixed pitch hold for A/P mode 2 didn't work.
+Radar: Fixed that displaying approach circle on radar would be affected by pitching.
+Sim: Reset landing mode if airport is switched.
+Sound: Low speed warning is off when A/T is on.
+Radar: Runway line on radar now uses precise runway heading if available.
+HUD: 550Km ref speed in landing mode 1 with gears up. In landing mode with gears down its only moved by alpha.
+HUD: Landing guide now only show in landing mode 3 or optical mode or when ILS is intercepted.
+HUD: 500m baro set as rf alt in landing mode 1 and 2.
+Model: Added temp. switch for short/normal approach.
+HUD: Made altitude hold boxes.
+Radar: Made altitude hold boxes.
+HUD: Made altitude boxes blink 2Hz when should.
+Radar: Made altitude boxes blink 2Hz when should.
+HUD: Some refinement of ILS guide.
+HUD: If landing base is programmed in route manager, ILS guide wont show till 10 Km out.
+HUD: Heading bug for ADF, VOR or ILS now has lower priority to show than A/P or waypoint.
+Model: Changed the reset trim button to fliplid, as per manual.
+HUD: Made the lateral movement of landing guide clamp to 6 degs to right, to not be hidden behind alt. scale.
+HUD: Fixed that altitude lines/boxes did not match the scale when in metric mode.
+GUI: Added landing mode to systems monitor.
+GUI: Made option for changing quality of G-suit.
+
+4.017 - 2017 February 19
+=====
+HUD: Now always show landing guide when no route to runway has been programmed and in landing mode.
+Effect: Added rust effect to cockpit and fuselage, enabled in options.
+Sound: Made welcome msg. delayed for FG 2017.1
+Sim: Added GSh-23 to damage.
+Effect: Put cockpit shader on pedals.
+Animation: Fixed that DME indicator would get stuck if dme/waypoint is more than 40 KM out.
+Sim: Made canopy not be able to make opening/closing sound when broken off.
+Animation: Made A/P pushbutton be powered by DC voltage.
+Sim: Oil pressure when inverted now is detected by negative G, not roll.
+Sim: Decreased rate of oxygen consumption.
+
+4.018 - 2017 March 23
+=====
+Sim: Check for 2018+ FG for now picking is off.
+HUD: Increased texel resolution.
+HUD: Applied Thorstens new HUD shader.
+Model: Unify fuselage material between variants.
+GUI: Fix thumbnail for 2017.2.0
+Control: At gear deployment at loss of hydr1 they now only go down by positive gravity.
+Model: Adjusted some fuselage materials.
+Model: Made bare metal parts of aircraft more dark.
+Effect: Small change to bare-metal shader.
+Model: Moved UV of all bare metal into same place on base texture.
+
+4.019 - 2017 April 8
+=====
+Sim: Fixed that 0 G not -1 G was regarded as inverted flight. Oil pressure would drop too often.
+Sound: Added speedbrakes sound.
+Aero: Added speedbrakes, ram air turbine and open canopy to normal forces.
+Aero: Made speedbrakes have more drag.
+HUD: Changed conditions on when to switch from takeoff mode as per manual.
+HUD: Changed when distancescale showing rotation speed should shut off, as per manual.
+HUD: When HUD declutters, tower and sideslip indicator now goes away.
+HUD: Digital airspeed is now only shown above 75 Km/h as per manual.
+GUI: Ctrl-s now toggles auto throttle always.
+Sim: Made check to ensure max allowed G for weapons never go below 0.25 G.
+Sound: Added wind sound from speedbrakes.
+GUI: Added weather presets for ISA atmospheres.
+Engine: Updated idle thrust for RM-8A and RM-8B.
+Engine: Lowered mil thrust fuel consumption for RM-8A.
+GUI: Made warning if maximum allowed rolling speed is exceeded.
+Sound: Made small sound explosion when gears break due to too high speed.
+Animation: {Richard} Limit radar compass to rate-limit specified in manuals.
+Animation: {Richard} Limit radar compass heading bug to rate-limit specified in manuals.
+Model: Made radar compass heading bug, have flood-light also.
+GUI: Made CTRL-y ask tower for runway local QFE pressure.
+GUI: Ask tower now also returns ILS freq. if available.
+
+4.020 - 2017 April 23
+=====
+GUI: Hotfix for ctrl-y request.
+Engine: Increased slightly aug thrust fuel consumption for RM-8A.
+Sim: Fixed that Dynamic View Manager concluded that the Viggen was a helicopter.
+Radar: JA37 max range setting lowered to 120 Km. (source: former JA37 pilot)
+Sim: Fixed AoA indicator would not work in replay.
+Sim: Did an overhaul of replay recording.
+Model: Fixed AoA indicator needle would z-fight on Linux.
+GUI: Made calc of static margin more readable.
+Control: Increased response to longitudinal stick input.
+Aero: Audit of mass and balance, found an issue.
+Aero: Decreased speedbrake drag. (source: former JA37 pilot)
+Aero: Disabled pitch due to inlet mass flow number, due to it being wrong.
+Sim: The Viggens autostart should no longer be interupted by filling fuel or stores.
+Sound: Annunciator now also has a failure mode.
+Radar: Screen is now darker background green.
+Radar: Screen brightness is now also controlled by instrument light knob.
+Model: Fixed that callsign on frontpanel would be lit bright all the time.
+Radar: Made font of radar range bigger.
+Radar: Moved radar picture a bit upwards.
+Radar: Changed font of radar range.
+Sim: Updated tags.
+Effect: Replaced navigation light with procedural lights in ALS.
+Aero: Reenabled pitch due to inlet mass flow number.
+Sim: Adjusted the lower EPR ratings.
+Effect: Update to HUD effect so it works with filters.
+
+4.100 - 2017 May 3
+=====
+Effect: Removed frost from HUD.
+Model: {Pinto} Added model for MI display.
+Model: {Pinto} Added model for TI display.
+MI: Made MI display canvas.
+TI: Made TI display canvas.
+Radar: Removed auto selecting echoes.
+Sim: Pitched cockpit view down by 1 degree.
+Model: Removed the inverted shadow map above MI panel.
+GUI: CTRL-q now looks down at displays.
+Animation: Made aug stages lit up at lamp test.
+Model: {Pinto} Did new mount and placement for JA fuel gauge.
+Model: Rearranged frontpanel and part of right panel for JA37Di.
+Sim: {Onox} Removed unused config in autopilot.
+GUI: Added option for only showing TI menu items that is functional.
+Sim: Fixed that landing system would think some steerpoints were airports.
+Animation: Fuel gauge second needle is no longer showing droptank fuel. It really was used for something else. Pretty sure this is the second time I fixed that, strange.
+Sim: The JA-37 has been renamed to JA-37Di.
+Model: {Onox} Added mouse wheel zooming to certain exterior views.
+Model: {pinto} New gear well.
+Model: {pinto} New hi-def inlet.
+Animation: Animated Pintos new gear doors.
+Model: Changed switch on kv1 to nav/comm, temp. measure.
+GUI: New option to disable using Internet to update the TI map.
+Effect: Fixed floodlight does not work with hudRestPlaque.
+Model: Made tooltip for airspeed indicator show indicated, not true airspeed.
+GUI: {Swamp} Nice new splash for JA.
+
+4.101 - 2017 May 5
+=====
+TI: Prettyfied some code.
+MI: Enabled mipmapping.
+Model: Adjusted some gauges on frontpanel for JA.
+TI: Made small airport circles be stipled.
+TI: More authentic presentation of 2 menu items in display menu.
+TI: Moved clock a bit inwards.
+TI: Made some code easier to read and maintain.
+TI: Made menu item in display able to switch off threat circles.
+TI: Implemented the SIDV/SVY view. Use button 2 on MI to show it.
+
+4.102 - 2017 May 6
+=====
+TI: Refinement of SVY axises.
+TI: Divided rocker buttons into 2 parts.
+Radar: Renamed GPS Target to GPS Location.
+TI: Brightness and position rocker buttons now do nothing when display is off.
+TI: FAIL menu item will now blink if new failures has occured.
+MI: Failure will now show on the display if there are new failures.
+TI: Implemented landing log page.
+Sim: Added saab tag.
+
+4.103 - 2017 May 11
+=====
+GUI: Rename of gui folder.
+GUI: Added dialog to define friends and foes.
+TI: Echoes are now color coded according to friendly, boogie, bandit.
+TI: Selection now looks more faithful to manual.
+TI: Fixed bad bug that would freeze screen.
+TI: Made echoes be centered at tip of triangle.
+TI: Made selection same size as other echoes.
+GUI: Added button to switch foes and friends.
+TI: Moved center of own symbol to tip of triangle.
+TI: Fixed that in SVY zoomed in sometimes the position and vector direction didn't match.
+TI: Using true airspeed for own velocity vector instead of calibrated airspeed.
+Radar: {Pinto} Implemented RCS size into detection ranges. [disabled for now]
+TI: ECM overlay now shows incoming direction for a few seconds.
+TI: ECM overlay will now show detected radar beams from non-friendly MP sources.
+MI: Made MI display more performance friendly.
+GUI: Fixed wrong loadout msg. when JA selecting a2g.
+MI: Made the timing of running nasal loop uneven to TI/common.
+Radar: Added single seat Mirage to RCS list.
+TI: Fixed menus would not show Swedish chars.
+MI: Prevent possible divide by zero at very low framerate.
+Sim: Better initialization of displays common loops.
+TI: Optimized some parts for Nasal GC.
+TI: Fixed that steerpoint polygon could be toggled in TRAP menu.
+Sim: Fixed missile impact report was incompatible with Bombable.
+TI: Fixed that optimizing for GC in map update function could make tiles fail to load.
+
+4.104 - 2017 May 18
+=====
+Animation: Fixed 2 switches was not animated correct.
+GUI: Fixed overlapping buttons in option dialog.
+Radar: Detection if radar view is obscurred by terrain is now faster and better. (only FG 2017.2.1+)
+Sim: Missiles can now lose sight of target if obscured by terrain. (only FG 2017.2.1+)
+Sim: Terrain warning now is much smarter. (only FG 2017.2.1+)
+TI: Map will now show subtle noise when in offline mode.
+Animation: Fixed fuel gauge could change too fast.
+Sim: Prevented new missile report to generate a cannon hit.
+Model: {Spectre} Added livery inspired from song Big Iron.
+GUI: Made the colors of FAF dialog so that cursor can be seen.
+TI: Fixed that when passing longitude 180 meridian line, map would not show across the line till it was passed.
+TI: Fixed that rounding errors would display wrong map tiles at longitude close to -180 when flying on same side of meridian line.
+MI: Transfer link rb99 to TI. [X2] (right side of bottom text field)
+Model: Renamed Big Iron Livery.
+TI: Updated recommended landing alpha according to sources (approxed).
+HUD: Updated recommended landing alpha according to sources (approxed).

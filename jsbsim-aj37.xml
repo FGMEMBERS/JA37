@@ -13,7 +13,7 @@
   <fileheader>
     <author> Nikolai V. Chr. </author>
     <filecreationdate> 2016-06-10 </filecreationdate>
-    <version> 4.008 </version>
+    <version> 4.104 </version>
     <license>
       <licenseName>GPL 2 (General Public License version 2)</licenseName>
       <licenseURL>http://www.gnu.org/licenses/old-licenses/gpl-2.0.html</licenseURL>
@@ -32,6 +32,8 @@
          warranties, including, but not limitted to the implied warranties of
          merchantability and fitness for a particular purpose are disclaimed.
       </note>
+
+      <!-- the references are in no particular order. More were used, but tried to keep the list minimal -->
 
       <reference refID="NASA TM-88403" author="Krister Karling"
        title="Aerodynamics of the Viggen 37 Aircraft" date="June 1986"
@@ -77,6 +79,9 @@
       <reference refID="SFI-AJS-37-Del-1" author="Försvarets Materielverk"
        title="FPL AJS37 Speciel Förarinstruktion Del 1" date="1994"/>
 
+      <reference refID="SFI-AJS-37-Del-1" author="Försvarets Materielverk"
+       title="FPL AJS37 Speciel Förarinstruktion Del 1" date="1996"/>
+
       <reference refID="SFI-AJS-37-Del-2" author="Försvarets Materielverk"
        title="FPL AJS37 Speciel Förarinstruktion Del 2" date="1994"/>
 
@@ -89,14 +94,62 @@
       <reference refID="SFI-JA-37Di-Del-1" author="Försvarets Materielverk"
        title="FPL JA37Di Speciel Förarinstruktion Del 1" date="2003"/>
 
+      <reference refID="SFI-JA-37D-Del-2" author="Försvarets Materielverk"
+       title="FPL JA37D Speciel Förarinstruktion Del 2 Kap 1 Sida 3" date="1999"/>
+
+      <reference refID="SFI-JA-37D-Del-3" author="Försvarets Materielverk"
+       title="FPL JA37D Speciel Förarinstruktion Del 3 Kap 4-5" date="1999"/>
+
+      <reference refID="SFI-JA-37-Del-4" author="Försvarets Materielverk"
+       title="FPL JA37 Speciel Förarinstruktion Del 4" date="1983"/>
+
+      <reference refID="SFI-SK-37E-Del-1" author="Försvarets Materielverk"
+       title="FPL SK37E Speciel Förarinstruktion Del 1" date="1998"/>
+
+      <reference refID="SFI-AJSH-37-Del-1" author="Försvarets Materielverk"
+       title="FPL AJSF37 AJSF37 Speciel Förarinstruktion Del 1" date="1995"/>
+
       <reference refID="SSI-AJS-37" author="Försvarets Materielverk"
        title="FPL 37 Speciel Startnings-instruktion" date="1997"/>
+
+      <reference refID="SSI-F21-JA37" author="F 21 - 3 Div"
+       title="SFI frågor del 2"/>
+
+      <reference refID="ATIS-37" author="Flygvapnet"
+       title="Anvisningar för typinflygning fpl 37" date="1985"/>
+
+      <reference refID="BSK-AJS37" author="Försvarets Materielverk"
+       title="FPL AJS37 Beskrivning Del 4" date="1998"/>
+
+      <reference refID="BSK-M90" author="Försvarets Materielverk"
+       title="Beskrivning Bombkapsel M90" date="1998"/>
+
+      <reference refID="NOTES-37" author="Försvarets Materielverk"
+       title="Flygplan Saab 37 Viggen med föregångare, projektarkiv öppna" date="1979"/>
+
+      <reference refID="SKI-37" author="Försvarets Materielverk"
+       title="Speciell Klargöringsinstruktion FPL AJS, AJSH, AJSF37 Vapen/Spaning" date="1995"/>
+
+      <reference refID="CHECKLISTS-JA37" author="Försvarets Materielverk"
+       title="Minneslista för ff i fpl JA37" date="2001"/>
+
+      <reference refID="CHECKLISTS-EMERG" author="Försvarets Materielverk"
+       title="Minneslista för ff i fpl 37 NÖD" date="1999"/>
+
+      <reference refID="CHECKLISTS-AJS37" author="Försvarets Materielverk"
+       title="Minneslista för ff i fpl AJS37" date="2000"/>
+
+      <reference refID="CHECKLISTS-37" author="Försvarets Materielverk"
+       title="Minneslista för ff i fpl 37" date="2005"/>
 
       <reference refID="KOMP-AERODYN-FPL-37" author="Försvarets Materielverk"
        title="Aerodynamik fpl 37 - Kompendium I" date="1975"/>
 
       <reference refID="KOMP-AERODYN3-FPL-37" author="Försvarets Materielverk"
        title="Aerodynamik fpl 37 - Kompendium III" date="1981"/>
+
+      <reference refID="JET-DATABASE" author="Elodie Roux"
+       title="Turbofan and Turbojet Engines: Database Handbook" date="2007"/>
 
       <!-- note: the following 3 books is missing date -->
 
@@ -127,7 +180,7 @@
       <!-- Measured using Saab diagram in Gimp -->
       <wing_incidence unit="DEG"> 0.00    </wing_incidence>
     <location name="AERORP" unit="M">
-      <x> 1.79878 </x>
+      <x> 1.5517 </x><!-- same as CG, its modified in aero_ref_pt_shift_x according to current static margin -->
       <y> 0 </y>
       <z> -0.20081 </z>
     </location>
@@ -144,34 +197,6 @@
     <pitot_angle unit="DEG"> 0.0 </pitot_angle>
   </metrics>
   
-<!-- CoG and AeroRP:
-
-Page 47: stability margin at low speed
-will be on the order of O.3 - 0.5 m, which is a rather representative measure
-of the distance between the neutral point and the point of gravity in respect
-to an airplane of that size). [about prototype for AJ37, the attack variant]
-
-AeroRP:
-
-Bombers airfoil analysis says 0.257 chord (1.9018 m) from leading edge (x=0.30698 m), so that gives Aerorp x=2.20878 m.
-Setting the aerorp at main wing height z=-0.20081, this also makes the roll damping work much more effective.
-
-However on the model the landing gear is 0.3 meters too much forward, so when landing it will be difficult to touch down the nose wheel.
-For that reason it will be moved 0.3 meters forward from 2.20878 meters.
-
-CoG:
-
-Page 43: STA X65B = 12350mm [about prototype for AJ37, the attack variant], 1155mm after the flaps trailing edge (x=0.22 m) which gives x=1.375 m
-
-Now the JA37 had longer fuselage due to longer engine, also the more powerful engine was most certainly heavier.
-That means the CoG would have been further aft on the JA37 compared to the prototype for AJ37. It also makes sense for a fighter to have less longitudal stability compared to the attack variant.
-
-So the static margin of 0.3 meter does sound reasonable even though thats from the prototype.
-
-Old values:
-<x> 0.6399 </x>
-<x> 0.3399 </x>
- -->
 
   <mass_balance>
     <!-- Datcom+ Pro -->
@@ -185,7 +210,7 @@ Old values:
     <izz unit="KG*M2">  78179.33  </izz>-->
     <emptywt unit="KG" > 10500 </emptywt><!-- AJ37 manual -->
     <location name="CG" unit="M">
-      <x> 1.79878 </x>
+      <x> 1.5517 </x>
       <!--  -->
       <y> 0 </y>
       <z> 0 </z>

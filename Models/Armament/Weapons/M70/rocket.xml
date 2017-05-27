@@ -42,7 +42,7 @@
 
      <counter>
        <particles-per-sec>
-         <value>75</value>
+         <value>50</value>
          <spread>0</spread>
        </particles-per-sec>
      </counter>
@@ -84,8 +84,8 @@
 
      <program>
        <fluid>               air  </fluid>
-       <gravity type="bool"> true </gravity>
-       <wind typ="bool">     true </wind>
+       <gravity type="bool"> false </gravity>
+       <wind typ="bool">     false </wind>
      </program>
 
    </particlesystem>
@@ -130,7 +130,7 @@
 
      <counter>
        <particles-per-sec>
-         <value>100</value>
+         <value>50</value>
          <spread>0</spread>
        </particles-per-sec>
      </counter>
@@ -172,8 +172,8 @@
 
      <program>
        <fluid>               air  </fluid>
-       <gravity type="bool"> true </gravity>
-       <wind typ="bool">     true </wind>
+       <gravity type="bool"> false </gravity>
+       <wind typ="bool">     false </wind>
      </program>
 
    </particlesystem>

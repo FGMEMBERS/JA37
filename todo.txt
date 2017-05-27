@@ -1,5 +1,5 @@
-TODO for Flightgear JA-37
-=========================
+TODO for Flightgear Saab 37 Viggen
+==================================
 
 
 Features and improvements:
@@ -7,35 +7,41 @@ Features and improvements:
 GUI: Option to turn off verbose popups.
 GUI: Improve Checklists.
 GUI: Option to switch off hitting stuff above ground. (switched off now, might confuse users)
-Aero: Make JA cannon pod detachable and have pointweight. (and model it above drop-tank)
-Aero: Air-brakes, even though they got welded shut in mid 80ties. (Request from JazzTp)
+GUI: AT some point switch to new thumbnails format.
 Aero: Make recoil not assume that FDM rate is 120 Hz.
-Control: Pitch damper should also take lateral normal (Nz) acceleration as input as per manual.
+Aero: Tune speedbrake better.
+Aero: Make cannon ammo have pointweight.
 Control: Disable failure system from freezing surfaces (remove failure mode bug in 3.2- prevents)
+Control: Make bigger factor in pitch normal comparison. (beware of oscillations)
+Control: Limit elevator deflection due to servo-moment being smaller than moment of air-pressure. Page 19-20 in AK III.
 Model: Make minimal polygon model for multiplayer LOD.
 Model: Make liveries that is not 59, able to not have to use base texture.
 Model: Ext. power truck more mil style textures.
 Model: Put in more working instruments and controls.
 Model: Put in not-working instruments and controls for immersion.
 Model: Some control textures should be aligned so they can be better viewed from current pilot point of view.
-Model: The minimum AoA the indicator should show is -4 degrees, not -7.
-Model: Fix that landing gear oleo struts now are too bright.
 Model: Radar range control should be only 3 digits. (and be another place in the cockpit if should be accurate)
-Model: Make the tooltips fail when gauge fail.
+Model: Make the tooltips fail when gauges fail.
 Model: The reserve generator. (ram air turbine)
 Model: Proper floor in the cockpit.
-Model: Buttons for ejecting drop-tank/armaments. They have a flip lid.
 Model: Fix z-fighting on HUD brightness-knob, M71-rail and M90. (strange, might not be z-fighting, but sure looks like it)
-Model: Make the AJ37 black tube next to HUD, used for vision guided munition RB-75. It should have transparent glass cover.
-Model: Button with fliplid to jettison all stores including drop-tank.
-Model: Button with fliplid to jettison drop-tank.
 Model: A/P control in cockpit: A/T on throttle, A/P disengage on stick.
 Model: Review all indicator lights. For example the A/T light should blink by malfunctions or disengagements.
-Animation: Show wheels spinning in MP also.
-Animation: Proper animation of gear doors and gear retraction.
-Animation: Buffeting of view, when get hit, crash.
+Model: Model speedbrakes.
+Model: Fuze panel. Right side.
+Model: Radar panel. Left side.
+Model: Radio panel. Left side.
+Model: Airspeed indicator should have mach number also.
+Model: Stores jettisoned indicator on top right of front panel?
+Model: Switch ALT CISI, altitude source. (Only in AJ variants)
+Model: The KURS gauge in the JA was more complex, needs making.
+Model: The mount for the 3 autopilot buttons on frontpanel was different in the JA, needs making.
+Model: In the JA there was 2 knobs under the hudRestPlaque to control HUD brightness, needs making.
 Animation: Make rear boogie rotate at takeoff/landing rotation.
-Sim: Improve autopilot further. (alt-hold should use pitch not v-speed)
+Animation: Make jettison drop-tank/rocket pod actually fall down like other stores do.
+Engine: Switch aug. type in engine?
+Engine: Model compressor surge/stall including bang sound.
+Sim: Improve autopilot further.
 Sim: Make autopilot depend fully on instrument properties not true properties. (95% done)
 Sim: Implement ejection seat. (with parachute?)
 Sim: Reset controls after A/P let go of them.
@@ -45,88 +51,109 @@ Sim: Make replay show the guided missiles flying.
 Sim: Improve terrain warning system.
 Sim: Replace all generic setValue in nasal with specific types.
 Sim: Make droptank do collision detection. (use retractable)
-Sim: Make drop-tank fall down. (use slaved submodel)
 Sim: Missiles should lock onto flares from other mil plane types.
 Sim: Lock warning when another plane get radar lock. (ja37, m2000-5, f-14b, f-15)
 Sim: Complete hydraulic dependencies: Brakes.
 Sim: Hydraulic drain.
+Sim: Electric drain.
 Sim: Shift-m should be a key without shift instead for convenience.
 Sim: Specific damage to gears in crash code, speed of impact and vertical speed separate. (terrain type?)
 Sim: Make the weapon mode dial operational: simulated mode, operational mode and reduced mode.
 Sim: Make data-link between Viggens.
 Sim: Replace MP hit and fire messages with something else, so can leave civilian traffic in peace.
 Sim: Implement maximum speed reactions - Vne.
-Sim: Implement navigation controls into the cockpit.
-Sim: Engine fire: reduced thrust, stuck throttle.
-Sim: Make missile code generic aircraft independent.
-Sim: Include Shinobis missile changes into missile code. (heat)
-Sim: Stop auto-selecting when in tactical mode.
+Sim: Engine fire improvement: reduced thrust, stuck throttle.
+Sim: Stop auto-selecting when in tactical mode. (semi-done)
 Sim: RB99 will be rail launched if sitting on a rail instead of always dropped.
 Sim: Be able to notch the rb71 again.
-Sim: Make speed and altitude limits on firing missiles.
+Sim: Make speed, roll, Nz and altitude limits on firing missiles.
+Sim: Make boolean hasVectorThrust for missiles. If it has then reduce drastic the bleeding of speed during high G turns.
 Sim: Find the exact spot the center M70 fires from (submodels).
-Sim: Make retarded version of M71.
-Sim: Be able to switch if M55 should fire all at once, or one at a time.
 Sim: A/P does auto trim of roll.
 Sim: Review A/P working property use. Also in jsb for stick control.
 Sim: Make weapons hit all nearby targets.
-Sim: Make dumb bombs not require a target.
-Sim: When inverted for more than 10 secs, let oil pressure be affected, and disrupt engine operations.
-Radar: Make database of RCS of common aircrafts.
+Sim: Make m71 bombs not require a target.
+Sim: Make schedule for max climb rate with A/P at slow speed different when gears is down (or A/T AoA hold).
+Sim: Review all replay signals.
+Sim: Only send properties over MP when they change, will save up property space.
+Sim: Set 4 M71 to fire in ripple at each trigger press.
+Sim: Make data and nav panel functional.
+Sim: After exiting transonic the altitude hold is recomputed. 
+Sim: To disengage A/P to mode 0 press switch on stick or pull fuse (will also disengage A/T).
+Sim: OPT FIX button pressed will make the current destination selected moved to right under the aircraft at push time. (datapanel rensa will set it back to what was programmed)
+Sim: Select L on systems panel to select preprogrammed landing base. LB then for long approach, LF for short.
+Sim: Pitot depend on AC power.
+Sim: Some systems should get DC power directly from batt., some only when main power switch is on. Check diagram.
+Sim: The A/P for glideslope is not very reliable, fix.
+Sim: Fix that when changing airport location, battery gets drained, and therefore gives master warning for a while after startup.
 Effect: Rembrandt landing lightcone.
-Effect: Make pilot faint/die due to G-forces.
+Effect: Make pilot G-loc/die due to G-forces.
 Effect: Make tires burst if too high speed with parking brakes.
+Effect: Replace beacon, landing and strobe lights with procedural lights in ALS.
 Sound: More annunciater warnings and other sounds. (transonic)
-Sound: Make sounds when taking damage in bombable.
 Sound: Adjust the volume of the explosion of nearby missile, depending on distance.
 Sound: Rework how missile buzz and growl works.
-Radar: When ILS and DME is tuned to airport, show it on radar with a 20km centerline?
-Radar: Show artificial horizon lines.
-HUD: Make boxes for desired pitch.
+Sound: Sound from wind hitting the gears when extended.
+Radar: Make database of RCS of common aircrafts.
+Radar: Make rb71 notchable again, by introducing 3 diff painted properties instead of one.
 HUD: Alt scale follow pitch lines at more than 1 degree roll from level flight. (swedish pilots seems able to read upside down, not sure I will make this)
 HUD: All track semi circles and semi box should have a line in them. (might degrade performance)
 HUD: Fix that HUD selects diamond_node, not radar logic, so HUD can be turned off in external view.
 HUD: When DME are enabled at the same time as ILS with glideslope, the distance scale make the ILS view confusing.
 HUD: Make crossing out of hud when armament not ready to fire and trigger is pressed.
+HUD: Slave-SI centers the landing guide. And hides the attitude ind. ILS needles. (only AJ variants)
+HUD: Altitude scale should only be shown when engine is running due to it need AC power.
+TI: Show lat/lon grid in menu UDAT.
+TI: Move cursor between TI and MI.
+TI: Slew cursor.
+TI: Edit route.
+TI: Change runway symbol.
+TI: Show/edit bullseye.
+TI: Show fligthtime by using controls UD-UT.
+TI: Select self.
+TI: When inertial navigation is not ready and GPS is off, dont show moving map.
+TI: Make radar limit on SVY.
+TI: Add missiles to SVY.
+TI: Waypoint info should show ETA to next waypoint.
+TI: Make route info with overall ETA.
+TI: Terrain arrow should stay on for 3 seconds after pull up.
+MI: Slew cursor.
+MI: Implement radar sweep.
+MI: Improve mark event [X3]
+MI: Improve BIT test. [X1]
+MI: Make TNF to stop/start inertial nav.
+MI: NEZ indicator.
+CI: Memory button, for freezing image.
+CI: Slew cursor.
 
 
 
 Bugs:
 --------------
-Aero: Above mach 1 at higher altitudes, then plane seems to do some pitch oscillations. (Does not seem to be pitch damper fault)
-Animation: Selection view does not follow carriers or other ships till they move. (they lack radar properties)
 Control: {Pinto} Pitch damper does fast violent oscillations at 36000ft M2.25+ without droptank.
 GUI: The performance monitor can duplicate itself when selecting airport. [reproduced]
-HUD: In landing mode when horizont is out of view, heading scale does not show commanded heading.
 HUD: In landing mode, commanded altitude lines can be confused with ILS guidance.
 HUD: When autostarting is in progress, the HUD will switch off for a fraction of a second sometimes when loading stores. (due to stores mass moving the aircraft a bit and external power then gets disconnected.).
 HUD: When the altitude difference to a track is much larger than the horizontal distance, the track positions are off.
 HUD: {JazzTp} When FG HUD is in 2nd or 3rd mode, it does not go away when switching to custom. [reproduced]
 Model: CTRL-X in HUD view will not zoom to correct level.
-Model: Droptank indicator should really be a steerpoint indicator.
+Model: AJ Droptank indicator should really be a steerpoint indicator.
 Model: In FG 2.12 radar screen does not work as it should. (no canvas replacement)
-Model: sim load-lag when coming near other ja37. [reproduced, select anims are probably to blame]
-Radar: Shooting at imdrone ship, it blinks in and out before getting lock.
-Report: {JabberWocky} After A/P the plane consumes too much fuel. [not reproduceable]
-Sim: Check missile sound at KCA again..
+Model: All shader use of <use> does not work over MP.
 Sim: Find out why cannon and sidewinder fire randomly after instant replay.
 Sim: If HoT (/sim/multiplay/hot) is enabled, geo reports wrong ground elevation at a AI/MP aircraft location.
 Sim: Missiles do not show when using FG 3.0, in FG 3.1+ they work fine. [reproduced]
-Sim: Missiles will not lock on to ferries that is missing the radar properties.
 Sim: Sometimes when exploding, the sim freezes, typically at redout. [was bug in jsbsim, fixed in 2016.1]
 Sim: The auto-pilot can be bank unstable when auto-coordination is turned on.
-Sim: When a missile hits the console will now report a wrong distance.
 Sim: When Bombable 4.5 is installed redout and blackout might not work properly. [related to certain Bombable settings I think]
 Sim: When relocating or pausing, autostart might fail. [reproduced]
-Sim: {JazzTp} A repair did repair aircraft except for HUD, it was frozen. [not reproduced yet]
-Sim: {JazzTp} On Linux, after firing first missile, the key bindings for weapons go to other things, like exit FG. [Cannot reproduce on Win]
-Sim: {JazzTp} Radar screen did not see MP aircraft pass by. [not reproduced yet]
 Sim: {JazzTP} Replay did not replay explosion.
 Sim: {Pinto} After fire M70, and reload, they will fire again. [might be fixed]
 Sim: {Pinto} Has experienced that 2 engine directories were created under engines. That leads to error in performance monitor.
-Sound: Could hear aim-9 growl even though not in tact mode, in external view.
 Sound: If at the end of non-looped replay view mode is fly-by-view, sounds will continue looping. [not reproduced]
 Effect: Firing many M70 rockets in quick succession will make FG crash. [Probably fixed]
+Sim: A/T at high alpha does not work for Pinto, too high alpha. (3k ft, 30% fuel, no reverse)
+
 
 
 Issues with FG:
@@ -147,6 +174,7 @@ Default FG HUD (done)
 Livery work
 -----------
 Model: Improve the 01     eastern livery.
+Model: Improve the 79-F21 ferris
 Model: Improve the 01-F21 viking livery.
 Model: Improve the 31-F17 grey livery.
 Model: Improve the 32-F17 Blå Petter livery. (Blue Peter)
@@ -168,5 +196,3 @@ Require more data:
 Aero: Detailed axial coefficients.
 Aero: Mass distribution.
 Aero: Detailed high speed aerodynamics.
-Aero: Accurate weight of empty drop tank.
-Aero: Weight of 30mm cannon pod.

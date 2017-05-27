@@ -1,18 +1,21 @@
 <?xml version="1.0"?>
 <PropertyList>
+
+    <mice include="ja37-mice.xml"/>
+
     <keyboard>
-        <key n="1">
+        <!--<key n="1">
             <name>Shift-Ctrl-A</name>
             <mod-shift>
                 <desc>Autopilot continue on heading/alt</desc>
                 <binding>
                     <command>nasal</command>
                     <script>
-                       ja37.apCont();
+                       auto.apCont();
                     </script>
                 </binding>
             </mod-shift>
-        </key>
+        </key>-->
         <key n="108">
             <name>l</name>
             <desc>Toggle arrester hook</desc>
@@ -333,7 +336,7 @@
             <desc>Set autopilot to follow current target</desc>
             <binding>
                 <command>nasal</command>
-                <script>ja37.follow();</script>
+                <script>auto.follow();</script>
             </binding>
         </key>
         <key n="70">
@@ -341,7 +344,7 @@
             <desc>Set autopilot to stop follow current target</desc>
             <binding>
                 <command>nasal</command>
-                <script>ja37.unfollow();</script>
+                <script>auto.unfollow();</script>
             </binding>
         </key>
         <key n="8">
@@ -508,7 +511,7 @@
 		    <binding>
                 <command>property-cycle</command>
                 <property>/instrumentation/radar/range</property>
-                <value type="int">180000</value>
+                <!--<value type="int">180000</value>-->
                 <value type="int">120000</value>
                 <value type="int">60000</value>
                 <value type="int">30000</value>
@@ -532,7 +535,7 @@
                 <value type="int">30000</value>
                 <value type="int">60000</value>
                 <value type="int">120000</value>
-                <value type="int">180000</value>
+                <!--<value type="int">180000</value>-->
                 <wrap>false</wrap>
             </binding>
 			<binding>
@@ -569,6 +572,16 @@
            <script>ja37.ct("c-u")</script>
           </binding>
          </key>
+
+         <key n="25">
+            <name>CTRL-Y</name>
+            <desc>Ask tower for landing info</desc>
+            <repeatable>false</repeatable>
+            <binding>
+                <command>nasal</command>
+                <script>land.askTower()</script>
+            </binding>
+        </key>
 
          <key n="97">
           <name>a</name>
@@ -1150,6 +1163,16 @@
             </binding>
         </key>
 
+        <key n="17">
+            <name>CTRL-Q</name>
+            <desc>View head-down-displays</desc>
+            <repeatable>false</repeatable>
+            <binding>
+                <command>nasal</command>
+                <script>ja37.HDDView();</script>
+            </binding>
+        </key>
+
         <key n="356">
             <name>Ctrl Left</name>
             <repeatable type="bool">false</repeatable>
@@ -1225,6 +1248,49 @@
            </script>
           </binding>
          </key>
+
+         <key n="360">
+          <name>Shift PageUp</name>
+          <desc>Increase seat position</desc>
+          <repeatable type="bool">true</repeatable>
+          <mod-shift>
+           <desc>Up</desc>
+           <binding>
+              <command>property-adjust</command>
+              <property>ja37/effect/seat</property>
+              <step>0.0025</step>
+              <min>0.6</min>
+              <max>0.8</max>
+            </binding>
+          </mod-shift>
+         </key>
 		
+        <key n="361">
+          <name>Shift PageDown</name>
+          <desc>Decrease seat position</desc>
+          <repeatable type="bool">true</repeatable>
+          <mod-shift>
+           <desc>Up</desc>
+           <binding>
+              <command>property-adjust</command>
+              <property>ja37/effect/seat</property>
+              <step>-0.0025</step>
+              <min>0.6</min>
+              <max>0.8</max>
+            </binding>
+          </mod-shift>
+         </key>
+
+         <key n="19">
+          <name>Ctrl-S</name>
+          <desc>Toggle auto-throttle lock</desc>
+          <binding>
+           <command>nasal</command>
+           <script>
+                auto.apContSpeed();
+                ja37.click();
+            </script>
+          </binding>
+         </key>
     </keyboard>
 </PropertyList>

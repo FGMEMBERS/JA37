@@ -13,7 +13,7 @@
 
   <model>
     <path>Aircraft/JA37/Models/Instruments/NozzleIndicator/nozzle.xml</path>
-    <name>reserve-nozzle</name>
+    <name>reserve-nozzle1</name>
     <offsets>
       <pitch-deg>-90</pitch-deg>
       <x-m>  0.055</x-m>
@@ -24,7 +24,7 @@
 
   <animation>
     <type>scale</type>
-    <object-name>reserve-nozzle</object-name>
+    <object-name>reserve-nozzle1</object-name>
     <x-offset>0.7</x-offset>
     <y-offset>0.7</y-offset>
     <z-offset>0.7</z-offset>
@@ -32,7 +32,7 @@
 
   <model>
     <path>Aircraft/JA37/Models/Instruments/OutletTemperature/outlet-temperature.xml</path>
-    <name>outlet-temp</name>
+    <name>outlet-temp1</name>
     <offsets>
       <pitch-deg>-90</pitch-deg>
       <x-m>  0.125</x-m>
@@ -43,11 +43,83 @@
 
   <animation>
     <type>scale</type>
-    <object-name>outlet-temp</object-name>
+    <object-name>outlet-temp1</object-name>
     <x-offset>0.7</x-offset>
     <y-offset>0.7</y-offset>
     <z-offset>0.7</z-offset>
   </animation>
+
+    <animation>
+      <object-name>outlet-temp1</object-name>
+      <object-name>reserve-nozzle1</object-name>
+      <type>select</type>
+      <condition>
+       <greater-than>
+        <property>ja37/systems/variant</property>
+        <value>0</value>
+       </greater-than>
+      </condition>
+    </animation>
+
+    <model>
+    <path>Aircraft/JA37/Models/Instruments/NozzleIndicator/nozzle.xml</path>
+    <name>reserve-nozzle2</name>
+    <offsets>
+      <pitch-deg>-90</pitch-deg>
+      <x-m>  0.270</x-m>
+      <y-m> -0.045</y-m>
+      <z-m>  0</z-m>
+    </offsets>
+  </model>
+
+  <animation>
+    <type>scale</type>
+    <object-name>reserve-nozzle2</object-name>
+    <x-offset>0.7</x-offset>
+    <y-offset>0.7</y-offset>
+    <z-offset>0.7</z-offset>
+    <center>
+      <x-m>  0.270</x-m>
+      <y-m> -0.045</y-m>
+      <z-m> 0</z-m>
+    </center>
+  </animation>
+
+  <model>
+    <path>Aircraft/JA37/Models/Instruments/OutletTemperature/outlet-temperature.xml</path>
+    <name>outlet-temp2</name>
+    <offsets>
+      <pitch-deg>-90</pitch-deg>
+      <x-m>  0.270</x-m>
+      <y-m>  -0.095</y-m>
+      <z-m> 0</z-m>
+    </offsets>
+  </model>
+
+  <animation>
+    <type>scale</type>
+    <object-name>outlet-temp2</object-name>
+    <x-offset>0.7</x-offset>
+    <y-offset>0.7</y-offset>
+    <z-offset>0.7</z-offset>
+    <center>
+      <x-m>  0.270</x-m>
+      <y-m>  -0.095</y-m>
+      <z-m> 0</z-m>
+    </center>
+  </animation>
+
+  <animation>
+      <object-name>outlet-temp2</object-name>
+      <object-name>reserve-nozzle2</object-name>
+      <type>select</type>
+      <condition>
+       <equals>
+        <property>ja37/systems/variant</property>
+        <value>0</value>
+       </equals>
+      </condition>
+    </animation>
 
   <model>
     <path>Aircraft/JA37/Models/Instruments/ManometerOxygen/oxygen-manometer.xml</path>
@@ -104,8 +176,8 @@
     <path>Aircraft/JA37/Models/Cockpit/knob-g/windshield-hot-air.xml</path>
     <name>windshield hot air</name>
     <offsets>
-      <x-m>  0.40</x-m>
-      <y-m>  0.05</y-m>
+      <x-m>  0.565</x-m>
+      <y-m> -0.065</y-m>
       <z-m>  0.00</z-m>
     </offsets>
   </model>
@@ -114,8 +186,8 @@
     <path>Aircraft/JA37/Models/Cockpit/button-g/autopilot-follow.xml</path>
     <name>follow</name>
     <offsets>
-      <x-m>  0.30</x-m>
-      <y-m>  0.05</y-m>
+      <x-m>  0.476</x-m>
+      <y-m>  -0.020</y-m>
       <z-m>  0.00</z-m>
     </offsets>
   </model>
@@ -124,8 +196,8 @@
     <path>Aircraft/JA37/Models/Cockpit/button-g/flares.xml</path>
     <name>flares</name>
     <offsets>
-      <x-m>  0.30</x-m>
-      <y-m> -0.025</y-m>
+      <x-m>  0.476</x-m>
+      <y-m>  -0.085</y-m>
       <z-m>  0.00</z-m>
     </offsets>
   </model>
@@ -160,5 +232,36 @@
       <z-m>  0.00</z-m>
     </offsets>
   </model>
+
+  <model>
+     <path>Aircraft/JA37/Models/Cockpit/switch-a/tils-group.xml</path>
+     <name>tilsG</name>
+     <offsets>
+       <heading-deg>90</heading-deg>
+       <x-m>  0.422</x-m>
+       <y-m>  0.010</y-m>
+       <z-m>  0.00</z-m>
+     </offsets>
+   </model>
+
+  <model>
+     <path>Aircraft/JA37/Models/Instruments/Datapanel/datapanel.xml</path>
+     <name>Datapanel</name>
+     <offsets>
+       <x-m>0.36</x-m>
+       <y-m>-0.059</y-m>
+       <z-m>-0.004</z-m>
+     </offsets>
+   </model>
+   
+   <model>
+     <path>Aircraft/JA37/Models/Instruments/Navpanel/navpanel.xml</path>
+     <name>Navpanel</name>
+     <offsets>
+       <x-m>.3485</x-m>
+       <y-m>0.06</y-m>
+       <z-m>-0.004</z-m>
+     </offsets>
+   </model>
 
 </PropertyList>

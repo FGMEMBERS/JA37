@@ -1,6 +1,6 @@
 var optionDLG_RUNNING = 0;
 var DIALOG_WIDTH = 580;
-var DIALOG_HEIGHT = 775;
+var DIALOG_HEIGHT = 750;
 var TOPLOGO_HEIGHT = 0;#logo don't work atm
 var SIDELOGO_WIDTH = 100;
 
@@ -13,7 +13,7 @@ var Dialog = {
         var font = { name: "FIXED_8x13" };
 
         me.dialog = nil;
-        me.name = "JA-37 Options";
+        me.name = "Saab 37 Options";
 
 #        me.listeners=[];
 #        append(me.listeners, setlistener("/sim/signals/reinit-gui", func me._redraw_()));
@@ -145,19 +145,19 @@ var Dialog = {
           me.dialog.breakButton.setBinding("nasal", "ja37.Dialog.breakToggle()");
 
           ######   reverse button   #####
-          var reverseRow = topRow.addChild("group");
-          reverseRow.set("layout", "hbox");
-          reverseRow.set("pref-height", 25);
-          reverseRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
+          #var reverseRow = topRow.addChild("group");
+          #reverseRow.set("layout", "hbox");
+          #reverseRow.set("pref-height", 25);
+          #reverseRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
           #reverseRow.set("valign", "center");
           
-          var reverseText = reverseRow.addChild("text").set("label", "Automatic reverse thrust at touchdown:");
-          reverseRow.addChild("empty").set("stretch", 1);
-          me.dialog.reverseButton = reverseRow.addChild("button");
-          me.dialog.reverseButton.set("halign", "right");
-          me.dialog.reverseButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
+          #var reverseText = reverseRow.addChild("text").set("label", "Automatic reverse thrust at touchdown:");
+          #reverseRow.addChild("empty").set("stretch", 1);
+          #me.dialog.reverseButton = reverseRow.addChild("button");
+          #me.dialog.reverseButton.set("halign", "right");
+          #me.dialog.reverseButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
           #topRow.addChild("empty").set("stretch", 1);
-          me.dialog.reverseButton.setBinding("nasal", "ja37.Dialog.reverseToggle()");
+          #me.dialog.reverseButton.setBinding("nasal", "ja37.Dialog.reverseToggle()");
 
           ######   hud button   #####
           var hudRow = topRow.addChild("group");
@@ -205,19 +205,19 @@ var Dialog = {
 #          me.dialog.tracksButton.setBinding("nasal", "ja37.Dialog.tracksToggle()");
 
           ######   HUD bank indicator button   #####
-          var bankRow = topRow.addChild("group");
-          bankRow.set("layout", "hbox");
-          bankRow.set("pref-height", 25);
-          bankRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
+#          var bankRow = topRow.addChild("group");
+#          bankRow.set("layout", "hbox");
+#          bankRow.set("pref-height", 25);
+#          bankRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
           #tracksRow.set("valign", "center");
           
-          var bankText = bankRow.addChild("text").set("label", "HUD turn coordinator: (not authentic)");
-          bankRow.addChild("empty").set("stretch", 1);
-          me.dialog.bankButton = bankRow.addChild("button");
-          me.dialog.bankButton.set("halign", "right");
-          me.dialog.bankButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
+#          var bankText = bankRow.addChild("text").set("label", "HUD turn coordinator: (not authentic)");
+#          bankRow.addChild("empty").set("stretch", 1);
+#          me.dialog.bankButton = bankRow.addChild("button");
+#          me.dialog.bankButton.set("halign", "right");
+#          me.dialog.bankButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
           #topRow.addChild("empty").set("stretch", 1);
-          me.dialog.bankButton.setBinding("nasal", "ja37.Dialog.bankToggle()");
+#          me.dialog.bankButton.setBinding("nasal", "ja37.Dialog.bankToggle()");
 
           ######   Yaw damper button   #####
           var yawRow = topRow.addChild("group");
@@ -384,6 +384,62 @@ var Dialog = {
           #topRow.addChild("empty").set("stretch", 1);
           me.dialog.annunButton.setBinding("nasal", "ja37.Dialog.annunToggle()");
 
+          ######   G-suit button   #####
+          var suitRow = topRow.addChild("group");
+          suitRow.set("layout", "hbox");
+          suitRow.set("pref-height", 25);
+          suitRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
+          #suitRow.set("valign", "center");
+          
+          var suitText = suitRow.addChild("text").set("label", "G-Suit quality anno:");
+          suitRow.addChild("empty").set("stretch", 1);
+          me.dialog.suitButton = suitRow.addChild("button");
+          me.dialog.suitButton.set("halign", "right");
+          me.dialog.suitButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
+          me.dialog.suitButton.setBinding("nasal", "ja37.Dialog.suitToggle()");
+
+          ######   G-rust button   #####
+          var rustRow = topRow.addChild("group");
+          rustRow.set("layout", "hbox");
+          rustRow.set("pref-height", 25);
+          rustRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
+          #rustRow.set("valign", "center");
+          
+          var rustText = rustRow.addChild("text").set("label", "Rust (Needs ALS and FG 2017.1):");
+          rustRow.addChild("empty").set("stretch", 1);
+          me.dialog.rustButton = rustRow.addChild("button");
+          me.dialog.rustButton.set("halign", "right");
+          me.dialog.rustButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
+          me.dialog.rustButton.setBinding("nasal", "ja37.Dialog.rustToggle()");
+
+          ######   menu button   #####
+          var menuRow = topRow.addChild("group");
+          menuRow.set("layout", "hbox");
+          menuRow.set("pref-height", 25);
+          menuRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
+          #hitRow.set("valign", "center");
+          
+          var menuText = menuRow.addChild("text").set("label", "TI Display: show only working menu items");
+          menuRow.addChild("empty").set("stretch", 1);
+          me.dialog.menuButton = menuRow.addChild("button");
+          me.dialog.menuButton.set("halign", "right");
+          me.dialog.menuButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
+          me.dialog.menuButton.setBinding("nasal", "ja37.Dialog.menuToggle()");
+
+          ######   map INternet button   #####
+          var mapRow = topRow.addChild("group");
+          mapRow.set("layout", "hbox");
+          mapRow.set("pref-height", 25);
+          mapRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
+          #hitRow.set("valign", "center");
+          
+          var mapText = mapRow.addChild("text").set("label", "TI Display; Use Internet to fetch map:");
+          mapRow.addChild("empty").set("stretch", 1);
+          me.dialog.mapButton = mapRow.addChild("button");
+          me.dialog.mapButton.set("halign", "right");
+          me.dialog.mapButton.node.setValues({ "pref-width": 75, "pref-height": 25, legend: " x ", default: 0 });
+          me.dialog.mapButton.setBinding("nasal", "ja37.Dialog.mapToggle()");
+
           ######   terrain can hide radar tracks button   #####
           var realRadarRow = topRow.addChild("group");
           realRadarRow.set("layout", "hbox");
@@ -391,7 +447,7 @@ var Dialog = {
           realRadarRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
           #rb24msgRow.set("valign", "center");
           
-          var realRadarText = realRadarRow.addChild("text").set("label", "MP planes can hide for radar behind terrain:");
+          var realRadarText = realRadarRow.addChild("text").set("label", "Terrain blocks radar: (always enabled in 2017.2.1+)");
           realRadarRow.addChild("empty").set("stretch", 1);
           me.dialog.realRadarButton = realRadarRow.addChild("button");
           me.dialog.realRadarButton.set("halign", "right");
@@ -466,14 +522,14 @@ var Dialog = {
           hudRow.set("pref-width", DIALOG_WIDTH - SIDELOGO_WIDTH - 12);
           #hudRow.set("valign", "center");
                     
-          hudRow.addChild("text").set("label", "HUD color:");
+          hudRow.addChild("text").set("label", "HUD brightness:");
           hudRow.addChild("empty").set("stretch", 1);
           me.dialog.hudLight = hudRow.addChild("button");
           me.dialog.hudMedium = hudRow.addChild("button");
           me.dialog.hudDark = hudRow.addChild("button");
-          me.dialog.hudLight.node.setValues({ "pref-width": 100, "pref-height": 25, legend: "Light", default: 0 });
+          me.dialog.hudLight.node.setValues({ "pref-width": 100, "pref-height": 25, legend: "Bright", default: 0 });
           me.dialog.hudMedium.node.setValues({ "pref-width": 100, "pref-height": 25, legend: "Medium", default: 0 });
-          me.dialog.hudDark.node.setValues({ "pref-width": 100, "pref-height": 25, legend: "Dark", default: 0 });
+          me.dialog.hudDark.node.setValues({ "pref-width": 100, "pref-height": 25, legend: "Dim", default: 0 });
           me.dialog.hudLight.setBinding("nasal", "ja37.Dialog.light()");
           me.dialog.hudMedium.setBinding("nasal", "ja37.Dialog.medium()");
           me.dialog.hudDark.setBinding("nasal", "ja37.Dialog.dark()");
@@ -541,12 +597,12 @@ var Dialog = {
       me.refreshButtons();
     },
 
-    reverseToggle: func {
-      ja37.click();
-      var enabled = getprop("ja37/autoReverseThrust");
-      setprop("ja37/autoReverseThrust", !enabled);
-      me.refreshButtons();
-    },
+    #reverseToggle: func {
+    #  ja37.click();
+    #  var enabled = getprop("ja37/autoReverseThrust");
+    #  setprop("ja37/autoReverseThrust", !enabled);
+    #  me.refreshButtons();
+    #},
 
     hudToggle: func {
       var enabled = getprop("ja37/hud/mode");
@@ -571,6 +627,18 @@ var Dialog = {
     bankToggle: func {
       var enabled = getprop("ja37/hud/bank-indicator");
       setprop("ja37/hud/bank-indicator", !enabled);
+      me.refreshButtons();
+    },
+    
+    menuToggle: func {
+      var enabled = getprop("ja37/displays/show-full-menus");
+      setprop("ja37/displays/show-full-menus", !enabled);
+      me.refreshButtons();
+    },
+
+    mapToggle: func {
+      var enabled = getprop("ja37/displays/live-map");
+      setprop("ja37/displays/live-map", !enabled);
       me.refreshButtons();
     },
 
@@ -673,33 +741,44 @@ var Dialog = {
       me.refreshButtons();
     },
 
+    suitToggle: func {
+      var value = getprop("ja37/effect/g-suit");
+      if (value < 3) {
+        value += 1;
+      } else {
+        value = 1;
+      }
+      setprop("ja37/effect/g-suit", value);
+      me.refreshButtons();
+    },
+
+    rustToggle: func {
+      var value = getprop("ja37/effect/rust-inside");
+      if (value == 2) {
+        value = 0;
+      } else {
+        value = 2;
+      }
+      setprop("ja37/effect/rust-inside", value);
+      setprop("ja37/effect/rust-outside", value);
+      me.refreshButtons();
+    },
+
     light: func {
-      canvas_HUD.r = 0.6;
-      canvas_HUD.g = 1.0;
-      canvas_HUD.b = 0.6;
-      #canvas_HUD.a = 1.0;
-      #canvas_HUD.w = 10;
-      #canvas_HUD.fs = 1;
+      #setprop("ja37/hud/brightness", 1.0);
+      canvas_HUD.a = 1.00;
       canvas_HUD.reinit(canvas_HUD.on_backup_power);
     },
 
     medium: func {
-      canvas_HUD.r = 0.0;
-      canvas_HUD.g = 0.8;
-      canvas_HUD.b = 0.0;
-      #canvas_HUD.a = 1.0;      
-      #canvas_HUD.w = 11;
-      #canvas_HUD.fs = 1.1;
+      #setprop("ja37/hud/brightness", 6.0);
+      canvas_HUD.a = 0.70;
       canvas_HUD.reinit(canvas_HUD.on_backup_power);
     },
 
     dark: func {
-      canvas_HUD.r = 0.0;
-      canvas_HUD.g = 0.4;
-      canvas_HUD.b = 0.0;
-      #canvas_HUD.a = 1.0;
-      #canvas_HUD.w = 12;
-      #canvas_HUD.fs = 1.2;
+      #setprop("ja37/hud/brightness", 4.0);
+      canvas_HUD.a = 0.55;
       canvas_HUD.reinit(canvas_HUD.on_backup_power);
     },
 
@@ -733,13 +812,13 @@ var Dialog = {
       }
       me.dialog.breakButton.node.setValues({"legend": legend});
 
-      enabled = getprop("ja37/autoReverseThrust");
-      if(enabled == 1) {
-        legend = "Enabled";
-      } else {
-        legend = "Disabled";
-      }
-      me.dialog.reverseButton.node.setValues({"legend": legend});
+      #enabled = getprop("ja37/autoReverseThrust");
+      #if(enabled == 1) {
+      #  legend = "Enabled";
+      #} else {
+      #  legend = "Disabled";
+      #}
+      #me.dialog.reverseButton.node.setValues({"legend": legend});
 
       enabled = getprop("ja37/hud/mode");
       if(enabled == 1) {
@@ -765,13 +844,13 @@ var Dialog = {
 #      }
 #      me.dialog.tracksButton.node.setValues({"legend": legend});
 
-      enabled = getprop("ja37/hud/bank-indicator");
-      if(enabled == 1) {
-        legend = "Enabled";
-      } else {
-        legend = "Disabled";
-      }
-      me.dialog.bankButton.node.setValues({"legend": legend});
+#      enabled = getprop("ja37/hud/bank-indicator");
+#      if(enabled == 1) {
+#        legend = "Enabled";
+#      } else {
+#        legend = "Disabled";
+#      }
+#      me.dialog.bankButton.node.setValues({"legend": legend});
 
       enabled = getprop("fdm/jsbsim/fcs/yaw-damper/enable");
       if(enabled == 1) {
@@ -788,6 +867,14 @@ var Dialog = {
         legend = "Disabled";
       }
       me.dialog.pitchButton.node.setValues({"legend": legend});
+
+      enabled = getprop("ja37/displays/show-full-menus");
+      if(enabled == 1) {
+        legend = "Full";
+      } else {
+        legend = "Functional";
+      }
+      me.dialog.menuButton.node.setValues({"legend": legend});
 
       enabled = getprop("fdm/jsbsim/fcs/roll-damper/enable");
       if(enabled == 1) {
@@ -862,10 +949,10 @@ var Dialog = {
       me.dialog.annunButton.node.setValues({"legend": legend});
 
       enabled = getprop("ja37/radar/look-through-terrain");
-      if(enabled == 1) {
-        legend = "Disabled";
-      } else {
+      if(enabled == 0 or getprop("ja37/supported/picking") == 1) {
         legend = "Enabled";
+      } else {
+        legend = "Disabled";
       }
       me.dialog.realRadarButton.node.setValues({"legend": legend});
 
@@ -893,14 +980,42 @@ var Dialog = {
       }
       me.dialog.hitButton.node.setValues({"legend": legend});
 
+      enabled = getprop("ja37/effect/g-suit");
+      if(enabled == 1) {
+        legend = "1971";
+      } elsif (enabled == 2) {
+        legend = "1979";
+      } else {
+        legend = "1997";
+      }
+      me.dialog.suitButton.node.setValues({"legend": legend});
+
+      enabled = getprop("ja37/effect/rust-inside");
+      if(enabled == 0) {
+        legend = "Clean";
+      } elsif (enabled == 2) {
+        legend = "Rusty";
+      }
+      me.dialog.rustButton.node.setValues({"legend": legend});
+
+      enabled = getprop("ja37/displays/live-map");
+      if(enabled == 1) {
+        legend = "Online";
+      } elsif (enabled == 0) {
+        legend = "Offline";
+      }
+      me.dialog.mapButton.node.setValues({"legend": legend});
+
+      
+
       #props.dump(me.dialog.prop()); # handy command, don't forget it.
 
       # this is commented out cause it needs a trigger (e.g. button to activate):
       # me.dialog.setBinding("dialog-close", props.Node.new({"dialog-name": "JA-37 Options"}));
       # me.dialog.setBinding("dialog-show",  props.Node.new({"dialog-name": "JA-37 Options"}));
       # this does the same, refresh the dialog:
-      fgcommand("dialog-close", props.Node.new({"dialog-name": "JA-37 Options"}));
-      fgcommand("dialog-show", props.Node.new({"dialog-name": "JA-37 Options"}));
+      fgcommand("dialog-close", props.Node.new({"dialog-name": "Saab 37 Options"}));
+      fgcommand("dialog-show", props.Node.new({"dialog-name": "Saab 37 Options"}));
     },
 
     del: func {

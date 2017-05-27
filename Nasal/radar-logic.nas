@@ -6,7 +6,25 @@ var rad2deg = 180.0/math.pi;
 var kts2kmh = 1.852;
 var feet2meter = 0.3048;
 
-var radarRange = getprop("ja37/systems/variant") == 0?180000:120000;#meter, is estimate. The AJ(S)-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
+var radarRange = getprop("ja37/systems/variant") == 0?120000:120000;#meter, is estimate. The AJ(S)-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
+
+var containsVector = func (vec, item) {
+  foreach(test; vec) {
+    if (test == item) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+var getClock = func (bearing) {
+    var clock = int(((geo.normdeg(bearing)-15)/30)+1);
+    if (clock == 0) {
+      return 12;
+    } else {
+      return clock;
+    }
+}
 
 var self = nil;
 var myAlt = nil;
@@ -19,13 +37,26 @@ var selection_updated = FALSE;
 var tracks_index = 0;
 var tracks = [];
 var callsign_struct = {};
+var rwr = [];
+
+var lockLog  = events.LogBuffer.new(echo: 0);#compatible with older FG?
+var lockLast = nil;
 
 var AIR = 0;
 var MARINE = 1;
 var SURFACE = 2;
 var ORDNANCE = 3;
 
-input = {
+var knownShips = {
+    "missile_frigate":       nil,
+    "frigate":       nil,
+    "USS-LakeChamplain":     nil,
+    "USS-NORMANDY":     nil,
+    "USS-OliverPerry":     nil,
+    "USS-SanAntonio":     nil,
+};
+
+var input = {
         radar_serv:       "instrumentation/radar/serviceable",
         hdgReal:          "/orientation/heading-deg",
         pitch:            "/orientation/pitch-deg",
@@ -41,228 +72,255 @@ input = {
         dopplerSpeed:     "ja37/radar/min-doppler-speed-kt",
 };
 
-var findRadarTracks = func () {
-  self      =  geo.aircraft_position();
-  myPitch   =  input.pitch.getValue()*deg2rads;
-  myRoll    =  input.roll.getValue()*deg2rads;
-  myAlt     =  self.alt();
-  myHeading =  input.hdgReal.getValue();
-  
-  tracks = [];
+var RadarLogic = {
 
-  if(input.tracks_enabled.getValue() == TRUE and input.radar_serv.getValue() > FALSE
-     and input.voltage.getValue() > 170 and input.hydrPressure.getValue() == TRUE) {
+    new: func() {
+        var radarLogic     = { parents : [RadarLogic]};
+        radarLogic.typeHashes = {};
+        return radarLogic;
+    },
 
-    #do the MP planes
-    var players = [];
-    foreach(item; multiplayer.model.list) {
-      append(players, item.node);
-    }
-    var AIplanes = input.ai_models.getChildren("aircraft");
-    var tankers = input.ai_models.getChildren("tanker");
-    var ships = input.ai_models.getChildren("ship");
-    var vehicles = input.ai_models.getChildren("groundvehicle");
-    var rb24 = input.ai_models.getChildren("rb-24");
-    var rb24j = input.ai_models.getChildren("rb-24j");
-	  var rb71 = input.ai_models.getChildren("rb-71");
-    var rb74 = input.ai_models.getChildren("rb-74");
-    var rb99 = input.ai_models.getChildren("rb-99");
-    var rb15 = input.ai_models.getChildren("rb-15f");
-    var rb04 = input.ai_models.getChildren("rb-04e");
-    var rb05 = input.ai_models.getChildren("rb-05a");
-    var rb75 = input.ai_models.getChildren("rb-75");
-    var m90 = input.ai_models.getChildren("m90");
-    var test = input.ai_models.getChildren("test");
-    if(selection != nil and selection.isValid() == FALSE) {
-      #print("not valid");
-      paint(selection.getNode(), FALSE);
-      selection = nil;
-    }
+    loop: func () {
+      me.findRadarTracks();
+      settimer(func me.loop(), 0.05);
+    },
 
+    findRadarTracks: func () {
+      me.friends = [getprop("ja37/faf/friend-1"),getprop("ja37/faf/friend-2"),getprop("ja37/faf/friend-3"),getprop("ja37/faf/friend-4"),getprop("ja37/faf/friend-5"),getprop("ja37/faf/friend-6")];
+      rwr = [FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE];
+      self      =  geo.aircraft_position();
+      myPitch   =  input.pitch.getValue()*deg2rads;
+      myRoll    =  input.roll.getValue()*deg2rads;
+      myAlt     =  self.alt();
+      myHeading =  input.hdgReal.getValue();
+      
+      tracks = [];
 
-    processTracks(players, FALSE, FALSE, TRUE);    
-    processTracks(tankers, FALSE, FALSE, FALSE, AIR);
-    processTracks(ships, FALSE, FALSE, FALSE, MARINE);
-#debug.benchmark("radar process AI tracks", func {    
-    processTracks(AIplanes, FALSE, FALSE, FALSE, AIR);
-#});
-    processTracks(vehicles, FALSE, FALSE, FALSE, SURFACE);
-    processTracks(rb24, FALSE, TRUE, FALSE, ORDNANCE);
-    processTracks(rb24j, FALSE, TRUE, FALSE, ORDNANCE);
-	  processTracks(rb71, FALSE, TRUE, FALSE, ORDNANCE);
-    processTracks(rb74, FALSE, TRUE, FALSE, ORDNANCE);
-    processTracks(rb99, FALSE, TRUE, FALSE, ORDNANCE);
-    processTracks(rb15, FALSE, TRUE, FALSE, ORDNANCE);
-    processTracks(rb04, FALSE, TRUE, FALSE, ORDNANCE);
-    processTracks(rb05, FALSE, TRUE, FALSE, ORDNANCE);
-    processTracks(rb75, FALSE, TRUE, FALSE, ORDNANCE);
-    processTracks(m90, FALSE, TRUE, FALSE, ORDNANCE);
-    processTracks(test, FALSE, TRUE, FALSE, ORDNANCE);
-    processCallsigns(players);
+      if(input.tracks_enabled.getValue() == TRUE and input.radar_serv.getValue() > FALSE
+         and input.voltage.getValue() > 170 and input.hydrPressure.getValue() == TRUE) {
 
-  } else {
-    # Do not supply target info to the missiles if radar is off.
-    if(selection != nil) {
-      paint(selection.getNode(), FALSE);
-    }
-    selection = nil;
-  }
-  var carriers = input.ai_models.getChildren("carrier");
-  processTracks(carriers, TRUE, FALSE, FALSE, MARINE);
-
-  if(selection != nil) {
-    #append(selection, "lock");
-  }
-}
-
-var processCallsigns = func (players) {
-  callsign_struct = {};
-  foreach (var player; players) {
-    if(player.getChild("valid") != nil and player.getChild("valid").getValue() == TRUE and player.getChild("callsign") != nil and player.getChild("callsign").getValue() != "" and player.getChild("callsign").getValue() != nil) {
-      var callsign = player.getChild("callsign").getValue();
-      callsign_struct[callsign] = player;
-    }
-  }
-}
+        #do the MP planes
+        me.players = [];
+        foreach(item; multiplayer.model.list) {
+          append(me.players, item.node);
+        }
+        me.AIplanes = input.ai_models.getChildren("aircraft");
+        me.tankers = input.ai_models.getChildren("tanker");
+        me.ships = input.ai_models.getChildren("ship");
+        me.vehicles = input.ai_models.getChildren("groundvehicle");
+        me.rb24 = input.ai_models.getChildren("rb-24");
+        me.rb24j = input.ai_models.getChildren("rb-24j");
+        me.rb71 = input.ai_models.getChildren("rb-71");
+        me.rb74 = input.ai_models.getChildren("rb-74");
+        me.rb99 = input.ai_models.getChildren("rb-99");
+        me.rb15 = input.ai_models.getChildren("rb-15f");
+        me.rb04 = input.ai_models.getChildren("rb-04e");
+        me.rb05 = input.ai_models.getChildren("rb-05a");
+        me.rb75 = input.ai_models.getChildren("rb-75");
+        me.m90 = input.ai_models.getChildren("m90");
+        me.test = input.ai_models.getChildren("test");
+        if(selection != nil and selection.isValid() == FALSE) {
+          #print("not valid");
+          me.paint(selection.getNode(), FALSE);
+          selection = nil;
+        }
 
 
-var processTracks = func (vector, carrier, missile = 0, mp = 0, type = -1) {
-  var carrierNear = FALSE;
-  foreach (var track; vector) {
-    if(track != nil and track.getChild("valid") != nil and track.getChild("valid").getValue() == TRUE) {#only the tracks that are valid are sent here
-      var trackInfo = nil;
-#debug.benchmark("radar trackitemcalc", func {
-      if(missile == FALSE) {
-        trackInfo = trackItemCalc(track, radarRange, carrier, mp, type);
+        me.processTracks(me.players, FALSE, FALSE, TRUE);    
+        me.processTracks(me.tankers, FALSE, FALSE, FALSE, AIR);
+        me.processTracks(me.ships, FALSE, FALSE, FALSE, MARINE);
+    #debug.benchmark("radar process AI tracks", func {    
+        me.processTracks(me.AIplanes, FALSE, FALSE, FALSE, AIR);
+    #});
+        me.processTracks(me.vehicles, FALSE, FALSE, FALSE, SURFACE);
+        me.processTracks(me.rb24, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processTracks(me.rb24j, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processTracks(me.rb71, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processTracks(me.rb74, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processTracks(me.rb99, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processTracks(me.rb15, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processTracks(me.rb04, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processTracks(me.rb05, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processTracks(me.rb75, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processTracks(me.m90, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processTracks(me.test, FALSE, TRUE, FALSE, ORDNANCE);
+        me.processCallsigns(me.players);
+
       } else {
-        trackInfo = trackMissileCalc(track, radarRange, carrier, mp, type);
+        # Do not supply target info to the missiles if radar is off.
+        if(selection != nil) {
+          me.paint(selection.getNode(), FALSE);
+        }
+        selection = nil;
       }
-#});
-#debug.benchmark("radar process", func {
-      if(trackInfo != nil) {
-        var distance = trackInfo.get_range()*NM2M;
+      me.carriers = input.ai_models.getChildren("carrier");
+      me.processTracks(me.carriers, TRUE, FALSE, FALSE, MARINE);
 
-        # find and remember the type of the track
-        var typeNode = track.getChild("model-shorter");
-        var model = nil;
-        if (typeNode != nil) {
-          model = typeNode.getValue();
+      if(selection != nil) {
+        #append(selection, "lock");
+      }
+  },
+
+  processCallsigns: func (players) {
+    callsign_struct = {};
+    foreach (var player; players) {
+      if(player.getChild("valid") != nil and player.getChild("valid").getValue() == TRUE and player.getChild("callsign") != nil and player.getChild("callsign").getValue() != "" and player.getChild("callsign").getValue() != nil) {
+        me.callsign = player.getChild("callsign").getValue();
+        callsign_struct[me.callsign] = player;
+      }
+    }
+  },
+
+  processTracks: func (vector, carrier, missile = 0, mp = 0, type = -1) {
+    me.carrierNear = FALSE;
+    foreach (var track; vector) {
+      if(track != nil and track.getChild("valid") != nil and track.getChild("valid").getValue() == TRUE) {#only the tracks that are valid are sent here
+        me.trackInfo = nil;
+  #debug.benchmark("radar trackitemcalc", func {
+        if(missile == FALSE) {
+          me.trackInfo = me.trackItemCalc(track, getprop("instrumentation/radar/range"), carrier, mp, type);
         } else {
-          var pathNode = track.getNode("sim/model/path");
-          if (pathNode != nil) {
-            var path = pathNode.getValue();
+          me.trackInfo = me.trackMissileCalc(track, getprop("instrumentation/radar/range"), carrier, mp, type);
+        }
+  #});
+  #debug.benchmark("radar process", func {
+        if(me.trackInfo != nil) {
+          me.distance = me.trackInfo.get_range()*NM2M;
 
-            model = split(".", split("/", path)[-1])[0];
+          # find and remember the type of the track
+          me.typeNode = track.getChild("model-shorter");
+          me.model = nil;
+          if (me.typeNode != nil) {
+            me.model = me.typeNode.getValue();
+          } else {
+            me.pathNode = track.getNode("sim/model/path");
+            if (me.pathNode != nil) {
+              me.path = me.pathNode.getValue();
 
-            if (distance < 1000 and (model == "mp-clemenceau" or model == "mp-eisenhower" or model == "mp-nimitz" or model == "mp-vinson")) {
-              carrierNear = TRUE;
-            }
+              me.model = split(".", split("/", me.path)[-1])[0];
 
-            model = remove_suffix(model, "-model");
-            model = remove_suffix(model, "-anim");
-            track.addChild("model-shorter").setValue(model);
-
-            var funcHash = {
-              #init: func (listener, trck) {
-              #  me.listenerID = listener;
-              #  me.trackme = trck;
-              #},
-              callme1: func {
-                if(funcHash.trackme.getChild("valid").getValue() == FALSE) {
-                  var child = funcHash.trackme.removeChild("model-shorter",0);#index 0 must be specified!
-                  if (child != nil) {#for some reason this can be called two times, even if listener removed, therefore this check.
-                    removelistener(funcHash.listenerID1);
-                    removelistener(funcHash.listenerID2);
-                  }
-                }
-              },
-              callme2: func {
-                if(funcHash.trackme.getNode("sim/model/path") == nil or funcHash.trackme.getNode("sim/model/path").getValue() != me.oldpath) {
-                  var child = funcHash.trackme.removeChild("model-shorter",0);
-                  if (child != nil) {#for some reason this can be called two times, even if listener removed, therefore this check.
-                    removelistener(funcHash.listenerID1);
-                    removelistener(funcHash.listenerID2);
-                  }
-                }
+              if (me.distance < 1000 and (me.model == "mp-clemenceau" or me.model == "mp-eisenhower" or me.model == "mp-nimitz" or me.model == "mp-vinson")) {
+                me.carrierNear = TRUE;
               }
-            };
-            
-            funcHash.trackme = track;
-            funcHash.oldpath = path;
-            funcHash.listenerID1 = setlistener(track.getChild("valid"), func {call(func funcHash.callme1(), nil, funcHash, funcHash, var err =[]);}, 0, 1);
-            funcHash.listenerID2 = setlistener(pathNode,                func {call(func funcHash.callme2(), nil, funcHash, funcHash, var err =[]);}, 0, 1);
+
+              me.model = me.remove_suffix(me.model, "-model");
+              me.model = me.remove_suffix(me.model, "-anim");
+              track.addChild("model-shorter").setValue(me.model);
+
+              var funcHash = {
+                new: func (trackN, pNode) {
+                  me.listenerID1 = setlistener(trackN.getChild("valid"), func me.callme1(), nil, 1);
+                  me.listenerID2 = setlistener(pNode,                    func me.callme2(), nil, 1);
+                },
+                callme1: func () {
+                  if(me.trackme.getChild("valid").getValue() == FALSE) {
+                    var child = me.trackme.removeChild("model-shorter",0);#index 0 must be specified!
+                    if (child != nil) {#for some reason this can be called two times, even if listener removed, therefore this check.
+                      me.del();
+                    }
+                  }
+                },
+                callme2: func () {
+                  if(me.trackme.getNode("sim/model/path") == nil or funcHash.trackme.getNode("sim/model/path").getValue() != me.oldpath) {
+                    var child = me.trackme.removeChild("model-shorter",0);
+                    if (child != nil) {#for some reason this can be called two times, even if listener removed, therefore this check.
+                      me.del();
+                    }
+                  }
+                },
+                del: func () {
+                  removelistener(me.listenerID1);
+                  removelistener(me.listenerID2);
+                  radar_logic.radarLogic.typeHashes[me.trackme.getPath()] = nil;
+                },
+              };
+              
+              funcHash.trackme = track;
+              funcHash.oldpath = me.path;
+
+              me.typeHashes[track.getPath()] = funcHash;
+
+              funcHash.new(track, me.pathNode);
+            }
           }
-        }
 
-        # tell the jsbsim hook system that if we are near a carrier
-        if(carrier == TRUE and distance < 1000) {
-          # is carrier and is within 1 Km range
-          carrierNear = TRUE;
-        }
+          # tell the jsbsim hook system that if we are near a carrier
+          if(carrier == TRUE and me.distance < 1000) {
+            # is carrier and is within 1 Km range
+            me.carrierNear = TRUE;
+          }
 
-        var unique = track.getChild("unique");
-        if (unique == nil) {
-          unique = track.addChild("unique");
-          unique.setDoubleValue(rand());
-        }
+          me.unique = track.getChild("unique");
+          if (me.unique == nil) {
+            me.unique = track.addChild("unique");
+            me.unique.setDoubleValue(rand());
+          }
 
-        append(tracks, trackInfo);
+          append(tracks, me.trackInfo);
 
-        if(selection == nil) {
-          #this is first tracks in radar field, so will be default selection
-          selection = trackInfo;
-          lookatSelection();
-          selection_updated = TRUE;
-          paint(selection.getNode(), TRUE);
-        #} elsif (track.getChild("name") != nil and track.getChild("name").getValue() == "RB-24J") {
-          #for testing that selection view follows missiles
-        #  selection = trackInfo;
-        #  lookatSelection();
-        #  selection_updated = TRUE;
-        } elsif (selection != nil and selection.getUnique() == unique.getValue()) {
-          # this track is already selected, updating it
-          #print("updating target");
-          selection = trackInfo;
-          paint(selection.getNode(), TRUE);
-          selection_updated = TRUE;
+          if(1==0 and selection == nil and getprop("ja37/avionics/cursor-on") != FALSE) {
+            #this is first tracks in radar field, so will be default selection
+            selection = me.trackInfo;
+            lookatSelection();
+            selection_updated = TRUE;
+            #if (selection.get_type() == AIR) {
+              me.paint(selection.getNode(), TRUE);
+            #} else {
+            #  me.paint(selection.getNode(), FALSE);
+            #}
+          #} elsif (track.getChild("name") != nil and track.getChild("name").getValue() == "RB-24J") {
+            #for testing that selection view follows missiles
+          #  selection = trackInfo;
+          #  lookatSelection();
+          #  selection_updated = TRUE;
+          } elsif (selection != nil and selection.getUnique() == me.unique.getValue()) {
+            # this track is already selected, updating it
+            #print("updating target");
+            selection = me.trackInfo;
+            #if (selection.get_type() == AIR) {
+              me.paint(selection.getNode(), TRUE);
+            #} else {
+            #  me.paint(selection.getNode(), FALSE);
+            #}
+            selection_updated = TRUE;
+          } else {
+            #print("end2 "~selection.getUnique()~"=="~unique.getValue());
+            me.paint(me.trackInfo.getNode(), FALSE);
+          }
         } else {
-          #print("end2 "~selection.getUnique()~"=="~unique.getValue());
-          paint(trackInfo.getNode(), FALSE);
+          #print("end");
+          me.paint(track, FALSE);
         }
-      } else {
-        #print("end");
-        paint(track, FALSE);
-      }
-#});      
-    }#end of valid check
-  }#end of foreach
-  if(carrier == TRUE) {
-    if(carrierNear != input.carrierNear.getValue()) {
-      input.carrierNear.setBoolValue(carrierNear);
-    }      
-  }
-}#end of processTracks
+  #});      
+      }#end of valid check
+    }#end of foreach
+    if(carrier == TRUE) {
+      if(me.carrierNear != input.carrierNear.getValue()) {
+        input.carrierNear.setBoolValue(me.carrierNear);
+      }      
+    }
+  },#end of processTracks
 
-var paint = func (node, painted) {
-  if (node == nil) {
-    return;
-  }
-  var attr = node.getChild("painted");
-  if (attr == nil) {
-    attr = node.addChild("painted");
-  }
-  attr.setBoolValue(painted);
-  #if(painted == TRUE) { 
-    #print("painted "~attr.getPath()~" "~painted);
-  #}
-}
+  paint: func (node, painted) {
+    if (node == nil) {
+      return;
+    }
+    me.attr = node.getChild("painted");
+    if (me.attr == nil) {
+      me.attr = node.addChild("painted");
+    }
+    me.attr.setBoolValue(painted);
+    #if(painted == TRUE) { 
+      #print("painted "~attr.getPath()~" "~painted);
+    #}
+  },
 
-var remove_suffix = func(s, x) {
-    var len = size(x);
-    if (substr(s, -len) == x)
-        return substr(s, 0, size(s) - len);
-    return s;
-}
+  remove_suffix: func(s, x) {
+      me.len = size(x);
+      if (substr(s, -me.len) == x)
+          return substr(s, 0, size(s) - me.len);
+      return s;
+  },
 
 # trackInfo
 #
@@ -275,241 +333,306 @@ var remove_suffix = func(s, x) {
 # 6 - node
 # 7 - not targetable
 
-var trackItemCalc = func (track, range, carrier, mp, type) {
-  var pos = track.getNode("position");
-  var x = pos.getNode("global-x").getValue();
-  var y = pos.getNode("global-y").getValue();
-  var z = pos.getNode("global-z").getValue();
-  if(x == nil or y == nil or z == nil) {
-    return nil;
-  }
-  var aircraftPos = geo.Coord.new().set_xyz(x, y, z);
-  var item = trackCalc(aircraftPos, range, carrier, mp, type, track);
-  
-  return item;
-}
-
-var trackMissileCalc = func (track, range, carrier, mp, type) {
-  var pos = track.getNode("position");
-  var alt = pos.getNode("altitude-ft").getValue();
-  var lat = pos.getNode("latitude-deg").getValue();
-  var lon = pos.getNode("longitude-deg").getValue();
-  if(alt == nil or lat == nil or lon == nil) {
-    return nil;
-  }
-  var aircraftPos = geo.Coord.new().set_latlon(lat, lon, alt*feet2meter);
-  return trackCalc(aircraftPos, range, carrier, mp, type, track);
-}
-
-var trackCalc = func (aircraftPos, range, carrier, mp, type, node) {
-  var distance = nil;
-  var distanceDirect = nil;
-  
-  call(func {distance = self.distance_to(aircraftPos); distanceDirect = self.direct_distance_to(aircraftPos);}, nil, var err = []);
-
-  if ((size(err))or(distance==nil)) {
-    # Oops, have errors. Bogus position data (and distance==nil).
-    #print("Received invalid position data: dist "~distance);
-    #target_circle[track_index+maxTargetsMP].hide();
-    #print(i~" invalid pos.");
-  } elsif (distanceDirect < range) {#is max radar range of ja37
-    # Node with valid position data (and "distance!=nil").
-    #distance = distance*kts2kmh*1000;
-    var aircraftAlt = aircraftPos.alt(); #altitude in meters
-
-    #aircraftAlt = aircraftPos.x();
-    #myAlt = self.x();
-    #distance = math.sqrt(pow2(aircraftPos.z() - self.z()) + pow2(aircraftPos.y() - self.y()));
-
-    #ground angle
-    var yg_rad = math.atan2(aircraftAlt-myAlt, distance) - myPitch; 
-    var xg_rad = (self.course_to(aircraftPos) - myHeading) * deg2rads;
-
-    while (xg_rad > math.pi) {
-      xg_rad = xg_rad - 2*math.pi;
+  trackItemCalc: func (track, range, carrier, mp, type) {
+    me.pos = track.getNode("position");
+    me.x = me.pos.getNode("global-x").getValue();
+    me.y = me.pos.getNode("global-y").getValue();
+    me.z = me.pos.getNode("global-z").getValue();
+    if(me.x == nil or me.y == nil or me.z == nil) {
+      return nil;
     }
-    while (xg_rad < -math.pi) {
-      xg_rad = xg_rad + 2*math.pi;
+    me.aircraftPos = geo.Coord.new().set_xyz(me.x, me.y, me.z);
+    me.item = me.trackCalc(me.aircraftPos, range, carrier, mp, type, track);
+    
+    return me.item;
+  },
+
+  trackMissileCalc: func (track, range, carrier, mp, type) {
+    me.pos = track.getNode("position");
+    me.alt = me.pos.getNode("altitude-ft").getValue();
+    me.lat = me.pos.getNode("latitude-deg").getValue();
+    me.lon = me.pos.getNode("longitude-deg").getValue();
+    if(me.alt == nil or me.lat == nil or me.lon == nil) {
+      return nil;
     }
-    while (yg_rad > math.pi) {
-      yg_rad = yg_rad - 2*math.pi;
-    }
-    while (yg_rad < -math.pi) {
-      yg_rad = yg_rad + 2*math.pi;
+    me.aircraftPos = geo.Coord.new().set_latlon(me.lat, me.lon, me.alt*feet2meter);
+    return me.trackCalc(me.aircraftPos, range, carrier, mp, type, track);
+  },
+
+  trackCalc: func (aircraftPos, range, carrier, mp, type, node) {
+    me.distance = nil;
+    me.distanceDirect = nil;
+    
+    call(func {me.distance = self.distance_to(aircraftPos); me.distanceDirect = self.direct_distance_to(aircraftPos);}, nil, var err = []);
+
+    if ((size(err))or(me.distance==nil)) {
+      # Oops, have errors. Bogus position data (and distance==nil).
+      #print("Received invalid position data: dist "~distance);
+      #target_circle[track_index+maxTargetsMP].hide();
+      #print(i~" invalid pos.");
+      return nil;
     }
 
-    #aircraft angle
-    var ya_rad = xg_rad * math.sin(myRoll) + yg_rad * math.cos(myRoll);
-    var xa_rad = xg_rad * math.cos(myRoll) - yg_rad * math.sin(myRoll);
-    var xa_rad_corr = xg_rad;
+    
 
-    while (xa_rad < -math.pi) {
-      xa_rad = xa_rad + 2*math.pi;
-    }
-    while (xa_rad > math.pi) {
-      xa_rad = xa_rad - 2*math.pi;
-    }
-    while (xa_rad_corr < -math.pi) {
-      xa_rad_corr = xa_rad_corr + 2*math.pi;
-    }
-    while (xa_rad_corr > math.pi) {
-      xa_rad_corr = xa_rad_corr - 2*math.pi;
-    }
-    while (ya_rad > math.pi) {
-      ya_rad = ya_rad - 2*math.pi;
-    }
-    while (ya_rad < -math.pi) {
-      ya_rad = ya_rad + 2*math.pi;
-    }
-
-    if(ya_rad > -61.5 * D2R and ya_rad < 61.5 * D2R and xa_rad > -61.5 * D2R and xa_rad < 61.5 * D2R) {
-      #is within the radar cone
-      # AJ37 manual: 61.5 deg sideways.
-
-      if (mp == TRUE) {
-        # is multiplayer
-        if (isNotBehindTerrain(aircraftPos) == FALSE) {
-          #hidden behind terrain
-          return nil;
+    if (me.distance < 120000 and mp == TRUE and node.getNode("callsign") != nil and getprop("ja37/systems/variant") == 0 and TI.ti.ECMon == TRUE) {
+        # if within 120 Km and a multiplayer, we check if its radar beams are detected.
+        var callsign = node.getNode("callsign").getValue();
+        #print("callsign "~callsign);
+        if (!containsVector(me.friends, callsign)) {
+            # its not a friend, so lets do the check
+            if (node.getNode("orientation/true-heading-deg") != nil) {
+                var heading = node.getNode("orientation/true-heading-deg").getValue();
+                var bearing = self.course_to(aircraftPos);
+                var inv_bearing =  bearing+180;
+                var deviation = inv_bearing - heading;
+                #print("dev "~deviation);
+                if (math.abs(geo.normdeg180(deviation)) < 60) {
+                    # we detect its radar is pointed at us
+                    var clock = getClock(bearing-myHeading);
+                    #print("rwr"~clock);
+                    rwr[clock-1] = TRUE;
+                }
+            }
         }
-        if (doppler(aircraftPos, node) == TRUE) {
-          # doppler picks it up, must be an aircraft
-          type = AIR;
-        } elsif (aircraftAlt > 1) {
-          # doppler does not see it, and is not on sea, must be ground target
-          type = SURFACE;
-        } else {
-          type = MARINE;
-        }
+    }
+
+    if (me.distanceDirect < range or node.getName() == "rb-99") {#is max radar range of ja37
+      # Node with valid position data (and "distance!=nil").
+      #distance = distance*kts2kmh*1000;
+      me.aircraftAlt = aircraftPos.alt(); #altitude in meters
+
+      #aircraftAlt = aircraftPos.x();
+      #myAlt = self.x();
+      #distance = math.sqrt(pow2(aircraftPos.z() - self.z()) + pow2(aircraftPos.y() - self.y()));
+
+      #ground angle
+      me.yg_rad = getPitch(self, aircraftPos)-myPitch;#math.atan2(aircraftAlt-myAlt, distance) - myPitch; 
+      me.xg_rad = (self.course_to(aircraftPos) - myHeading) * deg2rads;
+
+      
+
+      while (me.xg_rad > math.pi) {
+        me.xg_rad = me.xg_rad - 2*math.pi;
+      }
+      while (me.xg_rad < -math.pi) {
+        me.xg_rad = me.xg_rad + 2*math.pi;
+      }
+      while (me.yg_rad > math.pi) {
+        me.yg_rad = me.yg_rad - 2*math.pi;
+      }
+      while (me.yg_rad < -math.pi) {
+        me.yg_rad = me.yg_rad + 2*math.pi;
       }
 
-      var distanceRadar = distance/math.cos(myPitch);
-      var hud_pos_x = canvas_HUD.pixelPerDegreeX * xa_rad * rad2deg;
-      var hud_pos_y = canvas_HUD.centerOffset + canvas_HUD.pixelPerDegreeY * -ya_rad * rad2deg;
+      #aircraft angle
+      me.ya_rad = me.xg_rad * math.sin(myRoll) + me.yg_rad * math.cos(myRoll);
+      me.xa_rad = me.xg_rad * math.cos(myRoll) - me.yg_rad * math.sin(myRoll);
+      me.xa_rad_corr = me.xg_rad;
 
-      var contact = Contact.new(node, type);
-      contact.setPolar(distanceRadar, xa_rad_corr);
-      contact.setCartesian(hud_pos_x, hud_pos_y);
-      return contact;
+      while (me.xa_rad < -math.pi) {
+        me.xa_rad = me.xa_rad + 2*math.pi;
+      }
+      while (me.xa_rad > math.pi) {
+        me.xa_rad = me.xa_rad - 2*math.pi;
+      }
+      while (me.xa_rad_corr < -math.pi) {
+        me.xa_rad_corr = me.xa_rad_corr + 2*math.pi;
+      }
+      while (me.xa_rad_corr > math.pi) {
+        me.xa_rad_corr = me.xa_rad_corr - 2*math.pi;
+      }
+      while (me.ya_rad > math.pi) {
+        me.ya_rad = me.ya_rad - 2*math.pi;
+      }
+      while (me.ya_rad < -math.pi) {
+        me.ya_rad = me.ya_rad + 2*math.pi;
+      }
 
-    } elsif (carrier == TRUE) {
-      # need to return carrier even if out of radar cone, due to carrierNear calc
-      var contact = Contact.new(node, type);
-      contact.setPolar(900000, xa_rad_corr);
-      contact.setCartesian(900000, 900000);# 900000 used in hud to know if out of radar cone.
-      return contact;
+      if(node.getName() == "rb-99" or (me.ya_rad > -61.5 * D2R and me.ya_rad < 61.5 * D2R and me.xa_rad > -61.5 * D2R and me.xa_rad < 61.5 * D2R)) {
+        #is within the radar cone
+        # AJ37 manual: 61.5 deg sideways.
+
+        if (mp == TRUE or getprop("ja37/supported/picking") == TRUE) {
+          # is multiplayer
+          if (me.isNotBehindTerrain(aircraftPos) == FALSE) {
+            #hidden behind terrain
+            return nil;
+          }
+        }
+        if (mp == TRUE) {
+          me.shrtr = node.getChild("model-shorter")==nil?"nil":node.getChild("model-shorter").getValue();
+          if (me.doppler(aircraftPos, node) == TRUE) {
+            # doppler picks it up, must be an aircraft
+            type = AIR;
+          } elsif (me.aircraftAlt > 1 and !contains(knownShips, me.shrtr)) {
+            # doppler does not see it, and is not on sea, must be ground target
+            type = SURFACE;
+          } else {
+            type = MARINE;
+          }
+        }
+
+        me.distanceRadar = me.distance;#*math.cos(myPitch); hmm
+        me.hud_pos_x = canvas_HUD.pixelPerDegreeX * me.xa_rad * rad2deg;
+        me.hud_pos_y = canvas_HUD.centerOffset + canvas_HUD.pixelPerDegreeY * -me.ya_rad * rad2deg;
+
+        me.contact = Contact.new(node, type);
+        me.contact.setPolar(me.distanceRadar, me.xa_rad_corr, me.xa_rad, me.ya_rad);
+        me.contact.setCartesian(me.hud_pos_x, me.hud_pos_y);
+
+        if (node.getName() == "rb-99" or 1==1 or (rand() < 0.05?rcs.isInRadarRange(me.contact, 65, 1) == TRUE:rcs.wasInRadarRange(me.contact, 65, 1))) {# 40 / 3.2
+          return me.contact;
+        } else {
+          return nil;
+        }        
+
+      } elsif (carrier == TRUE) {
+        # need to return carrier even if out of radar cone, due to carrierNear calc
+        me.contact = Contact.new(node, type);
+        me.contact.setPolar(900000, me.xa_rad_corr, me.xa_rad, me.ya_rad);
+        me.contact.setCartesian(900000, 900000);# 900000 used in hud to know if out of radar cone.
+        return me.contact;
+      }
     }
-  }
-  return nil;
-}
+    return nil;
+  },
 
 #
 # The following 6 methods is from Mirage 2000-5
 #
-var isNotBehindTerrain = func(SelectCoord) {
-    # this function has been optimized by Pinto
-    var isVisible = 0;
-    var MyCoord = geo.aircraft_position();
-    
-    # Because there is no terrain on earth that can be between these 2
-    if(MyCoord.alt() < 8900 and SelectCoord.alt() < 8900 and input.lookThrough.getValue() == FALSE)
-    {
-        # Temporary variable
-        # A (our plane) coord in meters
-        var a = MyCoord.x();
-        var b = MyCoord.y();
-        var c = MyCoord.z();
-        # B (target) coord in meters
-        var d = SelectCoord.x();
-        var e = SelectCoord.y();
-        var f = SelectCoord.z();
-        var difa = d - a;
-        var difb = e - b;
-        var difc = f - c;
-    
-    #print("a,b,c | " ~ a ~ "," ~ b ~ "," ~ c);
-    #print("d,e,f | " ~ d ~ "," ~ e ~ "," ~ f);
-    
-        # direct Distance in meters
-        var myDistance = math.sqrt( math.pow((d-a),2) + math.pow((e-b),2) + math.pow((f-c),2)); #calculating distance ourselves to avoid another call to geo.nas (read: speed, probably).
-        #print("myDistance: " ~ myDistance);
-        var Aprime = geo.Coord.new();
-        
-        # Here is to limit FPS drop on very long distance
-        var L = 500;
-        if(myDistance > 50000)
-        {
-            L = myDistance / 15;
-        }
-        var maxLoops = int(myDistance / L);
-        
-        isVisible = 1;
-        # This loop will make travel a point between us and the target and check if there is terrain
-        for(var i = 1 ; i <= maxLoops ; i += 1)
-        {
-          #calculate intermediate step
-          #basically dividing the line into maxLoops number of steps, and checking at each step
-          #to ascii-art explain it:
-          #  |us|----------|step 1|-----------|step 2|--------|step 3|----------|them|
-          #there will be as many steps as there is i
-          #every step will be equidistant
+  isNotBehindTerrain: func(SelectCoord) {
+    if (getprop("ja37/supported/picking") == TRUE) {
+      var myPos = geo.aircraft_position();
+
+      var xyz = {"x":myPos.x(),                  "y":myPos.y(),                 "z":myPos.z()};
+      var dir = {"x":SelectCoord.x()-myPos.x(),  "y":SelectCoord.y()-myPos.y(), "z":SelectCoord.z()-myPos.z()};
+
+      # Check for terrain between own aircraft and other:
+      v = get_cart_ground_intersection(xyz, dir);
+      if (v == nil) {
+        return TRUE;
+        #printf("No terrain, planes has clear view of each other");
+      } else {
+       var terrain = geo.Coord.new();
+       terrain.set_latlon(v.lat, v.lon, v.elevation);
+       var maxDist = myPos.direct_distance_to(SelectCoord);
+       var terrainDist = myPos.direct_distance_to(terrain);
+       if (terrainDist < maxDist) {
+         #print("terrain found between the planes");
+         return FALSE;
+       } else {
+          return TRUE;
+          #print("The planes has clear view of each other");
+       }
+      }
+    } else {
+      # this function has been optimized by Pinto
+      me.isVisible = 0;
+      me.MyCoord = geo.aircraft_position();
+      
+      # Because there is no terrain on earth that can be between these 2
+      if(me.MyCoord.alt() < 8900 and SelectCoord.alt() < 8900 and input.lookThrough.getValue() == FALSE)
+      {
+          # Temporary variable
+          # A (our plane) coord in meters
+          me.a = me.MyCoord.x();
+          me.b = me.MyCoord.y();
+          me.c = me.MyCoord.z();
+          # B (target) coord in meters
+          me.d = SelectCoord.x();
+          me.e = SelectCoord.y();
+          me.f = SelectCoord.z();
+          me.difa = me.d - me.a;
+          me.difb = me.e - me.b;
+          me.difc = me.f - me.c;
+      
+      #print("a,b,c | " ~ a ~ "," ~ b ~ "," ~ c);
+      #print("d,e,f | " ~ d ~ "," ~ e ~ "," ~ f);
+      
+          # direct Distance in meters
+          me.myDistance = math.sqrt( math.pow((me.d-me.a),2) + math.pow((me.e-me.b),2) + math.pow((me.f-me.c),2)); #calculating distance ourselves to avoid another call to geo.nas (read: speed, probably).
+          #print("myDistance: " ~ myDistance);
+          me.Aprime = geo.Coord.new();
           
-          #also, if i == 0 then the first step will be our plane
-          
-          var x = ((difa/(maxLoops+1))*i)+a;
-          var y = ((difb/(maxLoops+1))*i)+b;
-          var z = ((difc/(maxLoops+1))*i)+c;
-          #print("i:" ~ i ~ "|x,y,z | " ~ x ~ "," ~ y ~ "," ~ z);
-          Aprime.set_xyz(x,y,z);
-          var AprimeTerrainAlt = geo.elevation(Aprime.lat(), Aprime.lon());
-          if(AprimeTerrainAlt == nil)
+          # Here is to limit FPS drop on very long distance
+          me.L = 500;
+          if(me.myDistance > 50000)
           {
-            AprimeTerrainAlt = 0;
+              me.L = me.myDistance / 15;
           }
+          me.maxLoops = int(me.myDistance / me.L);
           
-          if(AprimeTerrainAlt > Aprime.alt())
+          me.isVisible = 1;
+          # This loop will make travel a point between us and the target and check if there is terrain
+          for(var i = 1 ; i <= me.maxLoops ; i += 1)
           {
-            return 0;
+            #calculate intermediate step
+            #basically dividing the line into maxLoops number of steps, and checking at each step
+            #to ascii-art explain it:
+            #  |us|----------|step 1|-----------|step 2|--------|step 3|----------|them|
+            #there will be as many steps as there is i
+            #every step will be equidistant
+            
+            #also, if i == 0 then the first step will be our plane
+            
+            me.x = ((me.difa/(me.maxLoops+1))*i)+me.a;
+            me.y = ((me.difb/(me.maxLoops+1))*i)+me.b;
+            me.z = ((me.difc/(me.maxLoops+1))*i)+me.c;
+            #print("i:" ~ i ~ "|x,y,z | " ~ x ~ "," ~ y ~ "," ~ z);
+            me.Aprime.set_xyz(me.x,me.y,me.z);
+            me.AprimeTerrainAlt = geo.elevation(me.Aprime.lat(), me.Aprime.lon());
+            if(me.AprimeTerrainAlt == nil)
+            {
+              me.AprimeTerrainAlt = 0;
+            }
+            
+            if(me.AprimeTerrainAlt > me.Aprime.alt())
+            {
+              return 0;
+            }
           }
-        }
+      }
+      else
+      {
+          me.isVisible = 1;
+      }
     }
-    else
-    {
-        isVisible = 1;
-    }
-    return isVisible;
-}
+    return me.isVisible;
+  },
 
 # will return true if absolute closure speed of target is greater than 50kt
 #
-var doppler = func(t_coord, t_node) {
+  doppler: func(t_coord, t_node) {
     # Test to check if the target can hide below us
     # Or Hide using anti doppler movements
 
     if (input.dopplerOn.getValue() == FALSE or 
-        (t_node.getNode("velocities/true-airspeed-kt") != nil and t_node.getNode("velocities/true-airspeed-kt").getValue() != nil and t_node.getNode("velocities/true-airspeed-kt").getValue() > 250)
+        (t_node.getNode("velocities/true-airspeed-kt") != nil and t_node.getNode("velocities/true-airspeed-kt").getValue() != nil
+         and t_node.getNode("radar/range-nm") != nil and t_node.getNode("radar/range-nm").getValue() != nil
+         and math.atan2(t_node.getNode("velocities/true-airspeed-kt").getValue(), t_node.getNode("radar/range-nm").getValue()*1000) > 0.025)# if aircraft traverse speed seen from me is high
         ) {
       return TRUE;
     }
 
-    var DopplerSpeedLimit = input.dopplerSpeed.getValue();
-    var InDoppler = 0;
-    var groundNotbehind = isGroundNotBehind(t_coord, t_node);
+    me.DopplerSpeedLimit = input.dopplerSpeed.getValue();
+    me.InDoppler = 0;
+    me.groundNotbehind = me.isGroundNotBehind(t_coord, t_node);
 
-    if(groundNotbehind)
+    if(me.groundNotbehind)
     {
-        InDoppler = 1;
-    } elsif(abs(get_closure_rate_from_Coord(t_coord, t_node)) > DopplerSpeedLimit)
+        me.InDoppler = 1;
+    } elsif(abs(me.get_closure_rate_from_Coord(t_coord, t_node)) > me.DopplerSpeedLimit)
     {
-        InDoppler = 1;
+        me.InDoppler = 1;
     }
-    return InDoppler;
-}
+    return me.InDoppler;
+  },
 
-var isGroundNotBehind = func(t_coord, t_node){
-    var myPitch = get_Elevation_from_Coord(t_coord);
-    var GroundNotBehind = 1; # sky is behind the target (this don't work on a valley)
-    if(myPitch < 0)
+  isGroundNotBehind: func(t_coord, t_node){
+    me.myPitch = me.get_Elevation_from_Coord(t_coord);
+    me.GroundNotBehind = 1; # sky is behind the target (this don't work on a valley)
+    if(me.myPitch < 0)
     {
         # the aircraft is below us, the ground could be below
         # Based on earth curve. Do not work with mountains
@@ -517,100 +640,103 @@ var isGroundNotBehind = func(t_coord, t_node){
         # If the earth was flat. Then the script will compare this distance to the horizon distance
         # If our distance is greater than horizon, then sky behind
         # If not, we cannot see the target unless we have a doppler radar
-        var distHorizon = geo.aircraft_position().alt() / math.tan(abs(myPitch * D2R)) * M2NM;
-        var horizon = get_horizon( geo.aircraft_position().alt() *M2FT, t_node);
-        var TempBool = (distHorizon > horizon);
-        GroundNotBehind = (distHorizon > horizon);
+        me.distHorizon = geo.aircraft_position().alt() / math.tan(abs(me.myPitch * D2R)) * M2NM;
+        me.horizon = me.get_horizon( geo.aircraft_position().alt() *M2FT, t_node);
+        me.TempBool = (me.distHorizon > me.horizon);
+        me.GroundNotBehind = (me.distHorizon > me.horizon);
     }
-    return GroundNotBehind;
-}
+    return me.GroundNotBehind;
+  },
 
-var get_Elevation_from_Coord = func(t_coord) {
+  get_Elevation_from_Coord: func(t_coord) {
     # fix later: Nasal runtime error: floating point error in math.asin() when logged in as observer:
-    var myPitch = math.asin((t_coord.alt() - geo.aircraft_position().alt()) / t_coord.direct_distance_to(geo.aircraft_position())) * R2D;
-    return myPitch;
-}
+    #var myPitch = math.asin((t_coord.alt() - geo.aircraft_position().alt()) / t_coord.direct_distance_to(geo.aircraft_position())) * R2D;
+    return getPitch(geo.aircraft_position(), t_coord)*R2D;
+  },
 
-var get_horizon = func(own_alt, t_node){
-    var tgt_alt = t_node.getNode("position/altitude-ft").getValue();
-    if(debug.isnan(tgt_alt))
-    {
-        return(0);
-    }
-    if(tgt_alt < 0 or tgt_alt == nil)
-    {
-        tgt_alt = 0;
-    }
-    if(own_alt < 0 or own_alt == nil)
-    {
-        own_alt = 0;
-    }
-    # Return the Horizon in NM
-    return (2.2 * ( math.sqrt(own_alt * FT2M) + math.sqrt(tgt_alt * FT2M)));# don't understand the 2.2 conversion to NM here..
-}
+  get_horizon: func(own_alt, t_node){
+      me.tgt_alt = t_node.getNode("position/altitude-ft").getValue();
+      if(debug.isnan(me.tgt_alt))
+      {
+          return(0);
+      }
+      if(me.tgt_alt < 0 or me.tgt_alt == nil)
+      {
+          me.tgt_alt = 0;
+      }
+      if(own_alt < 0 or own_alt == nil)
+      {
+          own_alt = 0;
+      }
+      # Return the Horizon in NM
+      return (2.2 * ( math.sqrt(own_alt * FT2M) + math.sqrt(me.tgt_alt * FT2M)));# don't understand the 2.2 conversion to NM here..
+  },
 
-var get_closure_rate_from_Coord = func(t_coord, t_node) {
-    var MyAircraftCoord = geo.aircraft_position();
+  get_closure_rate_from_Coord: func(t_coord, t_node) {
+      me.MyAircraftCoord = geo.aircraft_position();
 
-    if(t_node.getNode("orientation/true-heading-deg") == nil) {
-      return 0;
-    }
-
-    # First step : find the target heading.
-    var myHeading = t_node.getNode("orientation/true-heading-deg").getValue();
-    
-    # Second What would be the aircraft heading to go to us
-    var myCoord = t_coord;
-    var projectionHeading = myCoord.course_to(MyAircraftCoord);
-    
-    if (myHeading == nil or projectionHeading == nil) {
-      return 0;
-    }
-
-    # Calculate the angle difference
-    var myAngle = myHeading - projectionHeading; #Should work even with negative values
-    
-    # take the "ground speed"
-    # velocities/true-air-speed-kt
-    var mySpeed = t_node.getNode("velocities/true-airspeed-kt").getValue();
-    var myProjetedHorizontalSpeed = mySpeed*math.cos(myAngle*D2R); #in KTS
-    
-    #print("Projetted Horizontal Speed:"~ myProjetedHorizontalSpeed);
-    
-    # Now getting the pitch deviation
-    var myPitchToAircraft = - t_node.getNode("radar/elevation-deg").getValue();
-    #print("My pitch to Aircraft:"~myPitchToAircraft);
-    
-    # Get V speed
-    if(t_node.getNode("velocities/vertical-speed-fps").getValue() == nil)
-    {
+      if(t_node.getNode("orientation/true-heading-deg") == nil) {
         return 0;
-    }
-    var myVspeed = t_node.getNode("velocities/vertical-speed-fps").getValue()*FPS2KT;
-    # This speed is absolutely vertical. So need to remove pi/2
-    
-    var myProjetedVerticalSpeed = myVspeed * math.cos(myPitchToAircraft-90*D2R);
-    
-    # Control Print
-    #print("myVspeed = " ~myVspeed);
-    #print("Total Closure Rate:" ~ (myProjetedHorizontalSpeed+myProjetedVerticalSpeed));
-    
-    # Total Calculation
-    var cr = myProjetedHorizontalSpeed+myProjetedVerticalSpeed;
-    
-    # Setting Essential properties
-    #var rng = me. get_range_from_Coord(MyAircraftCoord);
-    #var newTime= ElapsedSec.getValue();
-    #if(me.get_Validity())
-    #{
-    #    setprop(me.InstrString ~ "/" ~ me.shortstring ~ "/closure-last-range-nm", rng);
-    #    setprop(me.InstrString ~ "/" ~ me.shortstring ~ "/closure-rate-kts", cr);
-    #}
-    
-    return cr;
-}
+      }
+
+      # First step : find the target heading.
+      me.myHeading = t_node.getNode("orientation/true-heading-deg").getValue();
+      
+      # Second What would be the aircraft heading to go to us
+      me.myCoord2 = t_coord;
+      me.projectionHeading = me.myCoord2.course_to(me.MyAircraftCoord);
+      
+      if (me.myHeading == nil or me.projectionHeading == nil) {
+        return 0;
+      }
+
+      # Calculate the angle difference
+      me.myAngle = me.myHeading - me.projectionHeading; #Should work even with negative values
+      
+      # take the "ground speed"
+      # velocities/true-air-speed-kt
+      me.mySpeed = t_node.getNode("velocities/true-airspeed-kt").getValue();
+      me.myProjetedHorizontalSpeed = me.mySpeed*math.cos(me.myAngle*D2R); #in KTS
+      
+      #print("Projetted Horizontal Speed:"~ myProjetedHorizontalSpeed);
+      
+      # Now getting the pitch deviation
+      me.myPitchToAircraft = - t_node.getNode("radar/elevation-deg").getValue();
+      #print("My pitch to Aircraft:"~myPitchToAircraft);
+      
+      # Get V speed
+      if(t_node.getNode("velocities/vertical-speed-fps").getValue() == nil)
+      {
+          return 0;
+      }
+      me.myVspeed = t_node.getNode("velocities/vertical-speed-fps").getValue()*FPS2KT;
+      # This speed is absolutely vertical. So need to remove pi/2
+      
+      me.myProjetedVerticalSpeed = me.myVspeed * math.cos(me.myPitchToAircraft-90*D2R);
+      
+      # Control Print
+      #print("myVspeed = " ~myVspeed);
+      #print("Total Closure Rate:" ~ (myProjetedHorizontalSpeed+myProjetedVerticalSpeed));
+      
+      # Total Calculation
+      me.cr = me.myProjetedHorizontalSpeed+me.myProjetedVerticalSpeed;
+      
+      # Setting Essential properties
+      #var rng = me. get_range_from_Coord(MyAircraftCoord);
+      #var newTime= ElapsedSec.getValue();
+      #if(me.get_Validity())
+      #{
+      #    setprop(me.InstrString ~ "/" ~ me.shortstring ~ "/closure-last-range-nm", rng);
+      #    setprop(me.InstrString ~ "/" ~ me.shortstring ~ "/closure-rate-kts", cr);
+      #}
+      
+      return me.cr;
+  },
+
+};
 
 var nextTarget = func () {
+  if (getprop("ja37/avionics/cursor-on") != FALSE){
   var max_index = size(tracks)-1;
   if(max_index > -1) {
     if(tracks_index < max_index) {
@@ -619,17 +745,23 @@ var nextTarget = func () {
       tracks_index = 0;
     }
     selection = tracks[tracks_index];
-    paint(selection.getNode(), TRUE);
+    #if (selection.get_type() == AIR) {
+      radarLogic.paint(selection.getNode(), TRUE);
+    #} else {
+    #  radarLogic.paint(selection.getNode(), FALSE);
+    #}
     lookatSelection();
   } else {
     tracks_index = -1;
     if (selection != nil) {
-      paint(selection.getNode(), FALSE);
+      radarLogic.paint(selection.getNode(), FALSE);
     }
   }
 }
+};
 
 var centerTarget = func () {
+  if (getprop("ja37/avionics/cursor-on") != FALSE) {
   var centerMost = nil;
   var centerDist = 99999;
   var centerIndex = -1;
@@ -647,45 +779,33 @@ var centerTarget = func () {
   }
   if (centerMost != nil) {
     selection = centerMost;
-    paint(selection.getNode(), TRUE);
+    #if (selection.get_type() == AIR) {
+      radarLogic.paint(selection.getNode(), TRUE);
+    #} else {
+    #  radarLogic.paint(selection.getNode(), FALSE);
+    #}
     lookatSelection();
     tracks_index = centerIndex;
   }
 }
+};
 
 var lookatSelection = func () {
   props.globals.getNode("/ja37/radar/selection-heading-deg", 1).unalias();
   props.globals.getNode("/ja37/radar/selection-pitch-deg", 1).unalias();
   props.globals.getNode("/ja37/radar/selection-heading-deg", 1).alias(selection.getNode().getNode("radar/bearing-deg"));
   props.globals.getNode("/ja37/radar/selection-pitch-deg", 1).alias(selection.getNode().getNode("radar/elevation-deg"));
-}
+};
 
 # setup property nodes for the loop
 foreach(var name; keys(input)) {
     input[name] = props.globals.getNode(input[name], 1);
-}
-
-#loop
-var loop = func () {
-  findRadarTracks();
-  settimer(loop, 0.05);
-}
-
-var starter = func () {
-  removelistener(lsnr);
-  if(getprop("ja37/supported/radar") == TRUE) {
-    loop();
-  }
-}
+};
 
 var getCallsign = func (callsign) {
   var node = callsign_struct[callsign];
   return node;
-}
-
-var lsnr = setlistener("ja37/supported/initialized", starter);
-
-
+};
 
 var Contact = {
     # For now only used in guided missiles, to make it compatible with Mirage 2000-5.
@@ -702,14 +822,23 @@ var Contact = {
         obj.alt             = obj.posProp.getNode("altitude-ft");
         obj.lat             = obj.posProp.getNode("latitude-deg");
         obj.lon             = obj.posProp.getNode("longitude-deg");
+
+        obj.x             = obj.posProp.getNode("global-x");
+        obj.y             = obj.posProp.getNode("global-y");
+        obj.z             = obj.posProp.getNode("global-z");
 #});
 #debug.benchmark("radar process3", func {
         #As it is a geo.Coord object, we have to update lat/lon/alt ->and alt is in meters
         obj.coord = geo.Coord.new();
-        obj.coord.set_latlon(obj.lat.getValue(), obj.lon.getValue(), obj.alt.getValue() * FT2M);
+        if (obj.x == nil or obj.x.getValue() == nil) {
+          obj.coord.set_latlon(obj.lat.getValue(), obj.lon.getValue(), obj.alt.getValue() * FT2M);
+        } else {
+          obj.coord.set_xyz(obj.x.getValue(), obj.y.getValue(), obj.z.getValue());
+        }
 #});
 #debug.benchmark("radar process4", func {
         obj.pitch           = obj.oriProp.getNode("pitch-deg");
+        obj.pitch           = obj.oriProp.getNode("roll-deg");
         obj.speed           = obj.velProp.getNode("true-airspeed-kt");
         obj.vSpeed          = obj.velProp.getNode("vertical-speed-fps");
         obj.callsign        = c.getNode("callsign", 1);
@@ -721,6 +850,9 @@ var Contact = {
         obj.painted         = c.getNode("painted");
         obj.unique          = c.getNode("unique");
         obj.validTree       = 0;
+
+        obj.eta             = c.getNode("ETA");
+        obj.hit             = c.getNode("hit");
 #});
 #debug.benchmark("radar process5", func {        
         #obj.transponderID   = c.getNode("instrumentation/transponder/transmitted-id");
@@ -746,6 +878,20 @@ var Contact = {
         obj.cartesian       = [0,0];
         
         return obj;
+    },
+
+    getETA: func {
+      if (me.eta != nil) {
+        return me.eta.getValue();
+      }
+      return nil;
+    },
+
+    getHitChance: func {
+      if (me.hit != nil) {
+        return me.hit.getValue();
+      }
+      return nil;
     },
 
     isValid: func () {
@@ -786,10 +932,11 @@ var Contact = {
         e = me.elevation.getValue();
         if(e == nil or e == 0) {
             # AI/MP has no radar properties
-            var self = geo.aircraft_position();
-            me.get_Coord();
-            var angleInv = ja37.clamp(self.distance_to(me.coord)/self.direct_distance_to(me.coord), -1, 1);
-            e = (self.alt()>me.coord.alt()?-1:1)*math.acos(angleInv)*R2D;
+            #var self = geo.aircraft_position();
+            #me.get_Coord();
+            #var angleInv = ja37.clamp(self.distance_to(me.coord)/self.direct_distance_to(me.coord), -1, 1);
+            #e = (self.alt()>me.coord.alt()?-1:1)*math.acos(angleInv)*R2D;
+            e = getPitch(self, me.coord);
         }
         return e;
     },
@@ -799,11 +946,11 @@ var Contact = {
     },
 
     getFlareNode: func () {
-      return me.node.getNode("sim/multiplay/generic/string[10]");
+      return me.node.getNode("rotors/main/blade[3]/flap-deg");
     },
 
-    setPolar: func(dist, angle) {
-      me.polar = [dist,angle];
+    setPolar: func(dist, angle, angleX, angleY) {
+      me.polar = [dist,angle,angleX,angleY];
     },
 
     setCartesian: func(x, y) {
@@ -817,7 +964,11 @@ var Contact = {
     },
 
     get_Coord: func(){
-        me.coord.set_latlon(me.lat.getValue(), me.lon.getValue(), me.alt.getValue() * FT2M);
+        if (me.x != nil and me.x.getValue() != nil) {
+          me.coord.set_xyz(me.x.getValue(), me.y.getValue(), me.z.getValue());
+        } else {
+          me.coord.set_latlon(me.lat.getValue(), me.lon.getValue(), me.alt.getValue() * FT2M);
+        }
         var TgTCoord  = geo.Coord.new(me.coord);
         return TgTCoord;
     },
@@ -895,6 +1046,11 @@ var Contact = {
         return n;
     },
 
+    get_Roll: func(){
+        var n = me.roll.getValue();
+        return n;
+    },
+
     get_heading : func(){
         var n = me.heading.getValue();
         if(n == nil)
@@ -938,14 +1094,14 @@ var Contact = {
     },
 
     get_Elevation_from_Coord: func(MyAircraftCoord) {
-        me.get_Coord();
-        var value = (me.coord.alt() - MyAircraftCoord.alt()) / me.coord.direct_distance_to(MyAircraftCoord);
-        if (math.abs(value) > 1) {
+        #me.get_Coord();
+        #var value = (me.coord.alt() - MyAircraftCoord.alt()) / me.coord.direct_distance_to(MyAircraftCoord);
+        #if (math.abs(value) > 1) {
           # warning this else will fail if logged in as observer and see aircraft on other side of globe
-          return 0;
-        }
-        var myPitch = math.asin(value) * R2D;
-        return myPitch;
+        #  return 0;
+        #}
+        #var myPitch = math.asin(value) * R2D;
+        return getPitch(me.get_Coord(), MyAircraftCoord);
     },
 
     get_total_elevation_from_Coord: func(own_pitch, MyAircraftCoord){
@@ -1014,11 +1170,11 @@ var ContactGPS = {
   },
 
   getElevation: func() {
-      var e = 0;
-      var self = geo.aircraft_position();
-      var angleInv = ja37.clamp(self.distance_to(me.coord)/self.direct_distance_to(me.coord), -1, 1);
-      e = (self.alt()>me.coord.alt()?-1:1)*math.acos(angleInv)*R2D;
-      return e;
+      #var e = 0;
+      #var self = geo.aircraft_position();
+      #var angleInv = ja37.clamp(self.distance_to(me.coord)/self.direct_distance_to(me.coord), -1, 1);
+      #e = (self.alt()>me.coord.alt()?-1:1)*math.acos(angleInv)*R2D;
+      return getPitch(self, me.coord);
   },
 
   getNode: func () {
@@ -1037,12 +1193,20 @@ var ContactGPS = {
       return me.coord;
   },
 
+  getETA: func {
+      return nil;
+    },
+
+    getHitChance: func {
+      return nil;
+    },
+
   get_Callsign: func(){
       return me.callsign;
   },
 
   get_model: func(){
-      return "GPS Target";
+      return "GPS Location";
   },
 
   get_Speed: func(){
@@ -1061,6 +1225,10 @@ var ContactGPS = {
   },
 
   get_Pitch: func(){
+      return 0;
+  },
+
+  get_Roll: func(){
       return 0;
   },
 
@@ -1096,13 +1264,13 @@ var ContactGPS = {
   },
 
   get_Elevation_from_Coord: func(MyAircraftCoord) {
-      var value = (me.coord.alt() - MyAircraftCoord.alt()) / me.coord.direct_distance_to(MyAircraftCoord);
-      if (math.abs(value) > 1) {
+      #var value = (me.coord.alt() - MyAircraftCoord.alt()) / me.coord.direct_distance_to(MyAircraftCoord);
+      #if (math.abs(value) > 1) {
         # warning this else will fail if logged in as observer and see aircraft on other side of globe
-        return 0;
-      }
-      var myPitch = math.asin(value) * R2D;
-      return myPitch;
+      #  return 0;
+      #}
+      #var myPitch = math.asin(value) * R2D;
+      return getPitch(me.get_Coord(), MyAircraftCoord) * R2D;
   },
 
   get_total_elevation_from_Coord: func(own_pitch, MyAircraftCoord){
@@ -1143,7 +1311,7 @@ var ContactGPS = {
     var myHeading =  input.hdgReal.getValue();
     var distance  =  self.distance_to(me.coord);
 
-    var yg_rad = math.atan2(gpsAlt-myAlt, distance) - myPitch; 
+    var yg_rad = getPitch(self, me.coord)-myPitch;#math.atan2(gpsAlt-myAlt, distance) - myPitch; 
     var xg_rad = (self.course_to(me.coord) - myHeading) * deg2rads;
     
     while (xg_rad > math.pi) {
@@ -1159,7 +1327,7 @@ var ContactGPS = {
       yg_rad = yg_rad + 2*math.pi;
     }
 
-    #aircraft angle
+    #aircraft angle, remember positive roll is right
     var ya_rad = xg_rad * math.sin(myRoll) + yg_rad * math.cos(myRoll);
     var xa_rad = xg_rad * math.cos(myRoll) - yg_rad * math.sin(myRoll);
 
@@ -1193,7 +1361,7 @@ var ContactGPS = {
     var myHeading =  input.hdgReal.getValue();
     var distance  =  self.distance_to(me.coord);
 
-    var yg_rad = math.atan2(aircraftAlt-myAlt, distance) - myPitch; 
+    var yg_rad = getPitch(self, me.coord)-myPitch;#math.atan2(aircraftAlt-myAlt, distance) - myPitch; 
     var xg_rad = (self.course_to(me.coord) - myHeading) * deg2rads;
     
     while (xg_rad > math.pi) {
@@ -1212,7 +1380,14 @@ var ContactGPS = {
     #aircraft angle
     var ya_rad = xg_rad * math.sin(myRoll) + yg_rad * math.cos(myRoll);
     var xa_rad = xg_rad * math.cos(myRoll) - yg_rad * math.sin(myRoll);
+    var xa_rad_corr = xg_rad;
 
+    while (xa_rad_corr < -math.pi) {
+      xa_rad_corr = xa_rad_corr + 2*math.pi;
+    }
+    while (xa_rad_corr > math.pi) {
+      xa_rad_corr = xa_rad_corr - 2*math.pi;
+    }
     while (xa_rad < -math.pi) {
       xa_rad = xa_rad + 2*math.pi;
     }
@@ -1226,9 +1401,35 @@ var ContactGPS = {
       ya_rad = ya_rad + 2*math.pi;
     }
 
-    var distanceRadar = distance/math.cos(myPitch);
+    var distanceRadar = distance;#/math.cos(myPitch);
 
-    return [distanceRadar, xa_rad];
+    return [distanceRadar, xa_rad_corr, xa_rad, ya_rad];
   },
-}
+};
 
+var getPitch = func (coord1, coord2) {
+  #pitch from c1 to c2
+  var coord3 = geo.Coord.new(coord1);
+  coord3.set_alt(coord2.alt());
+  var d12 = coord1.direct_distance_to(coord2);
+  if (d12 > 0.1 and coord1.alt() != coord2.alt()) {# not sure how to cope with same altitudes.
+    var d32 = coord3.direct_distance_to(coord2);
+    var altD = coord1.alt()-coord3.alt();
+    var y = R2D * math.acos((math.pow(d12, 2)+math.pow(altD,2)-math.pow(d32, 2))/(2 * d12 * altD));
+    var pitch = -1* (90 - y);
+    return pitch*D2R;
+  } else {
+    return 0;
+  }
+};
+
+var radarLogic = nil;
+
+var starter = func () {
+  removelistener(lsnr);
+  if(getprop("ja37/supported/radar") == TRUE) {
+    radarLogic = RadarLogic.new();
+    radarLogic.loop();
+  }
+};
+var lsnr = setlistener("ja37/supported/initialized", starter);

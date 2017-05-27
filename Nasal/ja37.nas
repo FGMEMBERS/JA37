@@ -7,16 +7,18 @@ var encode3bits = func(first, second, third) {
   return integer;
 }
 
-var UPDATE_PERIOD = 0.1;
+var LOOP_STANDARD_RATE = 0.10;
+var LOOP_FAST_RATE     = 0.05;
+var LOOP_SLOW_RATE     = 1.50;
 
 var FALSE = 0;
 var TRUE = 1;
 
-var prevGear0 = TRUE;
-var prevGear1 = TRUE;
-var prevGear2 = TRUE;
-var touchdown1 = FALSE;
-var touchdown2 = FALSE;
+#var prevGear0 = TRUE;
+#var prevGear1 = TRUE;
+#var prevGear2 = TRUE;
+#var touchdown1 = FALSE;
+#var touchdown2 = FALSE;
 var total_fuel = 0;
 var bingoFuel = FALSE;
 
@@ -42,17 +44,18 @@ input = {
   apLockSpeed:      "autopilot/locks/speed",
   asymLoad:         "fdm/jsbsim/inertia/asymmetric-wing-load",
   augmentation:     "/controls/engines/engine[0]/augmentation",
-  autoReverse:      "ja37/autoReverseThrust",
+  #autoReverse:      "ja37/autoReverseThrust",
   breathVol:        "ja37/sound/breath-volume",
   buffOut:          "fdm/jsbsim/systems/flight/buffeting/output",
   cabinPressure:    "fdm/jsbsim/systems/flight/cabin-pressure-kpm2",
   canopyPos:        "fdm/jsbsim/fcs/canopy/pos-norm",
   canopyHinge:      "/fdm/jsbsim/fcs/canopy/hinges/serviceable",
   combat:           "/ja37/hud/current-mode",
-  cutoff:           "controls/engines/engine[0]/cutoff",
+  cutoff:           "fdm/jsbsim/propulsion/engine/cutoff-commanded",
   damage:           "environment/damage",
   damageSmoke:      "environment/damage-smoke",
   dcVolt:           "systems/electrical/outputs/dc-voltage",
+  dens:             "fdm/jsbsim/atmosphere/density-altitude",
   dme:              "instrumentation/dme/KDI572-574/nm",
   dmeDist:          "instrumentation/dme/indicated-distance-nm",
   downFps:          "/velocities/down-relground-fps",
@@ -120,6 +123,8 @@ input = {
   MPint9:           "sim/multiplay/generic/int[9]",
   n1:               "/engines/engine/n1",
   n2:               "/engines/engine/n2",
+  nearby:           "damage/sounds/nearby-explode-on",
+  explode:          "damage/sounds/explode-on",
   pilotG:           "ja37/accelerations/pilot-G",
   pneumatic:        "fdm/jsbsim/systems/fuel/pneumatics/serviceable",
   rad_alt:          "position/altitude-agl-ft",
@@ -137,6 +142,7 @@ input = {
   servFire:         "engines/engine[0]/fire/serviceable",
   serviceElec:      "systems/electrical/serviceable",
   speedKt:          "/instrumentation/airspeed-indicator/indicated-speed-kt",
+  speedTrueKt:      "fdm/jsbsim/velocities/vtrue-kts",
   speedMach:        "/instrumentation/airspeed-indicator/indicated-mach",
   speedWarn:        "ja37/sound/speed-on",
   srvHead:          "instrumentation/heading-indicator/serviceable",
@@ -202,7 +208,7 @@ var update_loop = func {
 
   if(input.replay.getValue() == TRUE) {
     # replay is active, skip rest of loop.
-    settimer(update_loop, UPDATE_PERIOD);
+    settimer(update_loop, LOOP_STANDARD_RATE);
   } else {
     # set the full-init property
     if(input.elapsed.getValue() > input.elapsedInit.getValue() + 5) {
@@ -214,7 +220,8 @@ var update_loop = func {
   	 ## Sets fuel gauge needles rotation ##
   	 
      if(input.tank8LvlNorm.getValue() != nil) {
-       input.fuelNeedleB.setDoubleValue(input.tank8LvlNorm.getValue()*230);
+       #input.fuelNeedleB.setDoubleValue(input.tank8LvlNorm.getValue()*230);
+       input.fuelNeedleB.setDoubleValue(0);
      }     
 
     var current = input.tank0LvlGal.getValue()
@@ -259,42 +266,42 @@ var update_loop = func {
     #}
 
     # automatic reverse thrust enabler
-    var reversed = input.reversed.getValue();
+    #var reversed = input.reversed.getValue();
 
-    var gear0 = input.wow0.getValue();
-    var gear1 = input.wow1.getValue();
-    var gear2 = input.wow2.getValue();
+    #var gear0 = input.wow0.getValue();
+    #var gear1 = input.wow1.getValue();
+    #var gear2 = input.wow2.getValue();
 
-    if(input.autoReverse.getValue() == TRUE and reversed == FALSE) {
-      if(gear1 == TRUE) {
+    #if(input.autoReverse.getValue() == TRUE and reversed == FALSE) {
+    #  if(gear1 == TRUE) {
         #left boogie touching
-        if(prevGear1 == FALSE) {
-          touchdown1 = TRUE;
-        }
-      } else {
-        touchdown1 = FALSE;
-      }
-      if(gear2 == TRUE) {
+    #    if(prevGear1 == FALSE) {
+    #      touchdown1 = TRUE;
+    #    }
+    #  } else {
+    #    touchdown1 = FALSE;
+    #  }
+    #  if(gear2 == TRUE) {
         #right boogie touching
-        if(prevGear2 == FALSE) {
-          touchdown2 = TRUE;
-        }
-      } else {
-        touchdown2 = FALSE;
-      }
-      if(touchdown1 == TRUE and touchdown2 == TRUE) {
-        if(gear0 == TRUE) {
+    #    if(prevGear2 == FALSE) {
+    #      touchdown2 = TRUE;
+    #    }
+    #  } else {
+    #    touchdown2 = FALSE;
+    #  }
+    #  if(touchdown1 == TRUE and touchdown2 == TRUE) {
+    #    if(gear0 == TRUE) {
           #print("Auto-reversing the thrust");
-          touchdown1 = FALSE;
-          touchdown2 = FALSE;
-          reversethrust.reverserOn();
-        }
-      }
-    }
+    #      touchdown1 = FALSE;
+    #      touchdown2 = FALSE;
+    #      reversethrust.reverserOn();
+    #    }
+    #  }
+    #}
 
-    prevGear0 = gear0;
-    prevGear1 = gear1;
-    prevGear2 = gear2;
+    #prevGear0 = gear0;
+    #prevGear1 = gear1;
+    #prevGear2 = gear2;
 
     # meter altitude property
 
@@ -304,12 +311,14 @@ var update_loop = func {
     # setprop("gear/gear/compression-wheel", (getprop("gear/gear/compression-ft")*0.3048-1.84812));
 
 
-    # low speed warning
+    # low speed warning (as per manual page 279 in JA37C part 1)
     var lowSpeed = FALSE;
-    if ((input.speedKt.getValue() * 1.852) < 375) {
+    if (auto.modeT < 2 and (input.speedKt.getValue() * 1.85184) < 375 and input.wow1.getValue() == FALSE) {
       if (input.indAltMeter.getValue() < 1200) {
-        if ((input.gearsPos.getValue() == 1 and (input.rad_alt.getValue() * 0.3048) > 500) or input.gearsPos.getValue() != 1) {#manual: should be 30, not 500
-          if (input.n2.getValue() < 70.5 or input.reversed.getValue() == TRUE or input.engineRunning.getValue() == FALSE) {
+        if (
+          (input.gearsPos.getValue() == 1 and (getprop("controls/altimeter-radar")==TRUE?(input.rad_alt.getValue() * FT2M) > 30:(input.indAltFt.getValue() * FT2M) > 30))
+          or input.gearsPos.getValue() != 1) {
+          if (getprop("fdm/jsbsim/fcs/throttle-pos-deg") < 19 or input.reversed.getValue() == TRUE or input.engineRunning.getValue() == FALSE) {
             lowSpeed = TRUE;
           }
         }
@@ -377,7 +386,6 @@ var update_loop = func {
 	  if (input.rmActive.getValue() == TRUE and input.srvHead.getValue() == TRUE) {
 	    # sets the proper degree of the yellow waypoint heading indicator on the compass that surrounds the radar.
 	    input.rmBearingRel.setDoubleValue(input.rmBearing.getValue() - input.headingMagn.getValue());
-      
     }
 
     if(getprop("ja37/systems/variant") != 0 and getprop("/instrumentation/radar/range") == 180000) {
@@ -389,12 +397,56 @@ var update_loop = func {
 	  setprop("velocities/airspeed-kt-inv", inv_speed);
     setprop("ja37/effect/heatblur/dens", clamp((getprop("engines/engine/n2")/100-getprop("velocities/airspeed-kt")/250)*0.035, 0, 1));
 
+    ## terrain detection ##
+    if (getprop("ja37/supported/picking") == TRUE) {
+      setprop("ja37/radar/look-through-terrain", FALSE);
+    }
+    if (getprop("ja37/supported/picking") == TRUE and (getprop("velocities/speed-east-fps") != 0 or getprop("velocities/speed-north-fps") != 0)) {
+      var start = geo.aircraft_position();
+
+      var speed_down_fps  = getprop("velocities/speed-down-fps");
+      var speed_east_fps  = getprop("velocities/speed-east-fps");
+      var speed_north_fps = getprop("velocities/speed-north-fps");
+      var speed_horz_fps  = math.sqrt((speed_east_fps*speed_east_fps)+(speed_north_fps*speed_north_fps));
+      var speed_fps       = math.sqrt((speed_horz_fps*speed_horz_fps)+(speed_down_fps*speed_down_fps));
+      var heading = 0;
+      if (speed_north_fps >= 0) {
+        heading -= math.acos(speed_east_fps/speed_horz_fps)*R2D - 90;
+      } else {
+        heading -= -math.acos(speed_east_fps/speed_horz_fps)*R2D - 90;
+      }
+      heading = geo.normdeg(heading);
+      #cos(90-heading)*horz = east
+      #acos(east/horz) - 90 = -head
+
+      var end = geo.Coord.new(start);
+      end.apply_course_distance(heading, speed_horz_fps*FT2M);
+      end.set_alt(end.alt()-speed_down_fps*FT2M);
+
+      var dir_x = end.x()-start.x();
+      var dir_y = end.y()-start.y();
+      var dir_z = end.z()-start.z();
+      var xyz = {"x":start.x(),  "y":start.y(),  "z":start.z()};
+      var dir = {"x":dir_x,      "y":dir_y,      "z":dir_z};
+
+      var geod = get_cart_ground_intersection(xyz, dir);
+      if (geod != nil) {
+        end.set_latlon(geod.lat, geod.lon, geod.elevation);
+        var dist = start.direct_distance_to(end)*M2FT;
+        var time = dist / speed_fps;
+        setprop("/ja37/radar/time-till-crash", time);
+      } else {
+        setprop("/ja37/radar/time-till-crash", 15);
+      }
+    } else {
+      setprop("/ja37/radar/time-till-crash", 15);
+    }
 
     settimer(
       #func debug.benchmark("j37 loop", 
         update_loop
         #)
-    , UPDATE_PERIOD);
+    , LOOP_STANDARD_RATE);
   }
 }
 
@@ -406,7 +458,7 @@ var acTimer = 0;
 var slow_loop = func () {
   if(input.replay.getValue() == TRUE) {
     # replay is active, skip rest of loop.
-    settimer(slow_loop, 1.5);
+    settimer(slow_loop, LOOP_SLOW_RATE);
     return;
   }
 
@@ -453,12 +505,20 @@ var slow_loop = func () {
           standbyStr = " (Standby: "~secondClosestRunway~")";
           setprop("instrumentation/nav[0]/frequencies/standby-mhz", runways[secondClosestRunway].ils.frequency / 100);
         }
-        popupTip("TILS tuned to "~icao~" "~closestRunway~standbyStr, 25, 6);
+        notice("TILS tuned to "~icao~" "~closestRunway~standbyStr, 25, 6);
       }
     }
     TILSprev = TRUE;
+    setprop("ja37/hud/TILS-on", TRUE);
   } else {
+    setprop("ja37/hud/TILS-on", FALSE);
     TILSprev = FALSE;
+  }
+
+  if (getprop("sim/replay/replay-state") == 0 and input.acInstrVolt.getValue() > 100) {
+    setprop("ja37/avionics/record-on", TRUE);
+  } else {
+    setprop("ja37/avionics/record-on", FALSE);
   }
 
   ###########################################################
@@ -469,6 +529,7 @@ var slow_loop = func () {
 
   var acSetting = getprop("controls/ventilation/airconditioning-type");
   if (acSetting != 0) {
+    # 12 second of cold or hot air has been selected.
     if (acPrev != acSetting) {
       acTimer = input.elapsed.getValue();
     } elsif (acTimer+12 < input.elapsed.getValue()) {
@@ -505,21 +566,26 @@ var slow_loop = func () {
   # If the AC is turned on and on auto setting, it will slowly move the cockpit temperature toward its temperature setting.
   # The dewpoint inside the cockpit depends on the outside dewpoint and how the AC is working.
   var tempOutside = getprop("environment/temperature-degc");
-  var tempInside = getprop("environment/aircraft-effects/temperature-inside-degC");
+  var ramRise     = (input.speedTrueKt.getValue()*input.speedTrueKt.getValue())/(87*87);#this is called the ram rise formula
+  tempOutside    += ramRise;
+  var tempInside  = getprop("environment/aircraft-effects/temperature-inside-degC");
   var tempOutsideDew = getprop("environment/dewpoint-degc");
   var tempInsideDew = getprop("/environment/aircraft-effects/dewpoint-inside-degC");
   var tempACDew = 5;# aircondition dew point target. 5 = dry
   var ACRunning = input.dcVolt.getValue() > 23 and getprop("controls/ventilation/airconditioning-enabled") == TRUE;
 
   # calc inside temp
+  var hotAir_deg_min = 2.0;# how fast does the sources heat up cockpit.
+  var AC_deg_min     = 6.0;
+  var pilot_deg_min  = 0.2;
   var knob = getprop("controls/ventilation/windshield-hot-air-knob");
   var hotAirOnWindshield = input.dcVolt.getValue() > 23?knob:0;
   if (input.canopyPos.getValue() > 0 or input.canopyHinge.getValue() == FALSE) {
     tempInside = tempOutside;
   } else {
-    tempInside = tempInside + hotAirOnWindshield * 0.05; # having hot air on windshield will also heat cockpit
+    tempInside = tempInside + hotAirOnWindshield * (hotAir_deg_min/(60/LOOP_SLOW_RATE)); # having hot air on windshield will also heat cockpit (10 degs/5 mins).
     if (tempInside < 37) {
-      tempInside = tempInside + 0.005; # pilot will also heat cockpit with 1 deg per 5 mins
+      tempInside = tempInside + (pilot_deg_min/(60/LOOP_SLOW_RATE)); # pilot will also heat cockpit with 1 deg per 5 mins
     }
     # outside temp will influence inside temp:
     var coolingFactor = clamp(abs(tempInside - tempOutside)*0.005, 0, 0.10);# 20 degrees difference will cool/warm with 0.10 Deg C every 1.5 second
@@ -531,9 +597,9 @@ var slow_loop = func () {
     if (ACRunning == TRUE) {
       # AC is running and will work to adjust to influence the inside temperature
       if (tempInside < tempAC) {
-        tempInside = clamp(tempInside+0.15, -1000, tempAC);
+        tempInside = clamp(tempInside+(AC_deg_min/(60/LOOP_SLOW_RATE)), -1000, tempAC);
       } elsif (tempInside > tempAC) {
-        tempInside = clamp(tempInside-0.15, tempAC, 1000);
+        tempInside = clamp(tempInside-(AC_deg_min/(60/LOOP_SLOW_RATE)), tempAC, 1000);
       }
     }
   }
@@ -578,8 +644,10 @@ var slow_loop = func () {
   }
   var frostSpeedInside = clamp(-tempGlass, -60, 60)/600 + (tempGlass<0?fogNormInside/50:0);
   var frostSpeedOutside = clamp(-tempGlass, -60, 60)/600 + (tempGlass<0?(fogNormOutside/50 + rain/50):0);
-  frostNormOutside = clamp(frostNormOutside + frostSpeedOutside, 0, 1);
-  frostNormInside = clamp(frostNormInside + frostSpeedInside, 0, 1);
+  var maxFrost = clamp(1 + ((tempGlass + 5) / (0 + 5)) * (0 - 1), 0, 1);# -5 is full frost, 0 is no frost
+  var maxFrostInside = clamp(maxFrost - clamp(tempInside/30,0,1), 0, 1);# frost having harder time to form while being constantly thawed.
+  frostNormOutside = clamp(frostNormOutside + frostSpeedOutside, 0, maxFrost);
+  frostNormInside = clamp(frostNormInside + frostSpeedInside, 0, maxFrostInside);
   var frostNorm = frostNormOutside>frostNormInside?frostNormOutside:frostNormInside;
   #var frostNorm = clamp((tempGlass-0)*-0.05, 0, 1);# will freeze below 0
 
@@ -606,12 +674,57 @@ var slow_loop = func () {
   setprop("/environment/aircraft-effects/frost-level", frostNorm);
   setprop("/environment/aircraft-effects/fog-level", fogNorm);
   setprop("/environment/aircraft-effects/use-mask", mask);
+  if (rand() > 0.95) {
+    if (tempInside < 10) {
+      if (tempInside < 5) {
+        screen.log.write("You are freezing, the cabin is very cold", 1.0, 0.0, 0.0);
+      } else {
+        screen.log.write("You feel cold, the cockpit is cold", 1.0, 0.5, 0.0);
+      }
+    } elsif (tempInside > 23) {
+      if (tempInside > 26) {
+        screen.log.write("You are sweating, the cabin is way too hot", 1.0, 0.0, 0.0);
+      } else {
+        screen.log.write("You feel its too warm in the cabin", 1.0, 0.5, 0.0);
+      }
+    }
+  }
+  # consume oxygen bottle pressure
+  if (getprop("controls/oxygen") == TRUE) {
+    var amount = getprop("ja37/systems/oxygen-bottle-pressure")-127/(27000/LOOP_SLOW_RATE);#7.5 hours to consume all 127 kpm2
+    setprop("ja37/systems/oxygen-bottle-pressure", amount);
+  }
 
-  settimer(slow_loop, 1.5);
+  # warnings if trouble breathing
+  var mask = getprop("fdm/jsbsim/systems/flight/oxygen-pressure-kPa");
+  var cabin = getprop("fdm/jsbsim/systems/flight/cabin-pressure-kPa");
+  var oxy = getprop("/controls/oxygen");
+  var bottle = getprop("/ja37/systems/oxygen-bottle-pressure");
+  if (rand() > 0.75) {
+    if (cabin < 25) {
+      if (oxy == FALSE or bottle < 25) {
+        screen.log.write("You feel dizzy from lack of oxygen", 1.0, 0.0, 0.0);
+      }
+    } elsif (cabin < 35) {
+      if (oxy == FALSE or bottle < 35) {
+        screen.log.write("You feel the lack of oxygen", 1.0, 0.5, 0.0);
+      }
+    }
+  }
+
+  #warning if max rolling speed is exceeded
+  var max = getprop("limits/vroll");
+  if ((input.wow0.getValue() == TRUE or input.wow2.getValue() == TRUE) and max != nil and getprop("velocities/groundspeed-kt") > max) {
+    screen.log.write("Maximum allowed rolling speed exceeded!", 1.0, 0.0, 0.0);
+  }
+
+  settimer(slow_loop, LOOP_SLOW_RATE);
 }
 
 # fast updating loop
 var speed_loop = func () {
+
+  setprop("controls/engines/engine[0]/cutoff", getprop("fdm/jsbsim/propulsion/engine/cutoff-actual"));
 
   # switch on and off ALS landing lights
   if(input.landLight.getValue() > 0) {    
@@ -626,7 +739,7 @@ var speed_loop = func () {
 
   if(input.replay.getValue() == TRUE) {
     # replay is active, skip rest of loop.
-    settimer(speed_loop, 0.05);
+    settimer(speed_loop, LOOP_FAST_RATE);
     return;
   }
 
@@ -679,11 +792,12 @@ var speed_loop = func () {
 
   logTime();
 
-  settimer(speed_loop, 0.05);
+  settimer(speed_loop, LOOP_FAST_RATE);
 }
 
 
 var defaultView = getprop("sim/view/config/y-offset-m");
+setprop("ja37/effect/seat", defaultView);
 
 var logTime = func{
   #log time and date for outputing ucsv files for converting into KML files for google earth.
@@ -696,21 +810,59 @@ var logTime = func{
   }
 }
 
+var map = func (value, leftMin, leftMax, rightMin, rightMax) {
+      # Figure out how 'wide' each range is
+      var leftSpan = leftMax - leftMin;
+      var rightSpan = rightMax - rightMin;
+
+      # Convert the left range into a 0-1 range (float)
+      var valueScaled = (value - leftMin) / leftSpan;
+
+      # Convert the 0-1 range into a value in the right range.
+      return rightMin + (valueScaled * rightSpan);
+}
+
 var theShakeEffect = func{
-  var rSpeed = input.airspeed.getValue();
+  var rSpeed = input.airspeed.getValue();#change to ground speed
   var G = input.pilotG.getValue();
   var alpha = input.alpha.getValue();
   var mach = input.mach.getValue();
   var wow = input.wow1.getValue();
-  var myTime = input.elapsed.getValue();
+  var near = input.nearby.getValue();
+  var explode = input.explode.getValue();
 
-  if (rSpeed == nil or G == nil or alpha == nil or mach == nil or wow == nil or myTime == nil) {
+  if (rSpeed == nil or G == nil or alpha == nil or mach == nil or wow == nil or near == nil or explode == nil) {
     return;
   }
 
-  if(input.viewName.getValue() == "Cockpit View" and (((G > 7 or alpha>20) and rSpeed>30) or (mach>0.97 and mach<1.05) or (wow and rSpeed>100))) {
-    input.viewYOffset.setDoubleValue(defaultView+input.buffOut.getValue()); 
-  }elsif (input.viewName.getValue() == "Cockpit View") {
+  defaultView = getprop("ja37/effect/seat");
+
+  if(input.viewName.getValue() == "Cockpit View" and (((G > 7 or alpha>4.5) and rSpeed>30) or (mach>0.97 and mach<1.05) or (wow and rSpeed>100) or near == TRUE or explode == TRUE)) {
+    var factor = 0;
+    var densFactor = clamp(1-input.dens.getValue()/30000, 0, 1);
+    if (G > 7) {
+      factor += map(G,7,9,0,1)*densFactor;
+    }
+    if (alpha > 4.5 and rSpeed > 30 and mach < 1) {
+      factor += map(alpha,4.5,12,0,1)*densFactor;# manual says no buffeting from alpha at mach 1+. And that it starts from 4.5 and goes to max at 12.
+    }
+    if (mach>0.97 and mach<1.05) {
+      factor += 1*densFactor;
+    }
+    if (wow == TRUE and rSpeed > 100) {
+      factor += map(rSpeed,100,200,0,0.50);
+    }    
+    factor = clamp(factor,0,1);
+    if (near == TRUE) {
+      factor += 2;
+    }
+    if (explode == TRUE) {
+      factor += 3.5;
+    }
+    setprop("ja37/effect/buffeting", factor);
+    input.viewYOffset.setDoubleValue(defaultView+input.buffOut.getValue()*factor); 
+  } elsif (input.viewName.getValue() == "Cockpit View") {
+    setprop("ja37/effect/buffeting", 0);
     input.viewYOffset.setDoubleValue(defaultView);
   } 
 }
@@ -826,9 +978,9 @@ var test_support = func {
   var minor = num(version[1]);
   var detail = num(version[2]);
   if (major < 2) {
-    popupTip("JA-37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
+    notice("Saab 37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
       setprop("ja37/supported/radar", FALSE);
-      setprop("ja37/supported/hud", FALSE);
+      setprop("ja37/supported/canvas", FALSE);
       setprop("ja37/supported/options", FALSE);
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/supported/popuptips", 0);
@@ -838,24 +990,26 @@ var test_support = func {
       setprop("ja37/supported/lightning", FALSE);
       setprop("ja37/supported/fire", FALSE);
       setprop("ja37/supported/new-marker", FALSE);
+      setprop("ja37/supported/picking", FALSE);
   } elsif (major == 2) {
     setprop("ja37/supported/landing-light", FALSE);
     setprop("ja37/supported/lightning", FALSE);
     setprop("ja37/supported/fire", FALSE);
     setprop("ja37/supported/new-marker", FALSE);
+    setprop("ja37/supported/picking", FALSE);
     if(minor < 7) {
-      popupTip("JA-37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
+      notice("Saab 37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
       setprop("ja37/supported/radar", FALSE);
-      setprop("ja37/supported/hud", FALSE);
+      setprop("ja37/supported/canvas", FALSE);
       setprop("ja37/supported/options", FALSE);
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/supported/popuptips", 0);
       setprop("ja37/supported/crash-system", 0);
       setprop("ja37/supported/ubershader", FALSE);
     } elsif(minor < 9) {
-      popupTip("JA-37 Canvas Radar and HUD is only supported in Flightgear version 2.10 and upwards. They have been disabled.");
+      notice("Saab 37 Canvas Radar and HUD is only supported in Flightgear version 2.10 and upwards. They have been disabled.");
       setprop("ja37/supported/radar", FALSE);
-      setprop("ja37/supported/hud", FALSE);
+      setprop("ja37/supported/canvas", FALSE);
       setprop("ja37/supported/options", FALSE);
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/hud/mode", 0);
@@ -864,7 +1018,7 @@ var test_support = func {
       setprop("ja37/supported/ubershader", FALSE);
     } elsif(minor < 11) {
       setprop("ja37/supported/radar", TRUE);
-      setprop("ja37/supported/hud", TRUE);
+      setprop("ja37/supported/canvas", TRUE);
       setprop("ja37/supported/options", FALSE);
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/supported/popuptips", 0);
@@ -872,7 +1026,7 @@ var test_support = func {
       setprop("ja37/supported/ubershader", TRUE);
     } else {
       setprop("ja37/supported/radar", TRUE);
-      setprop("ja37/supported/hud", TRUE);
+      setprop("ja37/supported/canvas", TRUE);
       setprop("ja37/supported/options", FALSE);
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/supported/popuptips", 1);
@@ -882,7 +1036,7 @@ var test_support = func {
   } elsif (major == 3) {
     setprop("ja37/supported/options", TRUE);
     setprop("ja37/supported/radar", TRUE);
-    setprop("ja37/supported/hud", TRUE);
+    setprop("ja37/supported/canvas", TRUE);
     setprop("ja37/supported/old-custom-fails", 2);
     setprop("ja37/supported/landing-light", TRUE);
     setprop("ja37/supported/popuptips", 2);
@@ -891,6 +1045,7 @@ var test_support = func {
     setprop("ja37/supported/lightning", TRUE);
     setprop("ja37/supported/fire", FALSE);
     setprop("ja37/supported/new-marker", FALSE);
+    setprop("ja37/supported/picking", FALSE);
     if (minor == 0) {
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/supported/landing-light", FALSE);
@@ -914,7 +1069,7 @@ var test_support = func {
   } elsif (major == 2016) {
     setprop("ja37/supported/options", TRUE);
     setprop("ja37/supported/radar", TRUE);
-    setprop("ja37/supported/hud", TRUE);
+    setprop("ja37/supported/canvas", TRUE);
     setprop("ja37/supported/old-custom-fails", 2);
     setprop("ja37/supported/landing-light", TRUE);
     setprop("ja37/supported/popuptips", 2);
@@ -923,14 +1078,34 @@ var test_support = func {
     setprop("ja37/supported/lightning", TRUE);
     setprop("ja37/supported/fire", TRUE);
     setprop("ja37/supported/new-marker", FALSE);
+    setprop("ja37/supported/picking", FALSE);
     if (minor >= 2) {
       setprop("ja37/supported/new-marker", TRUE);
+    }
+  } elsif (major == 2017) {
+    setprop("ja37/supported/options", TRUE);
+    setprop("ja37/supported/radar", TRUE);
+    setprop("ja37/supported/canvas", TRUE);
+    setprop("ja37/supported/old-custom-fails", 2);
+    setprop("ja37/supported/landing-light", TRUE);
+    setprop("ja37/supported/popuptips", 2);
+    setprop("ja37/supported/crash-system", 1);
+    setprop("ja37/supported/ubershader", TRUE);
+    setprop("ja37/supported/lightning", TRUE);
+    setprop("ja37/supported/fire", TRUE);
+    setprop("ja37/supported/new-marker", FALSE);
+    setprop("ja37/supported/picking", FALSE);
+    if (minor == 2 and detail > 0) {
+      setprop("ja37/supported/picking", TRUE);
+    }
+    if (minor > 2) {
+      setprop("ja37/supported/picking", TRUE);
     }
   } else {
     # future proof
     setprop("ja37/supported/options", TRUE);
     setprop("ja37/supported/radar", TRUE);
-    setprop("ja37/supported/hud", TRUE);
+    setprop("ja37/supported/canvas", TRUE);
     setprop("ja37/supported/old-custom-fails", 2);
     setprop("ja37/supported/landing-light", TRUE);
     setprop("ja37/supported/popuptips", 2);
@@ -939,6 +1114,7 @@ var test_support = func {
     setprop("ja37/supported/lightning", TRUE);
     setprop("ja37/supported/fire", TRUE);
     setprop("ja37/supported/new-marker", TRUE);
+    setprop("ja37/supported/picking", TRUE);
   }
   setprop("ja37/supported/initialized", TRUE);
 
@@ -1012,7 +1188,7 @@ var main_init = func {
   setprop("/environment/aircraft-effects/dewpoint-inside-degC", getprop("environment/dewpoint-degc"));
 
   # init oxygen bottle pressure
-  setprop("ja37/systems/oxygen-bottle-pressure", rand()*75+50);#todo: start high, and lower slowly during flight
+  setprop("ja37/systems/oxygen-bottle-pressure", 127);# 127 kp/cm2 as per manual
 
   # start minor loops
   speed_loop();
@@ -1033,14 +1209,16 @@ var main_init = func {
     setlistener("/environment/lightning/lightning-pos-y", thunder_listener);
   }
 
-  setprop("controls/engines/engine/reverser-cmd", rand()>0.5?TRUE:FALSE);
-  setprop("controls/gear/brake-parking", rand()>0.5?TRUE:FALSE);
-  setprop("controls/electric/reserve", rand()>0.5?TRUE:FALSE);
-  setprop("controls/electric/lights-ext-flash", rand()>0.5?TRUE:FALSE);
-  setprop("controls/electric/lights-ext-beacon", rand()>0.5?TRUE:FALSE);
-  setprop("controls/electric/lights-ext-nav", rand()>0.5?TRUE:FALSE);
-  setprop("controls/electric/lights-land-switch", rand()>0.5?TRUE:FALSE);
-  setprop("controls/fuel/auto", rand()>0.5?TRUE:FALSE);
+  if(getprop("dev") != TRUE) {
+    setprop("controls/engines/engine/reverser-cmd", rand()>0.5?TRUE:FALSE);
+    setprop("controls/gear/brake-parking", rand()>0.5?TRUE:FALSE);
+    setprop("controls/electric/reserve", rand()>0.5?TRUE:FALSE);
+    setprop("controls/electric/lights-ext-flash", rand()>0.5?TRUE:FALSE);
+    setprop("controls/electric/lights-ext-beacon", rand()>0.5?TRUE:FALSE);
+    setprop("controls/electric/lights-ext-nav", rand()>0.5?TRUE:FALSE);
+    setprop("controls/electric/lights-land-switch", rand()>0.5?TRUE:FALSE);
+    setprop("controls/fuel/auto", rand()>0.5?TRUE:FALSE);
+  }
 
   # start weapon systems
   settimer(func { armament.main_weapons() }, 2);
@@ -1053,14 +1231,17 @@ var main_init = func {
 
 # re init
 var re_init = func {
-  print("Re-initializing JA-37 Viggen systems");
+  print("Re-initializing Saab 37 Viggen systems");
   
   setprop("sim/time/elapsed-at-init-sec", getprop("sim/time/elapsed-sec"));
+
+  # init oxygen bottle pressure
+  setprop("ja37/systems/oxygen-bottle-pressure", 127);# 127 kp/cm2 as per manual
 
   # asymmetric vortex detachment
   asymVortex();
   repair(FALSE);
-  stopAP();
+  auto.stopAP();
   setprop("/controls/gear/gear-down", 1);
   setprop("/controls/gear/brake-parking", 1);
 
@@ -1082,8 +1263,12 @@ var load_interior = func {
 
 var load_interior_final = func {
     setprop("sim/current-view/field-of-view", 90);
-    setprop("ja37/avionics/welcome", TRUE);
     print("..Done!");
+    settimer( load_interior_final2, 1.5 );
+}
+
+var load_interior_final2 = func {
+    setprop("ja37/avionics/welcome", TRUE);
 }
 
 var main_init_listener = setlistener("sim/signals/fdm-initialized", func {
@@ -1155,13 +1340,13 @@ var autostarttimer = func {
   if (autostarting == FALSE) {
     autostarting = TRUE;
     if (getprop("/engines/engine[0]/running") > 0) {
-     popupTip("Stopping engine. Turning off electrical system.");
+     notice("Stopping engine. Turning off electrical system.");
      click();
      stopAutostart();
     } else {
       #print("autostarting");
       setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", TRUE);
-      popupTip("Autostarting..");
+      notice("Autostarting..");
       setprop("controls/gear/brake-parking", TRUE);
       setprop("fdm/jsbsim/fcs/canopy/engage", FALSE);
       setprop("controls/ventilation/airconditioning-enabled", TRUE);
@@ -1171,15 +1356,18 @@ var autostarttimer = func {
 }
 
 var stopAutostart = func {
-  setprop("/controls/engines/engine[0]/cutoff", TRUE);
+  setprop("/controls/electric/main", FALSE);
+  setprop("/controls/electric/battery", FALSE);
+  settimer(stopFinal, 5, 1);#allow time for ram air and flaps to retract
+}
+
+stopFinal = func {
+  setprop("fdm/jsbsim/propulsion/engine/cutoff-commanded", TRUE);
   setprop("/controls/engines/engine[0]/starter-cmd", FALSE);
   setprop("/controls/engines/engine[0]/starter-cmd-hold", FALSE);
   setprop("/controls/electric/engine[0]/generator", FALSE);
-  setprop("/controls/electric/main", FALSE);
-  setprop("/controls/electric/battery", FALSE);
   setprop("fdm/jsbsim/systems/electrical/external/switch", FALSE);
   setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", FALSE);
-
   autostarting = FALSE;
 }
 
@@ -1191,21 +1379,30 @@ var startSupply = func {
     click();
     setprop("fdm/jsbsim/systems/electrical/external/switch", TRUE);
     setprop("/controls/electric/main", TRUE);
-    popupTip("Enabling power using external supply.");
-  } else {
+    setprop("controls/electric/reserve", FALSE);
+    notice("Enabling power using external supply.");
+    settimer(endSupply, 1.5, 1);
+  } elsif (getprop("fdm/jsbsim/systems/electrical/battery-producing-dc") > 23) {
     # using battery
     click();
     setprop("/controls/electric/battery", TRUE);
     setprop("/controls/electric/main", TRUE);
-    popupTip("Enabling power using battery.");
+    setprop("controls/electric/reserve", FALSE);
+    notice("Enabling power using battery.");
+    settimer(endSupply, 1.5, 1);
+  } else {
+    # using reserve power, hope for enough speed for hydraulics
+    setprop("controls/electric/reserve", TRUE);
+    setprop("/controls/electric/main", TRUE);
+    setprop("/controls/gear/gear-down", FALSE);
+    notice("Enabling power using ram air turbine..gears will retract.");
+    settimer(endSupply, 10, 1);
   }
-  settimer(endSupply, 1.5, 1);
 }
 
 var endSupply = func {
   setprop("ja37/radar/enabled", TRUE);
   setprop("controls/engines/engine/reverser-cmd", FALSE);
-  setprop("controls/electric/reserve", FALSE);
   setprop("controls/fuel/auto", TRUE);
   setprop("controls/altimeter-radar", TRUE);
   if (getprop("systems/electrical/outputs/dc-voltage") > 23) {
@@ -1215,7 +1412,7 @@ var endSupply = func {
     # not enough power to start
     click();
     stopAutostart();
-    popupTip("Not enough power to autostart, aborting.");
+    notice("Not enough power to autostart, aborting.");
   }
 }
 
@@ -1227,9 +1424,9 @@ var autostart = func {
   setprop("controls/electric/lights-land-switch", TRUE);
   setprop("/controls/engines/engine[0]/starter-cmd-hold", FALSE);
   setprop("/controls/electric/engine[0]/generator", FALSE);
-  popupTip("Starting engine..");
+  notice("Starting engine..");
   click();
-  setprop("/controls/engines/engine[0]/cutoff", TRUE);
+  setprop("fdm/jsbsim/propulsion/engine/cutoff-commanded", TRUE);
   #setprop("/controls/engines/engine[0]/starter-cmd", TRUE);
   start_count = 0;
   settimer(waiting_n1, 0.5, 1);
@@ -1241,35 +1438,35 @@ var waiting_n1 = func {
   #print(start_count);
   if (start_count > 45) {
     if(bingoFuel == TRUE) {
-      popupTip("Engine start failed. Check fuel.");
+      notice("Engine start failed. Check fuel.");
     } elsif (getprop("systems/electrical/outputs/dc-voltage") < 23) {
-      popupTip("Engine start failed. Check battery.");
+      notice("Engine start failed. Check battery.");
     } else {
-      popupTip("Autostart failed. If engine has not reported failure, report bug to aircraft developer.");
+      notice("Autostart failed. If engine has not reported failure, report bug to aircraft developer.");
     }
-    print("Autostart failed. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
+    print("Autostart failed. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("fdm/jsbsim/propulsion/engine/cutoff-commanded")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
     stopAutostart();
   } elsif (getprop("/engines/engine[0]/n1") > 4.9) {
     if (getprop("/engines/engine[0]/n1") < 20) {
-      if (getprop("/controls/engines/engine[0]/cutoff") == TRUE) {
+      if (getprop("fdm/jsbsim/propulsion/engine/cutoff-commanded") == TRUE) {
         click();
-        setprop("/controls/engines/engine[0]/cutoff", FALSE);
-        if (getprop("/controls/engines/engine[0]/cutoff") == FALSE) {
-          popupTip("Engine igniting.");
+        setprop("fdm/jsbsim/propulsion/engine/cutoff-commanded", FALSE);
+        if (getprop("fdm/jsbsim/propulsion/engine/cutoff-commanded") == FALSE) {
+          notice("Engine igniting.");
           settimer(waiting_n1, 0.5, 1);
         } else {
-          print("Autostart failed 2. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
+          print("Autostart failed 2. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("fdm/jsbsim/propulsion/engine/cutoff-commanded")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
           stopAutostart();
-          popupTip("Engine not igniting. Aborting engine start.");
+          notice("Engine not igniting. Aborting engine start.");
         }
       } else {
         settimer(waiting_n1, 0.5, 1);
       }
-    }  elsif (getprop("/engines/engine[0]/n1") > 10 and getprop("/controls/engines/engine[0]/cutoff") == FALSE) {
-      #print("Autostart success. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main"));
+    }  elsif (getprop("/engines/engine[0]/n1") > 10 and getprop("fdm/jsbsim/propulsion/engine/cutoff-commanded") == FALSE) {
+      #print("Autostart success. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("fdm/jsbsim/propulsion/engine/cutoff-commanded")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main"));
       click();
       setprop("controls/electric/engine[0]/generator", TRUE);
-      popupTip("Generator on.");
+      notice("Generator on.");
       setprop("controls/oxygen", TRUE);
       settimer(final_engine, 0.5, 1);
     } else {
@@ -1284,16 +1481,16 @@ var final_engine = func () {
   start_count += 1* getprop("sim/speed-up");
   if (start_count > 70) {
     if(bingoFuel == TRUE) {
-      popupTip("Engine start failed. Check fuel.");
+      notice("Engine start failed. Check fuel.");
     } elsif (getprop("systems/electrical/outputs/dc-voltage") < 23) {
-      popupTip("Engine start failed. Check battery.");
+      notice("Engine start failed. Check battery.");
     } else {
-      popupTip("Autostart failed. If engine has not reported failure, report bug to aircraft developer.");
+      notice("Autostart failed. If engine has not reported failure, report bug to aircraft developer.");
     }    
-    print("Autostart failed 3. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("/controls/engines/engine[0]/cutoff")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
+    print("Autostart failed 3. n1="~getprop("/engines/engine[0]/n1")~" cutoff="~getprop("fdm/jsbsim/propulsion/engine/cutoff-commanded")~" starter="~getprop("/controls/engines/engine[0]/starter")~" generator="~getprop("/controls/electric/engine[0]/generator")~" battery="~getprop("/controls/electric/main")~" fuel="~bingoFuel);
     stopAutostart();  
   } elsif (getprop("/engines/engine[0]/running") > FALSE) {
-    popupTip("Engine ready.");
+    notice("Engine ready.");
     setprop("fdm/jsbsim/systems/electrical/external/switch", FALSE);
     setprop("fdm/jsbsim/systems/electrical/external/enable-cmd", FALSE);
     setprop("/controls/electric/battery", TRUE);
@@ -1326,9 +1523,9 @@ var toggleYawDamper = func {
   var enabled = getprop("fdm/jsbsim/fcs/yaw-damper/enable");
   setprop("fdm/jsbsim/fcs/yaw-damper/enable", !enabled);
   if(enabled == FALSE) {
-    popupTip("Yaw damper: ON");
+    notice("Yaw damper: ON");
   } else {
-    popupTip("Yaw damper: OFF");
+    notice("Yaw damper: OFF");
   }
 }
 
@@ -1337,9 +1534,9 @@ var togglePitchDamper = func {
   var enabled = getprop("fdm/jsbsim/fcs/pitch-damper/enable");
   setprop("fdm/jsbsim/fcs/pitch-damper/enable", !enabled);
   if(enabled == FALSE) {
-    popupTip("Pitch damper: ON");
+    notice("Pitch damper: ON");
   } else {
-    popupTip("Pitch damper: OFF");
+    notice("Pitch damper: OFF");
   }
 }
 
@@ -1348,9 +1545,9 @@ var toggleRollDamper = func {
   var enabled = getprop("fdm/jsbsim/fcs/roll-damper/enable");
   setprop("fdm/jsbsim/fcs/roll-damper/enable", !enabled);
   if(enabled == FALSE) {
-    popupTip("Roll damper: ON");
+    notice("Roll damper: ON");
   } else {
-    popupTip("Roll damper: OFF");
+    notice("Roll damper: OFF");
   }
 }
 
@@ -1359,9 +1556,9 @@ var toggleHook = func {
   var enabled = getprop("fdm/jsbsim/systems/hook/tailhook-cmd-norm");
   setprop("fdm/jsbsim/systems/hook/tailhook-cmd-norm", !enabled);
   if(enabled == FALSE) {
-    popupTip("Arrester hook: Extended");
+    notice("Arrester hook: Extended");
   } else {
-    popupTip("Arrester hook: Retracted");
+    notice("Arrester hook: Retracted");
   }
 }
 
@@ -1370,9 +1567,9 @@ var toggleNosewheelSteer = func {
   var enabled = getprop("fdm/jsbsim/gear/unit[0]/nose-wheel-steering/enable");
   setprop("fdm/jsbsim/gear/unit[0]/nose-wheel-steering/enable", !enabled);
   if(enabled == FALSE) {
-    popupTip("Nose Wheel Steering: ON", 1.5);
+    notice("Nose Wheel Steering: ON", 1.5);
   } else {
-    popupTip("Nose Wheel Steering: OFF", 1.5);
+    notice("Nose Wheel Steering: OFF", 1.5);
   }
 }
 
@@ -1381,9 +1578,9 @@ var toggleTracks = func {
   var enabled = getprop("ja37/hud/tracks-enabled");
   setprop("ja37/hud/tracks-enabled", !enabled);
   if(enabled == FALSE) {
-    popupTip("Radar ON");
+    notice("Radar ON");
   } else {
-    popupTip("Radar OFF");
+    notice("Radar OFF");
   }
 }
 
@@ -1392,9 +1589,9 @@ var applyParkingBrake = func(v) {
     if(!v) return;
     ja37.click();
     if (getprop("/controls/gear/brake-parking") == TRUE) {
-      popupTip("Parking brakes: ON");
+      notice("Parking brakes: ON");
     } else {
-      popupTip("Parking brakes: OFF");
+      notice("Parking brakes: OFF");
     }
 }
 
@@ -1402,13 +1599,13 @@ var cycleSmoke = func() {
     ja37.click();
     if (getprop("/ja37/effect/smoke-cmd") == 1) {
       setprop("/ja37/effect/smoke-cmd", 2);
-      popupTip("Smoke: Yellow");
+      notice("Smoke: Yellow");
     } elsif (getprop("/ja37/effect/smoke-cmd") == 2) {
       setprop("/ja37/effect/smoke-cmd", 3);
-      popupTip("Smoke: Blue");
+      notice("Smoke: Blue");
     } else {
       setprop("/ja37/effect/smoke-cmd", 1);#1 for backward compatibility to be off per default
-      popupTip("Smoke: OFF");
+      notice("Smoke: OFF");
     }
 }
 
@@ -1430,6 +1627,10 @@ var popupTip = func(label, y = 25, delay = nil) {
         gui.popupTip(label, delay);
       }
     }
+}
+
+var notice = func (str) {
+  screen.log.write(str, 0.0, 0.0, 1.0);
 }
 
 var _popupTip = func(label, y, delay) {
@@ -1580,7 +1781,7 @@ var code_ct = func () {
     dm = 0;
   }
   var tm = getprop("ja37/radar/look-through-terrain");
-  if (tm == nil or tm != 1) {
+  if (getprop("ja37/supported/picking") == 1 or tm == nil or tm != 1) {
     tm = 0;
   }
   var rd = !getprop("ja37/radar/doppler-enabled");
@@ -1712,8 +1913,43 @@ var loadIFail = func () {
 }
 
 var resetView = func () {
-  setprop("sim/current-view/field-of-view", getprop("sim/current-view/config/default-field-of-view-deg"));
-  setprop("sim/current-view/heading-offset-deg", getprop("sim/current-view/config/heading-offset-deg"));
-  setprop("sim/current-view/pitch-offset-deg", getprop("sim/current-view/config/pitch-offset-deg"));
-  setprop("sim/current-view/roll-offset-deg", getprop("sim/current-view/config/roll-offset-deg"));
+  var hd = getprop("sim/current-view/heading-offset-deg");
+  var hd_t = getprop("sim/current-view/config/heading-offset-deg");
+  if (hd > 180) {
+    hd_t = hd_t + 360;
+  }
+  interpolate("sim/current-view/field-of-view", getprop("sim/current-view/config/default-field-of-view-deg"), 0.66);
+  interpolate("sim/current-view/heading-offset-deg", hd_t,0.66);
+  interpolate("sim/current-view/pitch-offset-deg", getprop("sim/current-view/config/pitch-offset-deg"),0.66);
+  interpolate("sim/current-view/roll-offset-deg", getprop("sim/current-view/config/roll-offset-deg"),0.66);
+  interpolate("sim/current-view/x-offset-m", 0, 1);
 }
+
+var HDDView = func () {
+  if (getprop("sim/current-view/view-number") == 0) {
+    var hd = getprop("sim/current-view/heading-offset-deg");
+    var hd_t = 340;
+    if (hd < 180) {
+      hd_t = hd_t - 360;
+    }
+    interpolate("sim/current-view/field-of-view", 60, 0.66);
+    interpolate("sim/current-view/heading-offset-deg", hd_t,0.66);
+    interpolate("sim/current-view/pitch-offset-deg", -46,0.66);
+    interpolate("sim/current-view/roll-offset-deg", getprop("sim/current-view/config/roll-offset-deg"),0.66);
+    interpolate("sim/current-view/x-offset-m", 0, 1); 
+  }
+}
+
+dynamic_view.register(func {
+              me.default_plane();      # uncomment one of these if you want
+#           # me.default_helicopter(); # to base your code on the defaults
+#
+#                                      # positive values rotate (deg) or move (m)
+#           me.heading_offset = ...    #     left
+#           me.pitch_offset = ...      #     up
+#           me.roll_offset = ...       #     right
+#           me.x_offset = ...          #     right     (transversal axis)
+#           me.y_offset = ...          #     up        (vertical axis)
+#           me.z_offset = ...          #     back/aft  (longitudinal axis)
+#           me.fov_offset = ...        #     zoom out  (field of view)
+   });

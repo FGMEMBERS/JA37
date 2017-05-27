@@ -29,7 +29,7 @@
                 <value>100</value>
             </greater-than>
         </condition>
-        <property>ja37/systems/oxygen-bottle-pressure</property>
+        <property>ja37/systems/oxygen-manometer</property>
         <interpolation>
             <entry>
                 <ind>0</ind>
@@ -61,7 +61,8 @@
             <binding>
                 <command>set-tooltip</command>
                 <tooltip-id>oxymano</tooltip-id>
-                <label>Oxygen manometer</label>
+                <label>Oxygen manometer %0.1f kp/cm2</label>
+                <property>ja37/systems/oxygen-manometer</property>
             </binding>
         </hovered>
     </animation>
