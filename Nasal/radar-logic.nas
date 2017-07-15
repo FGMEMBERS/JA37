@@ -373,7 +373,13 @@ var RadarLogic = {
       return nil;
     }
 
-    
+    if (mp == TRUE or getprop("ja37/supported/picking") == TRUE) {
+      # is multiplayer or 2017.2.1+
+      if (me.isNotBehindTerrain(aircraftPos) == FALSE) {
+        #hidden behind terrain
+        return nil;
+      }
+    }
 
     if (me.distance < 120000 and mp == TRUE and node.getNode("callsign") != nil and getprop("ja37/systems/variant") == 0 and TI.ti.ECMon == TRUE) {
         # if within 120 Km and a multiplayer, we check if its radar beams are detected.
@@ -453,13 +459,7 @@ var RadarLogic = {
         #is within the radar cone
         # AJ37 manual: 61.5 deg sideways.
 
-        if (mp == TRUE or getprop("ja37/supported/picking") == TRUE) {
-          # is multiplayer
-          if (me.isNotBehindTerrain(aircraftPos) == FALSE) {
-            #hidden behind terrain
-            return nil;
-          }
-        }
+        
         if (mp == TRUE) {
           me.shrtr = node.getChild("model-shorter")==nil?"nil":node.getChild("model-shorter").getValue();
           if (me.doppler(aircraftPos, node) == TRUE) {
@@ -481,7 +481,7 @@ var RadarLogic = {
         me.contact.setPolar(me.distanceRadar, me.xa_rad_corr, me.xa_rad, me.ya_rad);
         me.contact.setCartesian(me.hud_pos_x, me.hud_pos_y);
 
-        if (node.getName() == "rb-99" or 1==1 or (rand() < 0.05?rcs.isInRadarRange(me.contact, 65, 1) == TRUE:rcs.wasInRadarRange(me.contact, 65, 1))) {# 40 / 3.2
+        if (node.getName() == "rb-99" or 1==1 or rcs.inRadarRange(me.contact, 40, 3.2) == TRUE) {
           return me.contact;
         } else {
           return nil;
@@ -499,7 +499,7 @@ var RadarLogic = {
   },
 
 #
-# The following 6 methods is from Mirage 2000-5
+# The following 6 methods is partly from Mirage 2000-5
 #
   isNotBehindTerrain: func(SelectCoord) {
     if (getprop("ja37/supported/picking") == TRUE) {
@@ -838,7 +838,7 @@ var Contact = {
 #});
 #debug.benchmark("radar process4", func {
         obj.pitch           = obj.oriProp.getNode("pitch-deg");
-        obj.pitch           = obj.oriProp.getNode("roll-deg");
+        obj.roll            = obj.oriProp.getNode("roll-deg");
         obj.speed           = obj.velProp.getNode("true-airspeed-kt");
         obj.vSpeed          = obj.velProp.getNode("vertical-speed-fps");
         obj.callsign        = c.getNode("callsign", 1);
@@ -947,6 +947,10 @@ var Contact = {
 
     getFlareNode: func () {
       return me.node.getNode("rotors/main/blade[3]/flap-deg");
+    },
+
+    getChaffNode: func () {
+      return me.node.getNode("rotors/main/blade[3]/position-deg");
     },
 
     setPolar: func(dist, angle, angleX, angleY) {
@@ -1182,7 +1186,11 @@ var ContactGPS = {
   },
 
   getFlareNode: func () {
-    return "";
+    return nil;
+  },
+
+  getChaffNode: func () {
+    return nil;
   },
 
   remove: func(){

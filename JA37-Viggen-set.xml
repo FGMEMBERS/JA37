@@ -9,7 +9,7 @@
 <PropertyList include="Viggen-set-base.xml">
     <sim>
         <description>Saab JA-37Di Viggen</description>
-        <author>Anders Lejczak (3D Model and Textures), Justin Nicholson (Misc), Nicola B. Bernardelli (Cockpit), Isaac Protiva (cockpit), Nikolai V. Chr. (rest)</author>
+        <author>Anders Lejczak (3D Model and Textures), Justin Nicholson (Modeling and Misc.), Nicola B. Bernardelli (Cockpit), Isaac Protiva (Cockpit), Nikolai V. Chr. (rest)</author>
         <status>Early production</status>
         <long-description>
           The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards. The JA-37Di is the midlife upgrade from 1993.
@@ -56,20 +56,68 @@
             </style>
         </gui>
 
-        <!--<preview>
-            <type>panel</type>
-            <path>gui/thumbnail-panel.jpg</path>
-        </preview>
-
-        <preview>
-            <type>exterior</type>
-            <path>gui/thumbnail-exterior.jpg</path>
-        </preview>-->
-
-        <!--<thumbnail>
-          <type>interior</type>
-          <name>gui/thumbnail-interior.jpg</name>
-        </thumbnail>-->
+        <previews>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja1.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja2.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja3.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja4.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja5.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja6.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja7.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja8.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja9.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja10.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja11.png</path>
+            </preview>
+            <preview>
+                <type>panel</type>
+                <splash type="bool">false</splash>
+                <path>gui/newSplashes/ja12.png</path>
+            </preview>
+        </previews>
 
         <model>
             <path>Aircraft/JA37/Models/JA37Di-Viggen.xml</path>
@@ -563,6 +611,7 @@
                     <min-fire-range-nm type="double">0.16</min-fire-range-nm>      <!-- authentic -->
                     <max-report-distance type="double">65</max-report-distance>
                     <navigation type="string">APN</navigation>
+                    <chaff-resistance type="double">0.90</chaff-resistance>
                     <rail type="bool">false</rail>
                     <class type="string">A</class>
                     <fire-msg type="string">Fox 1</fire-msg>
@@ -596,6 +645,7 @@
                     <min-fire-range-nm type="double">0.35</min-fire-range-nm>
                     <max-report-distance type="double">65</max-report-distance>
                     <navigation type="string">APN</navigation>
+                    <chaff-resistance type="double">0.85</chaff-resistance>
                     <rail type="bool">false</rail>
                     <telemetry type="bool">true</telemetry>
                     <class type="string">A</class>
