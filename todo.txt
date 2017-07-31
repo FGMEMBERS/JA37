@@ -7,10 +7,10 @@ Features and improvements:
 GUI: Option to turn off verbose popups.
 GUI: Improve Checklists.
 GUI: Option to switch off hitting stuff above ground. (switched off now, might confuse users)
-GUI: AT some point switch to new thumbnails format.
 Aero: Make recoil not assume that FDM rate is 120 Hz.
 Aero: Tune speedbrake better.
 Aero: Make cannon ammo have pointweight.
+Aero: Adjust wave drag so max speed is M1.85 in ISA atmosphere and M2.03 in ISA-15.
 Control: Disable failure system from freezing surfaces (remove failure mode bug in 3.2- prevents)
 Control: Make bigger factor in pitch normal comparison. (beware of oscillations)
 Control: Limit elevator deflection due to servo-moment being smaller than moment of air-pressure. Page 19-20 in AK III.
@@ -106,12 +106,13 @@ HUD: Fix that HUD selects diamond_node, not radar logic, so HUD can be turned of
 HUD: When DME are enabled at the same time as ILS with glideslope, the distance scale make the ILS view confusing.
 HUD: Make crossing out of hud when armament not ready to fire and trigger is pressed.
 HUD: Slave-SI centers the landing guide. And hides the attitude ind. ILS needles. (only AJ variants)
-HUD: Altitude scale should only be shown when engine is running due to it need AC power.
+HUD: Altitude scale should only be shown when engine is running due to it need AC power. (pitot-static needs AC?)
+HUD: Make option: realistic or easy-readable (as now).
 TI: Show lat/lon grid in menu UDAT.
 TI: Move cursor between TI and MI.
 TI: Slew cursor.
 TI: Edit route.
-TI: Change runway symbol.
+TI: Change runway symbol to proper TI version.
 TI: Show/edit bullseye.
 TI: Show flighttime by using controls UD-UT.
 TI: Select self.
@@ -121,6 +122,7 @@ TI: Add missiles to SVY.
 TI: Waypoint info should show ETA to next waypoint.
 TI: Make route info with overall ETA.
 TI: Terrain arrow should stay on for 3 seconds after pull up.
+TI: Artificial horizon should move in relation to FPI, which in turn should be fixed in middle of display.
 MI: Slew cursor.
 MI: Implement radar sweep.
 MI: Improve mark event [X3]
