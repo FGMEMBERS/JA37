@@ -201,8 +201,16 @@ var update_loop = func {
   input.MPfloat2.setDoubleValue(translucency);
 
   # ALS effect
-  red = clamp(1 - red, 0.25, 1);
-  input.MPfloat9.setDoubleValue(red);
+  var red2 = clamp(1 - red, 0.25, 1);
+  input.MPfloat9.setDoubleValue(red2);
+
+  # set afterburner white at night:
+  #setprop("ja37/effect/flame-low-color-r",  0.863+(1-red));
+  #setprop("ja37/effect/flame-low-color-g",  0.347+(1-red));
+  #setprop("ja37/effect/flame-low-color-b",  0.238+(1-red));
+  #setprop("ja37/effect/flame-high-color-r", 0.863+(1-red));
+  #setprop("ja37/effect/flame-high-color-g", 0.238+(1-red));
+  #setprop("ja37/effect/flame-high-color-b", 0.347+(1-red));
 
   # End stuff
 
@@ -243,6 +251,11 @@ var update_loop = func {
       input.fuelWarning.setBoolValue(TRUE);
     } else {
       input.fuelWarning.setBoolValue(FALSE);
+    }
+    if((current / total_fuel) < getprop("ja37/systems/fuel-warning-extra-percent")/100) {# warning at 24% as per sources
+      setprop("ja37/sound/fuel-low-2-on",TRUE);
+    } else {
+      setprop("ja37/sound/fuel-low-2-on",FALSE);
     }
 
     input.fuelInternalRatio.setDoubleValue(current / total_fuel);
@@ -383,7 +396,7 @@ var update_loop = func {
     }
 
     # radar compass
-	  if (input.rmActive.getValue() == TRUE and input.srvHead.getValue() == TRUE) {
+	  if (input.rmActive.getValue() == TRUE and input.srvHead.getValue() == TRUE and input.rmBearing.getValue() != nil) {
 	    # sets the proper degree of the yellow waypoint heading indicator on the compass that surrounds the radar.
 	    input.rmBearingRel.setDoubleValue(input.rmBearing.getValue() - input.headingMagn.getValue());
     }
@@ -442,6 +455,43 @@ var update_loop = func {
       setprop("/ja37/radar/time-till-crash", 15);
     }
 
+    # conditionals for dropping M70/droptank
+    if (getprop("sim/multiplay/generic/int[2]") == TRUE and getprop("sim/multiplay/generic/float[11]") == 794) {
+      #left wing rocket pod mounted
+      setprop("ja37/effect/pod0", FALSE);
+      setprop("ai/submodels/submodel[17]/count", 1);
+    } else {
+      setprop("ja37/effect/pod0", TRUE);
+    }
+    if (getprop("sim/multiplay/generic/float[12]") == 794) {
+      #left wing rocket pod mounted
+      setprop("ja37/effect/pod1", FALSE);
+      setprop("ai/submodels/submodel[18]/count", 1);
+    } else {
+      setprop("ja37/effect/pod1", TRUE);
+    }
+    if (getprop("sim/multiplay/generic/int[2]") == TRUE and getprop("sim/multiplay/generic/float[13]") == 794) {
+      #left wing rocket pod mounted
+      setprop("ja37/effect/pod2", FALSE);
+      setprop("ai/submodels/submodel[19]/count", 1);
+    } else {
+      setprop("ja37/effect/pod2", TRUE);
+    }
+    if (getprop("sim/multiplay/generic/float[14]") == 794) {
+      #left wing rocket pod mounted
+      setprop("ja37/effect/pod3", FALSE);
+      setprop("ai/submodels/submodel[20]/count", 1);
+    } else {
+      setprop("ja37/effect/pod3", TRUE);
+    }
+    if (getprop("sim/multiplay/generic/float[10]") == 794) {
+      #left wing rocket pod mounted
+      setprop("ja37/effect/pod4", FALSE);
+      setprop("ai/submodels/submodel[21]/count", 1);
+    } else {
+      setprop("ja37/effect/pod4", TRUE);
+    }
+
     settimer(
       #func debug.benchmark("j37 loop", 
         update_loop
@@ -463,7 +513,7 @@ var slow_loop = func () {
   }
 
   #TILS
-  if(input.TILS.getValue() == TRUE and input.acInstrVolt.getValue() > 100) {#  and canvas_HUD != nil and canvas_HUD.mode == canvas_HUD.LANDING
+  if(1==0 and input.TILS.getValue() == TRUE and input.acInstrVolt.getValue() > 100) {#  and canvas_HUD != nil and canvas_HUD.mode == canvas_HUD.LANDING
     var icao = getprop("sim/tower/airport-id");
     var runways = airportinfo(icao).runways;
     var closestRunway = -1;
@@ -718,6 +768,10 @@ var slow_loop = func () {
     screen.log.write("Maximum allowed rolling speed exceeded!", 1.0, 0.0, 0.0);
   }
 
+  if (getprop("ja37/systems/input-controls-flight") == FALSE and rand() > 0.95) {
+    ja37.notice("Flight ctrls OFF. Press key 'y' to reactivate.");
+  }
+
   settimer(slow_loop, LOOP_SLOW_RATE);
 }
 
@@ -791,6 +845,11 @@ var speed_loop = func () {
   theShakeEffect();
 
   logTime();
+
+  if (getprop("ja37/systems/input-controls-flight") == FALSE and getprop("/instrumentation/terrain-warning") == TRUE) {
+    setprop("ja37/systems/input-controls-flight", TRUE);
+    notice("Terrain warning made you grab the flight controls! Cursor inactive.");
+  }
 
   settimer(speed_loop, LOOP_FAST_RATE);
 }
@@ -991,12 +1050,16 @@ var test_support = func {
       setprop("ja37/supported/fire", FALSE);
       setprop("ja37/supported/new-marker", FALSE);
       setprop("ja37/supported/picking", FALSE);
+      setprop("ja37/supported/failEvents", FALSE);
+      setprop("ja37/supported/multiple-flightplans", FALSE);
   } elsif (major == 2) {
     setprop("ja37/supported/landing-light", FALSE);
     setprop("ja37/supported/lightning", FALSE);
     setprop("ja37/supported/fire", FALSE);
     setprop("ja37/supported/new-marker", FALSE);
     setprop("ja37/supported/picking", FALSE);
+    setprop("ja37/supported/failEvents", FALSE);
+    setprop("ja37/supported/multiple-flightplans", FALSE);
     if(minor < 7) {
       notice("Saab 37 is only supported in Flightgear version 2.8 and upwards. Sorry.");
       setprop("ja37/supported/radar", FALSE);
@@ -1046,6 +1109,8 @@ var test_support = func {
     setprop("ja37/supported/fire", FALSE);
     setprop("ja37/supported/new-marker", FALSE);
     setprop("ja37/supported/picking", FALSE);
+    setprop("ja37/supported/failEvents", FALSE);
+    setprop("ja37/supported/multiple-flightplans", FALSE);
     if (minor == 0) {
       setprop("ja37/supported/old-custom-fails", 0);
       setprop("ja37/supported/landing-light", FALSE);
@@ -1062,9 +1127,11 @@ var test_support = func {
       setprop("ja37/supported/popuptips", 1);
       setprop("ja37/supported/lightning", FALSE);
       setprop("ja37/supported/fire", TRUE);
+      setprop("ja37/supported/failEvents", TRUE);
     } elsif (minor <= 6) {
       setprop("ja37/supported/lightning", FALSE);
       setprop("ja37/supported/fire", TRUE);
+      setprop("ja37/supported/failEvents", TRUE);
     }
   } elsif (major == 2016) {
     setprop("ja37/supported/options", TRUE);
@@ -1079,6 +1146,8 @@ var test_support = func {
     setprop("ja37/supported/fire", TRUE);
     setprop("ja37/supported/new-marker", FALSE);
     setprop("ja37/supported/picking", FALSE);
+    setprop("ja37/supported/failEvents", TRUE);
+    setprop("ja37/supported/multiple-flightplans", FALSE);
     if (minor >= 2) {
       setprop("ja37/supported/new-marker", TRUE);
     }
@@ -1095,11 +1164,20 @@ var test_support = func {
     setprop("ja37/supported/fire", TRUE);
     setprop("ja37/supported/new-marker", FALSE);
     setprop("ja37/supported/picking", FALSE);
-    if (minor == 2 and detail > 0) {
+    setprop("ja37/supported/failEvents", TRUE);
+    setprop("ja37/supported/multiple-flightplans", FALSE);
+    if (minor == 2) {
       setprop("ja37/supported/picking", TRUE);
     }
-    if (minor > 2) {
+    if (minor == 3) {
       setprop("ja37/supported/picking", TRUE);
+      if (detail > 0) {
+        setprop("ja37/supported/multiple-flightplans", TRUE);
+      }
+    }
+    if (minor == 4) {
+      setprop("ja37/supported/picking", TRUE);
+      setprop("ja37/supported/multiple-flightplans", TRUE);
     }
   } else {
     # future proof
@@ -1115,6 +1193,8 @@ var test_support = func {
     setprop("ja37/supported/fire", TRUE);
     setprop("ja37/supported/new-marker", TRUE);
     setprop("ja37/supported/picking", TRUE);
+    setprop("ja37/supported/failEvents", TRUE);
+    setprop("ja37/supported/multiple-flightplans", TRUE);
   }
   setprop("ja37/supported/initialized", TRUE);
 
@@ -1662,14 +1742,14 @@ var repair = func (c = 1) {
 }
 setprop("sim/mul"~"tiplay/gen"~"eric/strin"~"g[14]", "o"~""~"7");
 var refuelTest = func () {
-  setprop("consumables/fuel/tank[0]/level-norm", 0.5);
-  setprop("consumables/fuel/tank[1]/level-norm", 0.5);
-  setprop("consumables/fuel/tank[2]/level-norm", 0.5);
-  setprop("consumables/fuel/tank[3]/level-norm", 0.5);
-  setprop("consumables/fuel/tank[4]/level-norm", 0.5);
-  setprop("consumables/fuel/tank[5]/level-norm", 0.5);
-  setprop("consumables/fuel/tank[6]/level-norm", 0.5);
-  setprop("consumables/fuel/tank[7]/level-norm", 0.5);
+  setprop("consumables/fuel/tank[0]/level-norm", 0.8);
+  setprop("consumables/fuel/tank[1]/level-norm", 0.8);
+  setprop("consumables/fuel/tank[2]/level-norm", 0.8);
+  setprop("consumables/fuel/tank[3]/level-norm", 0.8);
+  setprop("consumables/fuel/tank[4]/level-norm", 0.8);
+  setprop("consumables/fuel/tank[5]/level-norm", 0.8);
+  setprop("consumables/fuel/tank[6]/level-norm", 0.8);
+  setprop("consumables/fuel/tank[7]/level-norm", 0.8);
   setprop("consumables/fuel/tank[8]/level-norm", 0.0);
 
   screen.log.write("Fuel configured for flight testing.", 1.0, 0.0, 0.0);
@@ -1940,6 +2020,21 @@ var HDDView = func () {
   }
 }
 
+var HUDView = func () {
+  if (getprop("sim/current-view/view-number") == 0) {
+    var hd = getprop("sim/current-view/heading-offset-deg");
+    var hd_t = getprop("sim/current-view/config/heading-offset-deg");
+    if (hd > 180) {
+      hd_t = hd_t + 360;
+    }
+    interpolate("sim/current-view/field-of-view", 48, 0.66);
+    interpolate("sim/current-view/heading-offset-deg", hd_t,0.66);
+    interpolate("sim/current-view/pitch-offset-deg", -3,0.66);
+    interpolate("sim/current-view/roll-offset-deg", getprop("sim/current-view/config/roll-offset-deg"),0.66);
+    interpolate("sim/current-view/x-offset-m", 0, 1); 
+  }
+}
+
 dynamic_view.register(func {
               me.default_plane();      # uncomment one of these if you want
 #           # me.default_helicopter(); # to base your code on the defaults
@@ -1953,3 +2048,89 @@ dynamic_view.register(func {
 #           me.z_offset = ...          #     back/aft  (longitudinal axis)
 #           me.fov_offset = ...        #     zoom out  (field of view)
    });
+
+var convertDoubleToDegree = func (value) {
+        var sign = value < 0 ? -1 : 1;
+        var abs = math.abs(math.round(value * 1000000));
+        var dec = math.fmod(abs,1000000) / 1000000;
+        var deg = math.floor(abs / 1000000) * sign;
+        var min = math.floor(dec * 60);
+        var sec = math.round((dec - min / 60) * 3600);#TODO: unsure of this round()
+        return [deg,min,sec];
+}
+var convertDegreeToStringLat = func (lat) {
+  lat = convertDoubleToDegree(lat);
+  var s = "N";
+  if (lat[0]<0) {
+    s = "S";
+  }
+  return sprintf("%02d %02d %02d%s",math.abs(lat[0]),lat[1],lat[2],s);
+}
+var convertDegreeToStringLon = func (lon) {
+  lon = convertDoubleToDegree(lon);
+  var s = "E";
+  if (lon[0]<0) {
+    s = "W";
+  }
+  return sprintf("%03d %02d %02d%s",math.abs(lon[0]),lon[1],lon[2],s);
+}
+var convertDegreeToDispStringLat = func (lat) {
+  lat = convertDoubleToDegree(lat);
+
+  return sprintf("%02d%02d%02d",lat[0],lat[1],lat[2]);
+}
+var convertDegreeToDispStringLon = func (lon) {
+  lon = convertDoubleToDegree(lon);
+  return sprintf("%03d%02d%02d",lon[0],lon[1],lon[2]);
+}
+var convertDegreeToDouble = func (hour, minute, second) {
+  var d = hour+minute/60+second/3600;
+  return d;
+}
+var myPosToString = func {
+  print(convertDegreeToStringLat(getprop("position/latitude-deg"))~"  "~convertDegreeToStringLon(getprop("position/longitude-deg")));
+}
+var stringToLon = func (str) {
+  var total = num(str);
+  if (total==nil) {
+    return nil;
+  }
+  var sign = 1;
+  if (total<0) {
+    str = substr(str,1);
+    sign = -1;
+  }
+  var deg = num(substr(str,0,2));
+  var min = num(substr(str,2,2));
+  var sec = num(substr(str,4,2));
+  if (size(str) == 7) {
+    deg = num(substr(str,0,3));
+    min = num(substr(str,3,2));
+    sec = num(substr(str,5,2));
+  } 
+  if(deg <= 180 and min<60 and sec<60) {
+    return convertDegreeToDouble(deg,min,sec)*sign;
+  } else {
+    return nil;
+  }
+}
+var stringToLat = func (str) {
+  var total = num(str);
+  if (total==nil) {
+    return nil;
+  }
+  var sign = 1;
+  if (total<0) {
+    str = substr(str,1);
+    sign = -1;
+  }
+  var deg = num(substr(str,0,2));
+  var min = num(substr(str,2,2));
+  var sec = num(substr(str,4,2));
+  if(deg <= 90 and min<60 and sec<60) {
+    return convertDegreeToDouble(deg,min,sec)*sign;
+  } else {
+    return nil;
+  }
+}
+#myPosToString();

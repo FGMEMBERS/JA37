@@ -469,25 +469,28 @@
             <name>Y</name>
             <desc>Landing Mode</desc>
             <binding>
-                <command>property-toggle</command>
-                <property>ja37/hud/landing-mode</property>
-            </binding>
-            <binding>
                 <command>nasal</command>
-                <script>ja37.click();</script>
+                <script>
+                    if (getprop("ja37/systems/variant")==0) {
+                        land.LB();
+                    } else {
+                        setprop("ja37/hud/landing-mode", !getprop("ja37/hud/landing-mode"));
+                        ja37.click();
+                    }</script>
             </binding>
         </key>
 		
 	    <key n="121">
             <name>y</name>
-            <desc>TILS</desc>
+            <desc>Cursor control</desc>
             <binding>
                 <command>property-toggle</command>
-                <property>ja37/hud/TILS</property>
+                <property>ja37/systems/input-controls-flight</property>
             </binding>
             <binding>
                 <command>nasal</command>
-                <script>ja37.click();</script>
+                <script>if (getprop("ja37/systems/input-controls-flight")) ja37.notice("Cursor ctrl OFF. Flight ctrl ON.");
+                        else ja37.notice("Cursor ctrl ON. Flight ctrl OFF.");</script>
             </binding>
         </key>
 		
@@ -1171,6 +1174,18 @@
                 <command>nasal</command>
                 <script>ja37.HDDView();</script>
             </binding>
+        </key>
+
+        <key n="17">
+            <name>CTRL-SHIFT-Q</name>
+            <desc>View head-up-display</desc>
+            <repeatable>false</repeatable>
+            <mod-shift>
+                <binding>
+                    <command>nasal</command>
+                    <script>ja37.HUDView();</script>
+                </binding>
+            </mod-shift>
         </key>
 
         <key n="356">

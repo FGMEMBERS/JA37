@@ -1624,21 +1624,36 @@
             </function>
         </fcs_function>
 
+        <fcs_function name="systems/indicators/low-fuel-secondary">
+            <function>
+                <eq>
+                    <property>/ja37/sound/fuel-low-2-on</property>
+                    <value>1</value>
+                </eq>
+            </function>
+        </fcs_function>
+
         <fcs_function name="systems/indicators/low-fuel">
             <function>
-                <and>
-                    <or>
-                        <eq>
-                            <property>systems/indicators/low-fuel-primary</property>
-                            <value>1</value>
-                        </eq>
-                        <property>/controls/lighting/test-indicator-panels</property>
-                    </or>
+                <or>
                     <eq>
-                        <property>/ja37/blink/ten-Hz/state</property>
+                        <property>systems/indicators/low-fuel-secondary</property>
                         <value>1</value>
                     </eq>
-                </and>
+                    <and>
+                        <or>
+                            <eq>
+                                <property>systems/indicators/low-fuel-primary</property>
+                                <value>1</value>
+                            </eq>
+                            <property>/controls/lighting/test-indicator-panels</property>
+                        </or>
+                        <eq>
+                            <property>/ja37/blink/ten-Hz/state</property>
+                            <value>1</value>
+                        </eq>
+                    </and>
+                </or>
             </function>
         </fcs_function>
 
@@ -2050,7 +2065,7 @@
                 /ja37/hud/current-mode == 0 <!-- equals takeoff -->
             </test>
             <test logic="AND" value="1">
-                /ja37/hud/current-mode == 3 <!-- equals landing -->
+                gear/gear-pos-norm == 1 <!-- equals landing -->
                 /position/altitude-agl-ft gt 164
                 systems/indicators/time-till-crash lt 10
                 systems/indicators/time-till-crash gt 0
@@ -2058,14 +2073,14 @@
                 /ja37/supported/picking == 0
             </test>
             <test logic="AND" value="1">
-                /ja37/hud/current-mode ne 3 <!-- not equals landing -->
+                gear/gear-pos-norm ne 1 <!-- not equals landing -->
                 systems/indicators/time-till-crash lt 10
                 systems/indicators/time-till-crash gt 0
                 /controls/altimeter-radar == 1
                 /ja37/supported/picking == 0
             </test>
             <test logic="AND" value="1">
-                /ja37/hud/current-mode == 3 <!-- equals landing -->
+                gear/gear-pos-norm == 1 <!-- equals landing -->
                 /position/altitude-agl-ft gt 164
                 /ja37/radar/time-till-crash lt 10
                 /ja37/radar/time-till-crash gt 0
@@ -2073,6 +2088,7 @@
                 /ja37/supported/picking == 1
             </test>
             <test logic="AND" value="1">
+                gear/gear-pos-norm ne 1
                 /ja37/hud/current-mode ne 3 <!-- not equals landing -->
                 /ja37/radar/time-till-crash lt 10
                 /ja37/radar/time-till-crash gt 0
@@ -2080,6 +2096,22 @@
                 /ja37/supported/picking == 1
             </test>
         </switch>
+
+        <switch name="/instrumentation/terrain-warning-steady-time">
+            <default value="sim-time-sec"/>
+            <test logic="OR" value="/instrumentation/terrain-warning-steady-time">
+                /ja37/sound/terrain-on == 0
+            </test>
+        </switch>
+
+        <fcs_function name="/instrumentation/terrain-warning-steady">
+            <function>
+                <sum>
+                    <p>/instrumentation/terrain-warning-steady-time</p>
+                    <v>3</v>
+                </sum>
+            </function>
+        </fcs_function>
 
         <fcs_function name="/instrumentation/terrain-warning-hold">
             <function>
@@ -2108,6 +2140,9 @@
             <default value="0"/>
             <test logic="OR" value="/ja37/blink/ten-Hz/state">
                 /ja37/sound/terrain-on == 1
+            </test>
+            <test logic="AND" value="1">
+                /instrumentation/terrain-warning-steady gt sim-time-sec
             </test>
         </switch>
 
@@ -2604,6 +2639,38 @@
             </test>
         </switch>
 
+        <switch name="systems/indicators/master-warning/fuel-low-2-changed">
+            <default value="0"/>
+            <test logic="OR" value="1">
+                /ja37/systems/fuel-warning-extra-percent ne systems/indicators/master-warning/fuel-low2-old
+            </test>
+        </switch>
+
+        <switch name="systems/indicators/master-warning/fuel-low2-old">
+            <default value="/ja37/systems/fuel-warning-extra-percent"/>
+            <test logic="OR" value="0">
+                /ja37/systems/fuel-warning-extra-percent == -2 <!-- will never happen -->
+            </test>
+        </switch>
+
+        <switch name="systems/indicators/master-warning/fuel-low-2">
+            <default value="0"/>
+            <test logic="OR" value="0">
+                systems/indicators/low-fuel-secondary == 0
+                systems/indicators/master-warning/fuel-low-2-changed == 1
+            </test>
+            <test logic="OR" value="1">
+                systems/indicators/master-warning/fuel-low-2 == 1
+            </test>
+            <test logic="AND" value="1">
+                systems/indicators/master-warning/fuel-low-2 gt 1
+                /ja37/avionics/master-warning-button == 1
+            </test>
+            <test logic="AND" value="2">
+                systems/indicators/low-fuel-secondary == 1
+            </test>
+        </switch>
+
         <switch name="systems/indicators/master-warning/ap-downgrade">
             <default value="0"/>
             <test logic="OR" value="0">
@@ -2664,6 +2731,7 @@
                 systems/indicators/master-warning/auto-alt-issue gt 2
                 systems/indicators/master-warning/stick-problem gt 2
                 systems/indicators/master-warning/fuel-low gt 2
+                systems/indicators/master-warning/fuel-low-2 gt 2
                 systems/indicators/master-warning/fire gt 2
                 systems/indicators/master-warning/ap-downgrade gt 2
             </test>
@@ -2692,6 +2760,7 @@
                 systems/indicators/master-warning/auto-alt-issue gt 1
                 systems/indicators/master-warning/stick-problem gt 1
                 systems/indicators/master-warning/fuel-low gt 1
+                systems/indicators/master-warning/fuel-low-2 gt 1
                 systems/indicators/master-warning/fire gt 1
                 systems/indicators/master-warning/ap-downgrade gt 1
             </test>
@@ -2720,6 +2789,7 @@
                 systems/indicators/master-warning/auto-alt-issue gt 0
                 systems/indicators/master-warning/stick-problem gt 0
                 systems/indicators/master-warning/fuel-low gt 0
+                <!--systems/indicators/master-warning/fuel-low-2 gt 0-->
                 systems/indicators/master-warning/fire gt 0
                 systems/indicators/master-warning/ap-downgrade gt 0
             </test>

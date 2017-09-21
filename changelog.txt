@@ -2949,3 +2949,248 @@ TI: Prettified code for TRAP logs.
 Aero: Added wake turbulence support from AI planes. (FG 2017.3.1+)
 Sim: Another guard for bad math operation in pitch method.
 Radar: SR-71 will now be more observable.
+
+4.108 - 2017 August 6
+=====
+Sim: Fixed some issues that would prevent the Viggen from working with Flightgear 3.2. Notice the TI failure menu will not be working in this FG version.
+
+4.300 - 2017 September 21
+=====
+Sim: Heatseekers will now pursuit the flare when they lock onto it.
+TI: Fixed display would not black out when using ALS and filters.
+MI: Fixed display would not black out when using ALS and filters.
+Radar: Extra RCS checks for sanity.
+Arms: Fixed regression in non heat seeking missiles.
+Sim: Refactored getPitch method to one instance.
+Radar: Fixed using FG computed elevation would not account for curvature of earth.
+Arms: Simplified and upgraded counter measure system.
+Radar: Fixed type for f14 RCS.
+HUD: In interoperability mode terrain elevation now shows up to 99999ft.
+HUD: When attack mode is chosen on TI show groundspeed in HUD, when below 1000m AGL. (instead of weapon type determining it)
+HUD: When not in interoperability mode, mach and Km/h can now be displayed together.
+HUD: When not in interoperability mode, GS will still show.
+TI: Made button 6 in sideview configuration switch mode. It still has no effect though.
+TI: Renamed english READ DATA menu item in configuration menu.
+HUD: Made a crude DLZ show on distance scale for JA.
+HUD: Ground collision warning arrow now stay on for 3 seconds after the warning.
+TI: Ground collision warning arrow now stay on for 3 seconds after the warning.
+MI: Ground collision warning arrow now stay on for 3 seconds after the warning.
+Animation: Ground collision warning lamp now stay on for 3 seconds after the warning.
+TI: Artificial horizon and ground symbol now move in relation to FPI, which in turn is fixed in middle of display.
+Arms: Adjusted DLZ data and FCS FoV for sidewinders.
+Radar: Fake radar target for testing. Hidden access.
+Arms: Added output to console for FPS relative.
+Arms: Started building fading out of rocket thrust.
+Arms: Made RB-74 terminate before its speed is so low it wont hit anything anyway. Aerodynamic range will then also better match published data.
+Sim: Better commenting in getPitch method.
+Fix for geo.Coord bad methods. If fix works, remember to send to FG mailing list.
+Arms: adjustment to AJS RB74.
+Arms: Removed need for sound bools in weapons specs.
+Arms: Renamed drag-area to cross-section.
+Arms: Made check for seeker/FCS FOV round instead of square.
+Arms: Renamed some nasal variables.
+Arms: Better impulse output when uncommented.
+Arms: Added support for vectored thrust.
+Arms: Proportionality constant for PN/APN can now be specified.
+Arms: Some cleanup of code and comments.
+Sim: Finally fixed getPitch method, it was rounding errors.
+Sim: getPitch method now works for same altitudes also.
+Radar: RCS code is now in effect.
+Control: {Pinto} Fixed the auto-throttle not holding AoA on fast PC. The new values should work on both fast and slow PCs.
+HUD: Pitch lines follow FPI. And therefore, so will the landing guide.
+HUD: Collision arrow is now on FPI.
+HUD: Smaller alt scale.
+HUD: When FPI is not shown, its position is now still be calculated.
+HUD: Altitude scale now show just a number when in tactical mode.
+HUD: Heading scale now has smaller ticks.
+HUD: Negative pitch lines, now has a gap on right side.
+Control: Increased rudder authority a small bit in all regimes.
+MI: Added weapons circle.
+MI: Changed pointer on distance scale to be a circle.
+TI: Added white runway line and name to landing symbol.
+TI: Adding menu item function for moving cursor between TI and MI.
+TI: Added sub settings for some non functional menu items.
+HUD: Redid limits for how much pitch lines can move, so the pitch numbers don't leave HUD.
+Animation: Ejecting M70 will now animate it falling. Sometimes it wont animate on subsequent ejections though.
+HUD: alt. scale now follow pitch lines and FPI.
+HUD: heading scale now follow pitch lines and FPI.
+HUD: Digital speed now follow pitch lines and FPI.
+HUD: Removed sideslip indicator.
+HUD: In tactical mode normal FPI is no longer shown.
+HUD: Horizon line in nav mode now has a gap.
+HUD: Digital speed now rotates with pitch lines and is 5 degs under FPI, -1.5 at landing high alpha.
+HUD: Heading scale now rotates with pitch lines 2.5 degs over FPI.
+HUD: Distance scale now rotates with pitch lines 2.75 degs below FPI.
+HUD: Adjusted position of pitch line numbers.
+HUD: Adjusted horizon and pitch lines gap lengths.
+HUD: Reduced the fontsize of many texts.
+HUD: Reduced size of FPIs and collision arrow.
+HUD: Distance scale now transform with pitch lines.
+HUD: Weapon/TILS text is moved next to distance scale.
+HUD: Reenabled mip-mapping.
+Sim: Pitched view slightly up.
+HUD: When aircraft is still, moved the FPI to aircraft axis.
+HUD: Weapon name next to distance scale is now very short.
+HUD: Redid limits for how much digital speed, alt. scale and heading scale can move vertically, so they don't leave HUD too much.
+Arms: Added new missile property for selfdestruct when losing target lock.
+Arms: High speed missiles now dive down on target earlier so they have more time to pitch down.
+Arms: At negative closing rates, missile will now fly straight and not attempt to steer.
+Arms: Added new guidance laws: PN horzontal, but fixed degree offset in vertical.
+Arms: Fixed bug when locking onto chaff it would stop guiding after chaff.
+Arms: When not guiding it will now also not snap-up/cruise/terrain-follow or anything like that.
+Arms: When turning towards target before PN takes over, it will now not aim so precise.
+Arms: Lowered cruise missiles max G by large amount, to prevent bleeding alot of speed when navigating terrain.
+HUD: Redid limits for how much digital speed vertically, so it also don't leave HUD too much.
+Model: Replaced left and right plaque textures for the JA variant.
+TI: In menu SYST, button 'B'/'S' will switch to navigation mode, and activate route. If already in that mode, the button switches to next steerpoint. If route is active, steerpoints always show.
+TI: In menu SYST, button 'L'/'L' will switch to navigation mode, and activate route and select landing base as next steerpoint, long approach. Repeating presses selects runway.
+TI: In menu SYST, button 'LB'/'LS' will switch to landing mode steer order towards approach circle tangent point. Mode 1.
+TI: In menu SYST, button 'LF'/'LT' highlighted in landing mode 2/3. Mode 2 with short approach if pressed.
+TI: In menu SYST, button 3 'OPT' will switch to optical landing mode 4. (unauthentic, should really be on stick)
+TI: Off button now have sub 'EP' for electronic presentation system EP12.
+Model: Removed approach and landing mode cockpit switches for JA-37Di variant.
+TI: When pressing LB/LF it will activate a runway on selected destination if none is activated.
+Sim: Pressing key 'Y' in JA variant, will act as if pressing LS/LB in TI.
+TI: The steer order now shows only in tyrkoiuse color if L or S/B is choosen.
+Sim: Extending gears will no longer automatically switch to landing mode.
+TI: Fixed that non existant property in RM could crash display.
+TI: Fixed that route-manager could get into non-valid state, and crash TI display. (this bug might still crash other systems!)
+Sim: Fixed that when selecting B/S or L (nav mode), it would still switch to optical landing mode on the ground.
+Sim: If route is activated through route manager, default its set to B/S.
+TI: Made Turkuiose color a bit brighter.
+TI: Steerpoint polygon legs now show only the current leg, and next leg only if distance to it is less than 20Km.
+TI: In main menu MSDA all polygon legs are shown.
+TI: Renamed english abbriviations for mission and return to base polygons.
+MI: Added target indicator to heading scale.
+Arms: Fixed a nullpointer exception in missile telemetry code.
+HUD: In tactical mode distance scale will no longer show if no weapon is selected.
+Sim: Nav will now tune to ILS of runway if its the current steerpoint in landing mode. And HUD will show TILS if this is done.
+Sim: Key 'y' function has been removed.
+TI: T for TILS now only show when ILS has been captured from current selected landing base.
+TI: Menu SYST button 1 should show RR when flying, and only OFF when on ground. RR is steer order from radar, so for now its auto-follow.
+HUD: No longer show ILS guide, if the ILS is not for runway that is being landed on. If no landing steerpoint is set, it will still show.
+TI: Clicking key 'Y' or L, S, LT or LS will now stop auto-follow (RR). S will no longer be autoactivated through routemanager if RR is on.
+Sim: Switching on RR will now disengage landing mode and steerpoint modes.
+Sim: Replaced the default flightplan delegate to keep flightplan active after reaching last steerpoint.
+TI: ALFA and VIKT now only display when gears extended and in landing mode.
+Sim: The TILS switch now toggles the TILS system, and is on by default. If off and ILS is manually set and no landing base coded in, ILS will still work.
+HUD: Fixed that at extreme pitch the echoes or Fixes would not be displayed correct.
+GUI: Pressing ctrl-shift-q in cockpit view will now zoom in on HUD. The HUD view has been removed.
+Control: {it0uchpods} Overhaul Autopilot Roll
+Control: Fixed the stick had aileron control in CSS deadzone.
+Control: {it0uchpods} Autopilot Roll Tweaking
+Control: {it0uchpods} Overhaul A/T
+Control: {it0uchpods} Overhaul AP Pitch and Tweak
+Control: Allow A/P elevator to pull more G when banked.
+Control: {it0uchpods} Limit u_min G now dynamic
+Control: Fixed pitch trim was negated and too large effect.
+Control: {it0uchpods} Autopilot logic fixes, rounding, predictino
+Control: {it0uchpods} Autopilot Pitch update, disable damper on AP Pitch
+Doc: Added it0uchpods to author document.
+Control: Moved some properties to set file.
+Control: {it0uchpods} Adjust Target RoC PID for new pitch
+Control: {it0uchpods} Fix Pitch CSS not working properly, improve CSS
+Control: Better delay of halt AP variables.
+Control: Nasal A/P loop twice as slow.
+Control: {it0uchpods} Attempt to fix Alt oscilation issue
+Control: Remove delay for engaging AP CSS.
+Control: Fixed bad init of A/P halt properties.
+Sim: JA Route-manager and TI now supports multiple flightplans. (FG 2017.3.1+)
+TI: There can be 4 mission routes and 2 return to base routes.
+Sim: Route manager will show the current active plan. When plan changes, the RM will show the new plan.
+Sim: Landing/route mode logic now works on flightplans instead of route-manager.
+Sim: First steerpoint in plan RTB will autostart in mode LR when a mission plan ends.
+Sim: Last steerpoint in plan RTB will autostart when a RTB plan ends.
+Sim: All 6 flightplans can be preloaded from XML will some startup commands.
+TI: MSDA menu will now show all plans.
+TI: Menu MSDA-EDIT RPOL/MPOL will now highlight the choosen, editing is still not possible.
+TI: Button LÅ/LR is a subfunction in B/S and return to base route must exist to activate, B/S will be selected if it is not when activating.
+TI: Reclicking on LÅ/LR will switch to next steerpoint in RTB route.
+TI: Map place names will now always be shown in menu MSDA.
+TI: MYPS now will show position framed. If adjusted frame will go away.
+TI: MYPS now longer can set the aircraft at the top.
+TI: Steerpoints now have numbers and type attached and is north oriented. In MSDA, only the edited plan will have them.
+Aero: Default direction for ai wake now added.
+TI: Flight input can now slew cursor, toggle with 'y'. (not on MI). Trigger will click.
+TI: Cursor can now select and edit steerpoint.
+Animation: Radar stick now animated.
+TI: Cursor can now click edge buttons and is now z-indexed above everything else.
+TI: Small infobox will now show up in MSDA menu if plan being edited.
+GUI: Continual reminder to press 'y' to toggle back flight controls.
+Control: Emergency flight ctrl enabled if less than 10 sec to impact with ground.
+TI: Menu MSDA-MMAP will now freeze the map relative to ground (except for heading).
+TI: Menu MSDA-MMAP allows cursor to set new map center. Center is where aircraft location was before.
+Sim: Set a minimum required FG version.
+TI: Since we have no radar panel, 3 functions was added to edge buttons in menu MSDA for delete, add and append steerpoint.
+TI: Heading bug will no longer show A/P target.
+HUD: Heading bug will no longer show A/P target.
+GUI: Warning will appear randomly to remind when flight controls inactive.
+Sim: Now logic supports proper number of RTB plans. TI does not however.
+TI: Menu CONF-GPS now has infobox showing lat/lon.
+TI: GPS now takes 30 secs. to initialize.
+Control: Using buttons on TI SYST menu, should no longer stop all A/P.
+TI: Made text info boxes be Z sorted on top of map overlays.
+Model: Fixed that JA fuel gauge needle should have transparency.
+Sim: When a GPX flightplan is loaded through route-manager, dest/dep will now be set.
+TI: Made cursor slewing be more smooth.
+Radar: Code performance optimized.
+Radar: Faster RCS check for aircraft not in table.
+Model: Fixed JA fuel gauge problems.
+Sim: Append to RTB plan now unset destination.
+Sim: Insert as first steerpoint unset departure.
+Sim: Delete last steerpoint unset destination. Sets new last if is airport.
+Sim: Delete first steerpoint unset departure. Sets new first if is airport.
+DAP: The JA now has some basic Data-panel functions. Use button BX on nav panel for OK.
+DAP: The JA panel now has a different texture and a canvas display. AJ is unchanged.
+DAP: Can now output current position, date, time, TILS freq.
+DAP: Can now input current date and time.
+DAP: Can now reset local time: enter 999999 as date or time.
+DAP: When TI EDIT plan is active, display will say 237 and plan can be erased by pressing RESET.
+DAP: Can now output and input extra fuel warning threshold in percent.
+MI: Will now display MREG for 3 seconds when manual registration occurs. [X3]
+DAP: No longer shows 237 when can delete polygon. Has to be in TI setting though.
+Sim: Added support for custom map areas.
+TI: EDITPOLY now edit areas.
+TI: Started using vector for colors.
+Sim: Editing will now allow max 8 points in each area and max 48 in each plan.
+TI: Infobox for steerpoint and areapoint reworked.
+TI: Changed S/B to P in infobox/submenus for area points.
+TI: Fixed infobox font was times not changing aspect.
+TI: Via DAP the area to be edited can now be selected, OP1-OP6.
+DAP: Edit steerpoints is now possible, B-lola, B-alt, B-speed.
+DAP: Edit areas is now possible, but only lola.
+Sim: Appending/editing waypoint now set selected to a leg, not a waypoint.
+TI: CLR is now default for HORI.
+TI: EMAP-MAX can now be switched to NORM, it will now always be framed.
+TI: Formated LON/LAT will now have letter at end.
+DAP: Error is now localized to Swedish.
+DAP: UD-UT-TI will now show flighttime on TI. From takeoff +30 secs. Less than 3 mins on ground will not reset the time. (hour:min)
+Doc: Added small document to aircraft folder. It gives some help to using TI, MI and Data-panel.
+DAP: Changed sign to -1 and 1, instead of bool.
+Sim: Hacked some canvas methods, now get 25% more FPS with HUD, TI and MI on.
+HUD: Landing mode will now be reset after landing. So have to be reengaged to enable.
+TI: Temp. fix for steerpoint mach value being insane high or low.
+TI: Fixed regression that could not make L or LS to activate plan.
+TI: Proper fix for speed/alt constraint display in steerpoint infobox.
+Model: Masterarm is now knob OP-RED-OFF. Reduced mode is skipped.
+Model: Old masterarm switch on front panel is now RESERVKURS and does nothing.
+DAP: When electrical DC not running DAP will show -888888, only lighted by floodlight.
+DAP: Can now input/output training floor. Address 19.
+Arms: Pure A/A missiles no longer can lock onto non-moving targets. (already couldn't in Viggen, but important for other users of the missile code)
+Model: Made AoA gauge dial dark parts darker.
+Animation: Stopped transponder controls from being backlit.
+Model: Made default 59 livery lighter and more bluish.
+Model: Adjusted material for fuselage.
+Effect: Turned off reflections on fuselage.
+Aero: Tuned wave drag.
+Aero: Adjusted speedbrake and gears drag.
+Effect: Removed reflections from nozzle and bare metal parts.
+Model: Adjusted texture color for nozzle and tertiary opening.
+Model: Made 66 livery lighter and more bluish.
+Model: Added livery F16-32. HD.
+Model: Desaturated decals on SAF32 livery and made some noise on the metal paint.
+Model: Adjusted fuselage material.
+TI: Clicking edge buttons with mouse or cursor will now make them light up for 0.3 seconds.
+Effect: Added rust to nozzle.
+Model: SAF32 livery now has slight occlusion baked in.
+Model: Made 31 livery lighter and more bluish.

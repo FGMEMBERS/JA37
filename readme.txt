@@ -4,7 +4,7 @@ Readme for the JA-37Di / AJ-37 / AJS-37 Viggen aircraft for the Flightgear simul
 
 Install
 ----------
-1 - Have flightgear installed. Version 2.8.0.2 to 2017.2.1 is tested. Earlier version will not work, later might.
+1 - Have flightgear installed. Version 2.8.0.2 to 2017.3.1 is tested. Earlier version will not work, later might.
 2 - Copy the entire 'JA37' folder into a folder where Flightgear will look for aircraft.
 3 - Happy flying. Check the aircraft help page inside the sim for instructions.
 
@@ -45,14 +45,3 @@ Git: https://github.com/NikolaiVChr/flightgear-saab-ja-37-viggen/tree/master/Air
 Help?
 -----
 Contact Necolatis on the forums to get in contact.
-
-
-Liberties taken:
-----------------
-In the orig plane the HUD decimal delimiter is ','. I choose to use the english '.' instead.
-The plane has some un-autenthic features:
-- Carrier operations. Use keys Shift-L (hold for 10 seconds), Shift-C and L. Only work on carriers.
-- HUD sideslip indicator
-- TILS works different in real plane.
-- Autopilot follow.
-- ILS, VOR, ADF navigation, the real did not have this.
