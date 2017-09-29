@@ -163,11 +163,14 @@ TI: When cursor not active on TI, a shadow cursor is shown following the target 
 TI: RB99 telemetry should show IDLE, SCAN or LOCK when not fired.
 DAP: Show sign of input at leftmost char always.
 TI: Run different through plans when drawing them on canvas.
-Sim: Why don't takeoff mode switch off OPT autoset on runway? fix..
 MI: FPI should be fixed to indicator middle just like TI, horizon and ground symbol moves in relation to it.
 TI: In menu WEAP between the two middle edge buttons at bottom, its should say AK 120. For 120 ammo left.
 Radar: Fix carrier in HUD/CI/TI/MI proper due to changes in radar getPolar etc. (PRIORITY!!)
 TI: Startfix instead of time when INS is starting up.
+Effect: Ambient occlusion map need to be baked again, many parts are too occluded.
+
+
+
 
 
 
@@ -241,12 +244,13 @@ Model: Improve the 01     eastern livery.
 Model: Improve the 79-F21 ferris
 Model: Improve the 01-F21 viking livery.
 Model: Improve the 31-F17 grey livery.
-Model: Improve the 32-F17 Blå Petter livery. (Blue Peter)
+Model: Improve the 32-F16 grey livery.
+Model: Improve the 32-F16 Blå Petter livery. (Blue Peter)
 Model: Improve the 59-F16 grey livery.
 Model: Improve the 61-F18 strike camo livery.
 Model: Improve the 61-F18 desert camo livery.
 Model: Improve the 61-F18 nevada camo livery.
-Model: Improve the 57-F21 red 'ghost' livery.
+Model: Improve the 57-F21 red 'ghost' livery. (sure its not F10?)
 Model: Improve the 46-F04 unknown export livery - Great lake monster.
 Model: Improve the 02-F21 swedish sun livery.
 Model: Improve the Flightgear livery.

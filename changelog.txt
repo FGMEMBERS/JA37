@@ -3199,3 +3199,25 @@ Model: Made 31 livery lighter and more bluish.
 =====
 Sim: Fixed optical landing mode would not engage automatically.
 Sim: Reduced loop speed of landing mode code.
+
+4.302 - 2017 September 28
+=====
+Sim: Removed uses of var keyword in landing mode loop.
+Sim: Removed uses of var keyword in main saab37 loops.
+Sim: Made main saab37 loop slower.
+Sim: Moved some code about dropping rocket pods into stores.nas.
+Model: Fixed canopy having strange occlusion effect on livery SAF32.
+Sim: Optical landing mode will now switch off when not in landing mode.
+Model: Updated Flightgear livery.
+Sim: Crash and stress updated to not use var keyword.
+Model: Made fuselage less vivid. Metallic but matt.
+Effect: Added a modified Viggen fuselage shader.
+Model: Updated Livery 57 Red Ghost.
+Model: Updated Livery 32 Blue Peter.
+Sim: Converted settimers to maketimers. The aircraft is no longer compatible with FG 2.10.
+Sim: Replay medium sampler made slower, to prevent crashes.
+Effect: The fuselage shader now handles low-light ambient light better.
+Effect: Converted fuselage shaders to use phong.
+Effect: ALS fuselage shader no longer does specular reflection of sky irradiance. As in some situations it looked strange.
+Model: Made wing spikes on livery 32, black.
+GUI: Updated some splash screens.

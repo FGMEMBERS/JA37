@@ -9,8 +9,16 @@
 # Result: On Viggen get 25% more FPS. From 12 to 15.
 #
 # Inspired from what Thorsten did with setTextUpdate()
+#
+# Notice: Might not be forward compatible.
 
-
+# uncomment for better version:
+#canvas.Text._lastText = canvas.Text["_lastText"];
+#canvas.Text.setText = func (text) {
+#      if (text == me._lastText) {return me;}
+#      me._lastText = text;
+#      me.set("text", typeof(text) == 'scalar' ? text : "");
+#};
 canvas.Text._lastText2 = "";
 canvas.Text.setText = func (text)
   {
@@ -30,4 +38,9 @@ canvas.Element.hide = func ()
       if (0 == me._lastVisible) {return me;}
       me._lastVisible = 0;
       me.setBool("visible", 0);
-    };
+};
+canvas.Element.setVisible = func (vis) {
+      if (vis == me._lastVisible) {return me;}
+      me._lastVisible = vis;
+      me.setBool("visible", vis);
+};
