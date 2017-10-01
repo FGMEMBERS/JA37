@@ -8,7 +8,7 @@
 
 <PropertyList include="Systems/ja37-engines-off.xml">    <!-- change this to 'on' for fast testing/debugging -->
     <sim>
-        <aircraft-version>4.302</aircraft-version>
+        <aircraft-version>4.303</aircraft-version>
 
         <minimum-fg-version>2017.3.1</minimum-fg-version>
 
@@ -1393,7 +1393,7 @@
         <specular type="double">0.50</specular>
         <shine type="int">25</shine>
         <metal type="double">0.75</metal>
-        <occlude type="double">0.60</occlude>
+        <occlude type="double">0.40</occlude>
     </light>    -->
     <!--**********************************************************************
 
