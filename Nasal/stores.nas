@@ -895,6 +895,7 @@ var warhead_lbs = {
     "R-27T1":               85.98,
     "FAB-500":             564.00,
     "Exocet":              364.00,
+    "HVAR":                  7.50,#P51
 };
 
 var fireMsgs = {
@@ -992,7 +993,7 @@ var incoming_listener = func {
                   playIncomingSound("");
                 }
 
-                #The incoming lamps overlap each other:
+                #The incoming CI lamps overlap each other:
                 if (clock >= 345 or clock <= 75) {
                   incomingLamp("1");
                 } 
@@ -1012,6 +1013,7 @@ var incoming_listener = func {
                   incomingLamp("11");
                 }
 
+                #The incoming MI lamps overlap each other:
                 if (clock >= 345 or clock <= 105) {
                   incomingLamp("2");
                 } 
@@ -1021,7 +1023,7 @@ var incoming_listener = func {
                 if (clock >= 165 and clock <= 285) {
                   incomingLamp("8");
                 }
-                if (clock >= 255 and clock <= 15) {
+                if (clock >= 255 or clock <= 15) {
                   incomingLamp("10");
                 }
                 return;

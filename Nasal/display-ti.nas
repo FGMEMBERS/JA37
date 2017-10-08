@@ -146,6 +146,30 @@ var brightnessM = func {
 	ti.brightness -= 0.25;
 };
 
+var contrastP = func {
+	if (ti.active == FALSE) return;
+	edgeButtonsStruct[0] = getprop("sim/time/elapsed-sec");
+	var c = getprop("ja37/displays/ti-contrast");
+	c += 0.05;
+	if (c > 4) {
+		c = 4;
+	}
+	setprop("ja37/displays/ti-contrast", c);
+};
+
+var contrastM = func {
+	if (ti.active == FALSE) return;
+	edgeButtonsStruct[0] = getprop("sim/time/elapsed-sec");
+	var c = getprop("ja37/displays/ti-contrast");
+	c -= 0.05;
+	if (c < 0.25) {
+		c = 0.25;
+	}
+	setprop("ja37/displays/ti-contrast", c);
+};
+
+
+
 var bright = 0;
 
 #TI symbol colors
@@ -3611,6 +3635,9 @@ var TI = {
 		if (me.displayTime == TRUE) {
 			me.textTime.setText(getprop("sim/time/gmt-string")~" Z  ");# should really be local time
 			me.textTime.show();
+		} elsif (getprop("fdm/jsbsim/systems/indicators/inertia-navigation") > 0) {
+			me.textTime.setText("STARTFIX  ");
+			me.textTime.show();
 		} else {
 			me.textTime.hide();
 		}
@@ -3664,8 +3691,10 @@ var TI = {
 
 	displayHorizon: func {
 		me.rot = -getprop("orientation/roll-deg") * D2R;
+		me.horizon_group.setTranslation(-me.fpi_x, -me.fpi_y);
 		me.horz_rot.setRotation(me.rot);
-		me.horizon_group2.setTranslation(0-me.fpi_x, texel_per_degree * getprop("orientation/pitch-deg")-me.fpi_y);
+		me.horizon_group2.setTranslation(0, texel_per_degree * getprop("orientation/pitch-deg"));
+
 		me.alt = getprop("instrumentation/altimeter/indicated-altitude-ft");
 		if (me.alt != nil) {
 			me.text = "";

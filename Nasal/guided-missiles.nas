@@ -116,7 +116,11 @@ var REAL_TIME = 1;
 var TRUE = 1;
 var FALSE = 0;
 
-var use_fg_default_hud = FALSE;
+# enables the AIM-9 aiming reticle (F-14) - doesn't require the radar to be in TWS
+var use_fg_default_hud = getprop("payload/armament/use-fg-default-hud");
+if (use_fg_default_hud == nil) {
+	use_fg_default_hud = FALSE;
+}
 
 var MISSILE_STANDBY = -1;
 var MISSILE_SEARCH = 0;
@@ -231,7 +235,7 @@ var AIM = {
 		# navigation, guiding and seekerhead
 		m.max_seeker_dev        = getprop(m.nodeString~"seeker-field-deg") / 2;       # missiles own seekers total FOV diameter.
 		m.guidance              = getprop(m.nodeString~"guidance");                   # heat/radar/semi-radar/laser/gps/vision/unguided
-		m.navigation            = getprop(m.nodeString~"navigation");                 # direct/PN/APN/PNxx/APNxx (use direct for gravity bombs, use PN for very old missiles, use APN for modern missiles, use PNxx/APNxx for surface to air where xx is degrees to aim above target)
+		m.navigation            = getprop(m.nodeString~"navigation");                 # direct/PN/APN/PNxx/APNxx (use direct for gravity bombs, use PN for very old missiles, use APN for modern missiles, use PNxxyy/APNxxyy for surface to air where xx is degrees to aim above target, yy is seconds it will do that)
 		m.pro_constant          = getprop(m.nodeString~"proportionality-constant");   # Constant for how sensitive proportional navigation is to target speed/acc. Normally between 3-6. [optional]
 		m.all_aspect            = getprop(m.nodeString~"all-aspect");                 # set to false if missile only locks on reliably to rear of target aircraft
 		m.angular_speed         = getprop(m.nodeString~"seeker-angular-speed-dps");   # only for heat/vision seeking missiles. Max angular speed that the target can move as seen from seeker, before seeker loses lock.
@@ -488,9 +492,10 @@ var AIM = {
 		m.lostLOS      = FALSE;
 
 		m.SwSoundOnOff.setBoolValue(FALSE);
-		m.SwSoundFireOnOff.setBoolValue(FALSE);
+		#m.SwSoundFireOnOff.setBoolValue(FALSE);
 		m.SwSoundVol.setDoubleValue(m.vol_search);
 		#me.trackWeak = 1;
+		m.pendingSound = -1;
 
 		m.horz_closing_rate_fps = -1;
 
@@ -620,8 +625,10 @@ var AIM = {
 		#
 		if(me.arming_time == 5000) {
 			me.SwSoundFireOnOff.setBoolValue(FALSE);
+			me.pendingSound = -1;
 		} else {
-			me.SwSoundFireOnOff.setBoolValue(TRUE);
+			me.SwSoundFireOnOff.setBoolValue(FALSE);
+			me.pendingSound = 2;
 		}
 		me.status = MISSILE_FLYING;
 		me.flyID = rand();
@@ -647,7 +654,17 @@ var AIM = {
 		me.y = me.pylon_prop.getNode("offsets/y-m").getValue();
 		me.z = me.pylon_prop.getNode("offsets/z-m").getValue();
 		var init_coord = nil;
-		if (offsetMethod == TRUE) {
+		if (me.rail == TRUE) {
+			if (me.rail_forward == FALSE) {
+				# polar pylon coords:
+				me.rail_dist_origin = math.sqrt(me.x*me.x+me.z*me.z);
+				me.rail_origin_angle_rad = math.acos(me.clamp(me.x/me.rail_dist_origin,-1,1))*(me.z<0?-1:1);
+				# since we cheat by rotating entire launcher, we must calculate new pylon positions after the rotation:
+				me.x = me.rail_dist_origin*math.cos(me.rail_origin_angle_rad+me.rail_pitch_deg*D2R);
+				me.z = me.rail_dist_origin*math.sin(me.rail_origin_angle_rad+me.rail_pitch_deg*D2R);
+			}
+		}
+		if (offsetMethod == TRUE and (me.rail == FALSE or me.rail_forward == TRUE)) {
 			var pos = aircraftToCart({x:-me.x, y:me.y, z: -me.z});
 			init_coord = geo.Coord.new();
 			init_coord.set_xyz(pos.x, pos.y, pos.z);
@@ -883,7 +900,7 @@ var AIM = {
         # For good measure the result is clamped to below zero.
         me.speedLoss = me.clamp(me.speedLoss, -100000, 0);
         me.energyBleedKt += me.speedLoss * FPS2KT;
-        me.speedLoss = me.speedLoss-me.vector_thrust*me.speedLoss*0.66;# vector thrust will only bleed 1/3 of the calculated loss.
+        me.speedLoss = me.speedLoss-me.vector_thrust*me.speedLoss*0.66*(me.thrust_lbf==0?0:1);# vector thrust will only bleed 1/3 of the calculated loss.
         return me.speedLoss;
     },
 
@@ -908,6 +925,10 @@ var AIM = {
 	},
 
 	flight: func {#GCD
+		me.pendingSound -= 1;
+		if(me.pendingSound == 0) {
+			me.SwSoundFireOnOff.setBoolValue(TRUE);
+		}
 		if (me.Tgt != nil and me.Tgt.isValid() == FALSE) {
 			print(me.type~": Target went away, deleting missile.");
 			me.sendMessage(me.type~" missed "~me.callsign~": Target logged off.");
@@ -949,9 +970,9 @@ var AIM = {
 		
 		me.life_time += me.dt;
 		
-		if(me.life_time > 8) {# todo: make this duration configurable
-			me.SwSoundFireOnOff.setBoolValue(FALSE);
-		}
+		#if(me.life_time > 8) {# todo: make this duration configurable
+			#me.SwSoundFireOnOff.setBoolValue(FALSE);
+		#}
 
 		me.thrust_lbf = me.thrust();# pounds force (lbf)
 
@@ -1892,9 +1913,15 @@ var AIM = {
 			#printf("horz leading by %.1f deg, commanding %.1f deg", me.curr_deviation_h, me.raw_steer_signal_head);
 
 			if (me.cruise_or_loft == FALSE) {# and me.last_cruise_or_loft == FALSE
+				me.fixed_aim = nil;
+				me.fixed_aim_time = nil;
 				if (find("PN",me.navigation) != -1 and size(me.navigation) > 3) {
-					me.fixed_aim = num(right(me.navigation, 2));
-					me.raw_steer_signal_elev = me.curr_deviation_e+me.fixed_aim;
+					me.extra = right(me.navigation, 4);
+					me.fixed_aim = num(left(me.extra, 2));
+					me.fixed_aim_time = num(right(me.extra, 2));
+		        }
+		        if (me.fixed_aim != nil and me.life_time < me.fixed_aim_time) {
+		        	me.raw_steer_signal_elev = me.curr_deviation_e+me.fixed_aim;
 					me.attitudePN = math.atan2(-(me.speed_down_fps+g_fps * me.dt), me.speed_horizontal_fps ) * R2D;
 		            me.gravComp = me.pitch - me.attitudePN;
 		            #printf("Gravity compensation %0.2f degs", me.gravComp);

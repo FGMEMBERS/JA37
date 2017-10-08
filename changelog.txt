@@ -3235,4 +3235,33 @@ Model: Adjusted wing lettering on Flightgear livery.
 TI: Fixed cursor would not move.
 Animation: Fixed masterarm knob was opposite.
 Sim: Fixed regression error when A/P follow loses selection.
-Control: Make deadzone for aileron A/P CSS smaller.
+Control: Made deadzone for aileron A/P CSS smaller.
+
+4.304 - 2017 October 8
+=====
+Effect: Made a LCD/LED display shader. Experimentally put on the TI. At high viewing angles colors will distort, brighness will invert and contrast will decrease. Supports ALS filters.
+HUD: Numbers in alt scale should no longer go out of HUD area.
+Effect: LCD shader now supports contrast setting and works in Rembrandt (without shadows).
+Effect: TI screen edge rocker switch C now is contrast.
+Model: Reserve course switch tooltip no longer says master-arm.
+Model: Made A/P pushlights visible in more conditions.
+Model: Exterior translation zoom minimum is now 25 meters.
+Model: Changed the blue color on livery 32 Blue Peter.
+Model: Made the Fly-By View less predictable.
+Model: Made a HD version of livery 11.
+Sound: Made the datapanel switches click.
+Control: {it0uchpods} Fix missing minus sign in Ki in A/P.
+MI: FPI is now fixed to indicator middle just like TI, horizon and ground symbol moves in relation to it.
+MI: Radar echoes now follow horizon rotation.
+TI: Small fix to how horizon moves in relation to FPI.
+TI: STARTFIX is now shown when INS is starting up if time is not on.
+Arms: {Richard} The option to use old HUD diamond is now a optional property.
+Arms: Ground fired missiles now can switch vertical guidance-law mid-flight.
+Animation: Fixed that in the JA the upper-left RWR light would never blink.
+Arms: More roboust system for missile fire sound that works even in FCS where missiles is created on the fly.
+Arms: Vector thrust bleed reduction now only apply when thruster is on.
+Arms: Tube/rail fired weapons that is tilted will now adjust their pylon position based the the tilt.
+Arms: Added P-51 HVAR rockets to damage table.
+Sound: {Swamp} Changed the knob sound.
+Model: Added subsection of front panel.
+DAP: Fixed canvas got double initialized and would therefore only show "------".
