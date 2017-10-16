@@ -3264,10 +3264,37 @@ Arms: Tube/rail fired weapons that is tilted will now adjust their pylon positio
 Arms: Added P-51 HVAR rockets to damage table.
 Sound: {Swamp} Changed the knob sound.
 Model: Added subsection of front panel.
-DAP: Fixed regression canvas got double initialized and would therefore only show "------".
+DAP: Fixed regression that canvas got double initialized and would therefore only show "------".
 
 4.305 - 2017 October 10
 =====
 Model: Added the new subsection frontpanel to AJ variants also.
 Model: Made the transponder look little more like the real Viggen one. (but only a little, lol)
 Effect: Fixed that TI display would be grey if model shader was set to lowest.
+
+4.306 - 2017 October 15
+=====
+Sim: Added some rotation matrix operations to vector library.
+Model: Added fuse panel.
+Model: Added gear and A/T lever.
+Sound: Added gear lever.
+Model: Added 2 knobs for controlling HUD brightness in JA.
+DAP: Fixed an error in deleting flightplan.
+Sim: Catch a harmless flightplan leg regression in FG 2017.3.1.
+Sim: Prevented tactical mode with gears down.
+Animation: Throttle position no longer can instantly change big amounts.
+Animation: Gear lever now move slower.
+Animation: Gear lever blocked mechanically in extend at less than approx. 82% RPM, cannot be bypassed.
+Animation: Gear lever blocked electro-mechanically in retract at high speeds.
+GUI: Made locked tooltip for gear lever.
+GUI: Made screen notice when attempting to move locked gear lever.
+Animation: Electro-mechanical lock now only work when there is DC power.
+Model: Made bypass gear handle. For unblocking electro-mech. lock in retract pos.
+Animation: Gear lever thumb latch is now in when lever moving.
+Animation: A/T handle no longer move instantly.
+Sim: It now takes DC power to disengage the A/T handle.
+Sound: Added AT and bypass lever.
+Model: Added canopy handle.
+Model: Added mock up of left frontmost radio panel.
+Model: Switched the nav panel and the TILS group switch.
+Model: Added handle to right panel.

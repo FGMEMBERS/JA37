@@ -189,12 +189,12 @@
   </model>
 
   <model>
-    <path>Aircraft/JA37/Models/Cockpit/switch-a/canopy.xml</path>
-    <name>canopyswitch</name>
+    <path>Aircraft/JA37/Models/Instruments/Radio/radioFrontLeft.xml</path>
+    <name>flr</name>
     <offsets>
-      <heading-deg>-90</heading-deg>
-      <x-m>  0.25</x-m>
-      <y-m> -0.095</y-m>
+      <heading-deg>0</heading-deg>
+      <x-m>  0.3450</x-m>
+      <y-m>  0.065</y-m>
       <z-m>  0.00</z-m>
     </offsets>
   </model>
@@ -204,22 +204,11 @@
     <name>kv1</name>
     <offsets>
       <heading-deg>0</heading-deg>
-      <x-m>  0.330</x-m>
+      <x-m>  0.3450</x-m>
       <y-m>  0.065</y-m>
       <z-m>  0.00</z-m>
     </offsets>
   </model>
-
-  <!--<model>
-    <path>Aircraft/JA37/Models/Cockpit/switch-a/reverse-auto.xml</path>
-    <name>auto reverse</name>
-    <offsets>
-      <heading-deg>180</heading-deg>
-      <x-m>  0.500</x-m>
-      <y-m>  0.000</y-m>
-      <z-m>  0.00</z-m>
-    </offsets>
-  </model>-->
 
   <model>
     <path>Aircraft/JA37/Models/Cockpit/switch-a/speedbrakes.xml</path>
@@ -310,26 +299,14 @@
   </model>
 
   <model>
-    <path>Aircraft/JA37/Models/Cockpit/switch-a/gears.xml</path>
-    <name>gears</name>
+    <path>Aircraft/JA37/Models/Cockpit/gearsBox/gearsBox.xml</path>
+    <name>gb</name>
     <offsets>
-      <heading-deg>180</heading-deg>
-      <x-m>  0.85</x-m>
-      <y-m>  0.110</y-m>
-      <z-m>  0.00</z-m>
+      <x-m>  1.15</x-m>
+      <y-m> -0.035</y-m>
+      <z-m>  0 </z-m>
     </offsets>
   </model>
-
-  <!--<model>
-    <path>Aircraft/JA37/Models/Cockpit/switch-a/brake-parking.xml</path>
-    <name>parkBrake</name>
-    <offsets>
-      <heading-deg>180</heading-deg>
-      <x-m>  0.85</x-m>
-      <y-m>  0.060</y-m>
-      <z-m>  0.00</z-m>
-    </offsets>
-  </model>-->
 
   <model>
     <path>Aircraft/JA37/Models/Cockpit/knob-g/light-flood.xml</path>

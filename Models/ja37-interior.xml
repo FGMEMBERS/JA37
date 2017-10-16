@@ -14,6 +14,8 @@
     <path>Aircraft/JA37/Models/Cockpit/marker.xml</path>
   </model>
 
+
+
  <model>
     <path>Aircraft/JA37/Models/ja37-panel.xml</path>
     <name>Panel</name>
@@ -33,6 +35,16 @@
       <y-m>0.0</y-m>
       <z-m>0.05</z-m>
     </offsets>
+  </model>
+
+  <model>
+    <path>Aircraft/JA37/Models/Cockpit/subHUD/subHUD.xml</path>
+    <name>PanelSubHUD</name>
+  </model>
+
+  <model>
+    <path>Aircraft/JA37/Models/Cockpit/canopyHandle/canopyHandle.xml</path>
+    <name>canopyswitch</name>
   </model>
 
  <model>
