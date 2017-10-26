@@ -83,7 +83,7 @@ input = {
   hydr2On:          "fdm/jsbsim/systems/hydraulics/system2/pressure-main",
   hydrCombined:     "fdm/jsbsim/systems/hydraulics/flight-surface-actuation",
   hz05:             "ja37/blink/five-Hz/state",
-  hz10:             "ja37/blink/ten-Hz/state",
+  hz10:             "ja37/blink/four-Hz/state",
   hzThird:          "ja37/blink/third-Hz/state",
   impact:           "/ai/models/model-impact",
   indAA:            "ja37/avionics/auto-altitude-on",
@@ -99,7 +99,7 @@ input = {
   lampCanopy:       "ja37/avionics/canopyAndSeat",
   lampData:         "ja37/avionics/primaryData",
   lampIgnition:     "ja37/avionics/ignitionSys",
-  lampInertiaNav:   "ja37/avionics/TN",
+  insCmd:           "ja37/avionics/ins-cmd",
   lampOxygen:       "ja37/avionics/oxygen",
   lampStart:        "ja37/avionics/startSys",
   lampStick:        "ja37/avionics/joystick",
@@ -318,13 +318,10 @@ var Saab37 = {
       mainTimer = me.timer;
       mainOn = TRUE;
       input.lampData.setBoolValue(TRUE);
-      input.lampInertiaNav.setBoolValue(TRUE);
+      input.insCmd.setBoolValue(TRUE);
     } elsif (me.main > 20) {
       if (me.timer > (mainTimer + 20)) {
         input.lampData.setBoolValue(FALSE);
-      }
-      if (me.timer > (mainTimer + 140)) {
-        input.lampInertiaNav.setBoolValue(FALSE);
       }
     } elsif (me.main <= 20) {
       mainOn = FALSE;
@@ -722,7 +719,7 @@ var Saab37 = {
     me.tempOutsideDew = getprop("environment/dewpoint-degc");
     me.tempInsideDew = getprop("/environment/aircraft-effects/dewpoint-inside-degC");
     me.tempACDew = 5;# aircondition dew point target. 5 = dry
-    me.ACRunning = input.dcVolt.getValue() > 23 and getprop("controls/ventilation/airconditioning-enabled") == TRUE;
+    me.ACRunning = input.dcVolt.getValue() > 23 and getprop("controls/ventilation/airconditioning-enabled") == TRUE and testing.ongoing == FALSE;
 
     # calc inside temp
     me.hotAir_deg_min = 2.0;# how fast does the sources heat up cockpit.
@@ -963,6 +960,8 @@ var Saab37 = {
         dap.callInit();
         me.loop_dap  = maketimer(1, me, func dap.loop_main());
         me.loop_dap.start();
+        me.loop_plan  = maketimer(0.5, me, func route.Polygon.loop());
+        me.loop_plan.start();
       }
       
     }
@@ -973,6 +972,8 @@ var Saab37 = {
       me.loop_fire  = maketimer(1, me, func failureSys.loop_fire());
       me.loop_fire.start();
     }
+    me.loop_test  = maketimer(0.25, me, func testing.loop());
+    me.loop_test.start();
   },
 };
 

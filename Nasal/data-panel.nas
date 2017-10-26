@@ -9,7 +9,7 @@ var FALSE = 0;
 #    }
 #});
 
-var debugAll = TRUE;
+var debugAll = FALSE;
 
 var printDA = func (str) {
     if (debugAll) print (str);
@@ -65,6 +65,9 @@ var PLUS  = 0;
 var OUT   = 1;
 var IN    = 0;
 
+var POS   = 1;
+var MSDA  = 0;
+
 var KNOB_LOLA = 0;
 var KNOB_TILS = 1;
 var KNOB_FUEL = 2;
@@ -94,6 +97,11 @@ var input = "------";
 var digit = 0;
 var error = FALSE;
 var display = "      ";
+var posOutDisplay = "       ";
+
+var testDisplay = "";
+var testMinus = 0;
+var testMinusLast = 0;
 
 var set237 = func (enable, digitsMax, callback) {#longitude might need 6 or 7 digits
   if (enable) {
@@ -116,7 +124,7 @@ var setError = func {
 }
 
 var main = func {
-  if (getprop("ja37/systems/variant") != 0) return;
+  if (getprop("ja37/systems/variant") != 0 or testDisplay != "") return;
   if (getprop("systems/electrical/outputs/dc-voltage") < 23){
     printDA("DAP: offline");
     return;
@@ -127,6 +135,7 @@ var main = func {
   printDA(" selector "~settingKnob);
   printDA(" sign     "~settingSign);
   printDA(" in/out   "~settingDir);
+  printDA(" pos/msda "~settingPos);
   printDA(" cycle    "~cycle);
   printDA(" cycleMax "~cycleMax);
   printDA(" state    "~state);
@@ -252,6 +261,33 @@ var main = func {
           inputKey(2);
         }
       }
+    } elsif (settingKnob == KNOB_DATA) {
+      if (isStateChanged()) {
+          cycle = -1;
+          cycleMax = -1;
+          digit = 0;
+          input = inputDefault;
+      } else {
+        if (ok==HOLD and digit == 6 and num(left(input,2))==15) {
+            # set max alpha
+            var io = num(substr(input,3,1));
+            printDA("set interoperability "~io~" ");
+            setprop("ja37/hud/units-metric", !io);
+            input = inputDefault;
+            digit = 0;
+        } elsif (ok==HOLD and digit == 6) {
+            printDA("set unknown address "~input);
+            input = inputDefault;
+            digit = 0;
+        } elsif (keyPressed == -1) {
+          # reset
+            input = inputDefault;
+            digit = 0;
+        } else {
+          # input
+          inputKey(6);
+        }
+      }
     } elsif (settingKnob == KNOB_REG) {
       if (isStateChanged()) {
           cycle = -1;
@@ -259,7 +295,17 @@ var main = func {
           digit = 0;
           input = inputDefault;
       } else {
-        if (ok==HOLD and digit == 6 and num(left(input,2))==19) {
+        if (ok==HOLD and digit == 6 and num(left(input,2))==0) {
+            # set max alpha
+            var alpha = num(substr(input,2,2));
+            if (alpha == 0) {
+              alpha = getprop("fdm/jsbsim/fcs/max-alpha-default-deg");
+            }
+            printDA("set max alpha "~alpha~" deg");
+            setprop("fdm/jsbsim/fcs/max-alpha-deg", alpha);
+            input = inputDefault;
+            digit = 0;
+        } elsif (ok==HOLD and digit == 6 and num(left(input,2))==19) {
             # set floor warn
             var floor = metric?num(right(input,4))*M2FT:num(right(input,4));
             if (floor == 0) {
@@ -290,6 +336,7 @@ var main = func {
   settingPrevKnob = settingKnob;
   settingPrevSign = settingSign;
   settingPrevDir  = settingDir;
+  settingPrevPos  = settingPos;
 };
 
 var cycleDisp = func {
@@ -365,7 +412,16 @@ var disp = func {
   display = "";
   TI.ti.displayFTime = FALSE;
 
-  if (error == TRUE) {
+  if (testDisplay != "") {
+    var minus = " ";
+    if (testMinus == 1) {
+      testMinusLast = !testMinusLast;
+      if (testMinusLast == 1) {
+        minus = "-";
+      }
+    }
+    display = minus~testDisplay;
+  } elsif (error == TRUE) {
     display = metric?"   FEL":" Error";
   } elsif (state == 237) {
     if (digit == 0) {
@@ -378,6 +434,8 @@ var disp = func {
         display = sign~input;#not elegant, fix later
       }
     }
+  } elsif (settingDir == OUT and settingPos == POS) {
+    display = posOutDisplay;
   } elsif (settingDir == OUT) {
     if (settingKnob == KNOB_DATE) {
       if (cycle == -1) {
@@ -441,7 +499,12 @@ var disp = func {
       }
     } elsif (settingKnob == KNOB_REG) {
       var address = num(left(input,2));
-      if (address != nil and address==19) {
+      #printDA("reg adr to display out: "~(address==nil?"nil":""~address));
+      if (address == nil or address==0) {
+          # max alpha
+          #printDA("displaying alpha");
+          display = sprintf("00%02d00", getprop("fdm/jsbsim/fcs/max-alpha-deg"));
+      } elsif (address != nil and address==19) {
           # floor warn
           if (getprop("ja37/sound/floor-ft") < 0) {
             display = "190000";
@@ -451,9 +514,19 @@ var disp = func {
       } else {
         display = "000000";
       }
+    } elsif (settingKnob == KNOB_DATA) {
+      var address = num(left(input,2));
+      if (address != nil and address==15) {
+          # interoperability
+          display = sprintf("150%01d00", !getprop("ja37/hud/units-metric"));
+      } else {
+        display = "000000";
+      }
     }
   } else {# input
-    if (settingKnob == KNOB_REG) {
+    if (settingKnob == KNOB_DATA) {
+      display = input;
+    } elsif (settingKnob == KNOB_REG) {
       display = input;
     } elsif (settingKnob == KNOB_FUEL) {
       display = input;
@@ -475,6 +548,12 @@ var disp = func {
     return;
   }
   #printDA(" display  *"~display~"*");
+  if (size(display)==8) {
+    #make room for the unauthentic 8th digit
+    signText.setFontSize(50, 1.25);
+  } else {
+    signText.setFontSize(50, 1.125);
+  }
   signText.setText(display);
 };
 var metric = 0;
@@ -557,11 +636,71 @@ var monthmax = [31,28,31,30,31,30,31,31,30,31,30,31];
 var ok          = RELEASE;
 var keyPressed  = nil;
 var settingKnob = getprop("ja37/navigation/dp-mode");
-var settingSign = getprop("ja37/navigation/ispos")?-1:1;
+var settingSign = getprop("ja37/navigation/ispos")==MINUS?-1:1;
 var settingDir  = getprop("ja37/navigation/inout");
+var settingPos  = POS;
 var settingPrevKnob = getprop("ja37/navigation/dp-mode");
-var settingPrevSign = getprop("ja37/navigation/ispos")?-1:1;
+var settingPrevSign = getprop("ja37/navigation/ispos")==MINUS?-1:1;
 var settingPrevDir  = getprop("ja37/navigation/inout");
+var settingPrevPos  = POS;
+
+
+
+var toggleInOut = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+  settingDir = !settingDir;
+  updateProps();
+  main();
+}
+
+var togglePosMsda = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+  settingPos = !settingPos;
+  updateProps();
+  main();
+}
+
+var togglePN = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+  if (settingSign<0) {
+    settingSign = 1;
+  } else {
+    settingSign = -1;
+  }
+  updateProps();
+  main();
+}
+
+var test = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+}
+
+var syst = func {
+  # called from TI
+  if(getprop("fdm/jsbsim/gear/unit[0]/WOW") == FALSE) {
+    settingDir  = OUT;
+    settingPos  = POS;
+    updateProps();
+  }
+}
+
+var wow = func {
+  if(getprop("fdm/jsbsim/gear/unit[0]/WOW") == FALSE) {
+    settingDir  = OUT;
+    settingPos  = POS;
+    updateProps();
+  }
+}
+
+var updateProps = func {
+  setprop("ja37/navigation/inout", settingDir);
+  setprop("ja37/navigation/ispos", settingSign>0?PLUS:MINUS);
+  setprop("ja37/dap/pos", settingPos);
+  setprop("ja37/dap/msda", !settingPos);
+  setprop("ja37/dap/in", !settingDir);
+  setprop("ja37/dap/out", settingDir);
+}
+updateProps();
 
 var switch = func {
   if (getprop("ja37/systems/variant") != 0) return;
@@ -576,6 +715,12 @@ var keyPress = func (key) {
   if (getprop("systems/electrical/outputs/dc-voltage") < 23){
     printDA("DAP: offline");
     return;
+  }
+  if (settingDir != IN or settingPos != MSDA) {
+    settingDir = IN;
+    settingPos = MSDA;
+    updateProps();
+    main();
   }
   keyPressed = key;
   printDA("DAP: key "~key);
@@ -603,5 +748,6 @@ var okRelease = func {
 }
 
 setlistener("ja37/navigation/dp-mode", switch);
-setlistener("ja37/navigation/ispos", switch);
-setlistener("ja37/navigation/inout", switch);
+setlistener("fdm/jsbsim/gear/unit[0]/WOW", wow);
+#setlistener("ja37/navigation/ispos", switch);
+#setlistener("ja37/navigation/inout", switch);

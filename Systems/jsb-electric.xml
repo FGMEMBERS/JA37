@@ -264,6 +264,7 @@
             <test logic="AND" value="0">
                 gear/gear-pos-norm == 1
                 systems/electrical/generator-reserve-deploy-emergency-cmd == 1
+                /controls/electric/engine/generator == 1
             </test>
         </switch>
 
@@ -581,6 +582,7 @@
             <function>
                 <product>
                     <property>/controls/lighting/flood-knob</property>
+                    <property>/ja37/light/flood-bt</property>
                     <property>/systems/electrical/dc-light</property>
                     <value>0.5</value>
                     <difference>

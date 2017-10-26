@@ -3298,3 +3298,67 @@ Model: Added canopy handle.
 Model: Added mock up of left frontmost radio panel.
 Model: Switched the nav panel and the TILS group switch.
 Model: Added handle to right panel.
+
+4.307 - 2017 October 26
+=====
+Arms: Added support for anti-radiation missiles.
+Arms: Added property for if weapon should attempt to reaquire lock if it is lost.
+Arms: Added console output system. Per default nothing is output.
+Arms: Added 2 new guidance modes: pitch and gyro-pitch. They are basically just a pitch hold A/P.
+Arms: Added possibility to change guidance, target and/or guidance-law mid-flight.
+Arms: Added support for inertial guidance.
+Model: Added test panel.
+Model: Moved and scaled transponder.
+Test: Made the test panel functional.
+MI: The TNF lamp can now be clicked to stop/start INS.
+MI: The TNF pushlamp will now blink when INS initializing, and steady when its on.
+Test: The testing will now not work if INS is initializing.
+Model: Rotated and scaled the transponder as model instead of in xml.
+Animation: Transponder lights now respond to on/off.
+Model: Added ME31 nav channel selector.
+Sim: Made KV1 channel selector use comm only, and no longer KHz.
+Model: The channel selectors no longer are shown in AJ variants.
+Sim: Fixed that channel selectors would fail if pure zeros was entered.
+Model: Added electronic warfare panel P152.
+Model: Removed A/P follow button.
+Model: increased size of datapanel.
+Model: Moved stuff around on right panel.
+GUI: Added tooltip to transponder panel.
+Model: Added FR31 radio panel.
+Model: Improved the interior lights panel.
+Animation: Made controls on FR31 radio panel animated.
+Animation: Made controls on P152 ECM panel animated.
+Animation: Animated pedal mode handle.
+Model: Added ME799 ident transponder panel.
+Arms: Drop time is now configurable.
+Model: Added half of the JA radar panel.
+Model: Added counter-measure panel.
+GUI: Renamed ME799 to IK PN799.
+Model: Adjusted width of transponder.
+Model: Moved exterior lights switches to right panel.
+GUI: Converted most of the cockpit knobs to use knob animation.
+Model: Made fusebox larger.
+Model: Fixed some layout problems on left panel in AJS/AJ.
+Model: The data panel buttons are now taller.
+Model: The JA data panel now look more like it should.
+Arms: {5N1N0B1} Fixed a bug in debug msgs. to console.
+Arms: Added support for munition deployment. For example unfolding wings or parachute.
+DAP: Made statemachine for POS/MSDA and IN/OUT modes.
+DAP: In POS-OUT is now shows waypoint/airport info.
+DAP: When longitude is 7 digits with a minus sign, the DAP can now show that.
+DAP: Can now set REG address 00, which is max AoA the FCS will allow.
+DAP: Can now set ACDATA address 15, which will set interoperability/Swedish.
+GUI: Updated checklist markers.
+Model: Updated texture for counter measure panel.
+Model: Made text on radar panel texture more readable.
+Animation: Made red terrain warning light on MI blink with 4 Hz instead of 10Hz.
+Model: Replaced reservkurs switch with a lampbutton. (JA)
+Model: For the JA made a more accurate white lamp warning on front panel.
+Model: Made button for quick INS reset on front panel. (JA)
+Model: Removed switches HUD-type and interoperability (that can be done via data-panel now). (JA)
+Model: Replaced the master warning light and button. (JA)
+Model: Added 3 labels to JA frontpanel.
+Model: Replaced the mount for the 3 autopilot buttons on frontpanel in the JA.
+Animation: Fixed timing of some blinkers. Five Hz is now the fastest used.
+Model: Added OPT FIX button on left side next to canopy handle.
+Model: Added switch on right side close to canopy for flood lights.

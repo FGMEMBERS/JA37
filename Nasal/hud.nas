@@ -1018,7 +1018,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
         fdpitch:          "autopilot/settings/fd-pitch-deg",
         fdroll:           "autopilot/settings/fd-roll-deg",
         fdspeed:          "autopilot/settings/target-speed-kt",
-        fiveHz:           "ja37/blink/five-Hz/state",
+        fiveHz:           "ja37/blink/two-Hz/state",
         gearCmdNorm:      "/fdm/jsbsim/gear/gear-cmd-norm",
         gearsPos:         "gear/gear/position-norm",
         hdg:              "orientation/heading-magnetic-deg",
@@ -1050,7 +1050,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
         speed_e:          "velocities/speed-east-fps",
         speed_n:          "velocities/speed-north-fps",
         station:          "controls/armament/station-select",
-        tenHz:            "ja37/blink/ten-Hz/state",
+        tenHz:            "ja37/blink/four-Hz/state",
         twoHz:            "ja37/blink/two-Hz/state",
         terrainOn:        "ja37/sound/terrain-on",
         TILS:             "ja37/hud/TILS",
@@ -1119,7 +1119,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
     mode = me.input.currentMode.getValue();
     me.station = me.input.station.getValue();
 
-    if(me.has_power == FALSE or me.input.mode.getValue() == 0) {
+    if(me.has_power == FALSE or me.input.mode.getValue() == 0 or testing.ongoing == TRUE) {
       me.root.hide();
       me.root.update();
       air2air = FALSE;

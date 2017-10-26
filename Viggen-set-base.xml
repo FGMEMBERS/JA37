@@ -8,7 +8,7 @@
 
 <PropertyList include="Systems/ja37-engines-off.xml">    <!-- change this to 'on' for fast testing/debugging -->
     <sim>
-        <aircraft-version>4.306</aircraft-version>
+        <aircraft-version>4.307</aircraft-version>
 
         <minimum-fg-version>2017.3.1</minimum-fg-version>
 
@@ -564,6 +564,9 @@
             <two-Hz>
                 <state type="bool">false</state>
             </two-Hz>
+            <four-Hz>
+                <state type="bool">false</state>
+            </four-Hz>
             <five-Hz>
                 <state type="bool">false</state>
             </five-Hz>
@@ -632,7 +635,9 @@
         <avionics>
             <altimeters-calibrated type="bool">0</altimeters-calibrated>
             <primaryData type="bool">false</primaryData>
-            <TN type="bool">false</TN>
+            <ins-cmd type="bool">true</ins-cmd>
+            <ins-init type="bool">false</ins-init>
+            <ins type="bool">false</ins>
             <record-on type="bool">false</record-on>
             <vid type="bool">false</vid>
             <gps-cmd type="bool">false</gps-cmd>
@@ -669,6 +674,7 @@
             <annunciator>
                 <serviceable type="bool">true</serviceable>
             </annunciator>
+            <reservkurs type="bool">false</reservkurs>
         </avionics>
         <displays>
             <show-full-menus type="bool">true</show-full-menus>
@@ -687,6 +693,9 @@
                 <button-mhz type="bool">true</button-mhz>
                 <switch type="bool">true</switch><!-- set to FM per default -->
             </kv1>
+            <me31>
+                <button-mhz type="bool">true</button-mhz>
+            </me31>
         </radio>
         <faf>
             <friend-1 userarchive="y" type="string"></friend-1>
@@ -730,7 +739,22 @@
             <ti20 type="double">0</ti20>
             <ti21 type="double">0</ti21>
             <ti0 type="double">0</ti0>
+            <flood-bt type="bool">true</flood-bt>
         </light>
+        <test>
+            <ym-steady type="bool">false</ym-steady>
+            <ym-flash type="bool">false</ym-flash>
+            <start-steady type="bool">false</start-steady>
+            <start-flash type="bool">false</start-flash>
+            <rep-steady type="bool">false</rep-steady>
+            <rep-flash type="bool">false</rep-flash>
+            <ipk-steady type="bool">false</ipk-steady>
+            <ipk-flash type="bool">false</ipk-flash>
+            <fk-steady type="bool">false</fk-steady>
+            <fk-flash type="bool">false</fk-flash>
+            <fel-steady type="bool">false</fel-steady>
+            <fel-flash type="bool">false</fel-flash>
+        </test>
     </ja37>
     <ai>
         <submodels>
@@ -1489,6 +1513,9 @@
         <ch_select>
             <file>Aircraft/JA37/Nasal/channel-selector.nas</file>
         </ch_select>
+        <me31>
+            <file>Aircraft/JA37/Nasal/channel-selector-me31.nas</file>
+        </me31>
         <vector>
             <file>Aircraft/JA37/Nasal/vector.nas</file>
         </vector>
@@ -1498,6 +1525,9 @@
         <dap>
             <file>Aircraft/JA37/Nasal/data-panel.nas</file>
         </dap>
+        <testing>
+            <file>Aircraft/JA37/Nasal/test.nas</file>
+        </testing>
         
         <!-- Uncomment below to enable FGplot -->
         <!--

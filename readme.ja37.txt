@@ -22,7 +22,7 @@ Click a sidebutton for quick SYST menu.
 Click a bottom button for main menus.
 Click MENU to exit menus.
 
-The rocker switch C will make minute adjustments for where on display own position is located.
+The rocker switch C change contrast of display (only if model shaders is on, and not in Rembrandt).
 The rocker switch B change brightness of display.
 
 Menus
@@ -151,8 +151,8 @@ Concise overview of Datapanel (DAP) (on right panel, has keypad and display)
 OK button is on nav panel, called BX. (due to the nav. panel is really from the AJ)
 Nav. panel is located just next to data-panel.
 
-Notice first the switch IN/OUT.
-Below is listed what combination of that switch with the knob will produce:
+Notice first the button IN/OUT.
+Below is listed what combination of that button with the knob will produce (if the other button is MSDA):
 
 OUT
 - TI:     Show flight time on TI.
@@ -160,20 +160,25 @@ OUT
 - CL/DA:  Show date/time on display. Cycle with OK.
 - FUEL:   Show extra fuel warning setting in percent on display.
 - LOLA:   Show current LON/LAT on display. Cycle with OK. (it will not show negative sign if longitude degrees is more than 2 digits, the JA was only used in Sweden)
-- ACDATA:
 
 IN
-- TI:     Can clear currently edited flightplan/map-area by pressing RESET.
+- TI:     Can clear currently edited flightplan/map-area by pressing CLEAR.
 - TILS:  
 - CL/DA:  Set date/time. Entering 999999 for either date or time will reset.
 - FUEL:   Set extra fuel warning in percent on display.
 - LOLA:  
-- ACDATA:
+
+ACDATA:
+- IN:  Input 2 digits for address, then either the value you want to set, or switch to OUT.
+- OUT: If 2 first digits entered will show value of address in last 4 digits.
+- ADDRESSES:
+    15axcd Interoperability = 0, Swedish and metric = 0. a, c and d is ignored.
 
 REG/STR:
 - IN:  Input 2 digits for address, then either the value you want to set, or switch to OUT.
 - OUT: If 2 first digits entered will show value of address in last 4 digits.
 - ADDRESSES:
+    00xxcd is maximum angle of attack setting. c and d is ignored. Setting 00 reverts to default.
     19xxxx is training floor altitude.
 
 "237" on display
@@ -183,6 +188,8 @@ REG/STR:
 - rotate knob or in/out switch to clear.
 
 When inputting, pay notice to the switch +/-, as that is the sign of what you input.
+
+If POS/MSDA button is in POS mode and the other button in OUT, the display will show steerpoint info.
 
 Pre-load flightplans and/or map areas on startup.
 =================================================
@@ -209,12 +216,41 @@ Example: --prop:string:/xmlPlans/area3=c:\areas\myNoFlyZone.gpx
 
 If a file cannot get loaded, the console will print a warning.
 
+Testing
+=======
+The following conditions must be present before testing:
+--------------------------------------------------------
+- Wheels on ground
+- INS not initializing
+and either
+- External power supplying
+or
+- DC and AC power on.
+- Throttle not idle
+- Throttle not too high
+
+Test
+----
+On test panel, click FK to get into testing mode. Displays, HUD and air-condition will shut off.
+To abort either switch engine starter or click FK.
+Click START/STOPP to start testing. While test of a system is ongoing data-panel minus sign will blink, and the 2 first digits will show which system being tested.
+The result of a test is shown on the data-panel without a minus sign. First 2 digits is the system, next 4 digits is details of the result.
+When a test is successful the green lamp will show.
+ You can then click START/STOPP to acknowledge and start test of next system.
+When a test is unsuccessful the red lamp will show.
+ You can then click START/STOPP to acknowledge and start test of next system.
+ Or click FEL to not acknowledge and start next test.
+ Or click REP to repeat the test.
+During a test you can click START/STOPP to skip to next test.
+When last test has been acknowledged or dis-acknowledged the testing ends.
+For now only AUTO testing can be done, meaning it will test all 20 systems. Testing through TI is not enabled yet.
+
 Landing
 =======
 Rules
 -----
-Max allowed sidewind for short landing without flare: 30 Km/h - 16.2 kt
-Max allowed sidewind for standard landing with flare: 55 Km/h - 29.7 kt
+Max allowed crosswind for short landing without flare: 30 Km/h - 16.2 kt
+Max allowed crosswind for standard landing with flare: 55 Km/h - 29.7 kt
 Landing must be standard with flare at aircraft weights over 15000 Kg or if there is fuel in the droptank.
 Reversing handle must not be pulled out before landing gear is out and locked, and indicator panel has 3 green lights.
 Max allowed EPR (engine pressure ratio) at initialization of reverser is 1.75.
