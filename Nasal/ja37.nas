@@ -907,12 +907,19 @@ var Saab37 = {
       # radar
       radar_logic.radarLogic = radar_logic.RadarLogic.new();
       me.loop_logic  = maketimer(0.24, radar_logic.radarLogic, func radar_logic.radarLogic.loop());
-      me.loop_logic.start();
+      #me.loop_logic.start();
 
       # immatriculation
-      callsign.callInit();
-      me.loop_callsign= maketimer(1, me, func callsign.loop_callsign());
-      me.loop_callsign.start();
+      call(func {# issue on some fast linux PCs..
+        callsign.callInit();
+        me.loop_callsign = maketimer(1, me, func callsign.loop_callsign());
+        me.loop_callsign.start();
+      },nil,var err=[]);
+      if(size(err)) {
+        foreach(var i;err) {
+          print(i);
+        }
+      }
 
       if (getprop("ja37/supported/canvas") == TRUE and getprop("ja37/systems/variant") > 0) {
         # CI display
@@ -964,6 +971,10 @@ var Saab37 = {
         me.loop_plan.start();
       }
       
+    }
+    if(getprop("ja37/supported/radar") == TRUE) {
+      # radar (must be called after TI)
+      me.loop_logic.start();
     }
 
     if (getprop("ja37/supported/fire") == TRUE) {
@@ -1448,8 +1459,10 @@ var load_interior_final2 = func {
 }
 
 var main_init_listener = setlistener("sim/signals/fdm-initialized", func {
-	main_init();
-	removelistener(main_init_listener);
+  if (getprop("sim/signals/fdm-initialized") == 1) {
+	 main_init();
+	 removelistener(main_init_listener);
+  }
  }, 0, 0);
 
 var re_init_listener = setlistener("/sim/signals/reinit", func {

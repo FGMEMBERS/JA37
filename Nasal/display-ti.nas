@@ -267,7 +267,7 @@ var dictSE = {
 	'HORI': {'0': [TRUE, "AV"], '1': [TRUE, "RENS"], '2': [TRUE, "P\xC3\x85"]},
 	'0':   {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"]},
 	'8':   {'8': [TRUE, "R7V"], '9': [TRUE, "V7V"], '10': [TRUE, "S7V"], '11': [TRUE, "S7H"], '12': [TRUE, "V7H"], '13': [TRUE, "R7H"],
-			'7': [TRUE, "MENY"], '14': [TRUE, "AKAN"], '15': [FALSE, "RENS"]},
+			'7': [TRUE, "MENY"], '14': [TRUE, "AKAN"], '15': [FALSE, "RENS"], '3': [FALSE, "SEEK"], '17': [FALSE, "MODE"], '18': [FALSE, "MODE"], '19': [FALSE, "SEEK"], '20': [FALSE, "STA"], '2': [FALSE, "CAGE"]},
 	'9':   {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
 	 		'1': [TRUE, "SL\xC3\x84CK"], '2': [TRUE, "DL"], '3': [TRUE, "OPT"], '4': [TRUE, "B"], '5': [TRUE, "UPOL"], '6': [TRUE, "TRAP"], '7': [TRUE, "MENY"],
 	 		'14': [TRUE, "JAKT"], '15': [FALSE, "HK"],'16': [TRUE, "\xC3\x85POL"], '17': [TRUE, "L\xC3\x85"], '18': [TRUE, "LF"], '19': [TRUE, "LB"],'20': [TRUE, "L"]},
@@ -298,7 +298,7 @@ var dictEN = {
 	'HORI': {'0': [TRUE, "OFF"], '1': [TRUE, "CLR"], '2': [TRUE, "ON"]},
 	'0':   {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"]},
 	'8':   {'8': [TRUE, "T7L"], '9': [TRUE, "W7L"], '10': [TRUE, "F7L"], '11': [TRUE, "F7R"], '12': [TRUE, "W7R"], '13': [TRUE, "T7R"],
-			'7': [TRUE, "MENU"], '14': [TRUE, "AKAN"], '15': [FALSE, "CLR"]},
+			'7': [TRUE, "MENU"], '14': [TRUE, "AKAN"], '15': [FALSE, "CLR"], '3': [FALSE, "SEEK"], '17': [FALSE, "MODE"], '18': [FALSE, "MODE"], '19': [FALSE, "SEEK"], '20': [FALSE, "STA"], '2': [FALSE, "CAGE"]},
     '9':   {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
 	 		'1': [TRUE, "OFF"], '2': [TRUE, "DL"], '3': [TRUE, "OPT"], '4': [TRUE, "S"], '5': [TRUE, "MPOL"], '6': [TRUE, "TRAP"], '7': [TRUE, "MENU"],
 	 		'14': [TRUE, "FGHT"], '15': [FALSE, "ACRV"],'16': [TRUE, "RPOL"], '17': [TRUE, "LR"], '18': [TRUE, "LT"], '19': [TRUE, "LS"],'20': [TRUE, "L"]},
@@ -2065,6 +2065,19 @@ var TI = {
 				me.menuButtonBox[14].show();
 			}
 		}
+		if (me.menuMain == MAIN_WEAPONS) {
+			me.aim9 = displays.common.armActive();
+			if (me.aim9 == nil or (me.aim9.type != "RB-74" and me.aim9.type != "RB-24J")) {
+				me.menuButton[2].setText("");
+				me.menuButton[18].setText("");
+				me.menuButton[17].setText("");
+				me.menuButton[3].setText("");
+				me.menuButton[19].setText("");
+			}
+			if (me.aim9 == nil) {
+				me.menuButton[20].setText("");
+			}
+		}
 	},
 
 	compileFastMenu: func (button) {
@@ -2119,6 +2132,54 @@ var TI = {
 			me.seven = me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":(dictEN['0'][''~math.abs(me.menuMain)][1])));
 		}
 		me.menuButtonSub[7].setText(me.vertStr(me.seven));
+		if (me.menuMain == MAIN_WEAPONS) {
+			me.aim9 = displays.common.armActive();
+			if (me.aim9 != nil) {
+				me.menuButtonSub[20].show();
+				if (me.aim9.status == armament.MISSILE_STANDBY) {
+					me.menuButtonSub[20].setText(me.vertStr("STBY"));
+				} elsif (me.aim9.status == armament.MISSILE_STARTING) {
+					me.menuButtonSub[20].setText(me.vertStr("STBY"));
+					me.menuButtonSubBox[20].show();
+				} elsif (me.aim9.status >= armament.MISSILE_SEARCH) {
+					me.menuButtonSub[20].setText(me.vertStr("RDY"));
+					me.menuButtonSubBox[20].show();
+				}
+				if (me.aim9.type == "RB-74" or me.aim9.type == "RB-24J") {
+					me.menuButtonSub[19].show();
+					if (me.aim9.getWarm() != 0) {
+						me.menuButtonSub[19].setText(me.vertStr("WARM"));
+					} else {
+						me.menuButtonSub[19].setText(me.vertStr("COOL"));
+					}
+					if (me.aim9.isCooling() == 1) {
+						me.menuButtonSubBox[19].show();
+					}
+					me.menuButtonSub[18].show();
+					me.menuButtonSub[18].setText(me.vertStr("BORE"));
+					if (me.aim9.isBore()) {
+						me.menuButtonSubBox[18].show();
+					}
+					me.menuButtonSub[17].show();
+					me.menuButtonSub[17].setText(me.vertStr("SLAV"));
+					if (me.aim9.isSlave()) {
+						me.menuButtonSubBox[17].show();
+					}
+					me.menuButtonSub[3].show();
+					me.menuButtonSub[3].setText(me.vertStr("CAGE"));
+					if (me.aim9.isCaged()) {
+						me.menuButtonSubBox[3].show();
+					}
+					me.menuButtonSub[2].show();
+					me.menuButtonSubBox[2].show();
+					if (me.aim9.isAutoUncage()) {
+						me.menuButtonSub[2].setText(me.vertStr("AUTO"));
+					} else {
+						me.menuButtonSub[2].setText(me.vertStr("MAN"));
+					}
+				}
+			}
+		}
 		if (me.menuMain == MAIN_DISPLAY) {
 			#show flight data
 			me.menuButtonSub[17].show();
@@ -4003,7 +4064,7 @@ var TI = {
 	    me.tgt_callsign = "";
 	    me.tele = [];
 
-	    if(me.input.tracks_enabled.getValue() == 1 and me.input.radar_serv.getValue() > 0) {
+	    if(me.input.tracks_enabled.getValue() == 1 and me.input.radar_serv.getValue() > 0 and getprop("ja37/radar/active") == TRUE) {
 			me.radar_group.show();
 
 			me.selection = radar_logic.selection;
@@ -4390,6 +4451,15 @@ var TI = {
 			if(me.menuMain == MAIN_MISSION_DATA) {
 				route.Polygon.insertSteerpoint();
 			}
+			if(me.menuMain == MAIN_WEAPONS) {
+				me.aim9 = displays.common.armActive();
+				if (me.aim9 != nil) {
+					me.autCage = me.aim9.isAutoUncage();
+					foreach(snake;displays.common.sidewinders()) {
+						snake.setAutoUncage(!me.autCage);
+					}
+				}
+			}
 		}
 	},
 
@@ -4420,6 +4490,15 @@ var TI = {
 			}	
 			if(me.menuMain == MAIN_MISSION_DATA) {
 				route.Polygon.appendSteerpoint();
+			}
+			if(me.menuMain == MAIN_WEAPONS) {
+				me.aim9 = displays.common.armActive();
+				if (me.aim9 != nil) {
+					me.cage = me.aim9.isCaged();
+					foreach(snake;displays.common.sidewinders()) {
+						snake.setCaged(!me.cage);
+					}
+				}
 			}
 		}
 	},
@@ -4850,7 +4929,7 @@ var TI = {
 				} else {
 					route.Polygon.editPlan(nil);
 				}
-			}
+			}			
 		}
 	},
 
@@ -4889,6 +4968,15 @@ var TI = {
 					route.Polygon.editPlan(route.Polygon.editMiss);
 				}
 			}
+			if(me.menuMain == MAIN_WEAPONS) {
+				me.aim9 = displays.common.armActive();
+				if (me.aim9 != nil) {
+					me.slaved = me.aim9.isSlave();
+					foreach(snake;displays.common.sidewinders()) {
+						snake.setSlave(!me.slaved);
+					}
+				}
+			}
 		}
 	},
 
@@ -4911,6 +4999,15 @@ var TI = {
 			}
 			if(me.menuMain == MAIN_MISSION_DATA) {
 				route.Polygon.editSteerpoint();
+			}
+			if(me.menuMain == MAIN_WEAPONS) {
+				me.aim9 = displays.common.armActive();
+				if (me.aim9 != nil) {
+					me.bore = me.aim9.isBore();
+					foreach(snake;displays.common.sidewinders()) {
+						snake.setBore(!me.bore);
+					}
+				}
 			}
 		}
 	},
@@ -4956,6 +5053,15 @@ var TI = {
 			if(me.menuMain == MAIN_FAILURES) {
 				me.logPage += 1;
 			}			
+			if(me.menuMain == MAIN_WEAPONS) {
+				me.aim9 = displays.common.armActive();
+				if (me.aim9 != nil) {
+					me.cooling = me.aim9.isCooling();
+					foreach(snake;displays.common.sidewinders()) {
+						snake.setCooling(!me.cooling);
+					}
+				}
+			}
 		}
 	},
 

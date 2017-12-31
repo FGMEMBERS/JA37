@@ -793,6 +793,15 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
     #me.diamond_group_line = me.diamond_group.createChild("group");
     #me.track_line = nil;
     me.diamond_group.createTransform();
+    me.diamond_small = me.root.createChild("path")
+                           .moveTo(-(25/1024)*canvasWidth,   0)
+                           .lineTo(  0, -(25/1024)*canvasWidth)
+                           .lineTo( (25/1024)*canvasWidth,   0)
+                           .lineTo(  0,  (25/1024)*canvasWidth)
+                           .lineTo(-(25/1024)*canvasWidth,   0)
+                           .setStrokeLineWidth(w)
+                           .hide()
+                           .setColor(r,g,b, a);
     me.diamond = me.diamond_group.createChild("path")
                            .moveTo(-(70/1024)*canvasWidth,   0)
                            .lineTo(  0, -(70/1024)*canvasWidth)
@@ -958,7 +967,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
              me.alt_scale_high, me.alt_scale_med, me.alt_scale_low, me.slip_indicator,
              me.alt_scale_line, me.aim_reticle_fin, me.reticle_cannon, me.desired_lines2,
              me.alt_pointer, me.rad_alt_pointer, me.target_air, me.target_sea, me.target_ground, me.desired_lines3, me.horizon_line_gap,
-             me.desired_boxes, me.reticle_no_ammo, me.takeoff_symbol, me.horizon_line, me.horizon_line_nav, me.horizon_dots, me.diamond,
+             me.desired_boxes, me.reticle_no_ammo, me.takeoff_symbol, me.horizon_line, me.horizon_line_nav, me.horizon_dots, me.diamond, me.diamond_small,
              tower, ccip, me.aim_reticle, me.targetSpeed, me.mySpeed, me.distanceScale, me.targetDistance1,
              me.targetDistance2, me.landing_line, me.heading_bug_horz];
 #artifacts0 =[];
@@ -1118,6 +1127,8 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
 
     mode = me.input.currentMode.getValue();
     me.station = me.input.station.getValue();
+
+    me.displaySeeker(mode);
 
     if(me.has_power == FALSE or me.input.mode.getValue() == 0 or testing.ongoing == TRUE) {
       me.root.hide();
@@ -2670,11 +2681,40 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
     return 20;
   },
 
+  displaySeeker: func (mode) {
+    me.missileCurr = displays.common.armActive();
+    me.diamond_small.hide();
+    if (me.missileCurr != nil and mode == COMBAT and me.missileCurr.guidance == "heat") {
+      me.ds = me.missileCurr.getSeekerInfo();
+      if (me.ds == nil) {
+          me.diamond_small.hide();
+      } else {
+          me.diamond_small.setTranslation(me.ds[0]*pixelPerDegreeX, -me.ds[1]*pixelPerDegreeY+centerOffset);
+          if (me.missileCurr.status != armament.MISSILE_LOCK or me.input.twoHz.getValue()) {
+            me.diamond_small.show();
+          } else {
+            me.diamond_small.hide();
+          }
+          me.diamond_small.update();
+      }
+    } else {
+      me.diamond_small.hide();
+    }
+    if (me.missileCurr != nil and (me.missileCurr.isBore() or (!me.missileCurr.isSlave() and !me.missileCurr.isBore() and !me.missileCurr.isCaged()) or (me.missileCurr.isSlave() and !me.missileCurr.command_tgt)) and radar_logic.tracks != nil) {
+      #me.missileCurr.contacts = [radar_logic.selection];
+      #me.missileCurr.contacts.extend(radar_logic.tracks);
+      me.missileCurr.contacts = radar_logic.tracks;
+    } elsif (me.missileCurr != nil) {
+      me.missileCurr.contacts = [];
+    }
+  },
+
   displayRadarTracks: func (mode) {
     me.track_index = 1;
     me.selection_updated = FALSE;
-
-    if(me.input.tracks_enabled.getValue() == 1 and me.input.radar_serv.getValue() > 0) {
+    me.armSelect = me.station;
+    me.missileCurr = displays.common.armActive();
+    if(me.input.tracks_enabled.getValue() == 1 and me.input.radar_serv.getValue() > 0 and getprop("ja37/radar/active") == TRUE) {
       me.radar_group.show();
 
       me.selection = radar_logic.selection;
@@ -2778,20 +2818,20 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
           me.target_circle[me.selection_index].hide();
 
 
-          me.armSelect = me.station;
           me.displayDiamond = 0;
           #print();
           me.roll = me.input.roll.getValue();
-          if(armament.AIM.active[me.armSelect-1] != nil and armament.AIM.active[me.armSelect-1].status == armament.MISSILE_LOCK
-             and (armament.AIM.active[me.armSelect-1].rail == TRUE or (me.roll > -90 and me.roll < 90))) {
+          if(me.missileCurr != nil and me.missileCurr.status == armament.MISSILE_LOCK
+             and (me.missileCurr.rail == TRUE or (me.roll > -90 and me.roll < 90))) {
             # lock and not inverted if the missiles is to be dropped
-            me.weak = armament.AIM.active[me.armSelect-1].trackWeak;
-            if (me.weak == TRUE) {
-              me.displayDiamond = 1;
-            } else {
+            #me.weak = armament.AIM.active[me.armSelect-1].trackWeak;
+            #if (me.weak == TRUE) {
+            #  me.displayDiamond = 1;
+            #} else {
               me.displayDiamond = 2;
-            }
-          }		  
+            #}
+            me.diamond_small.hide();
+          }	  
 		  
           #var bearing = diamond_node.getNode("radar/bearing-deg").getValue();
           #var heading = diamond_node.getNode("orientation/true-heading-deg").getValue();
@@ -3002,6 +3042,7 @@ var init = func() {
     #print("HUD initialized.");
     hud_pilot.update();
     IR_loop();
+    setlistener("sim/rendering/shaders/skydome", func {reinit(on_backup_power);});
   }
 };
 
@@ -3017,7 +3058,7 @@ var IR_loop = func {
   #settimer(IR_loop, 1.5);
 };
 
-setlistener("sim/rendering/shaders/skydome", func {reinit(on_backup_power);});
+
 
 var reinit = func(backup = FALSE) {#mostly called to change HUD color
    #reinitHUD = 1;

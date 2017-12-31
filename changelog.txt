@@ -3362,3 +3362,33 @@ Model: Replaced the mount for the 3 autopilot buttons on frontpanel in the JA.
 Animation: Fixed timing of some blinkers. Five Hz is now the fastest used.
 Model: Added OPT FIX button on left side next to canopy handle.
 Model: Added switch on right side close to canopy for flood lights.
+
+4.308 - 2017 November 29
+=====
+GUI: Added some extra checklists items for before engine start.
+Model: {Pinto} New M70 model.
+Model: {Pinto} Replaced the RB99 with a more high-def. one.
+Arms: The munition is now in some cases pitched into airstream, to avoid it falling upwards when flying level with an AoA.
+Arms: The missile code now supports being slaved to helmet cuing or cursor on MFD/HUD.
+MI: Can now slew the MI display cursor to lock on to target. The diamond will be shown moving around on the HUD too.
+Arms: Ability to cool IR missiles. Uncooled newer AIM9 will have shorter IR detect range. Cooling fluid is set to last 1 hour.
+Arms: IR slave to radar works almost as usual, except the seeker have to move to find target. Goes fast in the RB74 though.
+Arms: Bore mode. Will target anything that comes into aircraft bore, whether radar has it selected or not.
+Arms: Cage/uncage support. Uncaged will basically make the missile be non-slaved and seeker move by itself to keep lock.
+Arms: There is now an auto-uncage option. Is on by default.
+Arms: Locking will no longer be immediate, the seeker has to direct itself at the target. This can be seen in the HUD, mostly with RB24J.
+Arms: Seperate locks for each missile. So missile 1 lock on target 1, and m2 lock on t2. Not put into the viggen Fire control yet.
+Arms: Added startup time for missile before its ready.
+TI: Support for new RB24/RB74 options in WEAP menu.
+Arms: Due to IR seeker have to move find target, can lose a lock if its somewhat off bore and aircraft do fast rolls.
+Arms: Uncaged, not bore and not slaved it now scan HUD in a pattern for locks.
+Arms: IR lock before launch now also check aspect.
+Radar: Fixed RCS code so OpenRadar doesn't crash it.
+Radar: Whether the radar is active is now sent over MP. (compatible for now only with MiG21bis and F15)
+Arms: IR missiles can now lock onto targets without radar being active.
+Radar: RWR indication will now only show if the MP aircraft has radar or transponder turned on.
+TI: IR missile settings now is propagated to all of them.
+MI: Now shows IR seeker position.
+Model: {Spectre} Livery added for BIGDES.
+Aero: Made all derivatives depends on rotating winds too.
+Control: Made all rotational inputs be independent from rotational winds, as they are read from gyros.

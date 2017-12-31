@@ -178,6 +178,8 @@ var MI = {
       	mi.brightness = 1;
       	mi.off = FALSE;
       	mi.helpTime = 0;
+      	mi.cursorPosX = 0;
+      	mi.cursorPosY = 0;
 
       	return mi;
 	},
@@ -297,6 +299,15 @@ var MI = {
 				.horiz(ticksShort*8)
 				.moveTo(0,-ticksShort*4)
 				.vert(ticksShort*8)
+				.setStrokeLineWidth(w)
+				.setTranslation(0,halfHeightOfSideScales)
+		        .setColor(r,g,b, a);
+
+		me.diamond_small = me.rootCenter.createChild("path")
+				.moveTo(-6,-6)
+				.lineTo(6,6)
+				.moveTo(6,-6)
+				.lineTo(-6,6)
 				.setStrokeLineWidth(w)
 				.setTranslation(0,halfHeightOfSideScales)
 		        .setColor(r,g,b, a);
@@ -653,6 +664,7 @@ var MI = {
 		me.displayGround();
 		me.displayGroundCollisionArrow();
 		me.showAltLines();
+		me.displaySeeker();
 		me.displayRadarTracks();#must be after displayFPI
 		me.displayHeadingScale();#must be after radar tracks
 		me.altScale();
@@ -859,6 +871,26 @@ var MI = {
 		}
 	},
 
+	displaySeeker: func {
+		me.missileCurr = displays.common.armActive();
+	    if (me.missileCurr != nil and displays.common.mode == displays.COMBAT) {
+	      me.ds = me.missileCurr.getSeekerInfo();
+	      if (me.ds == nil) {
+	          me.diamond_small.hide();
+	      } else {
+	          me.diamond_small.setTranslation(me.ds[0]*texel_per_degree, -me.ds[1]*texel_per_degree);
+	          if (me.missileCurr.status != armament.MISSILE_LOCK or me.input.twoHz.getValue()) {
+	            me.diamond_small.show();
+	          } else {
+	            me.diamond_small.hide();
+	          }
+	          me.diamond_small.update();
+	      }
+	    } else {
+	      me.diamond_small.hide();
+	    }
+	},
+
 	displayRadarTracks: func () {
 
 		var mode = canvas_HUD.mode;
@@ -871,7 +903,7 @@ var MI = {
 
 
 
-	    if(me.input.tracks_enabled.getValue() == TRUE and me.input.radar_serv.getValue() > 0) {
+	    if(me.input.tracks_enabled.getValue() == TRUE and me.input.radar_serv.getValue() > 0 and getprop("ja37/radar/active") == TRUE) {
 	      me.radar_group.show();
 
 	      me.rot = -getprop("orientation/roll-deg") * D2R;
@@ -899,11 +931,35 @@ var MI = {
 	      if(me.selection_updated == FALSE) {
 	        me.echoes[0].hide();
 	        if (cursorOn == TRUE and displays.common.cursor == displays.MI) {
+	        	me.aim9 = displays.common.armActive();
+	        	if(!getprop("/ja37/systems/input-controls-flight")) {
+					me.cursorSpeedY = getprop("fdm/jsbsim/fcs/elevator-cmd-norm");
+					me.cursorSpeedX = getprop("fdm/jsbsim/fcs/aileron-cmd-norm");
+					me.cursorMoveY  = 150 * 0.05 * me.cursorSpeedY;
+					me.cursorMoveX  = 150 * 0.05 * me.cursorSpeedX;
+					me.cursorPosX  += me.cursorMoveX;
+					me.cursorPosY  += me.cursorMoveY;
+					me.cursorPosX   = clamp(me.cursorPosX, -60*texel_per_degree,  60*texel_per_degree);
+					me.cursorPosY   = clamp(me.cursorPosY, -60*texel_per_degree,  60*texel_per_degree);
+					me.cursor.setTranslation(me.cursorPosX, me.cursorPosY);
+					
+					if (me.aim9 != nil and me.aim9.isSlave() and me.aim9.status != armament.MISSILE_LOCK) {
+						me.aim9.commandDir(me.cursorPosX/texel_per_degree, -me.cursorPosY/texel_per_degree);
+					} elsif (me.aim9 != nil and me.aim9.status != armament.MISSILE_LOCK) {
+						me.aim9.commandRadar();
+					}
+				}
 	        	me.cursor.show();
 	        } else {
 	        	me.cursor.hide();
 	        }
-	      }
+	      } else {
+        	me.aim9 = displays.common.armActive();
+        	if (me.aim9 != nil and me.aim9.status != armament.MISSILE_LOCK) {
+				me.aim9.commandRadar();
+			}
+        	me.cursor.hide();
+          }
 	      
 	      # draw selection
 	      if(me.selection != nil and me.selection.isValid() == TRUE and me.selection_updated == TRUE) {

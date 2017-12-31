@@ -369,21 +369,20 @@ var loop_stores = func {
           }
         } elsif(armSelect != (i+1) and armament.AIM.active[i].status != MISSILE_FLYING) {
           #pylon not selected, and not flying set missile on standby
-          armament.AIM.active[i].status = MISSILE_STANDBY;
+          armament.AIM.active[i].stop();
           #print("not sel "~i);
         } elsif (input.acMainVolt.getValue() < 150 or input.combat.getValue() != 2
                   or (armament.AIM.active[i].status != MISSILE_STANDBY
                       and armament.AIM.active[i].status != MISSILE_FLYING
                       and payloadName.getValue() == "none")) {
           #pylon has logic but missile not mounted and not flying or not in tactical mode or has no power
-          armament.AIM.active[i].status = MISSILE_STANDBY;
+          armament.AIM.active[i].stop();
           #print("empty "~i);
         } elsif (armSelect == (i+1) and armament.AIM.active[i].status == MISSILE_STANDBY
                   and input.combat.getValue() == 2) { # and payloadName.getValue() == "RB 24J"
           #pylon selected, missile mounted, in tactical mode, activate search
-          armament.AIM.active[i].status = MISSILE_SEARCH;
+          armament.AIM.active[i].start();
           #print("active "~i);
-          armament.AIM.active[i].search();
         } 
       } elsif (jettisonAll == TRUE and (payloadName.getValue() == "M70 ARAK" or payloadName.getValue() == "M55 AKAN" or payloadName.getValue() == "Drop tank")) {
         payloadName.setValue("none");
@@ -716,7 +715,7 @@ var trigger_listener = func {
   if(armSelect != 0 and getprop("/controls/armament/station["~armSelect~"]/trigger") == TRUE) {
     if(getprop("payload/weight["~(armSelect-1)~"]/selected") != "none") { 
       # trigger is pulled, a pylon is selected, the pylon has a missile that is locked on. The gear check is prevent missiles from firing when changing airport location.
-      if (armament.AIM.active[armSelect-1] != nil and armament.AIM.active[armSelect-1].status == 1 and (input.gearsPos.getValue() != 1 or input.dev.getValue()==TRUE) and radar_logic.selection != nil) {
+      if (armament.AIM.active[armSelect-1] != nil and armament.AIM.active[armSelect-1].status == MISSILE_LOCK and (input.gearsPos.getValue() != 1 or input.dev.getValue()==TRUE)) {
         #missile locked, fire it.
 
         if (fired != "M71 Bomblavett" and fired != "M71 Bomblavett (Retarded)") {
@@ -726,6 +725,7 @@ var trigger_listener = func {
         #print("firing missile: "~armSelect~" "~getprop("controls/armament/station["~armSelect~"]/released"));
         var callsign = armament.AIM.active[armSelect-1].callsign;
         var brevity = armament.AIM.active[armSelect-1].brevity;
+
         armament.AIM.active[armSelect-1].release();#print("release "~(armSelect-1));
         
         var phrase = brevity ~ " at: " ~ callsign;
