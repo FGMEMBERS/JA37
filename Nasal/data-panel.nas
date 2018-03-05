@@ -83,6 +83,7 @@ var HOLD      = 1;
 var RELEASE   = 0;
 
 var inputDefault  = "------";# these 3 should really be spaces, but canvas wont render space.
+var input3Default = "---";
 var input2Default = "--";
 var charDefault   = "-";
 
@@ -103,9 +104,12 @@ var testDisplay = "";
 var testMinus = 0;
 var testMinusLast = 0;
 
+var LV_lock = TRUE;
+
 var set237 = func (enable, digitsMax, callback) {#longitude might need 6 or 7 digits
   if (enable) {
     state = 237;
+    #printf("237:%d", digitsMax);
     #ti237_min = digitsMin;
     ti237_max = digitsMax;
     ti237_callback = callback;
@@ -150,11 +154,20 @@ var main = func {
       return;
     }
   }
+  TI.ti.displayFTime = FALSE;
   if (settingKnob != settingPrevKnob) {
 
   }
+
   if (state == 237) {
-    if (ok==HOLD and digit == ti237_max) {
+
+    if (x==HOLD) {
+        # clear TI value
+        printDA("set 237: clear");
+        ti237_callback(nil, settingSign, TI.ti);
+        input = inputDefault;
+        digit = 0;
+    } elsif (ok==HOLD and digit == ti237_max) {
         # set TI value
         printDA("set 237: "~input);
         ti237_callback(input, settingSign, TI.ti);
@@ -168,28 +181,179 @@ var main = func {
       # TI input
       inputKey(ti237_max);
     }
-  } elsif (settingKnob==KNOB_TI ) {
-    if(keyPressed == -1 and route.Polygon.editing != nil) {
-      # delete route plan
-      route.Polygon.deletePlan();
-    }
+
+  } elsif (settingPos == POS) {
+    # POS IN/OUT
+      if (settingKnob==KNOB_TI and keyPressed == -1 and route.Polygon.editing != nil) {
+        # delete route plan
+        route.Polygon.deletePlan();
+      }
+
   } elsif (settingDir == OUT) {
+    # MSDA/OUT
     if (ok==HOLD and cycle != -1) {
       cycle += 1;
       if (cycle > cycleMax) {
         cycle = 0;
       }
     }
-    if ((settingKnob == KNOB_DATE)
-      or (settingKnob == KNOB_LOLA)) {
+    if ((settingKnob == KNOB_DATE) or (settingKnob == KNOB_LOLA) or (settingKnob == KNOB_TI)) {
       if (cycle == -1) {
         cycle = 0;
+      }
+      if (settingKnob == KNOB_TI) {
+        TI.ti.displayFTime = TRUE;
       }
     } else {
       cycle = -1;
     }
+
   } else {
-    if (settingKnob == KNOB_DATE) {
+    # MSDA/IN
+    if (settingKnob == KNOB_TI) {
+      # to clear the points type in 654321 and click RENSA that will clear the lock
+      # then 013124 typed in means clear from 13 to 124.
+      # by twisting knob the lock is in place again.
+      #
+      # TODO: LOLA should only be 4 digits and LO or LA displayed to the right of those?
+      if (isStateChanged()) {
+        cycle = 0;
+        cycleMax = 2;
+        digit = 0;
+        input = inputDefault;
+        LV_lock = TRUE;
+        printDA("DAP TI addresses locked.");
+      } else {
+        if (keyPressed == -1 and digit == 6) {
+          if (input == "654321" and settingSign == 1) {
+            LV_lock = FALSE; 
+            cycle = 0;
+            printDA("DAP TI addresses unlocked.");
+          }
+          input = inputDefault;
+          digit = 0;
+        } elsif ((ok==HOLD or l==HOLD) and digit == 3 and cycle == 0) {
+          var address = num(left(input,3));
+          if (address != nil and address >= 1 and address < 190 and settingSign == 1) {
+            digit = 0;
+            input = manyChar(charDefault, 7);
+            cycleDisp();
+            lv_temp = lv["p"~sprintf("%03d", address)];
+            if (lv_temp == nil) {
+              var ptype = 0; # LV
+              var pcolor = 0;# red
+              var radius = 8;# km
+              
+              if (address >= 1 and address <= 39) {
+                radius = 5;
+              } elsif (address >= 100 and address <= 109) {
+                radius = -1;
+                ptype = 1;
+                pcolor = 2;
+              } elsif (address >= 110 and address <= 178) {
+                radius = 15;
+              } elsif (address >= 180 and address <= 189) {
+                radius = 40;
+              }
+              if (l == HOLD and !(address >= 100 and address <= 109)) {
+                pcolor = 1;#yellow
+              }
+              lv_temp = {address: address, color: pcolor, radius: radius, type: ptype};
+            }
+            printDA("DAP request for LV/FF point.");
+          } elsif (input == "179---" and settingSign == 1) {
+            digit = 0;
+            input = manyChar(charDefault, 7);
+            cycleDisp();
+            printDA("DAP request for Bulls-eye..");
+          } else {
+            error = TRUE;
+            digit = 0;
+            input = inputDefault;
+          }
+        } elsif (ok==HOLD and digit == 6 and cycle == 0) {
+          var low = num(substr(input,0,3));
+          var high = num(substr(input,3,3));
+          printDA("DAP: Request to delete TI address "~low~" to "~high);
+          if (LV_lock == FALSE and low < high and high < 200 and low > 000) {
+            digit = 0;
+            input = inputDefault;
+            if (179 >= low and 179 <= high) {
+              setprop("ja37/navigation/bulls-eye-defined", FALSE);
+              printDA("DAP: Bulls-eye deleted.");
+            }
+            foreach(key; keys(lv)) {
+              if (lv[key].address >= low and lv[key].address <= high) {
+                printDA("DAP: deleting point "~lv[key].address);
+                delete(lv,key);
+              }
+            }
+          } else {
+            error = TRUE;
+            digit = 0;
+            input = inputDefault;
+          }
+        } elsif (ok==HOLD and digit == 7 and cycle == 1) {
+            # set lon
+            var sign = settingSign<0?"-":"";
+            printDA("set B_E lon "~sign~input);
+            var deg = ja37.stringToLon(sign~input);
+            if (deg != nil) {
+              if (lv_temp.address == 179) {
+                setprop("ja37/navigation/bulls-eye-lon", deg);
+                printDA("DAP TI bulls-eye longitude edited.");
+              } else {
+                lv_temp.lon = deg;
+                printDA("DAP TI point longitude edited.");
+              }
+              cycleDisp();
+              input = inputDefault;
+              digit = 0;              
+            } else {
+              error = TRUE;
+              digit = 0;
+              input = inputDefault;
+            }
+        } elsif (ok==HOLD and digit == 6 and cycle == 2) {
+            # set lat
+            var sign = settingSign<0?"-":"";
+            printDA("set B_E lat "~sign~input);
+            var deg = ja37.stringToLat(sign~input);
+            if (deg != nil) {
+              if (lv_temp.address == 179) {
+                setprop("ja37/navigation/bulls-eye-lat", deg);
+                setprop("ja37/navigation/bulls-eye-defined", TRUE);
+                printDA("DAP TI bulls-eye latitude edited. Bulls-eye enabled.");
+              } else {
+                lv_temp.lat = deg;
+                lv["p"~sprintf("%03d", lv_temp.address)] = lv_temp;
+                printDA("DAP TI point longitude edited. Point activated.");
+                #debug.dump(lv);
+              }
+              cycleDisp();
+              input = inputDefault;
+              digit = 0;
+            } else {
+              error = TRUE;
+              digit = 0;
+              input = inputDefault;
+            }
+        } elsif (keyPressed == -1) {
+          # reset
+          input = cycle==1?manyChar(charDefault, 7):inputDefault;
+          digit = 0;
+        } elsif (cycle == 0) {
+          # punkt no. input
+          inputKey(6);
+        } elsif (cycle == 1) {
+          # lon input
+          inputKey(7);
+        } elsif (cycle == 2) {
+          # lat input
+          inputKey(6);
+        }
+      }
+    } elsif (settingKnob == KNOB_DATE) {
       if (isStateChanged()) {
         cycle = 0;
         cycleMax = 1;
@@ -268,11 +432,31 @@ var main = func {
           digit = 0;
           input = inputDefault;
       } else {
-        if (ok==HOLD and digit == 6 and num(left(input,2))==15) {
-            # set max alpha
+        var address = num(left(input,2));
+        if (ok==HOLD and digit == 6 and address != nil and address==15) {
+            # set interoperability
             var io = num(substr(input,3,1));
             printDA("set interoperability "~io~" ");
-            setprop("ja37/hud/units-metric", !io);
+            if (io == 0 or io == 1) {
+              setprop("ja37/hud/units-metric", !io);
+            } else {
+              error = TRUE;
+            }
+            input = inputDefault;
+            digit = 0;
+        } elsif (ok==HOLD and digit == 6 and address != nil and address==30) {
+            # set GPS Installed
+            var io = num(substr(input,2,1));
+            printDA("set GPS installed "~io~" ");
+            if (io == 0 or io == 1) {
+              setprop("ja37/navigation/gps-installed", io);
+              if (io == 0) {
+                FailureMgr._failmgr.logbuf.push("Main CPU: Detection of GPS unit mismatch!\n         Remove physical unit or correct ACDATA.");
+                TI.ti.newFails = 1;
+              }
+            } else {
+              error = TRUE;
+            }
             input = inputDefault;
             digit = 0;
         } elsif (ok==HOLD and digit == 6) {
@@ -410,7 +594,6 @@ var isStateChanged = func {
 
 var disp = func {
   display = "";
-  TI.ti.displayFTime = FALSE;
 
   if (testDisplay != "") {
     var minus = " ";
@@ -428,11 +611,12 @@ var disp = func {
       display = "   237";
     } else {
       var sign = settingSign<0?"-":" ";
-      if (ti237_max>6) {
-        display = input;
-      } else {
+      #printf("disp:%s_%s_%d", sign, input, ti237_max);
+      #if (ti237_max>6) {
+      #  display = input;
+      #} else {
         display = sign~input;#not elegant, fix later
-      }
+      #}
     }
   } elsif (settingDir == OUT and settingPos == POS) {
     display = posOutDisplay;
@@ -468,7 +652,56 @@ var disp = func {
         display = "000000";
       }
     } elsif (settingKnob == KNOB_TI) {
-      TI.ti.displayFTime = TRUE;#should this be in main instead?
+      var address = num(left(input,3));
+      if (cycle == -1) {
+        cycle = 0;
+      }
+      if (ok == HOLD) {
+        if (cycle == 0) {
+          display = "-----P";
+        } elsif (cycle == 1) {
+          display = "----LO";
+        } else {
+          display = "----LA"
+        }
+      } else {
+        if (address != nil and address == 179) {
+          #bulls-eye
+          if (cycle == 0) {
+            display = "179"
+          } elsif (cycle == 1) {
+            var lo = getprop("ja37/navigation/bulls-eye-lon");
+            var lon = ja37.convertDegreeToDispStringLon(lo);#not sure what to do when deg has 3 digit and a minus sign. No room on display.
+            display = sprintf("%s",lon);
+          } else {
+            var la = getprop("ja37/navigation/bulls-eye-lat");
+            var lat = ja37.convertDegreeToDispStringLat(la);
+            display = sprintf("%s",lat);
+          }
+        } elsif (address != nil and address > 1 and address < 190) {
+          if (cycle == 0) {
+            display = sprintf("%03d", address);
+          } elsif (cycle == 1) {
+            var point = lv["p"~sprintf("%03d", address)];
+            if (point != nil) {
+              var lo = point.lon;
+              var lon = ja37.convertDegreeToDispStringLon(lo);
+              display = sprintf("%s",lon);
+            } else {
+              display = "------";
+            }
+          } else {
+            var point = lv["p"~sprintf("%03d", address)];
+            if (point != nil) {
+              var la = point.lon;
+              var lat = ja37.convertDegreeToDispStringLat(la);
+              display = sprintf("%s",lat);
+            } else {
+              display = "------";
+            }
+          }
+        }
+      }
     } elsif (settingKnob == KNOB_LOLA) {
       if (cycle == -1) {
         cycle = 0;
@@ -482,7 +715,7 @@ var disp = func {
       } else {
         if (cycle == 0) {
           var lo = getprop("position/longitude-deg");
-          var lon = ja37.convertDegreeToDispStringLon(lo);#not sure what to do when deg has 3 digit and a minus sign. No room on display.
+          var lon = ja37.convertDegreeToDispStringLon(lo);
           display = sprintf("%s",lon);
         } else {
           var la = getprop("position/latitude-deg");
@@ -519,6 +752,9 @@ var disp = func {
       if (address != nil and address==15) {
           # interoperability
           display = sprintf("150%01d00", !getprop("ja37/hud/units-metric"));
+      } elsif (address != nil and address==30) {
+          # GPS Installed
+          display = sprintf("30%01d000", !getprop("ja37/navigation/gps-installed"));
       } else {
         display = "000000";
       }
@@ -528,6 +764,9 @@ var disp = func {
       display = input;
     } elsif (settingKnob == KNOB_REG) {
       display = input;
+    } elsif (settingKnob == KNOB_TI) {
+      var sign = settingSign<0?"-":" ";
+      display = sign~input;
     } elsif (settingKnob == KNOB_FUEL) {
       display = input;
     } elsif (settingKnob == KNOB_DATE) {
@@ -542,14 +781,14 @@ var disp = func {
       }
     }
   }
-  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+  if (getprop("systems/electrical/outputs/dc-voltage") < 23) {
     # hack
     signText.setText("-888888");
     return;
   }
   #printDA(" display  *"~display~"*");
   if (size(display)==8) {
-    #make room for the unauthentic 8th digit
+    #make room for the unauthentic 8th digit, for longitudes outside Sweden
     signText.setFontSize(50, 1.25);
   } else {
     signText.setFontSize(50, 1.125);
@@ -596,6 +835,8 @@ var monthmax = [31,28,31,30,31,30,31,31,30,31,30,31];
 #
 # FPLDATA
 # interoperability:  15a1cd, swedish: 15a0cd.
+# TI backlit intensity of frame buttons: 06---d
+# GPS-reciever installed: 300bcd (yes), 301bcd (no)
 
 # output UD UT
 #
@@ -616,6 +857,28 @@ var monthmax = [31,28,31,30,31,30,31,31,30,31,30,31];
 # P/LO/LA
 # for LV points 1 yellow, 8 red then black, then P
 # 
+# address  rad col typ
+# 1-39     5km  ry LV
+# 40-99    8km  ry LV
+# 100-109 3.5mm  t FF 
+# 110-178 15km  ry LV
+# 180-189 40km  ry LV
+# 190-199 15km   r STRIL LV number always on
+# 
+# TI/MSDA=number
+# FF number is right and north
+# LV number is middle and north
+# max 10 LV shown at once, closest to point 22km in front of plane
+# L=yellow OK=red at address input
+
+var lv = {
+  # address, color (0=red 1=yellow 2=tyrk), radius(KM) (-1= 3.5mm), type (0=LV, 1=FF, 2=STRIL), lon, lat
+  # note address 179 is stores as properties, not in this struct.
+  #p20: {address: 020, color: 1, radius: 5, type: 0, lon: -115.784, lat: 37.218},#example
+  #p105: {address: 105, color: 2, radius: -1, type: 1, lon: -115.784, lat: 37.218},#example
+};
+
+var lv_temp = nil;# temp storage of LV point when its being edited.
 
 # normal mode POS UT
 #
@@ -634,6 +897,8 @@ var monthmax = [31,28,31,30,31,30,31,31,30,31,30,31];
 # UT = output
 
 var ok          = RELEASE;
+var l           = RELEASE;
+var x           = RELEASE;
 var keyPressed  = nil;
 var settingKnob = getprop("ja37/navigation/dp-mode");
 var settingSign = getprop("ja37/navigation/ispos")==MINUS?-1:1;
@@ -744,6 +1009,46 @@ var okRelease = func {
     return;
   }
   ok = RELEASE;
+  main();
+}
+
+var lPress = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+    printDA("NAV: offline");
+    return;
+  }
+  l = HOLD;
+  main();
+}
+
+var lRelease = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+    printDA("NAV: offline");
+    return;
+  }
+  l = RELEASE;
+  main();
+}
+
+var xPress = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+    printDA("NAV: offline");
+    return;
+  }
+  x = HOLD;
+  main();
+}
+
+var xRelease = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+    printDA("NAV: offline");
+    return;
+  }
+  x = RELEASE;
   main();
 }
 

@@ -36,6 +36,8 @@ var Polygon = {
 	selectL: nil,# when selectSteer is non nil, this will be listener for route-manager edit of plan. Such edit will cancel all editing. Hackish.
 	editDetail: FALSE,# selectSteer ready for having an attribute edited
 	_apply: FALSE,
+	jumpToSteer: nil,
+	editBullsEye: FALSE,
 	#polyEdit: FALSE,
 
 	setupJAPolygons: func {
@@ -130,6 +132,21 @@ var Polygon = {
 		}
 	},
 
+	jumpTo: func (leg, index) {
+		Polygon.jumpToSteer = [leg, index];
+	},
+	
+	jumpExecute: func {
+		if (Polygon.jumpToSteer != nil) {
+			if (Polygon.primary != nil and Polygon.primary.getSize() > Polygon.jumpToSteer[1]) {
+				Polygon.primary.plan.current = Polygon.jumpToSteer[1];
+			} else {
+				print("error in jump");
+			}
+			Polygon.jumpToSteer = nil;
+		}
+	},
+
 	editSteerpoint: func () {
 		if (Polygon.selectSteer != nil) {
 			Polygon.editDetail = FALSE;
@@ -182,6 +199,12 @@ var Polygon = {
 			Polygon.editSteer   = FALSE;
 		} else {
 			Polygon.editDetail = FALSE;
+		}
+	},
+
+	setType: func (value) {
+		if (Polygon.selectSteer != nil) {
+#			Polygon.selectSteer[0].fly_type = value==1?"Target":Polygon.selectSteer[0].fly_type=="Target"?"flyOver":Polygon.selectSteer[0].fly_type;
 		}
 	},
 
@@ -255,7 +278,7 @@ var Polygon = {
 		if (Polygon.selectSteer != nil and Polygon.editDetail) {
 			#Polygon.selectSteer[0].speed_cstr_type = "mach";
 			#Polygon.selectSteer[0].speed_cstr      = mach;			
-			call(func {Polygon.selectSteer[0].setSpeed(mach, "mach")},nil, var err = []);# error in FG 2017.3.1 it seems. Worked in 2017.3.0.
+			call(func {Polygon.selectSteer[0].setSpeed(mach, "mach")},nil, var err = []);# error in FG 2017.3.1 it seems. Worked in 2017.3.0. Fixed in 2018.1.1
 			if (err != nil and size(err) > 0) {
 				print("Harmless error M: "~err[0]);
 			}
@@ -266,7 +289,7 @@ var Polygon = {
 		if (Polygon.selectSteer != nil and Polygon.editDetail) {
 			#Polygon.selectSteer[0].alt_cstr      = alt;
 			#Polygon.selectSteer[0].alt_cstr_type = "at";
-			call(func {Polygon.selectSteer[0].setAltitude(alt, "at")},nil, var err = []);# error in FG 2017.3.1 it seems. Worked in 2017.3.0.
+			call(func {Polygon.selectSteer[0].setAltitude(alt, "at")},nil, var err = []);# error in FG 2017.3.1 it seems. Worked in 2017.3.0. Fixed in 2018.1.1
 			if (err != nil and size(err) > 0) {
 				print("Harmless error A: "~err[0]);
 			}
@@ -384,6 +407,18 @@ var Polygon = {
 		Polygon.insertSteer = FALSE;
 		Polygon.editDetail = FALSE;
 		Polygon.selectSteer = nil;
+		Polygon.editBullsEye = FALSE;
+	},
+
+	setToggleBEEdit: func {
+		printDA("bulls-eye edit");
+		Polygon.editing = nil;
+		Polygon.editSteer = FALSE;
+		Polygon.appendSteer = FALSE;
+		Polygon.insertSteer = FALSE;
+		Polygon.editDetail = FALSE;
+		Polygon.selectSteer = nil;
+		Polygon.editBullsEye = !Polygon.editBullsEye;
 	},
 
 	editPlan: func (poly) {
@@ -398,7 +433,8 @@ var Polygon = {
 			#Polygon.polyEdit    = FALSE;
 			Polygon.selectSteer = nil;
 			Polygon.editing = poly;
-		}		
+		}	
+		Polygon.editBullsEye = FALSE;	
 	},
 
 	_planEdited: func {

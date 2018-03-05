@@ -2983,7 +2983,7 @@ Arms: Added output to console for FPS relative.
 Arms: Started building fading out of rocket thrust.
 Arms: Made RB-74 terminate before its speed is so low it wont hit anything anyway. Aerodynamic range will then also better match published data.
 Sim: Better commenting in getPitch method.
-Fix for geo.Coord bad methods. If fix works, remember to send to FG mailing list.
+Sim: Fix for geo.Coord bad methods. If fix works, remember to send to FG mailing list.
 Arms: adjustment to AJS RB74.
 Arms: Removed need for sound bools in weapons specs.
 Arms: Renamed drag-area to cross-section.
@@ -3324,9 +3324,9 @@ Model: Removed A/P follow button.
 Model: increased size of datapanel.
 Model: Moved stuff around on right panel.
 GUI: Added tooltip to transponder panel.
-Model: Added FR31 radio panel.
+Model: Added FR29 radio panel.
 Model: Improved the interior lights panel.
-Animation: Made controls on FR31 radio panel animated.
+Animation: Made controls on FR29 radio panel animated.
 Animation: Made controls on P152 ECM panel animated.
 Animation: Animated pedal mode handle.
 Model: Added ME799 ident transponder panel.
@@ -3392,3 +3392,71 @@ MI: Now shows IR seeker position.
 Model: {Spectre} Livery added for BIGDES.
 Aero: Made all derivatives depends on rotating winds too.
 Control: Made all rotational inputs be independent from rotational winds, as they are read from gyros.
+
+4.309 - 2017 March 4
+=====
+Control: {it0uchpods} Fixed many A/P bugs.
+Control: {it0uchpods} Fixed roll hold being affected by wind.
+Control: {it0uchpods} Fixed pitch hold worked only with integers.
+Control: {it0uchpods} Fixed A/P oscilations.
+Control: {it0uchpods} Upgrade A/P rate based control system to latest IV system.
+Sim: Fixed that some method were called to change canvas, before the script they were changing had been loaded.
+HUD: Upper half squares is now radar echoes, with the selection having velocity vector and distance to set it apart.
+HUD: Upper semi circle is now radar lock.
+HUD: Lower semi circle is now IR lock. If radar is active and locked also, radar lock can show at same time.
+HUD: Removed text from radar selection in the JA, its already in MI/TI displays.
+HUD: No special symbols for ships or ground forces anymore. I still lack some info on the HUD symbology, but it looks like they did not have a symbol.
+HUD: Removed lock diamond symbol also. Small IR seeker diamond is still there.
+TI: ECM log will now also say when radar is turned silent or active.
+Model: Removed radar screen switch from JA variants. Its now only in AJ variants for the CI display.
+GUI: Removed Auto-follow from help, since its scheduled for removal soon, to be replaced with steering order from radar.
+Test: Improved testing results for systems actually damaged.
+Model: Added tooltips for circuit breakers.
+TI: Fixed that after switching displays off, it would not allow to switch them back on.
+Sim: Replaced auto-follow with radar steer order mode (RR). Use TI to enable when airborne.
+TI: Heading bug will now show radar steer order.
+HUD: Heading bug will now show radar steer order.
+TI: Moved Radar selection infobox to right side, and allow it to show at same time as steerpoint infobox.
+TI: Text info of radar selection in bottom field is now only shown at radar steer order.
+TI: White circle around steer order symbol (steerpoints and radar selections).
+Effect: Fixed that g-suit option would not change in options dialog.
+Effect: G-suit setting is now persistent between sessions. default is JA/AJS=1979 AJ=1971.
+DAP: Made room for more digit in data panel, when inputting longitude to TI237, for the negative sign.
+Model: Added tooltips to frame of TI and Mi displays.
+Sim: Added options in launcher 2018.1.1+ to startup with engines on.
+Sim: Due to the new startup state options, interoperability setting is no longer saved between sessions.
+TI: Cursor can now select a steerpoint (outside MSDA menu), it will then be active for steer order. Same with radar echoes.
+TI: Moved steerpoint name on map a little further away from the steerpoint so the steer order circle do not overlap it.
+TI: Can now show/edit bulls-eye.
+TI: Bulls-eye infobox shows relation from bulls-eye to cursor. When cursor is in SVY or bottom textfield, infobox turns off.
+DAP: Can now edit or delete bulls-eye (edit LV-area 179).
+TI: When cursor not active bulls-eye show relation to radar selection.
+TI: Bulls-eye infobox now uses degree symbol.
+Sim: Authors listed in Launcher now includes it0uchpods and Spectre, since the authors font is smaller in 2018.1.1.
+TI: The cursor is now able to select and command steer order on aircraft on SVY instead of randomly whats behind it.
+TI: SVY is no longer shown in MSDA menu. (not 100% sure this is correct, but it makes sense..)
+TI: Made bulls-eye symbol smaller.
+TI: GPS now goes through Build In Test before initializing.
+DAP: If GPS is installed can now be input/output.
+Docs: Fixed typo in DAP-FPLDATA address 15.
+TI: Made the 2Hz blinking more steady.
+TI: Will now report low battery.
+Docs: Updated JA readme with bulls-eye menu item and heatseeker specific items.
+HUD: Fixed some code that used radar to get info on IR lock, instead of missile.
+MI: Cursor can now select and unselect radar echoes. And cursor speed doubled.
+Sim: Startup with engines on, now give no masterwarning from empty battery.
+TI: SYST-TRAP-ALL menu item is now functional.
+TI: As per manual flight horizon and FPI is now in OFF state per default.
+TI: Flight data is now also shown in CLR when pitch is below 10 degree negative.
+Model: Added some tooltips to the left radio panel.
+Sim: When loading up with engines on the INS should now be finished initializing.
+DAP: FF and LV points can now be input/output.
+TI: Can now show LV/FF points.
+TI: Removed functionality of menu item CONF-GPS-FIX, since it was doing something else than this function really was for.
+DAP: LS/SKU button is now used in the JA37Di to send a request to delete a value when inputting to the TI.
+TI: Manual event now shows human readable lat/lon instead of doubles. Also made it contain just the info the manual states it should have.
+
+4.310 - 2017 March 5
+=====
+TI: Fixed that if bulls-eye is loaded before cursor is on TI, putting the cursor on TI would produce an error.
+TI: Fixed inputing lon/lat of map-area points with DAP would blink the wrong field.

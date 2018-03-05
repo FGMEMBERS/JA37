@@ -35,7 +35,7 @@ Model: Some control textures should be aligned so they can be better viewed from
 Model: AJ radar range control should be only 3 digits. (and be another place in the cockpit if should be accurate)
 Model: Make the tooltips fail when gauges fail.
 Model: Proper floor in the cockpit.
-Model: Fix z-fighting on HUD brightness-knob, M71-rail and M90. (strange, might not be z-fighting, but sure looks like it)
+Model: Fix z-fighting on HUD brightness-knob, datapanel knob, M71-rail and M90. (strange, might not be z-fighting, but sure looks like it)
 Model: A/P control in cockpit: A/T on throttle, A/P disengage on stick.
 Model: Stores jettisoned indicator on top right of front panel. (AJ)
 Model: Switch ALT CISI, altitude source. (Only in AJ variants)
@@ -81,9 +81,9 @@ Sim: The A/P for glideslope is not very reliable, fix.
 Sim: Fix that when changing airport location, battery gets drained, and therefore gives master warning for a while after startup.
 Sim: Make so that flares cannot be used after aircraft has crashed.
 Sim: Check terrain warning for when gears is down/landing mode in manual. (its now set to gears down detect)
-Sim: Using data panel an extra bingo fuel warning can be added. % above standard warning is entered. Landing clears it, so does pressing master warning silence.
-Sim: Flightgear has a built in inertial navigations system. Use that to simulate INS.
-Arms: Make the weapon mode dial operational: simulated mode, operational mode and reduced mode.
+Sim: Using data panel an extra bingo fuel warning can be added. % above standard warning is entered. Landing clears it, so does pressing master warning silence. (think its made, dont remember)
+Sim: Inertial navigation system.
+Arms: Make the weapon mode dial operational: simulated mode, operational mode and reduced mode. In DAP, burst number for OP can be entered.
 Arms: RB99 will be rail launched if sitting on a rail instead of always dropped.
 Arms: Be able to notch the rb71 again.
 Arms: Make weapons hit all nearby targets.
@@ -101,7 +101,7 @@ Sound: Rework how missile buzz and growl works.
 Sound: Sound from wind hitting the gears when extended.
 Radar: Make rb71 notchable again, by introducing 3 diff painted properties instead of one.
 Radar: Make ECM jamming.
-Radar: Make other planes notice when radar is off.
+Radar: Make other planes notice when radar is off. (semi done, think F15, mig21 and mirage does it)
 HUD: All track semi circles and semi box should have a line in them. (might degrade performance)
 HUD: Fix that HUD selects diamond_node, not radar logic, so HUD can be turned off in external view.
 HUD: When DME are enabled at the same time as ILS with glideslope, the distance scale make the ILS view confusing.
@@ -113,10 +113,9 @@ HUD: Radar alt in alt scale, can move outside clip bounds. fix?
 HUD: When should distance scale line not be shown, but distance still?
 HUD: In OPT mode, the sink rate is only at low altitudes, before that its 1:20.
 TI: Show lat/lon grid in menu UDAT.
-TI: Show/edit bullseye.
 TI: Select self.
 TI: When inertial navigation is not ready and GPS is off, don't show moving map.
-TI: Make radar limit on SVY.
+TI: Make radar limit on SVY. (first radar should be changed to scan and beam be more vertically narrow)
 TI: Add missiles to SVY.
 TI: Waypoint info should show ETA to next waypoint. And seperate infobox for full ETA.
 TI: Make route info with overall ETA.
@@ -130,7 +129,6 @@ TI: Edit polygon and MMAN should auto move cursor to TI.
 TI: MSDA map should be north oriented (at least when MMAN is on).
 TI: Slew cursor using a dialog touchpad.
 TI: Menu CONF-READDATA should show a static page.
-MI: Slew cursor.
 MI: Implement radar sweep.
 MI: Improve mark event [X3]
 MI: Improve BIT test. [X1]
@@ -138,13 +136,11 @@ MI: Make TNF to stop/start inertial nav.
 MI: DLZ indicator.
 CI: Memory button, for freezing image.
 CI: Slew cursor.
-Doc: Thorsten Renk suggested to make a PDF manual. ETA. before 2018.
+Doc: Thorsten Renk suggested to make a PDF manual. ETA. before 2019.
 Control: overhaul rudder trim.
-DAP: Input/output square mappoints.
 DAP: Input TACAN with REG/STR.
 DAP: Edit steerpoint type to target.
-TI:: Prevent steerpoint selection through infobox, its a confusing UI elsewise.
-TI: Cursor can select a steerpoint outside MSDA, it will then be active for steer order. Same with other objects.
+TI: Prevent steerpoint selection through infobox, its a confusing UI elsewise.
 TI: When cursor not active on TI, a shadow cursor is shown following the target cursor.
 TI: RB99 telemetry should show IDLE, SCAN or LOCK when not fired.
 DAP: Show sign of input at leftmost char always.
@@ -155,7 +151,6 @@ Effect: Ambient occlusion map need to be baked again, many parts are too occlude
 Sound: Knobs for pylon and master-arm has no sound, fix.
 Model: The nosegear well, has gap between it and fuselage.
 Model: The frontpanel tap is misaligned.
-Control: Roll hold gets affected by wind. Pitch hold seems to be an integer.
 Model: The A/P pushbuttons can still be hard to see.
 Animation: The bypass handle should not stay up for long.
 Model: The JA has a chronometer right of fuel gauge.
@@ -163,10 +158,8 @@ Sim: Make sure ram air only supplies when AC supply is set to generator
 Test: Engine starter should be hold in for 30 secs before quiting test, not instantly.
 Test: Testing from TI.
 Test: Shut down also some indicators during testing.
-Test: Separate tests with test knob.
-Test: Always fail a test for system that is actually damaged.
+Test: Individual tests with test knob.
 Model: Nav panel should be scaled to be just as wide as test panel.
-DAP: Make 1 more digit in data panel, when inputting longitude.
 Animation: Make more use of knob animation: Radio, HUD brightness, Altimeters, MI brightness.
 Sim: AC should just blow air, not keep temperature.
 DAP: Minneslista JA37 has some DAP addresses. Make.
@@ -180,8 +173,22 @@ Arms: IR lock before launch should also check terrain occlusion.
 Arms: The auto pattern scan should not jump from bottom to top.
 Radar: Openradar has no roll and heading. Fix radar to handle that.
 Arms: Narrow scan pattern for dogfighting. (narrow yaw, mid to high pitch.)
-Arms: Should seeker position be shown in MI and HUD for non IR?
-HUD: Do not show rb99 seeker diamond.
+Arms: Should seeker position be shown in MI and HUD for non IR? (lean towards no)
+HUD: Do not show rb99 seeker diamond. (not sure if I haven't fixed)
+TI: When display is not showing image, backup menu is in effect, which hard-coded functions for the buttons.
+DAP: When inputing to TI, it remembers the last sign used. Not sure if should fix or not.
+GUI: Conditions on tooltips stopped working in 2018.1.1, if it does not get fixed, remove em all.
+Sim: Startup with engines on, should have inertial navigation ready. (maybe altimeter should be preset too)
+TI: Prioritize showing only 10 FF/LV points.
+Effect: Fix that with engine off, the wind can drive the fan which will produce smoke.
+TI: Be able to set steerorder to LV or FF points.
+TI: Cursor should be able to select and then relocate a FF or LV point in MSDA menu.
+Radar: RCS takes a moment to kick in apparently. Might be fixed.
+Radar: No voice warning of incoming missiles. Fix.
+Sim: At relocation: ja37.nas line 813 Nasal runtime error: setprop() passed a NaN: setprop("/environment/aircraft-effects/fog-inside", me.fogNormInside);
+Arms: Jettison all weaps gives collision. Plus at least 1 RB99 fall fast upwards.
+
+
 
 
 
@@ -191,22 +198,21 @@ HUD: Do not show rb99 seeker diamond.
 
 List of un-authentic systems, most scheduled for removal/change at some point
 -----------------------------------------------------------------------------
-A/P auto-follow never existed. RR steer order, was probably just heading and altitude bugs.
 Automatic landing mode selection in AJ was really selected manual like in the JA.
 Speedbrake on JA-37Di and AJS-37 were welded shut. Was only working on AJ-37 of these variants.
-Callsign of selected radar echo in HUD is unrealistic.
 Distance to selected radar echo was next to distance scale where ammo is now, not next to the echo. (was ammo count even in HUD?) If line is there, the number is line length.
 Electronic map should not work, before inertial navigation has finished initializing, or GPS is on.
 The FPI in HUD was really limited to +- 7.5 degs lateral.
 In the orig plane the HUD decimal delimiter is ',' not '.'.
 VOR, ADF navigation, the real did not have this.
-Carrier operations. Use keys Shift-L (hold for 10 seconds), Shift-C and L. Only work on carriers.
-Aerobatic smoke.
-HUD: Upper half square should really be radar selection.
-HUD: Upper semi circle should really be radar lock.
-HUD: Lower semi circle should really be IR lock.
-TI: Delete, append or insert steerpoint should really be controlled from radar stick.
-TI: OPT should really be a button on the flightstick.
+Carrier operations. Use keys Shift-L (hold for 10 seconds), Shift-C and L. Only work on carriers. Was not on the real.
+Aerobatic smoke, the real probably didn't have.
+TI: Delete, append or insert steerpoint should really be controlled from radar stick, not be part of TI menu.
+TI: OPT should really be a button on the flightstick, not be part of TI menu.
+In the real nav. panel you could select between 4 bases plus STRILL supplied base. Each could have A & B return-to-base plans. So that makes up to 10 RTB plans, instead of the current 2.
+The real Viggen displays had 2 cursors; lock-cursor and TIM-cursor. The flightgear Viggen has combined it into 1 cursor.
+
+
 
 Bugs:
 --------------

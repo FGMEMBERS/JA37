@@ -6,10 +6,10 @@
 
 *************************************************************************-->   
 
-<PropertyList include="Systems/ja37-engines-off.xml">    <!-- change this to 'on' for fast testing/debugging -->
+<PropertyList><!-- include="Systems/ja37-engines-off.xml">-->    <!-- change this to 'on' for fast testing/debugging -->
     <sim>
-        <aircraft-version>4.308</aircraft-version>
-
+        <aircraft-version>4.310</aircraft-version>
+        <author>Anders Lejczak (Orig 3D Model and Textures), Justin Nicholson (Lots of Modeling, Testing and Misc.), Enrico Castaldi (Liveries), Joshua Davidson (Autopilot), Nicola B. Bernardelli (Cockpit and Testing), Isaac Protiva (Cockpit and Lightmap), Nikolai V. Chr. (rest)</author>
         <minimum-fg-version>2017.3.1</minimum-fg-version>
 
         <rating>
@@ -78,9 +78,10 @@
         <aircraft-data>
             <!-- Properties that get saved to persist locally between FG sessions -->
             <path>ja37/radar/enabled</path>
-            <path>ja37/hud/units-metric</path>
+            <!--<path>ja37/hud/units-metric</path>-->
             <path>ja37/hud/mode</path>
             <path>ja37/hud/stroke-linewidth</path>
+            <path>ja37/effect/g-suit</path>
             <path>ai/submodels/submodel[2]/random</path>
             <path>ai/submodels/submodel[3]/random</path>
             <path>ja37/displays/live-map</path>
@@ -556,7 +557,7 @@
                 <noise type="int">1</noise>
                 <color type="double">0</color>
             </heatblur>
-            <!--<g-suit type="int">3</g-suit>--><!-- 1:71 2:79 3:97 -->
+            <!--<g-suit type="int">3</g-suit>--><!-- 1:71 2:79 3:97 moved to individual aircraft set files -->
             <pod0 type="bool">true</pod0>
             <pod1 type="bool">true</pod1>
             <pod2 type="bool">true</pod2>
@@ -584,7 +585,7 @@
         </blink>
         <hud>
             <tracks-enabled type="bool">true</tracks-enabled>
-            <units-metric userarchive="y" type="bool">false</units-metric>
+            <units-metric type="bool">false</units-metric>
             <mode userarchive="y" type="bool">true</mode>
             <current-mode type="int">0</current-mode>
             <combat type="bool">false</combat>
@@ -647,6 +648,8 @@
             <vid type="bool">false</vid>
             <gps-cmd type="bool">false</gps-cmd>
             <gps-nav type="bool">false</gps-nav>
+            <gps-bit type="bool">false</gps-bit>
+            <gps-init type="bool">false</gps-init>
             <ignitionSys type="bool">false</ignitionSys>
             <startSys type="bool">false</startSys>
             <joystick type="bool">false</joystick>
@@ -680,6 +683,7 @@
                 <serviceable type="bool">true</serviceable>
             </annunciator>
             <reservkurs type="bool">false</reservkurs>
+            <init-done type="bool">false</init-done>
         </avionics>
         <displays>
             <show-full-menus type="bool">true</show-full-menus>
@@ -692,6 +696,7 @@
             <tertiary-opening type="double">1.0</tertiary-opening>
             <input-controls-flight type="bool">true</input-controls-flight>
             <fuel-warning-extra-percent type="int">-1</fuel-warning-extra-percent>
+            <state type="string">parked</state>
         </systems>
         <radio>
             <kv1>
@@ -720,6 +725,10 @@
             <inout type="bool">true</inout>
             <ispos type="bool">false</ispos>
             <dp-mode type="int">0</dp-mode>
+            <bulls-eye-defined type="bool">false</bulls-eye-defined>
+            <bulls-eye-lon type="double">0</bulls-eye-lon>
+            <bulls-eye-lat type="double">0</bulls-eye-lat>
+            <gps-installed type="bool">true</gps-installed>
         </navigation>
         <light>
             <ti1 type="double">0</ti1>
@@ -1071,6 +1080,8 @@
                 </reverse-system>
                 <reverser-cmd type="bool">false</reverser-cmd>
                 <starter-cmd-hold type="bool">false</starter-cmd-hold>
+                <starter-cmd type="bool">false</starter-cmd>
+                <cutoff type="bool">true</cutoff>
             </engine>
         </engines>
         <gear>
@@ -1085,6 +1096,11 @@
             <lights-ext-nav type="bool">false</lights-ext-nav>
             <lights-land-switch type="bool">false</lights-land-switch>
             <reserve type="bool">false</reserve>
+            <engine n="0">
+                <generator type="bool">false</generator>
+            </engine>
+            <main type="bool">false</main>
+            <battery type="bool">false</battery>
         </electric>
         <lighting>
             <instruments-norm type="double">0.0</instruments-norm>
@@ -1236,6 +1252,7 @@
             <egt-degf type="double">0</egt-degf>
             <oil-pressure-psi type="double">0</oil-pressure-psi>
             <rpm alias="/fdm/jsbsim/propulsion/engine/n1-rpm_r-min"/>
+            <running type="bool">false</running>
         </engine>
     </engines>
     <rotors>

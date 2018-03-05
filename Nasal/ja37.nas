@@ -1327,6 +1327,13 @@ var main_init = func {
 
   test_support();
 
+  hack.init();
+  if (getprop("ja37/systems/state") != "parked") {
+    # to prevent battery from starting drained when choosing state with engine on we have to delay turning it on.
+    setprop("controls/electric/battery", TRUE);
+  }
+  #setprop("ja37/avionics/master-warning-button", 0);# for when starting up with engines running, to prevent master warning.
+
 #  aircraft.data.add("ja37/radar/enabled",
 #                    "ja37/hud/units-metric",
 #                    "ja37/hud/mode",
@@ -1399,7 +1406,7 @@ var main_init = func {
     setlistener("/environment/lightning/lightning-pos-y", thunder_listener);
   }
 
-  if(getprop("dev") != TRUE) {
+  if(getprop("ja37/systems/state") == "parked") {
     setprop("controls/engines/engine/reverser-cmd", rand()>0.5?TRUE:FALSE);
     setprop("controls/gear/brake-parking", rand()>0.5?TRUE:FALSE);
     setprop("controls/electric/reserve", rand()>0.5?TRUE:FALSE);
@@ -1414,6 +1421,18 @@ var main_init = func {
   saab37.loopSystem();
 
   changeGuiLoad();
+
+  if (getprop("ja37/systems/state") == "cruise") {
+      setprop("position/altitude-ft", 20000);
+      setprop("velocities/mach", 0.65);
+      setprop("fdm/jsbsim/autopilot/throttle-lever-cmd", 1);
+      auto.mode3();
+      settimer(cruise, 1.5);
+  }
+}
+
+var cruise = func {
+  setprop("controls/gear/gear-down", 0);
 }
 
 # re init
@@ -1750,8 +1769,10 @@ var toggleTracks = func {
   setprop("ja37/hud/tracks-enabled", !enabled);
   if(enabled == FALSE) {
     notice("Radar ON");
+    armament.ecmLog.push("Radar switched active.");
   } else {
     notice("Radar OFF");
+    armament.ecmLog.push("Radar switched silent.");
   }
 }
 

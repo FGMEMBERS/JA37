@@ -103,12 +103,12 @@
     </key>
     <key>
         <name>f</name>
-        <desc>Set autopilot to follow current selection</desc>
+        <desc>Toggle radar steer order on current selection</desc>
     </key>
-    <key>
+    <!--<key>
         <name>F</name>
         <desc>Set autopilot to stop follow</desc>
-    </key>
+    </key>-->
     <key>
         <name>S</name>
         <desc>Cycle smoke. Off, Yellow or Blue</desc>

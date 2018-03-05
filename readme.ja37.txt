@@ -6,15 +6,24 @@
 #
 #
 
+
+This manual describes systems when aircraft is in English/imperial mode.
+The menu items etc. is different in Swedish/metric mode, maybe in future will make manual for that also.
+
+
 Some of these features that has to do with multiple flightplans or map-areas, wont work in older than FG 2017.3.1.
+
 
 Flightplans
 ===========
-The aircraft has 6 plans. 4 mission (1-4) and 2 return to base plans (A & B).
+The aircraft has 6 plans. 4 mission (1-4) and 2 return to base plans (A & B). Additionally it can have 6 map-areas defined.
 When you switch to another plan, entire plan in route manager will be replaced. So don't panic if route-manager clears.
 See also last section in this document: pre-loading plans.
 If your FG is older than 2017.3.1 you will only have 1 plan, that is used for both mission and RTB.
 Notice since clicking key 'Y' is the same as LS on TI display, this will also switch plan if you are already on a mission plan.
+
+
+
 
 Concise English overview of TI (right color display)
 ==============================
@@ -42,6 +51,30 @@ WEAP
 CLR  - Not implemented.
 AKAN - Cannon.
 x7x  - Various pylons. W=wing, T=wingtip, F=fuselage, L=left, R=right.
+STA
+  STBY - Standby status for missiles. Does not show for cannon.
+  RDY  - Ready to be fired status. From the signal is sent to get ready when its selected and master-arm is ON, a small duration will pass before its ready.
+
+The following menu items only show when a sidewinder is selected:
+
+CAGE
+  AUTO - Automatic uncage of heatseeker head when lock is achieved.
+  MAN  - Manual uncage of seeker head.
+SEEK
+  CAGE - When framed the seeker head is caged. Need to be set to manual for pilot to be able to change it.
+         When uncaged without lock, the seeker head will scan the sky ahead in a small pattern and lock onto anything it see.
+         This is handy for dogfight with radar off when enemy can be hard to spot.
+SEEK
+  WARM - The seeker head is not cooled down. When framed cooling has be commanded, but not yet achieved.
+  COOL - The seeker head is cooled down, and the sidewinder range is increased. Cooling fluids last for about 1 hour for RB74. RB24J is electrical cooled, so it wont run out.
+MODE
+  BORE - When caged it will look straight ahead looking for something within range to lock on (and for RB24J it prefers to have view of a hot engine).
+         This is another mode that is handy for dogfight with radar off when the enemy can be seen and manouvred onto bore.
+MODE
+  SLAV - Seeker slaved to either radar or cursor on MI/HUD. To use cursor make sure to have the seeker caged.
+         Then make sure you haven't transfered the cursor to the TI display and that PEK is lit up. See cursor section in this document for details on how to control it.
+         Then make sure the radar haven't selected anything (click to deselect).
+         Then use cursor to tell the seeker where to look. You will see the seeker head position both in MI and in HUD (when inside its view).
 
 SYST
 ----
@@ -50,11 +83,11 @@ L - Navigate direct for landing base or switch runway. Will switch to RTB plan d
 LT - Nav. for touchdown point or short approach. Will switch to RTB plan destination. Notice if this is done on runway, OPT will engage.
 LS - Nav. for approach circle (long approach). Will switch to RTB plan destination. Notice if this is done on runway, OPT will engage.
 OPT - Optical landing mode. Can only be engaged with gears down or in landing mode (LS or LT). Will auto engage at low alt in those modes.
-DL - STRILL data-link  (not implemented)
+DL - STRIL data-link  (not implemented)
 LR - Return to base polygon navigation. Or switch to next steerpoint in that.
 MPOL - Mission polygon
 RPOL - RTB polygon
-CC - Steer order from radar. Only work in air. (Right now it also unauthentically will set A/P to follow the steer order, will be fixed in future)
+CC - Steer order from radar on selected radar echo. Only work in air. ('f' key does the same)
 OFF/EP - Turn off EP12 Electronic presentations (MI+TI displays). Only work on ground.
 ACRV - Attack curve (not implemented)
 FGHT - Fighter mode. HUD shows IAS
@@ -64,10 +97,11 @@ TRAP
 ----
 LOCK - Radar lock events
 FIRE - Weapon fire events
-ECM  - Weapon hit events (unauthentic)
+ECM  - Weapon hit events and radar-silence events.
 MAN  - Manual events log
 LAND - Landing events
 CLR  - Clear all TRAP.
+ALL  - Show all tactical reports on one page.
 DOWN - scroll down
 UP   - scroll up
 
@@ -84,6 +118,9 @@ DAY  - Map contrast for daytime or NGHT for night time.
 MSDA
 ----
 EDIT
+  BEYE  - Edit bulls-eye. Use cursor to click on the map where it should be.
+          Notice when the cursor is on the TI and over the map, and small info box will appear showing bearing and distance to the cursor from bulls-eye.
+          That same infobox will give directions to radar selection instead, when cursor is on the MI display.
   POLY  - Edit area polygons. Click with cursor on top field in infobox to control from DAP which area is edited.
   RPOL  - Edit a RTB polygon.
   MPOL  - Edit a mission polygon.
@@ -93,12 +130,12 @@ ADD S/P - Append point/steerpoint to current edited polygon (if it has room for 
 DEL S/P - Delete selected point/steerpoint in current edited polygon.
 RPOL    - If RPOL being edited, this is which one.
 MPOL    - If MPOL being edited, this is which one.
-MYPS    - Move own position in chunks up/down the display. If not framed minute adjustments have been made.
+MYPS    - Move own position in chunks up/down the display.
 MMAN    - MapManual movement, and map no longer follows own position. See cursor for more details.
 
 FAIL
 ----
-Is just a log page. FAIL will blink at new unseen failures.
+Is just a log page. FAIL will blink at new unseen failures, when main manu is shown, also a text will display on the MI about unread fails.
 
 CONF
 ----
@@ -110,7 +147,7 @@ READDATA - Technician data readout. Not implemented.
 GPS
 ---
 FIX  - When GPS has started this will make a fix on the TI/MI/HUD. Will stay until PEK switched off or something else selected.
-INIT - Start GPS. (approx 30 seconds to start)
+INIT - Start GPS. (approx 40 seconds to start, including BIT self-test)
 
 SIDV
 ----
@@ -120,14 +157,25 @@ SCAL - If RMAX set to SCAL this controls the horizon distance shown.
 RMAX - Horizontal distance. MI=follow radar setting. SCAL=see SCAL. MAP=Follow map scale.
 AMAX - Max altitude shown.
 
-Cursor on TI
-============
-When cursor is on TI it can be slewed: Pressing key 'y' will toggle slaving flight-controls to the cursor.
-Use trigger to click on something.
-You can click on all side and bottom buttons, except when EDIT, ADD or INS steerpoint/map-area-point. Also when not in any menu.
+
+
+
+
+Cursor on TI/MI
+===============
+The cursor can be slewed: Pressing key 'y' will toggle slaving flight-controls to the cursor instead.
+Terrain impact warning will switch the slaving off, so you get immediate control of the aircraft to avoid terrain impact.
+Per default the cursor is located on the MI display. See the DISP menu on the TI on how to transfer it between displays.
+Use trigger to click on something (the click will have to last up till half a second on the TI sometimes).
+On the TI you can click on all side and bottom buttons, except when EDIT, ADD or INS steerpoint/map-area-point. Also when not in any menu.
 Sometimes in menu MSDA a white info box is shown. Some fields can be clicked, and then input on the data-panel. Field will blink when input active.
 When MMAN is enabled, manual map centering can be done by clicking on the map. Notice this can be confusing if MYPS is not set to 3.
-Terrain impact warning will switch the slaving off.
+When clicking on a radar echo in MI, it get selected/locked. Same for TI, but on the TI it will also set steer order on that echo.
+
+
+
+
+
 
 Concise English overview of MI on JA-37Di: (center radar display)
 ==========================================
@@ -135,34 +183,40 @@ bottom buttons (hold P3 for help)
 --------------
 2  - SDV - Toggle sideview on TI
 X1 - BIT - RB99 self tests
-X3 - EVN - Register manual event (can be viewed in TRAP menu)
+X3 - EVN - Register manual event (can be viewed in TI TRAP menu)
 M2 - ECM - Toggle ECM on TI
 X2 - LNK - Toggle RB99 telemetry on TI
 
 left buttons
 ------------
-PEK - Cursor toggle. If off then cant lock anything. Nor can cursor be shown/slewn on TI.
+PEK - Cursor toggle. If off then radar cannot lock anything, nor can cursor be shown/slewn on TI/MI.
 A - Zoom out on TI
 B - Zoom in on TI
+
+
+
+
 
 Concise overview of Datapanel (DAP) (on right panel, has keypad and display)
 ===================================
 
 OK button is on nav panel, called BX. (due to the nav. panel is really from the AJ)
+Another buttons used on the nav. panel is L/WP and LS/SKU (for |X|).
 Nav. panel is located just next to data-panel.
+Notice the two lights with IN/OUT and POS/MSDA, those are buttons also.
 
-Notice first the button IN/OUT.
-Below is listed what combination of that button with the knob will produce (if the other button is MSDA):
+If POS/MSDA button is in POS mode and the other button in OUT, the display will show steerpoint info. This is also the default state of the data-panel.
+  nbaaau  - n: 0=steerpoint 1=airport, aaa: distance, u: uncertainty.
+
+Below is listed what combination of IN/OUT with the knob will produce (if the other button is set to MSDA):
 
 OUT
-- TI:     Show flight time on TI.
 - TILS:   Shows current TILS frequency on display.
 - CL/DA:  Show date/time on display. Cycle with OK.
 - FUEL:   Show extra fuel warning setting in percent on display.
-- LOLA:   Show current LON/LAT on display. Cycle with OK. (it will not show negative sign if longitude degrees is more than 2 digits, the JA was only used in Sweden)
+- LOLA:   Show current LON/LAT on display. Cycle with OK.
 
 IN
-- TI:     Can clear currently edited flightplan/map-area by pressing CLEAR.
 - TILS:  
 - CL/DA:  Set date/time. Entering 999999 for either date or time will reset.
 - FUEL:   Set extra fuel warning in percent on display.
@@ -172,7 +226,8 @@ ACDATA:
 - IN:  Input 2 digits for address, then either the value you want to set, or switch to OUT.
 - OUT: If 2 first digits entered will show value of address in last 4 digits.
 - ADDRESSES:
-    15axcd Interoperability = 0, Swedish and metric = 0. a, c and d is ignored.
+    15axcd Interoperability = 1, Swedish and metric = 0. a, c and d is ignored.
+    30xbcd GPS Installed = 1, NO GPS = 0. b, c and d is ignored.
 
 REG/STR:
 - IN:  Input 2 digits for address, then either the value you want to set, or switch to OUT.
@@ -181,15 +236,36 @@ REG/STR:
     00xxcd is maximum angle of attack setting. c and d is ignored. Setting 00 reverts to default.
     19xxxx is training floor altitude.
 
+TI
+note1: the LV, FF and bulls-eye will be shown on TI display. If DAP knob is on TI or TI menu MSDA is active, the address number will also be shown.
+note2: LV stands for airdefense area, and FF for pilot point.
+- IN/MSDA:  Input 3 digits for address, then either switch to out or click OK (for red), L (for yellow) and continue inputting longitude, then latitude. (bulls-eye and FF is always tyrkouise)
+            To unlock for deletion type the unlock code followed by CLEAR.
+            If unlocked can enter a address range like 024123 (24 to 123) to delete a range of addresses.
+- OUT/MSDA: If 3 first digits for address entered will show lon/lat of address, click OK to toggle between them. Hold OK down to see description before the value is shown.
+            In this state flight time is shown on TI also.
+- POS:
+            Can clear currently edited flightplan/map-area by pressing CLEAR.
+- ADDRESSES:
+            001-039 LV circles with 5km radius
+            040-099 LV circles with 8km radius
+            100-109 FF squares
+            110-178 LV circles with 15km radius
+            179 is Bulls-eye
+            180-189 LV circles with 40km radius
+            654321 is code for unlocking delete option. Turning knob or switching IN/OUT will reengage lock.
+
 "237" on display
-- Input to TI press OK to send.
+- Input to TI press OK to send or press |X| to delete the value.
 
 "Error" on display
 - rotate knob or in/out switch to clear.
 
-When inputting, pay notice to the switch +/-, as that is the sign of what you input.
+When inputting, pay notice to the switch +/-, as that is the sign of what you input. For some inputs its ignored though and hence not shown when you input.
 
-If POS/MSDA button is in POS mode and the other button in OUT, the display will show steerpoint info.
+
+
+
 
 Pre-load flightplans and/or map areas on startup.
 =================================================
@@ -216,13 +292,23 @@ Example: --prop:string:/xmlPlans/area3=c:\areas\myNoFlyZone.gpx
 
 If a file cannot get loaded, the console will print a warning.
 
+Bulls-eye can be preloaded with enabling 3 properties.
+
+This example will place a Bulls-eye in Nevada, US:
+
+--prop:bool:/ja37/navigation/bulls-eye-defined=true
+--prop:double:ja37/navigation/bulls-eye-lat=37.20
+--prop:double:ja37/navigation/bulls-eye-lon=-115.60
+
 Testing
 =======
 The following conditions must be present before testing:
 --------------------------------------------------------
 - Wheels on ground
-- INS not initializing
-and either
+- INS (Inertial navigation system) not initializing
+
+and either:
+
 - External power supplying
 or
 - DC and AC power on.
@@ -236,14 +322,39 @@ To abort either switch engine starter or click FK.
 Click START/STOPP to start testing. While test of a system is ongoing data-panel minus sign will blink, and the 2 first digits will show which system being tested.
 The result of a test is shown on the data-panel without a minus sign. First 2 digits is the system, next 4 digits is details of the result.
 When a test is successful the green lamp will show.
- You can then click START/STOPP to acknowledge and start test of next system.
+  You can then click START/STOPP to acknowledge and start test of next system.
 When a test is unsuccessful the red lamp will show.
- You can then click START/STOPP to acknowledge and start test of next system.
- Or click FEL to not acknowledge and start next test.
- Or click REP to repeat the test.
+  You can then click START/STOPP to acknowledge and start test of next system.
+  Or click FEL to not acknowledge and start next test.
+  Or click REP to repeat the test.
 During a test you can click START/STOPP to skip to next test.
 When last test has been acknowledged or dis-acknowledged the testing ends.
 For now only AUTO testing can be done, meaning it will test all 20 systems. Testing through TI is not enabled yet.
+
+Test programs
+-------------
+ 1 CD - CPU
+ 2 ANP - Adaptation unit
+ 3 LD - Airdata
+ 4 TN - Inertial navigation
+ 5 SA - Autopilot
+ 6 GSA - Basic flight control system
+ 7 PRES - Presentation
+ 8 EP - Electronic presentation system
+ 9 PN
+ 10 MIS - Target aquisition system
+ 11 RRS - Radar beam
+ 12 BES - RB71 Illuminator
+ 13 
+ 14 TILS - Tactical landing system
+ 15 SD - Combat control data
+ 16 RHM - Radar altimeter
+ 17 A73
+ 18 BEV - Armament
+
+
+
+
 
 Landing
 =======

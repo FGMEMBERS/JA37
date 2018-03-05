@@ -17,6 +17,17 @@ var containsVector = func (vec, item) {
   return FALSE;
 }
 
+var containsVectorIndex = func (vec, item) {
+  var ii = 0;
+  foreach(test; vec) {
+    if (test == item) {
+      return ii;
+    }
+    ii += 1;
+  }
+  return -1;
+}
+
 var getClock = func (bearing) {
     var clock = int(((geo.normdeg(bearing)-15)/30)+1);
     if (clock == 0) {
@@ -25,6 +36,24 @@ var getClock = func (bearing) {
       return clock;
     }
 }
+
+var toggleRadarSteerOrder = func {
+  steerOrder = !steerOrder;
+  if (steerOrder == TRUE) {
+    land.RR();
+  }
+}
+
+var disableSteerOrder = func {
+  steerOrder = FALSE;
+}
+
+var setSelection = func (s) {
+  selection = s;
+  steerOrder = FALSE;
+}
+
+var steerOrder = FALSE;
 
 var self = nil;
 var myAlt = nil;
@@ -93,6 +122,7 @@ var RadarLogic = {
       myRoll    =  input.roll.getValue()*D2R;
       myAlt     =  self.alt();
       myHeading =  input.hdgReal.getValue();
+      selection_updated = FALSE;
       
       tracks = [];
 
@@ -120,6 +150,7 @@ var RadarLogic = {
         #print("not valid");
         me.paint(selection.getNode(), FALSE);
         selection = nil;
+        steerOrder = FALSE;
       }
 
 
@@ -155,9 +186,11 @@ var RadarLogic = {
           me.paint(selection.getNode(), FALSE);
         }
         selection = nil;
+        steerOrder = FALSE;
         setprop("ja37/radar/active" , FALSE);
       }
-      if(selection != nil) {
+      if(selection != nil and selection_updated == FALSE and selection.parents[0] != radar_logic.ContactGPS) {
+        disableSteerOrder();
         #append(selection, "lock");
       }
   },
@@ -741,6 +774,7 @@ var nextTarget = func () {
       tracks_index = 0;
     }
     selection = tracks[tracks_index];
+    steerOrder = FALSE;
     #if (selection.get_type() == AIR) {
       radarLogic.paint(selection.getNode(), TRUE);
     #} else {
@@ -758,32 +792,75 @@ var nextTarget = func () {
 
 var centerTarget = func () {
   if (getprop("ja37/avionics/cursor-on") != FALSE and getprop("ja37/radar/active") == TRUE) {
-  var centerMost = nil;
-  var centerDist = 99999;
-  var centerIndex = -1;
-  var i = -1;
-  foreach(var track; tracks) {
-    i += 1;
-    if(track.get_cartesian()[0] != 900000) {
-      var dist = math.abs(track.get_cartesian()[0]) + math.abs(track.get_cartesian()[1]);
-      if(dist < centerDist) {
-        centerDist = dist;
-        centerMost = track;
-        centerIndex = i;
+    var centerMost = nil;
+    var centerDist = 99999;
+    var centerIndex = -1;
+    var i = -1;
+    foreach(var track; tracks) {
+      i += 1;
+      if(track.get_cartesian()[0] != 900000) {
+        var dist = math.abs(track.get_cartesian()[0]) + math.abs(track.get_cartesian()[1]);
+        if(dist < centerDist) {
+          centerDist = dist;
+          centerMost = track;
+          centerIndex = i;
+        }
       }
     }
+    if (centerMost != nil) {
+      if (centerMost != selection) {
+        steerOrder = FALSE;
+      }
+      selection = centerMost;
+      #if (selection.get_type() == AIR) {
+        radarLogic.paint(selection.getNode(), TRUE);
+      #} else {
+      #  radarLogic.paint(selection.getNode(), FALSE);
+      #}
+      lookatSelection();
+      tracks_index = centerIndex;
+    }
   }
-  if (centerMost != nil) {
-    selection = centerMost;
-    #if (selection.get_type() == AIR) {
+};
+
+var jumper = nil;
+
+var jumpTo = func (c) {
+  jumper = c;
+};
+
+var jumpExecute = func {
+  if (jumper != nil) {
+    var index = containsVectorIndex(tracks, jumper);
+    if (index != -1) {
+      selection = jumper;
       radarLogic.paint(selection.getNode(), TRUE);
-    #} else {
-    #  radarLogic.paint(selection.getNode(), FALSE);
-    #}
-    lookatSelection();
-    tracks_index = centerIndex;
+      lookatSelection();
+      tracks_index = index;
+      steerOrder = TRUE;
+      land.RR();
+    }
+    jumper = nil;
   }
-}
+};
+
+var jumper2 = nil;
+
+var jump2To = func (c) {
+  jumper2 = c;
+};
+
+var jump2Execute = func {
+  if (jumper2 != nil) {
+    var index = containsVectorIndex(tracks, jumper2);
+    if (index != -1) {
+      selection = jumper2;
+      radarLogic.paint(selection.getNode(), TRUE);
+      lookatSelection();
+      tracks_index = index;
+    }
+    jumper2 = nil;
+  }
 };
 
 var lookatSelection = func () {
@@ -1069,6 +1146,12 @@ var Contact = {
         return myBearing;
     },
 
+    getMagBearing: func() {
+      #not super tested
+      me.mag_offset = getprop("/orientation/heading-magnetic-deg") - getprop("/orientation/heading-deg");
+      return geo.normdeg(me.get_bearing() + me.mag_offset);
+    },
+
     get_reciprocal_bearing: func(){
         return geo.normdeg(me.get_bearing() + 180);
     },
@@ -1341,6 +1424,12 @@ var ContactGPS = {
       return geo.normdeg(me.get_bearing() + 180);
   },
 
+  getMagBearing: func() {
+    #not super tested
+    me.mag_offset = getprop("/orientation/heading-magnetic-deg") - getprop("/orientation/heading-deg");
+    return geo.normdeg(me.get_bearing() + me.mag_offset);
+  },
+
   get_deviation: func(true_heading_ref, coord){
       me.deviation =  - deviation_normdeg(true_heading_ref, me.get_bearing_from_Coord(coord));
       return me.deviation;
@@ -1597,6 +1686,12 @@ var ContactGhost = {
 
   get_reciprocal_bearing: func(){
       return geo.normdeg(me.get_bearing() + 180);
+  },
+
+  getMagBearing: func() {
+    #not super tested
+    me.mag_offset = getprop("/orientation/heading-magnetic-deg") - getprop("/orientation/heading-deg");
+    return geo.normdeg(me.get_bearing() + me.mag_offset);
   },
 
   get_deviation: func(true_heading_ref, coord){

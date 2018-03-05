@@ -9,7 +9,6 @@
 <PropertyList include="Viggen-set-base.xml">
     <sim>
         <description>Saab AJS-37 Viggen</description>
-        <author>Anders Lejczak (3D Model and Textures), Justin Nicholson (Modeling and Misc.), Nicola B. Bernardelli (Cockpit), Isaac Protiva (Cockpit), Nikolai V. Chr. (rest)</author>
         <status>Early production</status>
         <long-description>
           The Saab AJS-37 Viggen is a Swedish all-weather single-engine attack jet from 1993. It has reverse thrust and very large canards.
@@ -43,6 +42,10 @@
                 </colors>
             </style>
         </gui>
+
+        <state include="states/ready-for-takeoff.xml" n="0"/>
+        <state include="states/cold-and-dark-se.xml" n="1"/>
+        <state include="states/ready-for-takeoff-se.xml" n="2"/>
 
         <previews>
             <preview>
@@ -938,7 +941,10 @@
     <ja37>
         <systems>
             <variant type="int">2</variant>
-        </systems>        
+        </systems>
+        <effect>
+            <g-suit userarchive="y" type="int">2</g-suit><!-- 1:71 2:79 3:97 -->       
+        </effect>
     </ja37>
 
     <limits>
