@@ -110,6 +110,7 @@ var RadarLogic = {
     },
 
     loop: func () {
+      setprop("sim/multiplay/generic/int[2]", !getprop("ja37/radar/active"));
       me.findRadarTracks();
       #settimer(func me.loop(), 0.25);
     },
@@ -423,8 +424,8 @@ var RadarLogic = {
             # its not a friend, so lets do the check
             if (node.getNode("orientation/true-heading-deg") != nil) {
                 var bearing = self.course_to(aircraftPos);
-                var trAct = node.getNode("instrumentation/transponder/inputs/mode");
-                if (trAct != nil and trAct.getValue() != 0) {
+                var trAct = node.getNode("instrumentation/transponder/transmitted-id");
+                if (trAct != nil and trAct.getValue() != -9999) {#hmm kinda of a hack
                   # transponder on
                   var clock = getClock(bearing-myHeading);
                   rwr[clock-1] = TRUE;
@@ -435,7 +436,7 @@ var RadarLogic = {
                   var deviation = inv_bearing - heading;
                   #print("dev "~deviation);
                   var rdrAct = node.getNode("sim/multiplay/generic/int[2]");
-                  if (((rdrAct != nil and rdrAct.getValue()!=0) or rdrAct == nil) and math.abs(geo.normdeg180(deviation)) < 60) {
+                  if (((rdrAct != nil and rdrAct.getValue()!=1) or rdrAct == nil) and math.abs(geo.normdeg180(deviation)) < 60) {
                       # we detect its radar is pointed at us and active
                       var clock = getClock(bearing-myHeading);
                       rwr[clock-1] = TRUE;
@@ -546,7 +547,7 @@ var RadarLogic = {
       } else {
        me.terrain = geo.Coord.new();
        me.terrain.set_latlon(me.v.lat, me.v.lon, me.v.elevation);
-       me.maxDist = me.myOwnPos.direct_distance_to(SelectCoord);
+       me.maxDist = me.myOwnPos.direct_distance_to(SelectCoord)-1;
        me.terrainDist = me.myOwnPos.direct_distance_to(me.terrain);
        if (me.terrainDist < me.maxDist) {
          #print("terrain found between the planes");
@@ -954,6 +955,10 @@ var Contact = {
         return obj;
     },
 
+    isVirtual: func () {
+      return FALSE;
+    },
+
     getETA: func {
       if (me.eta != nil) {
         return me.eta.getValue();
@@ -980,10 +985,10 @@ var Contact = {
     },
 
     isRadarActive: func {
-      if (me.rdrAct == nil or me.rdrAct.getValue() < 0 or me.rdrAct.getValue() > 1) {
+      if (me.rdrAct == nil or me.rdrAct.getValue() != 1) {
         return TRUE;
       }
-      return me.rdrAct.getValue();
+      return FALSE;
     },
 
     isPainted: func () {
@@ -1322,6 +1327,10 @@ var ContactGPS = {
 
   isValid: func () {
     return TRUE;
+  },
+
+  isVirtual: func () {
+    return FALSE;
   },
 
   isRadarActive: func {
@@ -1729,6 +1738,10 @@ var ContactGhost = {
           myDistance = MyAircraftCoord.direct_distance_to(me.get_Coord()) * M2NM;
       }
       return myDistance;
+  },
+
+  isVirtual: func () {
+    return FALSE;
   },
 
   get_type: func () {

@@ -14,7 +14,7 @@ var TRUE = 1;
 #  print("Cleaning up window:","TI","\n");
   #update_timer.stop();
 #  gone = TRUE;
-# 
+#
 #  call(canvas.Window.del, [], me);
 #};
 #var root = window.getCanvas(1).createGroup();
@@ -22,9 +22,9 @@ var mycanvas = nil;
 var root = nil;
 var setupCanvas = func {
 	mycanvas = canvas.new({
-	  "name": "TI",   
-	  "size": [height, height], 
-	  "view": [height, height], 
+	  "name": "TI",
+	  "size": [height, height],
+	  "view": [height, height],
 	  "mipmapping": 0,
 	  #"additive-blend": 1
 	});
@@ -100,7 +100,7 @@ var center_tile_offset = [(num_tiles[0] - 1) / 2,(num_tiles[1] - 1) / 2];#(width
 
 ##
 # initialize the map by setting up
-# a grid of raster images  
+# a grid of raster images
 
 var tiles = setsize([], num_tiles[0]);
 
@@ -329,7 +329,7 @@ var edgeButtonsStruct = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
 var TI = {
 
-	# # # # # # # # # # # # # 
+	# # # # # # # # # # # # #
 	# Z sorting:
 	# root
 	# 	map 1
@@ -346,13 +346,13 @@ var TI = {
 	# 		radar echoes 5
 	# 		steerpoints 6
 	# 		runway symbols 7
-	# 		self 10	
+	# 		self 10
 	# 	FPI and arrow 10
 	# 	infoBoxTarget 11
 	# 	infoBox 11
 	# 	menus 20
 	# 	cursor 25
-	# # # # # # # # # # # # 
+	# # # # # # # # # # # #
 
 	setupCanvasSymbols: func {
 		# map groups
@@ -482,7 +482,7 @@ var TI = {
 		      .setColor(rWhite,gWhite,bWhite, a)
 		      .setStrokeLineWidth(w)
 		      .set("z-index", 5);
-		
+
 		# own symbol
 		me.selfSymbol = me.rootCenter.createChild("path")
 		      .moveTo(-5*MM2TEX, 15*MM2TEX)
@@ -857,7 +857,7 @@ var TI = {
 		var tgtH      = 0.10;
 		var tgtStartx = width-(width*0.060-3.125+6.25*2+w*2) - width*tgtW;
 		var tgtStarty = height-height*0.14-height*0.025-w*2;
-		
+
 		me.tgtTextFrame     = me.tgtTextField.createChild("path")
 			.moveTo(tgtStartx,  tgtStarty)#above bottom text field and next to fast menu sub boxes
 		      .vert(            -height*tgtH)
@@ -908,7 +908,7 @@ var TI = {
     		.setColor(rWhite,gWhite,bWhite, a)
     		.setAlignment("center-bottom")
     		.setTranslation(tgtStartx+width*tgtW*0.60, tgtStarty-height*tgtH*0.0-w)
-    		.setFontSize(15, 1);		
+    		.setFontSize(15, 1);
 
 		# steerpoint info box
 		me.wpTextField     = root.createChild("group")
@@ -1450,7 +1450,7 @@ var TI = {
 		      .setStrokeLineWidth(w*2)
 		      .setColor(rGB,gGB,bGB, a);
 
-		
+
 		me.horizon_group = me.rootRealCenter.createChild("group");
 		me.horz_rot = me.horizon_group.createTransform();
 		me.horizon_group2 = me.horizon_group.createChild("group");
@@ -1488,7 +1488,7 @@ var TI = {
 		me.arr_90  = 3*9;
 		me.arr_120 = 3*12;
 
-		me.arrow_group = me.rootRealCenter.createChild("group");  
+		me.arrow_group = me.rootRealCenter.createChild("group");
 		me.arrow_trans = me.arrow_group.createTransform();
 		me.arrow =
 		      me.arrow_group.createChild("path")
@@ -1550,6 +1550,7 @@ var TI = {
 #			twoHz:                "ja37/blink/two-Hz/state",
 			station:          	  "controls/armament/station-select",
 			roll:             	  "orientation/roll-deg",
+			pitch:             	  "orientation/pitch-deg",
 			units:                "ja37/hud/units-metric",
 			callsign:             "ja37/hud/callsign",
 			tracks_enabled:   	  "ja37/hud/tracks-enabled",
@@ -1576,8 +1577,20 @@ var TI = {
         	wow1:                 "fdm/jsbsim/gear/unit[1]/WOW",
         	wow2:                 "fdm/jsbsim/gear/unit[2]/WOW",
         	gearsPos:         	  "gear/gear/position-norm",
+        	latitude:             "position/latitude-deg",
+        	longitude:            "position/longitude-deg",
+        	terrainOn:            "ja37/sound/terrain-on",
+			terrainWarn:          "instrumentation/terrain-warning",
+			inputFlight:          "ja37/systems/input-controls-flight",
+            cursorControlX:       "fdm/jsbsim/fcs/cursor/cursor-control-X",
+            cursorControlY:       "fdm/jsbsim/fcs/cursor/cursor-control-Y",
+            cursorSelect:         "fdm/jsbsim/fcs/cursor/cursor-select",
+			elevCmd:              "fdm/jsbsim/fcs/elevator-cmd-norm",
+			ailCmd:               "fdm/jsbsim/fcs/aileron-cmd-norm",
+			trigger:              "controls/armament/trigger",
+			instrNorm:            "controls/lighting/instruments-norm",
       	};
-   
+
       	foreach(var name; keys(ti.input)) {
         	ti.input[name] = props.globals.getNode(ti.input[name], 1);
       	}
@@ -1587,8 +1600,8 @@ var TI = {
       	ti.setupMap();
 
       	#map
-      	ti.lat = getprop('/position/latitude-deg');
-		ti.lon = getprop('/position/longitude-deg');
+      	ti.lat = ti.input.latitude.getValue();
+		ti.lon = ti.input.longitude.getValue();
       	ti.mapSelfCentered = TRUE;
 
       	ti.lastRRT = 0;
@@ -1639,7 +1652,7 @@ var TI = {
 		ti.mapshowing = TRUE;
 		ti.basesNear  = [];
 		ti.basesEnabled = FALSE;
-		ti.logEvents  = events.LogBuffer.new(echo: 0);#compatible with older FG?		
+		ti.logEvents  = events.LogBuffer.new(echo: 0);#compatible with older FG?
 		ti.logBIT     = events.LogBuffer.new(echo: 0);#compatible with older FG?
 		ti.logLand    = events.LogBuffer.new(echo: 0);#compatible with older FG?
 		ti.BITon = FALSE;
@@ -1743,7 +1756,7 @@ var TI = {
 		me.whereIsMap();#must be before mapUpdate
 		me.updateMap();
 		me.showMapScale();
-		M2TEX = 1/(meterPerPixel[zoom]*math.cos(getprop('/position/latitude-deg')*D2R));
+		M2TEX = 1/(meterPerPixel[zoom]*math.cos(me.input.latitude.getValue()*D2R));
 		me.updateSVY();# must be before displayRadarTracks and showselfvector
 		me.showSelfVector();
 		me.defineEnemies();# must be before displayRadarTracks
@@ -1760,7 +1773,7 @@ var TI = {
 		me.showLVFF();
 		me.showTargetInfo();#must be after displayRadarTracks
 		me.updateMapNames();
-		me.showBasesNear();		
+		me.showBasesNear();
 		me.ecmOverlay();
 		me.showBullsEye();
 		#settimer(func me.loop(), 0.5);
@@ -2149,7 +2162,7 @@ var TI = {
 					me.menuButtonBox[6].show();
 				} elsif (me.trapAll == TRUE) {
 					me.menuButtonBox[17].show();
-				}			
+				}
 			}
 		}
 		if (me.menuMain == MAIN_DISPLAY) {
@@ -2562,8 +2575,8 @@ var TI = {
 				getprop("velocities/mach"),
 				me.input.headMagn.getValue(),
 				me.input.alt_ft.getValue(),
-				ja37.convertDegreeToStringLon(getprop("position/longitude-deg")),
-				ja37.convertDegreeToStringLat(getprop("position/latitude-deg")),
+				ja37.convertDegreeToStringLon(me.input.longitude.getValue()),
+				ja37.convertDegreeToStringLat(me.input.latitude.getValue()),
 				me.tgtC,
 				me.tgtS,
 				me.tgtA,
@@ -2575,8 +2588,8 @@ var TI = {
 				getprop("velocities/mach"),
 				me.input.headMagn.getValue(),
 				me.input.alt_ft.getValue(),
-				ja37.convertDegreeToStringLon(getprop("position/longitude-deg")),
-				ja37.convertDegreeToStringLat(getprop("position/latitude-deg"))				
+				ja37.convertDegreeToStringLon(me.input.longitude.getValue()),
+				ja37.convertDegreeToStringLat(me.input.latitude.getValue())
 				);
 		}
 		me.logEvents.push(me.message);
@@ -2592,7 +2605,7 @@ var TI = {
 	########################################################################################################
 
 	edgeButtons: func {
-		me.lightNorm = getprop("controls/lighting/instruments-norm");
+		me.lightNorm = me.input.instrNorm.getValue();
 		me.elapsedTime = me.input.timeElapsed.getValue();
 		for (me.i = 0; me.i <22;me.i+=1) {
 			if (me.elapsedTime-edgeButtonsStruct[me.i]<0.30) {
@@ -2633,49 +2646,48 @@ var TI = {
 
 	showCursor: func {
 		if (displays.common.cursor == displays.TI and MI.cursorOn == TRUE) {
-			if(!getprop("/ja37/systems/input-controls-flight")) {
-				me.cursorSpeedY = getprop("fdm/jsbsim/fcs/elevator-cmd-norm");
-				me.cursorSpeedX = getprop("fdm/jsbsim/fcs/aileron-cmd-norm");
-				me.cursorMoveY  = 150 * 0.05 * me.cursorSpeedY;
-				me.cursorMoveX  = 150 * 0.05 * me.cursorSpeedX;
-				me.cursorPosX  += me.cursorMoveX;
-				me.cursorPosY  += me.cursorMoveY;
-				me.cursorPosX   = clamp(me.cursorPosX, -width*0.5,  width*0.5);
-				me.cursorPosY   = clamp(me.cursorPosY, -me.rootCenterY, height-me.rootCenterY);#relative to map center
-				me.cursorGPosX = me.cursorPosX + width*0.5;
-				me.cursorGPosY = me.cursorPosY + me.rootCenterY;# relative to canvas
-				me.cursorOPosX = me.cursorPosX + me.tempReal[0];
-				me.cursorOPosY = me.cursorPosY + me.tempReal[1];# relative to rootCenter
-				#me.cursorRPosX = me.cursorPosX + me.rootCenterTranslation[0];
-				#me.cursorRPosY = me.cursorPosY + me.rootCenterTranslation[1];# relative to own position
-				me.cursor.setTranslation(me.cursorGPosX,me.cursorGPosY);# is off set 1 pixel to right
-				me.cursorTrigger = getprop("controls/armament/trigger");
-				#printf("(%d,%d) %d",me.cursorPosX,me.cursorPosY, me.cursorTrigger);
-				if (route.Polygon.editBullsEye) {
-					if(me.cursorTrigger and !me.cursorTriggerPrev) {
-						me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
-						setprop("ja37/navigation/bulls-eye-defined", TRUE);
-						setprop("ja37/navigation/bulls-eye-lat", me.newSteerPos[0]);
-						setprop("ja37/navigation/bulls-eye-lon", me.newSteerPos[1]);
-					}
-				} elsif (route.Polygon.editSteer) {
-					#print("dragging steerpoint: "~geo.format(me.newSteerPos[0],me.newSteerPos[1]));
-					if(me.cursorTrigger and !me.cursorTriggerPrev) {
-						me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
-						route.Polygon.editApply(me.newSteerPos[0],me.newSteerPos[1]);
-					}
-				} elsif (route.Polygon.insertSteer) {
-					if(me.cursorTrigger and !me.cursorTriggerPrev) {
-						me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
-						route.Polygon.insertApply(me.newSteerPos[0],me.newSteerPos[1]);
-					}
-					#me.newSteerPos = nil;
-				} elsif (route.Polygon.appendSteer) {
-					if(me.cursorTrigger and !me.cursorTriggerPrev) {#if this is nested condition then only this can be done. Is this what we want?
-						me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
-						route.Polygon.appendApply(me.newSteerPos[0],me.newSteerPos[1]);
-					}
-					#me.newSteerPos = nil;
+			me.cursorSpeedY = me.input.cursorControlY.getValue();
+			me.cursorSpeedX = me.input.cursorControlX.getValue();
+			me.cursorMoveY  = 150 * 0.05 * me.cursorSpeedY;
+			me.cursorMoveX  = 150 * 0.05 * me.cursorSpeedX;
+			me.cursorPosX  += me.cursorMoveX;
+			me.cursorPosY  += me.cursorMoveY;
+			me.cursorPosX   = clamp(me.cursorPosX, -width*0.5,  width*0.5);
+			me.cursorPosY   = clamp(me.cursorPosY, -me.rootCenterY, height-me.rootCenterY);#relative to map center
+			me.cursorGPosX = me.cursorPosX + width*0.5;
+			me.cursorGPosY = me.cursorPosY + me.rootCenterY;# relative to canvas
+			me.cursorOPosX = me.cursorPosX + me.tempReal[0];
+			me.cursorOPosY = me.cursorPosY + me.tempReal[1];# relative to rootCenter
+			#me.cursorRPosX = me.cursorPosX + me.rootCenterTranslation[0];
+			#me.cursorRPosY = me.cursorPosY + me.rootCenterTranslation[1];# relative to own position
+			me.cursor.setTranslation(me.cursorGPosX,me.cursorGPosY);# is off set 1 pixel to right
+			me.cursorTrigger = me.input.cursorSelect.getValue();
+			#printf("(%d,%d) %d",me.cursorPosX,me.cursorPosY, me.cursorTrigger);
+			if (route.Polygon.editBullsEye) {
+				if(me.cursorTrigger and !me.cursorTriggerPrev) {
+					me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
+					setprop("ja37/navigation/bulls-eye-defined", TRUE);
+					setprop("ja37/navigation/bulls-eye-lat", me.newSteerPos[0]);
+					setprop("ja37/navigation/bulls-eye-lon", me.newSteerPos[1]);
+				}
+			} elsif (route.Polygon.editSteer) {
+				#print("dragging steerpoint: "~geo.format(me.newSteerPos[0],me.newSteerPos[1]));
+				if(me.cursorTrigger and !me.cursorTriggerPrev) {
+					me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
+					route.Polygon.editApply(me.newSteerPos[0],me.newSteerPos[1]);
+				}
+			} elsif (route.Polygon.insertSteer) {
+				if(me.cursorTrigger and !me.cursorTriggerPrev) {
+					me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
+					route.Polygon.insertApply(me.newSteerPos[0],me.newSteerPos[1]);
+				}
+				#me.newSteerPos = nil;
+			} elsif (route.Polygon.appendSteer) {
+				if(me.cursorTrigger and !me.cursorTriggerPrev) {#if this is nested condition then only this can be done. Is this what we want?
+					me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
+					route.Polygon.appendApply(me.newSteerPos[0],me.newSteerPos[1]);
+				}
+				#me.newSteerPos = nil;
 #				if (menuMain != MAIN_MISSION_DATA and me.cursorTrigger and !me.cursorTriggerPrev) {
 #						me.cursorIsClicking = TRUE;
 #						me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
@@ -2685,22 +2697,18 @@ var TI = {
 #							radar_logic.cursorSelectEcho(me.newSteerPos[0],me.newSteerPos[1]);
 #						}
 #					}
-				} elsif (me.cursorTrigger and !me.cursorTriggerPrev) {
-					# click on edge buttons
-					me.newSteerPos = nil;
-					me.bMethod = me.getButtonMethod();
-					if (me.bMethod != nil) {
-						me.bMethod();
-					} elsif (me.dragMapEnabled) {
-						me.newMapPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
-						me.lat = me.newMapPos[0];
-						me.lon = me.newMapPos[1];
-						me.mapSelfCentered = FALSE;
-					}
-				}
-			} else {
-				me.cursorTrigger = FALSE;
+			} elsif (me.cursorTrigger and !me.cursorTriggerPrev) {
+				# click on edge buttons
 				me.newSteerPos = nil;
+				me.bMethod = me.getButtonMethod();
+				if (me.bMethod != nil) {
+					me.bMethod();
+				} elsif (me.dragMapEnabled) {
+					me.newMapPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
+					me.lat = me.newMapPos[0];
+					me.lon = me.newMapPos[1];
+					me.mapSelfCentered = FALSE;
+				}
 			}
 			me.cursor.show();
 		} else {
@@ -2915,7 +2923,7 @@ var TI = {
 	},
 
 	dapBLo: func (input, sign, myself) {
-		# 
+		#
 		if (input == nil) {
 			dap.setError();
 			return;
@@ -2933,7 +2941,7 @@ var TI = {
 	},
 
 	dapBLa: func (input, sign, myself) {
-		# 
+		#
 		if (input == nil) {
 			dap.setError();
 			return;
@@ -2951,7 +2959,7 @@ var TI = {
 	},
 
 	dapA: func (input, sign, myself) {
-		# 
+		#
 		if (input == nil or input == 0 or input > 6 or sign < 0) {
 			dap.setError();
 		} else {
@@ -2962,7 +2970,7 @@ var TI = {
 	},
 
 	dapBspeed: func (input, sign, myself) {
-		# 
+		#
 		if (sign < 0) {
 			dap.setError();
 		} else {
@@ -2979,7 +2987,7 @@ var TI = {
 	},
 
 	dapType: func (input, sign, myself) {
-		# 
+		#
 		if (input == nil) {
 			dap.setError();
 			return;
@@ -2987,7 +2995,7 @@ var TI = {
 		var typ = num(input);
 		if (sign < 0 or typ > 1) {
 			dap.setError();
-		} else {			
+		} else {
 			print("TI recieved steerpoint type from DAP: "~typ);
 			route.Polygon.setType(typ);
 			myself.stopDAP();
@@ -2995,7 +3003,7 @@ var TI = {
 	},
 
 	dapBalt: func (input, sign, myself) {
-		# 
+		#
 		if (sign < 0) {
 			dap.setError();
 		} else {
@@ -3117,7 +3125,7 @@ var TI = {
 		# update and display side view
 		if (me.SVYactive == TRUE and me.menuMain != MAIN_MISSION_DATA) {#TODO: Find out if SVY really WAS shown in MSDA menu..
 			me.svy_grp2.removeAllChildren();
-			
+
 			me.SVYoriginX = width*0.05;#texel
 			me.SVYoriginY = height*0.125+height*0.125*me.SVYsize-height*0.05;#texel
 			me.SVYwidth   = width*0.90;#texel
@@ -3224,7 +3232,7 @@ var TI = {
 					      			me.baseSmall[me.numS].setTranslation(me.pixelX, me.pixelY);
 					      			me.baseSmallText[me.numS].setTranslation(me.pixelX, me.pixelY);
 					      			me.baseSmallText[me.numS].setText(me.baseIcao);
-					      			me.baseSmallText[me.numS].setRotation(-getprop("orientation/heading-deg")*D2R);
+					      			me.baseSmallText[me.numS].setRotation(-me.input.heading.getValue()*D2R);
 					      			me.baseSmall[me.numS].show();
 					      			me.baseSmallText[me.numS].show();
 					      			me.numS += 1;
@@ -3235,7 +3243,7 @@ var TI = {
 					      			me.baseLargeText[me.numL].setTranslation(me.pixelX, me.pixelY);
 					      			me.baseLargeText[me.numL].setText(me.baseIcao);
 					      			me.baseLargeText[me.numL].show();
-					      			me.baseLargeText[me.numL].setRotation(-getprop("orientation/heading-deg")*D2R);
+					      			me.baseLargeText[me.numL].setRotation(-me.input.heading.getValue()*D2R);
 					      			me.baseLarge[me.numL].show();
 					      			me.numL += 1;
 					      		}
@@ -3337,7 +3345,7 @@ var TI = {
 	showTargetInfo: func {
 		if (me.mapshowing == TRUE and radar_logic.selection != nil and (me.tgt_dist != nil or me.tgt_alt != nil)) {# and me.input.currentMode.getValue() == displays.COMBAT and radar_logic.selection.isPainted() == TRUE) {
 			# this is info about the locked target.
-    	
+
 	  		if (me.tgt_dist != nil) {
 	  			# distance
 	  			if (me.interoperability == displays.METRIC) {
@@ -3360,7 +3368,7 @@ var TI = {
 	  		} else {
 	  			me.tgtTextDist.setText("");
 	  		}
-	  		
+
 	  		if (me.tgt_alt != nil) {
 	  			# altitude
 	  			me.alt = me.tgt_alt;
@@ -3413,10 +3421,10 @@ var TI = {
 			me.wpText5.show();
 
 			me.wpText2Desc.setText("LON");
-			me.wpText2.setText(getprop("ja37/avionics/gps-nav")?ja37.convertDegreeToStringLon(getprop("position/longitude-deg")):"000 00 00");
+			me.wpText2.setText(getprop("ja37/avionics/gps-nav")?ja37.convertDegreeToStringLon(me.input.longitude.getValue()):"000 00 00");
 
 			me.wpText3Desc.setText("LAT");
-			me.wpText3.setText(getprop("ja37/avionics/gps-nav")?ja37.convertDegreeToStringLat(getprop("position/latitude-deg")):"00 00 00");
+			me.wpText3.setText(getprop("ja37/avionics/gps-nav")?ja37.convertDegreeToStringLat(me.input.latitude.getValue()):"00 00 00");
 
 			me.wpText2.setFontSize(13, 1.0);
 			me.wpText3.setFontSize(13, 1.0);
@@ -3453,7 +3461,7 @@ var TI = {
 			me.wpTextField.update();
 		} elsif (me.menuMain == MAIN_MISSION_DATA) {
 			if (route.Polygon.editing != nil and route.Polygon.selectSteer != nil and route.Polygon.editing.type != route.TYPE_AREA) {
-				# info about selected steerpoint			
+				# info about selected steerpoint
 				me.wpText4.setFontSize(15, 1);
 				me.wpText5.setFontSize(15, 1);
 
@@ -3519,7 +3527,7 @@ var TI = {
 					me.wpText6.show();
 				} else {
 					me.wpText6.hide();
-				}				
+				}
 				me.wpText6Desc.show();
 
 				me.wpTextField.update();
@@ -3600,7 +3608,7 @@ var TI = {
 				me.node   = globals.props.getNode("autopilot/route-manager/route/wp["~me.wp~"]");
 
 				me.wpNum  = me.wp+1;
-				
+
 				me.legs   = me.points-1;
 				me.legText = (me.legs==0 or me.wpNum == 1)?"":(me.wpNum-1)~(me.interoperability==displays.METRIC?" AV ":" OF ")~me.legs;
 
@@ -3625,7 +3633,7 @@ var TI = {
 					#if (me.wpSpeed != nil and math.abs(me.wpSpeed) > 9.9 or me.wpSpeed < 0) {
 					#	me.wpSpeed = nil;
 					#}
-				}				
+				}
 				if (me.wpSpeed == nil) {
 					me.wpSpeed = "-.--";
 				} else {
@@ -3670,7 +3678,7 @@ var TI = {
 		# steerpoints on map
 		me.rrSymbolS.hide();
 		me.all_plans = [];# 0: plan  1: editing  2: MSDA menu
-		me.steerRot = -getprop("orientation/heading-deg")*D2R;
+		me.steerRot = -me.input.heading.getValue()*D2R;
 		if (me.menuMain == MAIN_MISSION_DATA) {
 			if (route.Polygon.primary.type == route.TYPE_MIX) {
 				append(me.all_plans, [route.Polygon.primary, route.Polygon.primary == route.Polygon.editing, TRUE]);
@@ -3911,7 +3919,7 @@ var TI = {
   		}
   		#printf("%d degs %0.1f NM", me.texAngle*R2D, me.mDist*M2NM);
   		me.texAngle  = -me.texAngle*R2D+90;#convert from unit circle to heading circle, 0=up on display
-  		me.headAngle = getprop("orientation/heading-deg")+me.texAngle;#bearing
+  		me.headAngle = me.input.heading.getValue()+me.texAngle;#bearing
   		#printf("%d bearing   %d rel bearing", me.headAngle, me.texAngle);
   		me.coordSelf = geo.Coord.new();#TODO: dont create this every time method is called
   		me.coordSelf.set_latlon(me.lat, me.lon);
@@ -3925,7 +3933,7 @@ var TI = {
   			me.beLaLo = [getprop("ja37/navigation/bulls-eye-lat"), getprop("ja37/navigation/bulls-eye-lon")];
   			me.bePos = me.laloToTexel(me.beLaLo[0], me.beLaLo[1]);
   			me.bullsEye.setTranslation(me.bePos[0], me.bePos[1]);
-  			me.bullsEye.setRotation(-getprop("orientation/heading-deg")*D2R);
+  			me.bullsEye.setRotation(-me.input.heading.getValue()*D2R);
   			if (displays.common.cursor == displays.TI and MI.cursorOn == TRUE) {
   				# bearing and distance from Bulls-Eye to cursor
 				#
@@ -3962,7 +3970,7 @@ var TI = {
   				} elsif (me.beDist > 1000) {
   					me.beDistTxt = sprintf("%.1fK",me.beDist*0.001);
   				}
-  				me.beText.setText(sprintf("%03d %s%s",me.bear,me.interoperability==displays.METRIC?" A":"NM",me.beDistTxt));
+  				me.beText.setText(sprintf("%03d\xc2\xb0 %s%s",me.bear,me.interoperability==displays.METRIC?" A":"NM",me.beDistTxt));
   				me.beTextField.show();
   			} else {
   				me.beTextField.hide();
@@ -4000,13 +4008,13 @@ var TI = {
   						.vert(-me.ppRad*2)
   						.horiz(me.ppRad*2)
   						.vert(me.ppRad*2)
-  						.setRotation(-getprop("orientation/heading-deg")*D2R)
+  						.setRotation(-me.input.heading.getValue()*D2R)
   						.setColor(me.ppCol)
   						.setStrokeLineWidth(w);
   				if (me.menuMain==MAIN_MISSION_DATA or dap.settingKnob == dap.KNOB_TI) {
   					me.ppGrp.createChild("group")
   						.setTranslation(me.ppXY[0], me.ppXY[1])
-  						.setRotation(-getprop("orientation/heading-deg")*D2R)
+  						.setRotation(-me.input.heading.getValue()*D2R)
   				        .createChild("text")
   						.setText(me.ppNum)
   						.setColor(me.ppCol)
@@ -4019,7 +4027,7 @@ var TI = {
 				me.ppGrp.createChild("path")
   						.moveTo(me.ppXY[0]-me.ppRad, me.ppXY[1])
   						.arcSmallCW(me.ppRad, me.ppRad, 0, me.ppRad*2, 0)
-           				.arcSmallCW(me.ppRad, me.ppRad, 0, -me.ppRad*2, 0)  						
+           				.arcSmallCW(me.ppRad, me.ppRad, 0, -me.ppRad*2, 0)
   						.setColor(me.ppCol)
   						.setStrokeLineWidth(w);
 				if (me.menuMain==MAIN_MISSION_DATA or dap.settingKnob == dap.KNOB_TI) {
@@ -4028,7 +4036,7 @@ var TI = {
   						.setColor(me.ppCol)
     					.setAlignment("center-center")
     					.setTranslation(me.ppXY[0], me.ppXY[1])
-    					.setRotation(-getprop("orientation/heading-deg")*D2R)
+    					.setRotation(-me.input.heading.getValue()*D2R)
     					.setFontSize(15, 1);
   				}
 			}
@@ -4042,7 +4050,7 @@ var TI = {
   		# current leg is shown and next legs if less than 20Km away.
   		# If main menu MISSION-DATA is enabled, then show all legs.
   		# tyrk color if editing that polygon, else dark tyrk. White for currently edited leg (soon).
-  		# 
+  		#
   		# me.poly contain all points in both all routes and areas.
   		if (me.showSteers == TRUE and me.showSteerPoly == TRUE and size(me.poly) > 1) {
   			me.steerPoly.removeAllChildren();
@@ -4105,11 +4113,11 @@ var TI = {
 
 	updateFlightData: func {
 		me.fData = FALSE;
-		if (getprop("ja37/sound/terrain-on") == TRUE or getprop("instrumentation/terrain-warning") == TRUE) {
+		if (me.input.terrainOn.getValue() == TRUE or me.input.terrainWarn.getValue() == TRUE) {
 			me.fData = TRUE;
 		} elsif (me.displayFlight == FLIGHTDATA_ON) {
 			me.fData = TRUE;
-		} elsif (me.displayFlight == FLIGHTDATA_CLR and (me.input.rad_alt.getValue()*FT2M < 1000 or math.abs(getprop("orientation/pitch-deg")) > 10 or math.abs(getprop("orientation/roll-deg")) > 45)) {
+		} elsif (me.displayFlight == FLIGHTDATA_CLR and (me.input.rad_alt.getValue()*FT2M < 1000 or math.abs(me.input.pitch.getValue()) > 10 or math.abs(me.input.roll.getValue()) > 45)) {
 			me.fData = TRUE;
 		}
 		if (me.fData == TRUE) {
@@ -4139,10 +4147,10 @@ var TI = {
 	},
 
 	displayHorizon: func {
-		me.rot = -getprop("orientation/roll-deg") * D2R;
+		me.rot = -me.input.roll.getValue() * D2R;
 		me.horizon_group.setTranslation(-me.fpi_x, -me.fpi_y);
 		me.horz_rot.setRotation(me.rot);
-		me.horizon_group2.setTranslation(0, texel_per_degree * getprop("orientation/pitch-deg"));
+		me.horizon_group2.setTranslation(0, texel_per_degree * me.input.pitch.getValue());
 
 		me.alt = getprop("instrumentation/altimeter/indicated-altitude-ft");
 		if (me.alt != nil) {
@@ -4169,7 +4177,7 @@ var TI = {
 
 	displayGroundCollisionArrow: func () {
 	    if (getprop("/instrumentation/terrain-warning") == TRUE) {
-	      me.arrow_trans.setRotation(-getprop("orientation/roll-deg") * D2R);
+	      me.arrow_trans.setRotation(-me.input.roll.getValue() * D2R);
 	      me.arrow.show();
 	    } else {
 	      me.arrow.hide();
@@ -4182,7 +4190,7 @@ var TI = {
 			me.timeC = clamp(me.time - 10,0,30);
 			me.dist = (me.timeC/30) * (height/2);
 			me.ground_grp.setTranslation(0, 0);
-			me.ground_grp_trans.setRotation(-getprop("orientation/roll-deg") * D2R);
+			me.ground_grp_trans.setRotation(-me.input.roll.getValue() * D2R);
 			me.groundCurve.setTranslation(0, me.dist);
 			if (me.time < 10 and me.time != 0) {
 				me.groundCurve.setColor(rRed,gRed,bRed, a);
@@ -4234,7 +4242,7 @@ var TI = {
 		}
 		me.icao = land.icao~((land.ils != 0 and getprop("ja37/hud/TILS") == TRUE)?" T":"  ");
 		me.textBBase.setText(me.icao);
-		
+
 		me.mode = "";
 		# DL: data link
 		# RR: radar guided steering
@@ -4312,17 +4320,17 @@ var TI = {
 			}
 			me.textBWeight.setText(me.weightT);
 			me.textBAlpha.setText(me.alphaT);
-		} elsif (displays.common.distance_m != -1) {
+		} else {
 			me.textBWeight.setText(displays.common.distance_name);
 			if (displays.common.distance_model != displays.common.distance_name) {
 				me.textBAlpha.setText(displays.common.distance_model);
 			} else {
 				me.textBAlpha.setText("");
 			}
-		} else {
-			me.textBWeight.setText("");
-			me.textBAlpha.setText("");
-		}
+		}# else {
+		#	me.textBWeight.setText("");
+		#	me.textBAlpha.setText("");
+		#}
 		if (displays.common.error == FALSE) {
 			me.textBerror.setColor(rGrey, gGrey, bGrey, a);
 			me.textBerrorFrame2.hide();
@@ -4396,6 +4404,7 @@ var TI = {
 		    me.runway_name.setRotation(-(180+land.head)*D2R);
 		    me.runway_name.show();
 		    me.approach_line.show();
+		    me.approach_line.update();
 		    if (land.runway_rw != nil and land.runway_rw.length > 0) {
 		    	me.scale = land.runway_rw.length*M2TEX;
 	    	} else {
@@ -4403,6 +4412,7 @@ var TI = {
 	    	}
 	    	me.runway_line.setScale(1, me.scale);
 		    me.runway_line.show();
+		    me.runway_line.update();
 		    if (land.show_approach_circle == TRUE) {
 		      me.scale = 4100*M2TEX/100;
 		      me.approach_circle.setStrokeLineWidth(w/me.scale);
@@ -4415,11 +4425,11 @@ var TI = {
 		      me.pixelX =  me.pixelDistance * math.cos(me.xa_rad + math.pi/2);
 		      me.pixelY =  me.pixelDistance * math.sin(me.xa_rad + math.pi/2);
 		      me.approach_circle.setTranslation(me.pixelX, me.pixelY);
-		      me.approach_circle.update();#needed
 		      me.approach_circle.show();
+		      me.approach_circle.update();#needed
 		    } else {
 		      me.approach_circle.hide();#pitch.......1x.......................................................
-		    }            
+		    }
 		  } else {
 		    me.approach_line.hide();
 		    me.approach_circle.hide();
@@ -4427,6 +4437,7 @@ var TI = {
 		    me.runway_name.hide();
 		  }
 		  me.dest.show();
+		  me.dest.update();
 		} else {
 			me.dest_circle.hide();
 			me.approach_line.hide();
@@ -4648,7 +4659,7 @@ var TI = {
 				}
 				if (me.missileIndex < maxMissiles-1) {
 					me.missileIndex += 1;
-					me.missiles[me.missileIndex].setTranslation(me.pos_xx, me.pos_yy);					
+					me.missiles[me.missileIndex].setTranslation(me.pos_xx, me.pos_yy);
 					if (me.tgtHeading != nil) {
 				        me.relHeading = me.tgtHeading - me.myHeading;
 				        #me.relHeading -= 180;
@@ -4724,9 +4735,9 @@ var TI = {
 	    	me.desired_mag_heading = radar_logic.selection.getMagBearing();
 	    } elsif (me.input.RMActive.getValue() == TRUE) {
 	    	me.desired_mag_heading = me.input.RMWaypointBearing.getValue();
-	    } elsif (me.input.nav0InRange.getValue() == TRUE) {
+#	    } elsif (me.input.nav0InRange.getValue() == TRUE) {
 	    	# bug to VOR, ADF or ILS
-	    	me.desired_mag_heading = me.input.nav0Heading.getValue();# TODO: is this really mag?
+#	    	me.desired_mag_heading = me.input.nav0Heading.getValue();# TODO: is this really mag?
 	    }
 	    if (me.desired_mag_heading != nil) {
 	    	me.myMaghdg  = me.input.headMagn.getValue();
@@ -4882,7 +4893,7 @@ var TI = {
 				me.closeTraps();
 				me.trapLock = TRUE;
 				me.quickOpen = 10000;
-			}	
+			}
 			if(me.menuMain == MAIN_MISSION_DATA) {
 				route.Polygon.insertSteerpoint();
 			}
@@ -4908,13 +4919,13 @@ var TI = {
 				me.quickTimer = me.input.timeElapsed.getValue();
 				me.quickOpen = 3;
 			}
-			
+
 			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == TRUE) {
 				# tact fire report
 				me.closeTraps();
 				me.trapFire = TRUE;
 				me.quickOpen = 10000;
-			}		
+			}
 			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 				land.OPT();
 				dap.syst();
@@ -4922,7 +4933,7 @@ var TI = {
 			if (me.menuMain == MAIN_DISPLAY) {
 				# place names on map
 				me.mapPlaces = !me.mapPlaces;
-			}	
+			}
 			if(me.menuMain == MAIN_MISSION_DATA) {
 				route.Polygon.appendSteerpoint();
 			}
@@ -4987,7 +4998,7 @@ var TI = {
 				me.closeTraps();
 				me.trapMan = TRUE;
 				me.quickOpen = 10000;
-			}	
+			}
 			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 				dap.syst();
 				me.activateAlso = FALSE;
@@ -5367,7 +5378,7 @@ var TI = {
 				} else {
 					route.Polygon.editPlan(nil);
 				}
-			}			
+			}
 		}
 	},
 
@@ -5495,7 +5506,7 @@ var TI = {
 			}
 			if(me.menuMain == MAIN_FAILURES) {
 				me.logPage += 1;
-			}			
+			}
 			if(me.menuMain == MAIN_WEAPONS) {
 				me.aim9 = displays.common.armActive();
 				if (me.aim9 != nil) {
@@ -5575,8 +5586,8 @@ var TI = {
 
 	whereIsMap: func {
 		# update the map position
-		me.lat_own = getprop('/position/latitude-deg');
-		me.lon_own = getprop('/position/longitude-deg');
+		me.lat_own = me.input.latitude.getValue();
+		me.lon_own = me.input.longitude.getValue();
 		if (me.menuMain != MAIN_MISSION_DATA or me.mapSelfCentered) {
 			# get current position
 			me.lat = me.lat_own;
@@ -5591,8 +5602,8 @@ var TI = {
 		}
 		me.rootCenterY = height*0.875-(height*0.875)*me.ownPosition;
 		if (!me.mapSelfCentered) {
-			me.lat_wp   = getprop('/position/latitude-deg');
-			me.lon_wp   = getprop('/position/longitude-deg');
+			me.lat_wp   = me.input.latitude.getValue();
+			me.lon_wp   = me.input.longitude.getValue();
 			me.tempReal = me.laloToTexel(me.lat,me.lon);#delicate
 			me.rootCenter.setTranslation(width/2-me.tempReal[0], me.rootCenterY-me.tempReal[1]);
 			#me.rootCenterTranslation = [width/2-me.tempReal[0], me.rootCenterY-me.tempReal[1]];
@@ -5691,7 +5702,9 @@ var TI = {
 		lastDay = me.day;
 		}
 
-		me.mapRot.setRotation(-getprop("orientation/heading-deg")*D2R);
+		#me.mapRot.setRotation(-me.input.heading.getValue()*D2R);
+		me.mapCenter.setRotation(-me.input.heading.getValue()*D2R);#switched to direct rotation to try and solve issue with approach line not updating fast.
+		me.mapCenter.update();
 	},
 };
 
@@ -5710,4 +5723,3 @@ var init = func {
 }
 
 #idl = setlistener("ja37/supported/initialized", init, 0, 0);
-

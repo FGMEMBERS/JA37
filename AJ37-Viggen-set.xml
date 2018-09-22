@@ -47,6 +47,7 @@
         <state include="states/ready-for-takeoff.xml" n="0"/>
         <state include="states/cold-and-dark-se.xml" n="1"/>
         <state include="states/ready-for-takeoff-se.xml" n="2"/>
+        <state include="states/cold-and-dark.xml" n="3"/>
 
         <previews>
             <preview>
@@ -616,6 +617,7 @@
                     <min-fire-range-nm type="double">0.0</min-fire-range-nm>
                     <max-report-distance type="double">150</max-report-distance>
                     <rail type="bool">false</rail>
+                    <lateral-dps type="double"> 10 </lateral-dps>
                     <class type="string">GM</class>
                     <fire-msg type="string">Bombs away</fire-msg>
                 </m71>
@@ -649,6 +651,7 @@
                     <min-fire-range-nm type="double">0.0</min-fire-range-nm>
                     <max-report-distance type="double">150</max-report-distance>
                     <rail type="bool">false</rail>
+                    <lateral-dps type="double"> -10 </lateral-dps>
                     <class type="string">GM</class>
                     <fire-msg type="string">Bombs away</fire-msg>
                 </m71r>
@@ -712,7 +715,7 @@
                     <drag-coeff type="double">0.06</drag-coeff>                   
                     <cross-section-sqft type="double">3.04</cross-section-sqft>                             <!-- source -->
                     <arming-time-sec type="double">4.5</arming-time-sec>                  <!-- manual -->
-                    <min-speed-for-guiding-mach type="double">0.7</min-speed-for-guiding-mach>
+                    <min-speed-for-guiding-mach type="double">0.5</min-speed-for-guiding-mach>
                     <self-destruct-time-sec type="double">24</self-destruct-time-sec>     <!-- manual -->
                     <loft-altitude type="int">0</loft-altitude>
                     <min-fire-range-nm type="double">0.2</min-fire-range-nm>
@@ -730,7 +733,7 @@
                     <vol-track type="double">0.15</vol-track>
                     <vol-track-weak type="double">0.1</vol-track-weak>
                     <guidance type="string">vision</guidance>                             
-                    <navigation type="string">APN</navigation>
+                    <navigation type="string">direct</navigation>
                     <all-aspect type="bool">true</all-aspect>
                     <max-fire-range-nm type="double">12</max-fire-range-nm>              <!-- source -->
                     <FCS-field-deg type="int">25</FCS-field-deg>            
@@ -747,7 +750,7 @@
                     <drag-coeff type="double">0.06</drag-coeff>                   
                     <cross-section-sqft type="double">3.14</cross-section-sqft>                             <!-- source -->
                     <arming-time-sec type="double">1.0</arming-time-sec>          
-                    <min-speed-for-guiding-mach type="double">0.7</min-speed-for-guiding-mach>
+                    <min-speed-for-guiding-mach type="double">0.5</min-speed-for-guiding-mach>
                     <self-destruct-time-sec type="double">55</self-destruct-time-sec>  
                     <loft-altitude type="int">0</loft-altitude>
                     <min-fire-range-nm type="double">0.2</min-fire-range-nm>

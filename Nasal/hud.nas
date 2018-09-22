@@ -1351,9 +1351,9 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
         me.desired_mag_heading = radar_logic.selection.getMagBearing();
     } elsif( me.input.RMActive.getValue() == TRUE) {
       me.desired_mag_heading = me.input.RMWaypointBearing.getValue();
-    } elsif (me.input.nav0InRange.getValue() == TRUE) {
+#    } elsif (me.input.nav0InRange.getValue() == TRUE) {
       # bug to VOR, ADF or ILS
-      me.desired_mag_heading = me.input.nav0Heading.getValue();# TODO: is this really mag?
+#      me.desired_mag_heading = me.input.nav0Heading.getValue();# TODO: is this really mag?
     }
     if(me.desired_mag_heading != nil) {
       #print("desired "~desired_mag_heading);
@@ -2633,15 +2633,11 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
 
         # we calc heading from composite speeds, due to alpha and beta might influence direction bombs will fall:
         me.vectorMag = math.sqrt(me.speed_east_fps*me.speed_east_fps+me.speed_north_fps*me.speed_north_fps);
+        # no check for divide by zero here??!?:
         me.heading = -math.asin(me.speed_north_fps/me.vectorMag)*R2D+90;#divide by vector mag, to get normalized unit vector length
         if (me.speed_east_fps/me.vectorMag < 0) {
           me.heading = -me.heading;
-          while (me.heading > 360) {
-            me.heading -= 360;
-          }
-          while (me.heading < 0) {
-            me.heading += 360;
-          }
+          me.heading = geo.normdeg(me.heading);
         }
         me.ccipPos.apply_course_distance(me.heading, me.dist);
         #var elev = geo.elevation(ac.lat(), ac.lon());
@@ -2701,8 +2697,11 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
           me.lock_ir_last = FALSE;
       } else {
           if (me.missileCurr.status != armament.MISSILE_LOCK) {
-            me.diamond_small.setTranslation(me.ds[0]*pixelPerDegreeX, -me.ds[1]*pixelPerDegreeY+centerOffset);
-            me.diamond_small.show();
+            if ((me.missileCurr.isBore() and me.missileCurr.isCaged()) or (!me.missileCurr.isSlave() and !me.missileCurr.isBore() and !me.missileCurr.isCaged()) or (me.missileCurr.isCaged() and me.missileCurr.isSlave() and !me.missileCurr.command_tgt)) {
+              # small seeker diamond should show. TODO: refine this if statement
+              me.diamond_small.setTranslation(me.ds[0]*pixelPerDegreeX, -me.ds[1]*pixelPerDegreeY+centerOffset);
+              me.diamond_small.show();
+            }
             me.lock_ir_last = FALSE;
           } else {
             if (me.lock_ir_last == FALSE) {
@@ -2884,6 +2883,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
             me.target_circle[0].hide();
           } elsif (me.blink == FALSE or me.input.fiveHz.getValue() == TRUE) {
             me.lock_rdr.hide();
+            me.target_circle[0].setTranslation(me.pos_x, me.pos_y);
             me.target_circle[0].show();
           } else {
             me.lock_rdr.hide();
@@ -2977,6 +2977,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
     } else {
       # radar tracks not shown at all
       radar_logic.lockLast = nil;
+      armament.contact = nil;
       me.radar_group.hide();
     }
   },
