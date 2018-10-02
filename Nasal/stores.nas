@@ -848,81 +848,88 @@ var cannon_types = {
     
     
 var warhead_lbs = {
-    "aim-120":              44.00,
-    "AIM120":               44.00,
-    "AIM-120":              44.00,
-    "RB-99":                44.00,
-    "aim-7":                88.00,
-    "AIM-7":                88.00,
-    "RB-71":                88.00,
-    "aim-9":                20.80,
-    "AIM9":                 20.80,
-    "AIM-9":                20.80,
-    "RB-24":                20.80,
-    "RB-24J":               20.80,
-    "RB-74":                20.80,
-    "R74":                  16.00,
-    "MATRA-R530":           55.00,
-    "Meteor":               55.00,
-    "AIM-54":              135.00,
-    "Matra R550 Magic 2":   27.00,
-    "MatraR550Magic2":      27.00,
-    "Matra MICA":           30.00,
-    "MatraMica":            30.00,
-    "MatraMicaIR":          30.00,
-    "RB-15F":              440.92,
-    "SCALP":               992.00,
-    "KN-06":               315.00,
-    "GBU12":               190.00,
-    "GBU-12":              190.00,
-    "GBU16":               450.00,
-    "Sea Eagle":           505.00,
-    "SeaEagle":            505.00,
-    "AGM65":               200.00,
     "AGM-65":              126.00,
     "AGM-84":              488.00,
     "AGM-88":              146.00,
-    "RB-04E":              661.00,
-    "RB-05A":              353.00,
-    "RB-75":               126.00,
-    "M90":                 500.00,
+    "AGM65":               200.00,
+    "aim-120":              44.00,
+    "AIM-120":              44.00,
+    "AIM-54":              135.00,
+    "aim-7":                88.00,
+    "AIM-7":                88.00,
+    "aim-9":                20.80,
+    "AIM-9":                20.80,
+    "AIM120":               44.00,
+    "AIM132":               22.05,
+    "AIM9":                 20.80,
+    "ALARM":               450.00,
+    "AM39-Exocet":         364.00, 
+    "AS-37-Martel":        330.00, 
+    "AS30L":               529.00,
+    "Exocet":              364.00,
+    "FAB-100":              92.59,
+    "FAB-250":             202.85,
+    "FAB-500":             564.38,
+    "GBU-12":              190.00,
+    "GBU-31":              945.00,
+    "GBU12":               190.00,
+    "GBU16":               450.00,
+    "HVAR":                  7.50,#P51
+    "KAB-500":             564.38,
+    "KH-25MP":             197.53,
+    "Kh-66":               244.71,
+    "KN-06":               315.00,
+    "LAU-68":               10.00,
+    "M317":                145.00,
     "M71":                 200.00,
     "M71R":                200.00,
+    "M90":                 500.00,
+    "Magic-2":              27.00, 
+    "Matra MICA":           30.00,
+    "Matra R550 Magic 2":   27.00,
+    "MATRA-R530":           55.00,
+    "MatraMica":            30.00,
+    "MatraMicaIR":          30.00,
+    "MatraR550Magic2":      27.00,
+    "Meteor":               55.00,
+    "MICA-EM":              30.00, 
+    "MICA-IR":              30.00, 
     "MK-82":               192.00,
     "MK-83":               445.00,
     "MK-84":               945.00,
-    "LAU-68":               10.00,
-    "M317":                145.00,
-    "GBU-31":              945.00,
-    "AIM132":               22.05,
-    "ALARM":               450.00,
-    "STORMSHADOW":         850.00,
-    "S-21":                245.00,
-    "S-24":                271.00,
-    "Kh-66":               244.71,
-    "RS-2US":               28.66,
-    "R-55":                 20.06,
-    "R-3S":                 16.31,
-    "R-3R":                 16.31,
+    "OFAB-100":             92.59,
     "R-13M":                16.31,
-    "R-60":                  6.60,
-    "R-60M":                 7.70,
     "R-27R1":               85.98,
     "R-27T1":               85.98,
+    "R-3R":                 16.31,
+    "R-3S":                 16.31,
+    "R-55":                 20.06,
+    "R-60":                  6.60,
+    "R-60M":                 7.70,
     "R-73E":                16.31,
     "R-77":                 49.60,
+    "R74":                  16.00,
+    "RB-04E":              661.00,
+    "RB-05A":              353.00,
+    "RB-15F":              440.92,
+    "RB-24":                20.80,
+    "RB-24J":               20.80,
+    "RB-71":                88.00,
+    "RB-74":                20.80,
+    "RB-75":               126.00,
+    "RB-99":                44.00,
     "RN-14T":              800.00, #fictional, thermobaeric replacement for the RN-24 nuclear bomb
     "RN-18T":             1200.00, #fictional, thermobaeric replacement for the RN-28 nuclear bomb
+    "RS-2US":               28.66,
+    "S-21":                245.00,
+    "S-24":                271.00,
+    "S530D":                66.00, 
+    "SCALP":               992.00,
+    "Sea Eagle":           505.00,
+    "SeaEagle":            505.00,
+    "STORMSHADOW":         850.00,
     "ZB-250":              236.99,
     "ZB-500":              473.99,
-    "KH-25MP":             197.53,
-    "FAB-100":              92.59,
-    "OFAB-100":             92.59,
-    "FAB-250":             202.85,
-    "FAB-500":             564.38,
-    "KAB-500":             564.38,
-    "Exocet":              364.00,
-    "HVAR":                  7.50,#P51
 };
 
 var fireMsgs = {
@@ -1059,7 +1066,7 @@ var incoming_listener = func {
             }
           }
         }
-      } elsif (getprop("ja37/supported/old-custom-fails") > 0 and getprop("payload/armament/damage") == 1) {
+      } elsif (getprop("ja37/supported/old-custom-fails") > 0 and getprop("payload/armament/msg")) {
         # latest or second latest version of failure manager and taking damage enabled
         #print("damage enabled");
         var last1 = split(" ", last_vector[1]);
@@ -1588,6 +1595,7 @@ var cycle_weapons = func {
 ############ reload #####################
 
 reloadJAAir2Air1979 = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 6 of them.
 
   # Sidewinder
@@ -1610,9 +1618,12 @@ reloadJAAir2Air1979 = func {
   # Reload cannon - 146 of them.
   reloadGuns();
   
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadJAAir2Air1987 = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 6 of them.
 
   # Sidewinder
@@ -1635,9 +1646,12 @@ reloadJAAir2Air1987 = func {
   # Reload cannon - 146 of them.
   reloadGuns();
   
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadJAAir2Air1997 = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 6 of them.
 
   # Amraam
@@ -1660,9 +1674,12 @@ reloadJAAir2Air1997 = func {
   # Reload cannon - 146 of them.
   reloadGuns();
   
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadJAAir2Ground = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "M70 ARAK");
   setprop("payload/weight[1]/selected", "M70 ARAK");
@@ -1685,9 +1702,12 @@ reloadJAAir2Ground = func {
   # Reload cannon - 146 of them.
   reloadGuns();
   
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadAJAir2Tank = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "M70 ARAK");
   setprop("payload/weight[1]/selected", "RB 24J Sidewinder");
@@ -1708,9 +1728,12 @@ reloadAJAir2Tank = func {
 
   # Reload cannon - 146 of them.
   reloadGuns();
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadAJAir2Ship = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "RB 04E Attackrobot");
   setprop("payload/weight[1]/selected", "RB 05A Attackrobot");
@@ -1729,9 +1752,12 @@ reloadAJAir2Ship = func {
 
   # Reload cannon - 146 of them.
   reloadGuns();
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadAJAir2Personel = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "M55 AKAN");
   setprop("ai/submodels/submodel[10]/count", 150);
@@ -1753,9 +1779,12 @@ reloadAJAir2Personel = func {
 
   # Reload cannon - 146 of them.
   reloadGuns();
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadAJAir2Air = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "M55 AKAN");
   setprop("ai/submodels/submodel[10]/count", 150);
@@ -1775,9 +1804,12 @@ reloadAJAir2Air = func {
 
   # Reload cannon - 146 of them.
   reloadGuns();
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadAJSAir2Tank = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "RB 75 Maverick");
   setprop("payload/weight[1]/selected", "M70 ARAK");
@@ -1798,9 +1830,12 @@ reloadAJSAir2Tank = func {
 
   # Reload cannon - 146 of them.
   reloadGuns();
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadAJSAir2Ship = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "RB 15F Attackrobot");
   setprop("payload/weight[1]/selected", "RB 05A Attackrobot");
@@ -1820,9 +1855,12 @@ reloadAJSAir2Ship = func {
 
   # Reload cannon - 146 of them.
   reloadGuns();
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadAJSAir2Personel = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "M55 AKAN");
   setprop("ai/submodels/submodel[10]/count", 150);
@@ -1845,9 +1883,12 @@ reloadAJSAir2Personel = func {
 
   # Reload cannon - 146 of them.
   reloadGuns();
-}
+} else {
+      screen.log.write(ja37.msgB);
+    }}
 
 reloadAJSAir2Air = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload missiles - 4 of them.
   setprop("payload/weight[0]/selected", "M55 AKAN");
   setprop("ai/submodels/submodel[10]/count", 150);
@@ -1868,9 +1909,13 @@ reloadAJSAir2Air = func {
 
   # Reload cannon - 146 of them.
   reloadGuns();
+  } else {
+      screen.log.write(ja37.msgB);
+    }
 }
 
 reloadGuns = func {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   # Reload cannon - 146 of them.
   #setprop("ai/submodels/submodel[2]/count", 29);
   if(getprop("ja37/systems/variant") == 0) {
@@ -1879,7 +1924,10 @@ reloadGuns = func {
     screen.log.write("146 cannon rounds loaded", 0.0, 1.0, 0.0);
   }
 
-  ja37.ct("rl");
+  #ja37.ct("rl");
+  } else {
+      screen.log.write(ja37.msgB);
+    }
 }
 
 ############ droptank #####################

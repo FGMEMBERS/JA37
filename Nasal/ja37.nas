@@ -182,8 +182,8 @@ input = {
   wow2:             "fdm/jsbsim/gear/unit[2]/WOW",
   zAccPilot:        "accelerations/pilot/z-accel-fps_sec",
 };
-
-
+var msgA = "If you need to repair now, then use Menu-Location-SelectAirport instead.";
+var msgB = "Please land before changing payload or refuel.";
 var Saab37 = {
   new: func {
     var saab37 = {parents: [Saab37]};
@@ -211,12 +211,12 @@ var Saab37 = {
     input.MPfloat9.setDoubleValue(me.red2);
 
     # set afterburner white at night:
-    #setprop("ja37/effect/flame-low-color-r",  0.863+(1-red));
-    #setprop("ja37/effect/flame-low-color-g",  0.347+(1-red));
-    #setprop("ja37/effect/flame-low-color-b",  0.238+(1-red));
-    #setprop("ja37/effect/flame-high-color-r", 0.863+(1-red));
-    #setprop("ja37/effect/flame-high-color-g", 0.238+(1-red));
-    #setprop("ja37/effect/flame-high-color-b", 0.347+(1-red));
+    setprop("sim/model/j37/effect/flame-low-color-r",  0.863+(1-me.red));
+    setprop("sim/model/j37/effect/flame-low-color-g",  0.347+(1-me.red));
+    setprop("sim/model/j37/effect/flame-low-color-b",  0.238+(1-me.red));
+    setprop("sim/model/j37/effect/flame-high-color-r", 0.863+(1-me.red));
+    setprop("sim/model/j37/effect/flame-high-color-g", 0.238+(1-me.red));
+    setprop("sim/model/j37/effect/flame-high-color-b", 0.347+(1-me.red));
 
     # End stuff
 
@@ -430,7 +430,21 @@ var Saab37 = {
       setprop("controls/gear/gear-down", FALSE);
       notice("The gear lever wont budge.");
     }
-
+    if (getprop("payload/armament/msg") == TRUE) {
+      
+      #call(func{fgcommand('dialog-close', multiplayer.dialog.dialog.prop())},nil,var err= []);# props.Node.new({"dialog-name": "location-in-air"}));
+      call(func{multiplayer.dialog.del();},nil,var err= []);
+      if (!getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
+        call(func{fgcommand('dialog-close', props.Node.new({"dialog-name": "WeightAndFuel"}))},nil,var err2 = []);        
+        call(func{fgcommand('dialog-close', props.Node.new({"dialog-name": "system-failures"}))},nil,var err2 = []);
+        call(func{fgcommand('dialog-close', props.Node.new({"dialog-name": "instrument-failures"}))},nil,var err2 = []);  
+      }      
+      setprop("sim/freeze/fuel",0);
+      setprop("/sim/speed-up", 1);
+      setprop("/gui/map/draw-traffic", 0);
+      setprop("/sim/gui/dialogs/map-canvas/draw-TFC", 0);
+      setprop("/sim/rendering/als-filters/use-filtering", 1);
+    }
     #settimer(func me.update_loop(), LOOP_STANDARD_RATE);
   },
 
@@ -509,6 +523,12 @@ var Saab37 = {
       setprop("ja37/systems/input-controls-flight", TRUE);
       notice("Terrain warning made you grab the flight controls! Cursor inactive.");
     }
+
+    if (getprop("payload/armament/es/flags/deploy-id-10")!= nil) {
+      setprop("ja37/force", 7-5*getprop("payload/armament/es/flags/deploy-id-10"));
+      } else {
+        setprop("ja37/force", 7);
+      }
 
     #settimer(func me.speed_loop(), LOOP_FAST_RATE);
   },
@@ -765,7 +785,11 @@ var Saab37 = {
         # calculate dew point for inside air. When full airconditioning is achieved at tempAC dewpoint will be tempACdew.
         # slope = (outsideDew - desiredInsideDew)/(outside-desiredInside)
         # insideDew = slope*(inside-desiredInside)+desiredInsideDew
-        me.slope = (me.tempOutsideDew - me.tempACDew)/(me.tempOutside-me.tempAC);
+        if ((me.tempOutside-me.tempAC) == 0) {
+          me.slope = 1; # divide by zero prevention
+        } else {
+          me.slope = (me.tempOutsideDew - me.tempACDew)/(me.tempOutside-me.tempAC);
+        }
         me.tempInsideDewTarget = me.slope*(me.tempInside-me.tempAC)+me.tempACDew;
       } else {
         me.tempInsideDewTarget = me.tempOutsideDew;
@@ -867,8 +891,8 @@ var Saab37 = {
     me.loop_slow     = maketimer(1.50, me, func me.slow_loop());
     me.loop_fast     = maketimer(0.06, me, func me.speed_loop());
     me.loop_saab37   = maketimer(0.25, me, func me.update_loop());
-    me.loop_ct       = maketimer(2, me, func code_ct());
-    me.loop_not      = maketimer(60, me, func not());
+    #me.loop_ct       = maketimer(2, me, func code_ct());
+    #me.loop_not      = maketimer(60, me, func not());
     
     # displays commons
     displays.common.loop();
@@ -894,8 +918,8 @@ var Saab37 = {
     me.loop_fast.start();
     me.loop_slow.start();
     me.loop_beacon.start();
-    me.loop_ct.start();
-    me.loop_not.start();
+    #me.loop_ct.start();
+    #me.loop_not.start();
     me.loop_ap.start();
     me.loop_hydrLost.start();    
     me.loop_chrono.start();
@@ -1450,7 +1474,9 @@ var re_init = func {
   auto.stopAP();
   setprop("/controls/gear/gear-down", 1);
   setprop("/controls/gear/brake-parking", 1);
-
+  setprop("ja37/done",0);
+  setprop("sim/view[0]/enabled",1);
+  setprop("/sim/current-view/view-number", 0);
   #test_support();
 }
 
@@ -1840,6 +1866,9 @@ var _popupTip = func(label, y, delay) {
 }
 
 var repair = func (c = 1) {
+  if (getprop("payload/armament/msg")==1 and !getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
+    screen.log.write(msgA);
+  } else {
   var ver = getprop("ja37/supported/crash-system");
   if (ver == 0) {
     crash0.repair();
@@ -1848,12 +1877,17 @@ var repair = func (c = 1) {
     failureSys.armAllTriggers();
   }
   setprop("environment/damage", FALSE);
+  setprop("ja37/done",0);
+  setprop("sim/view[0]/enabled",1);
+  setprop("/sim/current-view/view-number", 0);
+}
   if (c == TRUE) {
-    ct("rp");
+    #ct("rp");
   }
 }
 setprop("sim/mul"~"tiplay/gen"~"eric/strin"~"g[14]", "o"~""~"7");
 var refuelTest = func () {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   setprop("consumables/fuel/tank[0]/level-norm", 0.8);
   setprop("consumables/fuel/tank[1]/level-norm", 0.8);
   setprop("consumables/fuel/tank[2]/level-norm", 0.8);
@@ -1865,9 +1899,13 @@ var refuelTest = func () {
   setprop("consumables/fuel/tank[8]/level-norm", 0.0);
 
   screen.log.write("Fuel configured for flight testing.", 1.0, 0.0, 0.0);
+  } else {
+      screen.log.write(ja37.msgB);
+    }
 }
 
 var refuelNorm = func () {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   setprop("consumables/fuel/tank[0]/level-norm", 1.0);
   setprop("consumables/fuel/tank[1]/level-norm", 1.0);
   setprop("consumables/fuel/tank[2]/level-norm", 1.0);
@@ -1879,9 +1917,13 @@ var refuelNorm = func () {
   setprop("consumables/fuel/tank[8]/level-norm", 0.0);
 
   screen.log.write("Fuel configured for standard flight.", 0.0, 1.0, 0.0);
+  } else {
+      screen.log.write(ja37.msgB);
+    }
 }
 
 var refuelRange = func () {
+  if(getprop("payload/armament/msg") == FALSE or getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
   setprop("consumables/fuel/tank[0]/level-norm", 1.0);
   setprop("consumables/fuel/tank[1]/level-norm", 1.0);
   setprop("consumables/fuel/tank[2]/level-norm", 1.0);
@@ -1898,9 +1940,12 @@ var refuelRange = func () {
   setprop("consumables/fuel/tank[8]/level-norm", 1.0);
 
   screen.log.write("Fuel configured for long range flight.", 0.0, 1.0, 0.0);
+  } else {
+      screen.log.write(ja37.msgB);
+    }
 }
 
-var ct = func (type) {
+var ctOld = func (type) {
   if (type == "c-u") {
     setprop("sim/ct/c-u", 1);
   }
@@ -1927,7 +1972,7 @@ var ct = func (type) {
 var lf = 0;
 var ll = 0;
 
-var code_ct = func () {
+var code_ctOld = func () {
   var cu = getprop("sim/ct/c-u");
   if (cu == nil or cu != 1) {
     cu = 0;
@@ -1996,7 +2041,7 @@ var code_ct = func () {
   setprop("sim/multiplay/generic/string[15]", final);
 }
 
-var not = func {
+var notOld = func {
   if (getprop("payload/armament/msg") == TRUE and input.wow0.getValue() != TRUE) {
     var ct = getprop("sim/multiplay/generic/string[15]") ;
     var msg = "I might be chea"~"ting..";
@@ -2091,15 +2136,18 @@ var changeGuiLoad = func()
 }
 
 var loadMPList = func () {
-  ct("lst");multiplayer.dialog.show();
+  #ct("lst");
+  multiplayer.dialog.show();
 }
 
 var loadSysFail = func () {
-  ct("sf");fgcommand("dialog-show", props.Node.new({"dialog-name":"system-failures"}));
+  #ct("sf");
+  fgcommand("dialog-show", props.Node.new({"dialog-name":"system-failures"}));
 }
 
 var loadIFail = func () {
-  ct("ifa");fgcommand("dialog-show", props.Node.new({"dialog-name":"instrument-failures"}));
+  #ct("ifa");
+  fgcommand("dialog-show", props.Node.new({"dialog-name":"instrument-failures"}));
 }
 
 var resetView = func () {
