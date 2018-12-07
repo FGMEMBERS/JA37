@@ -51,7 +51,6 @@
 
         <fcs_function name="systems/indicators/fuel-flow-primary">
             <function>
-                <or>
                     <and>
                         <gt>
                             <property>/ja37/avionics/fuel-internal-ratio</property>
@@ -66,7 +65,6 @@
                             <value>0</value>
                         </eq>
                     </and>
-                </or>
             </function>
         </fcs_function>
 
@@ -186,23 +184,19 @@
 
         <fcs_function name="systems/indicators/fuel-pump-secondary">
             <function>
-                <or>
                     <eq>
                         <property>systems/indicators/electrical-primary</property>
                         <value>1</value>
                     </eq>
-                </or>
             </function>
         </fcs_function>
 
         <fcs_function name="systems/indicators/fuel-pump-primary">
             <function>
-                <or>
                     <eq>
                         <property>systems/fuel/fuel-pumps/serviceable</property>
                         <value>0</value>
                     </eq>
-                </or>
             </function>
         </fcs_function>
 
@@ -1416,12 +1410,10 @@
         <fcs_function name="systems/indicators/inertia-navigation">
             <function>
                 <or>
-                    <and>
                         <eq>
                             <property>/ja37/avionics/ins</property><!-- involves timer when starting engine -->
                             <value>0</value>
                         </eq>
-                    </and>
                     <property>/controls/lighting/test-indicator-panels</property>
                 </or>
             </function>
@@ -2012,12 +2004,10 @@
                         <property>/ja37/avionics/autopilot</property>
                         <value>1</value>
                     </eq>
-                    <or>
                         <eq>
                             <property>/ja37/avionics/auto-throttle-on</property>
                             <value>1</value>
                         </eq>
-                    </or>
                 </and>
             </function>
         </fcs_function>

@@ -8,7 +8,7 @@
 
 <PropertyList><!-- include="Systems/ja37-engines-off.xml">-->    <!-- change this to 'on' for fast testing/debugging -->
     <sim>
-        <aircraft-version>4.312</aircraft-version>
+        <aircraft-version>4.313</aircraft-version>
         <author>Anders Lejczak (Orig 3D Model and Textures), Justin Nicholson (Lots of Modeling, Testing and Misc.), Enrico Castaldi (Liveries), Joshua Davidson (Autopilot), Nicola B. Bernardelli (Cockpit and Testing), Isaac Protiva (Cockpit and Lightmap), Nikolai V. Chr. (rest)</author>
         <minimum-fg-version>2017.3.1</minimum-fg-version>
 
@@ -158,10 +158,6 @@
         </current-view>-->
 
         <current-view>
-            <z-offset-dec-step type="double">0.0</z-offset-dec-step>
-            <z-offset-inc-step type="double">0.0</z-offset-inc-step>
-            <can-change-z-offset type="bool">false</can-change-z-offset>
-
             <z-offset-default type="float">25.0</z-offset-default>
             <z-offset-min-m type="float">10.0</z-offset-min-m>
             <z-offset-max-m type="float">200.0</z-offset-max-m>
@@ -480,9 +476,6 @@
               <name>altitude_agl-m</name>
               <path>Aircraft/JA37/Systems/rules-misc.xml</path>
             </property-rule>
-            <property-rule n="102">
-                <path>Aircraft/JA37/Systems/zoom-views.xml</path>
-            </property-rule>
         </systems>
 
         <!--**********************************************************************
@@ -519,6 +512,7 @@
             </controls>
         </failure-manager>
         <model>
+            <fallback-model-index type="int">222</fallback-model-index>
             <j37><!-- This will be written into the property tree of all that see this model, but it should not interfere with anything -->
                 <effect>
                     <flame-low-color-r type="double">0</flame-low-color-r>
@@ -1520,6 +1514,7 @@
             <file>Aircraft/JA37/Nasal/options.nas</file>
             <file>Aircraft/JA37/Nasal/chronograph.nas</file>
             <file>Aircraft/JA37/Nasal/track_target.nas</file>
+            <file>Aircraft/JA37/Nasal/zoom-views.nas</file>
         </ja37>
         <tyre>
             <file>Aircraft/JA37/Nasal/tyresmoke.nas</file>
