@@ -101,7 +101,7 @@
   </model>
 
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switch-a/elec-supply.xml</path>
     <name>elec supply</name>
     <offsets>
@@ -110,9 +110,9 @@
       <y-m> -0.040</y-m>
       <z-m>  0.00</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Instruments/Indicators/external.xml</path>
     <name>externalAvailable</name>
     <offsets>
@@ -121,7 +121,7 @@
       <y-m> -0.010</y-m>
       <z-m>  0.00</z-m>
     </offsets>
-  </model>
+  </model>-->
 
   <model>
     <path>Aircraft/JA37/Models/Cockpit/switch-a/engine-start.xml</path>
@@ -159,14 +159,13 @@
     <path>Aircraft/JA37/Models/Instruments/Indicators/cutoff-indicator.xml</path>
     <name>cutoffReady</name>
     <offsets>
-      <pitch-deg>90</pitch-deg>
-      <x-m>  0.330</x-m>
+      <x-m>  0.3275</x-m>
       <y-m> -0.05</y-m>
       <z-m>  0.00</z-m>
     </offsets>
   </model>
 
-  <model>
+  <!--<model>
     <path>Aircraft/JA37/Models/Cockpit/switch-a/battery.xml</path>
     <name>battery</name>
     <offsets>
@@ -175,9 +174,9 @@
       <y-m> -0.02</y-m>
       <z-m>  0.00</z-m>
     </offsets>
-  </model>
+  </model>-->
 
-  <model>
+  <!--<model>  this light was not in the cockpit
     <path>Aircraft/JA37/Models/Instruments/Indicators/recharging.xml</path>
     <name>ChargeBattery</name>
     <offsets>
@@ -186,7 +185,7 @@
       <y-m> -0.02</y-m>
       <z-m>  0.00</z-m>
     </offsets>
-  </model>
+  </model>-->
 
   <model>
     <path>Aircraft/JA37/Models/Cockpit/switch-a/speedbrakes.xml</path>
@@ -283,6 +282,17 @@
       <heading-deg>180</heading-deg>
       <x-m>  0.77</x-m>
       <y-m> -0.025</y-m>
+      <z-m>  0.00</z-m>
+    </offsets>
+  </model>
+  
+  <model>
+    <path>Aircraft/JA37/Models/Instruments/RollTrimIndicator/indicator-yaw.xml</path>
+    <name>trim-yaw</name>
+    <offsets>
+      <pitch-deg>0</pitch-deg>
+      <x-m>  0.74</x-m>
+      <y-m> -0.06</y-m>
       <z-m>  0.00</z-m>
     </offsets>
   </model>

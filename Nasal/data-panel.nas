@@ -9,7 +9,7 @@ var FALSE = 0;
 #    }
 #});
 
-var debugAll = FALSE;
+var debugAll = 0;
 
 var printDA = func (str) {
     if (debugAll) print (str);
@@ -74,7 +74,7 @@ var KNOB_FUEL = 2;
 var KNOB_REG  = 3;
 var KNOB_TI   = 4;
 var KNOB_DATE = 5;
-var KNOB_DATA = 6;
+var KNOB_DATA = 6;#FPLDATA
 
 var OUTPUT    = 1;
 var INPUT     = 0;
@@ -129,7 +129,7 @@ var setError = func {
 
 var main = func {
   if (getprop("ja37/systems/variant") != 0 or testDisplay != "") return;
-  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+  if (!power.prop.acMainBool.getValue()) {
     printDA("DAP: offline");
     return;
   }
@@ -148,6 +148,7 @@ var main = func {
   printDA(" error    "~error);
 
   if (error == TRUE) {
+    resetSign();
     if (isStateChanged()) {
       error = FALSE;
     } else {
@@ -156,7 +157,7 @@ var main = func {
   }
   TI.ti.displayFTime = FALSE;
   if (settingKnob != settingPrevKnob) {
-
+    resetSign();
   }
 
   if (state == 237) {
@@ -167,16 +168,19 @@ var main = func {
         ti237_callback(nil, settingSign, TI.ti);
         input = inputDefault;
         digit = 0;
+        resetSign();
     } elsif (ok==HOLD and digit == ti237_max) {
         # set TI value
         printDA("set 237: "~input);
         ti237_callback(input, settingSign, TI.ti);
         input = inputDefault;
         digit = 0;
+        resetSign();
     } elsif (keyPressed == -1) {
+      # TODO: not sure
+    } elsif (back == HOLD) {
       # reset
-        input = manyChar(charDefault, ti237_max);
-        digit = 0;
+        inputBackKey(ti237_max);
     } else {
       # TI input
       inputKey(ti237_max);
@@ -188,28 +192,23 @@ var main = func {
         # delete route plan
         route.Polygon.deletePlan();
       }
-
+      
   } elsif (settingDir == OUT) {
     # MSDA/OUT
+    if (isStateChanged()) {
+      updateCycleMax();
+    }
     if (ok==HOLD and cycle != -1) {
-      cycle += 1;
-      if (cycle > cycleMax) {
-        cycle = 0;
-      }
+      cycleDisp();
     }
-    if ((settingKnob == KNOB_DATE) or (settingKnob == KNOB_LOLA) or (settingKnob == KNOB_TI)) {
-      if (cycle == -1) {
-        cycle = 0;
-      }
-      if (settingKnob == KNOB_TI) {
-        TI.ti.displayFTime = TRUE;
-      }
-    } else {
-      cycle = -1;
+    if (settingKnob == KNOB_TI) {
+      TI.ti.displayFTime = TRUE;
     }
-
   } else {
     # MSDA/IN
+    if (isStateChanged()) {
+      updateCycleMax();
+    }
     if (settingKnob == KNOB_TI) {
       # to clear the points type in 654321 and click RENSA that will clear the lock
       # then 013124 typed in means clear from 13 to 124.
@@ -217,11 +216,10 @@ var main = func {
       #
       # TODO: LOLA should only be 4 digits and LO or LA displayed to the right of those?
       if (isStateChanged()) {
-        cycle = 0;
-        cycleMax = 2;
         digit = 0;
         input = inputDefault;
         LV_lock = TRUE;
+        resetSign();
         printDA("DAP TI addresses locked.");
       } else {
         if (keyPressed == -1 and digit == 6) {
@@ -232,7 +230,8 @@ var main = func {
           }
           input = inputDefault;
           digit = 0;
-        } elsif ((ok==HOLD or l==HOLD) and digit == 3 and cycle == 0) {
+          resetSign();
+        } elsif ((ok==HOLD or l==HOLD or g==HOLD) and digit == 3 and cycle == 0) {
           var address = num(left(input,3));
           if (address != nil and address >= 1 and address < 190 and settingSign == 1) {
             digit = 0;
@@ -254,9 +253,15 @@ var main = func {
                 radius = 15;
               } elsif (address >= 180 and address <= 189) {
                 radius = 40;
+              } elsif (address == 179) {
+                ptype = 3;
+                pcolor = 2;
+                radius = -1;
               }
               if (l == HOLD and !(address >= 100 and address <= 109)) {
                 pcolor = 1;#yellow
+              } elsif (g == HOLD and !(address >= 100 and address <= 109)) {
+                pcolor = 3;#green
               }
               lv_temp = {address: address, color: pcolor, radius: radius, type: ptype};
             }
@@ -271,11 +276,12 @@ var main = func {
             digit = 0;
             input = inputDefault;
           }
+          resetSign();
         } elsif (ok==HOLD and digit == 6 and cycle == 0) {
           var low = num(substr(input,0,3));
           var high = num(substr(input,3,3));
           printDA("DAP: Request to delete TI address "~low~" to "~high);
-          if (LV_lock == FALSE and low < high and high < 200 and low > 000) {
+          if (LV_lock == FALSE and low <= high and high < 200 and low > 000) {
             digit = 0;
             input = inputDefault;
             if (179 >= low and 179 <= high) {
@@ -288,15 +294,17 @@ var main = func {
                 delete(lv,key);
               }
             }
+            checkLVSave();
           } else {
             error = TRUE;
             digit = 0;
             input = inputDefault;
           }
+          resetSign();
         } elsif (ok==HOLD and digit == 7 and cycle == 1) {
             # set lon
             var sign = settingSign<0?"-":"";
-            printDA("set B_E lon "~sign~input);
+            printDA("set B_E/LV/FF lon "~sign~input);
             var deg = ja37.stringToLon(sign~input);
             if (deg != nil) {
               if (lv_temp.address == 179) {
@@ -314,21 +322,24 @@ var main = func {
               digit = 0;
               input = inputDefault;
             }
+            resetSign();
         } elsif (ok==HOLD and digit == 6 and cycle == 2) {
             # set lat
             var sign = settingSign<0?"-":"";
-            printDA("set B_E lat "~sign~input);
+            printDA("set B_E/FF/LV lat "~sign~input);
             var deg = ja37.stringToLat(sign~input);
             if (deg != nil) {
               if (lv_temp.address == 179) {
                 setprop("ja37/navigation/bulls-eye-lat", deg);
                 setprop("ja37/navigation/bulls-eye-defined", TRUE);
                 printDA("DAP TI bulls-eye latitude edited. Bulls-eye enabled.");
+                checkLVSave();
               } else {
                 lv_temp.lat = deg;
                 lv["p"~sprintf("%03d", lv_temp.address)] = lv_temp;
-                printDA("DAP TI point longitude edited. Point activated.");
+                printDA("DAP TI point latitude edited. "~(lv_temp.color==0?"Red":(lv_temp.color==1?"Yellow":(lv_temp.color==2?"Tyrk":"Green")))~" point "~sprintf("%03d",lv_temp.address)~" activated at "~ja37.convertDegreeToStringLat(lv_temp.lat)~" "~ja37.convertDegreeToStringLon(lv_temp.lon));
                 #debug.dump(lv);
+                checkLVSave();
               }
               cycleDisp();
               input = inputDefault;
@@ -338,25 +349,39 @@ var main = func {
               digit = 0;
               input = inputDefault;
             }
+            resetSign();
         } elsif (keyPressed == -1) {
-          # reset
+          # TODO: not sure
+        } elsif (x == HOLD) {
+          # clear field
           input = cycle==1?manyChar(charDefault, 7):inputDefault;
           digit = 0;
+          resetSign();
         } elsif (cycle == 0) {
           # punkt no. input
-          inputKey(6);
+          if (back == HOLD) {
+            inputBackKey(6);
+          } else {
+            inputKey(6);
+          }
         } elsif (cycle == 1) {
           # lon input
-          inputKey(7);
+          if (back == HOLD) {
+            inputBackKey(7);
+          } else {
+            inputKey(7);
+          }
         } elsif (cycle == 2) {
           # lat input
-          inputKey(6);
+          if (back == HOLD) {
+            inputBackKey(6);
+          } else {
+            inputKey(6);
+          }
         }
       }
     } elsif (settingKnob == KNOB_DATE) {
       if (isStateChanged()) {
-        cycle = 0;
-        cycleMax = 1;
         digit = 0;
         input = inputDefault;
       } else {
@@ -392,23 +417,33 @@ var main = func {
             }
           }
         } elsif (keyPressed == -1) {
-          # reset
+          # TODO: not sure
+        } elsif (x == HOLD) {
+          # clear field
             input = "";
             digit = 0;
         } elsif (cycle == 0) {
           # date input
-          inputKey(6);
+          if (back == HOLD) {
+            inputBackKey(6);
+          } else {
+            inputKey(6);
+          }
         } elsif (cycle == 1) {
           # date input
-          inputKey(6);
+          if (back == HOLD) {
+            inputBackKey(6);
+          } else {
+            inputKey(6);
+          }
         }
       }
+      resetSign();
     } elsif (settingKnob == KNOB_FUEL) {
       if (isStateChanged()) {
-          cycle = -1;
-          cycleMax = -1;
           digit = 0;
           input = input2Default;
+          resetSign();
       } else {
         if (ok==HOLD and digit == 2) {
             # set fuel warn
@@ -416,21 +451,28 @@ var main = func {
             setprop("ja37/systems/fuel-warning-extra-percent", num(input));
             input = input2Default;
             digit = 0;
+            resetSign();
         } elsif (keyPressed == -1) {
-          # reset
+          # TODO: not sure
+        } elsif (x == HOLD) {
+          # clear field
             input = input2Default;
             digit = 0;
+            resetSign();
         } else {
           # fuel input
-          inputKey(2);
+          if (back == HOLD) {
+            inputBackKey(2);
+          } else {
+            inputKey(2);
+          }
         }
       }
     } elsif (settingKnob == KNOB_DATA) {
       if (isStateChanged()) {
-          cycle = -1;
-          cycleMax = -1;
           digit = 0;
           input = inputDefault;
+          resetSign();
       } else {
         var address = num(left(input,2));
         if (ok==HOLD and digit == 6 and address != nil and address==15) {
@@ -444,6 +486,7 @@ var main = func {
             }
             input = inputDefault;
             digit = 0;
+            resetSign();
         } elsif (ok==HOLD and digit == 6 and address != nil and address==30) {
             # set GPS Installed
             var io = num(substr(input,2,1));
@@ -459,25 +502,33 @@ var main = func {
             }
             input = inputDefault;
             digit = 0;
+            resetSign();
         } elsif (ok==HOLD and digit == 6) {
             printDA("set unknown address "~input);
             input = inputDefault;
             digit = 0;
+            resetSign();
         } elsif (keyPressed == -1) {
-          # reset
+          # TODO: not sure
+        } elsif (x == HOLD) {
+          # clear field
             input = inputDefault;
             digit = 0;
+            resetSign();
         } else {
           # input
-          inputKey(6);
+          if (back == HOLD) {
+            inputBackKey(6);
+          } else {
+            inputKey(6);
+          }
         }
       }
     } elsif (settingKnob == KNOB_REG) {
       if (isStateChanged()) {
-          cycle = -1;
-          cycleMax = -1;
           digit = 0;
           input = inputDefault;
+          resetSign();
       } else {
         if (ok==HOLD and digit == 6 and num(left(input,2))==0) {
             # set max alpha
@@ -489,6 +540,7 @@ var main = func {
             setprop("fdm/jsbsim/fcs/max-alpha-deg", alpha);
             input = inputDefault;
             digit = 0;
+            resetSign();
         } elsif (ok==HOLD and digit == 6 and num(left(input,2))==19) {
             # set floor warn
             var floor = metric?num(right(input,4))*M2FT:num(right(input,4));
@@ -499,17 +551,39 @@ var main = func {
             setprop("ja37/sound/floor-ft", floor);
             input = inputDefault;
             digit = 0;
+            resetSign();
+        } elsif (ok==HOLD and digit == 6 and num(left(input,2))==52) {
+            # set max loadfactor percent
+            var percent = num(substr(input,2,3));
+            if (percent < 75) {
+              percent = 75;
+            } elsif (percent > 110) {
+              percent = 110;
+            }
+            printDA("set loadfactor percent "~percent~"%");
+            setprop("ja37/sound/loadfactor-percent", percent);
+            input = inputDefault;
+            digit = 0;
+            resetSign();
         } elsif (ok==HOLD and digit == 6) {
             printDA("set unknown address "~input);
             input = inputDefault;
             digit = 0;
+            resetSign();
         } elsif (keyPressed == -1) {
-          # reset
+          # TODO: not sure
+        } elsif (x == HOLD) {
+          # clear field
             input = inputDefault;
             digit = 0;
+            resetSign();
         } else {
-          # floor input
-          inputKey(6);
+          # floor/alpha input
+          if (back == HOLD) {
+            inputBackKey(6);
+          } else {
+            inputKey(6);
+          }
         }
       }
     }
@@ -521,6 +595,8 @@ var main = func {
   settingPrevSign = settingSign;
   settingPrevDir  = settingDir;
   settingPrevPos  = settingPos;
+  back = RELEASE;
+  x    = RELEASE;
 };
 
 var cycleDisp = func {
@@ -534,7 +610,7 @@ var setTime = func {
   var hour   = num(substr(input,0,2));
   var minute = num(substr(input,2,2));
   var second = num(substr(input,4,2));
-  if (hour>23 or minute > 60 or second > 60) {
+  if (hour>23 or minute > 59 or second > 59) {
     return FALSE;
   }
   var old_dt = getprop("/sim/time/gmt");
@@ -549,7 +625,7 @@ var setDate = func {
   var year   = num(substr(input,0,2));
   var month = num(substr(input,2,2));
   var day = num(substr(input,4,2));
-  if (year < 79) {
+  if (year > 79) {
     year = year+1900;
   } else {
     year = year+2000;
@@ -557,7 +633,7 @@ var setDate = func {
   if (month>12 or month < 1) {
     return FALSE;
   }
-  var maxDay = monthmax[day-1];
+  var maxDay = monthmax[month-1];
   if (day>maxDay or day<1) {
     return FALSE;
   }
@@ -580,6 +656,14 @@ var inputKey = func (digs) {
   }
 }
 
+var inputBackKey = func (digs) {
+  digit -= 1;
+  input = substr(input, 0,digit)~manyChar(charDefault,digs-digit);
+  if (digit == -1) {
+    digit = 0;
+  }
+}
+
 var manyChar = func (char, count) {
   var result = "";
   for (var i = 0; i<count;i+=1){
@@ -589,7 +673,22 @@ var manyChar = func (char, count) {
 }
 
 var isStateChanged = func {
-  return settingPrevKnob != settingKnob or settingPrevDir != settingDir;
+  return settingPrevKnob != settingKnob or settingPrevDir != settingDir or settingPrevPos != settingPos;
+}
+
+var updateCycleMax = func {
+  if (settingKnob == KNOB_TI) {
+    cycleMax = 2;
+  } elsif (settingKnob == KNOB_LOLA or settingKnob == KNOB_DATE) {
+    cycleMax = 1;
+  } else {
+    cycleMax = -1;
+  }
+  if (cycleMax == -1) {
+    cycle = -1;
+  } else {
+    cycle = 0;
+  }
 }
 
 var disp = func {
@@ -671,14 +770,14 @@ var disp = func {
             display = "179"
           } elsif (cycle == 1) {
             var lo = getprop("ja37/navigation/bulls-eye-lon");
-            var lon = ja37.convertDegreeToDispStringLon(lo);#not sure what to do when deg has 3 digit and a minus sign. No room on display.
+            var lon = ja37.convertDegreeToDispStringLon(lo);
             display = sprintf("%s",lon);
           } else {
             var la = getprop("ja37/navigation/bulls-eye-lat");
             var lat = ja37.convertDegreeToDispStringLat(la);
             display = sprintf("%s",lat);
           }
-        } elsif (address != nil and address > 1 and address < 190) {
+        } elsif (address != nil and address >= 1 and address < 190) {
           if (cycle == 0) {
             display = sprintf("%03d", address);
           } elsif (cycle == 1) {
@@ -693,7 +792,7 @@ var disp = func {
           } else {
             var point = lv["p"~sprintf("%03d", address)];
             if (point != nil) {
-              var la = point.lon;
+              var la = point.lat;
               var lat = ja37.convertDegreeToDispStringLat(la);
               display = sprintf("%s",lat);
             } else {
@@ -737,6 +836,9 @@ var disp = func {
           # max alpha
           #printDA("displaying alpha");
           display = sprintf("00%02d00", getprop("fdm/jsbsim/fcs/max-alpha-deg"));
+      } elsif (address != nil and address==52) {
+          # loadfactor percent warn
+          display = sprintf("52%03d0", getprop("ja37/sound/loadfactor-percent"));
       } elsif (address != nil and address==19) {
           # floor warn
           if (getprop("ja37/sound/floor-ft") < 0) {
@@ -754,7 +856,7 @@ var disp = func {
           display = sprintf("150%01d00", !getprop("ja37/hud/units-metric"));
       } elsif (address != nil and address==30) {
           # GPS Installed
-          display = sprintf("30%01d000", !getprop("ja37/navigation/gps-installed"));
+          display = sprintf("30%01d000", getprop("ja37/navigation/gps-installed"));
       } else {
         display = "000000";
       }
@@ -781,7 +883,7 @@ var disp = func {
       }
     }
   }
-  if (getprop("systems/electrical/outputs/dc-voltage") < 23) {
+  if (!power.prop.acMainBool.getValue()) {
     # hack
     signText.setText("-888888");
     return;
@@ -814,6 +916,7 @@ var monthmax = [31,28,31,30,31,30,31,31,30,31,30,31];
 # REG/STR UD IN
 # 19xxxx  training floor in meters
 # 23-bcd  Cannon burst number of shots in OP mode.
+# 52xxxd  Load-factor nominal warning in percent. (not correct address, but dont know the real address)
 #
 # TI UD IN
 # xxx--P  TI mappoints (square: 100-109) then OK
@@ -836,7 +939,7 @@ var monthmax = [31,28,31,30,31,30,31,31,30,31,30,31];
 # FPLDATA
 # interoperability:  15a1cd, swedish: 15a0cd.
 # TI backlit intensity of frame buttons: 06xxxd
-# GPS-reciever installed: 300bcd (yes), 301bcd (no)
+# GPS-reciever installed: 301bcd (yes), 300bcd (no)
 
 # output UD UT
 #
@@ -865,28 +968,143 @@ var monthmax = [31,28,31,30,31,30,31,31,30,31,30,31];
 # P/LO/LA
 # for LV points 1 yellow, 8 red then black, then P
 # 
-# address  rad col typ
-# 1-39     5km  ry LV
-# 40-99    8km  ry LV
-# 100-109 3.5mm  t FF 
-# 110-178 15km  ry LV
-# 180-189 40km  ry LV
+# address  rad  col typ
+# 1-39     5km  ryg LV
+# 40-99    8km  ryg LV
+# 100-109 3.5mm  t  FF 
+# 110-178 15km  ryg LV
+# 179            t  BE
+# 180-189 40km  ryg LV
 # 190-199 15km   r STRIL LV number always on
 # 
 # TI/MSDA=number
 # FF number is right and north
 # LV number is middle and north
 # max 10 LV shown at once, closest to point 22km in front of plane
-# L=yellow OK=red at address input
+# G=green L=yellow OK=red at address input
 
 var lv = {
-  # address, color (0=red 1=yellow 2=tyrk), radius(KM) (-1= 3.5mm), type (0=LV, 1=FF, 2=STRIL), lon, lat
+  # address, color (0=red 1=yellow 2=tyrk 3=green), radius(KM) (-1= 3.5mm), type (0=LV, 1=FF, 2=STRIL, 3=bullseye), lon, lat
   # note address 179 is stores as properties, not in this struct.
   #p20: {address: 020, color: 1, radius: 5, type: 0, lon: -115.784, lat: 37.218},#example
   #p105: {address: 105, color: 2, radius: -1, type: 1, lon: -115.784, lat: 37.218},#example
+  #p3: {address: 3, color: 3, radius: 8, type: 0, lon: -115.41, lat: 36.35},
 };
 
 var lv_temp = nil;# temp storage of LV point when its being edited.
+
+var savePoints = func (path) {
+    var text = serialize(lv);
+    var opn = nil;
+    call(func{opn = io.open(path,"w");},nil, var err = []);
+    if (size(err) or opn == nil) {
+      print("error open file for writing points");
+      gui.showDialog("savefail");
+      return 0;
+    }
+    call(func{var text = io.write(opn,text);},nil, var err = []);
+    if (size(err)) {
+      print("error write file with points");
+      gui.showDialog("savefail");
+      io.close(opn);
+      return 0;
+    } else {
+      lv = unserialize(text);
+      io.close(opn);
+      return 1;
+    }
+}
+
+var loadPoints = func (path,clear=1) {
+    var text = nil;
+    call(func{text=io.readfile(path);},nil, var err = []);
+    if (size(err)) {
+      print("Loading LV/FF/BE failed.");
+      if (clear) {
+        lv = {};
+        setprop("ja37/navigation/bulls-eye-defined",0);
+      }
+    } elsif (text != nil) {
+      lv = unserialize(text);
+    }
+    checkLVSave();
+}
+
+var checkLVSave = func {
+  return;
+  if (size(keys(lv)) or getprop("ja37/navigation/bulls-eye-defined") or getprop("autopilot/plan-manager/destination/airport-1")!="" or getprop("autopilot/plan-manager/destination/airport-2")!="" or getprop("autopilot/plan-manager/destination/airport-3")!="" or getprop("autopilot/plan-manager/destination/airport-4")!="") {
+    setprop("autopilot/plan-manager/points/save",1);
+  } else {
+    setprop("autopilot/plan-manager/points/save",0);
+  }
+}
+
+checkLVSave();
+
+var serialize = func(m) {
+  var ret = "";
+  foreach(key;keys(m)) {
+    ret = ret~sprintf("TI,%d,%d,%d,%d,%.6f,%.6f|",m[key].address,m[key].color,m[key].radius,m[key].type,m[key].lon,m[key].lat);
+  }
+  if (getprop("ja37/navigation/bulls-eye-defined")) {
+    var beLaLo = [getprop("ja37/navigation/bulls-eye-lat"), getprop("ja37/navigation/bulls-eye-lon")];
+    ret = ret~sprintf("TI,179,%.6f,%.6f|",beLaLo[1],beLaLo[0]);
+  }
+  ret = ret~sprintf("L,%s,%s,%s,%s|",getprop("autopilot/plan-manager/destination/airport-1"),getprop("autopilot/plan-manager/destination/airport-2"),getprop("autopilot/plan-manager/destination/airport-3"),getprop("autopilot/plan-manager/destination/airport-4"));
+  ret = ret~sprintf("FPLDATA,%d,%d|",getprop("ja37/hud/units-metric"),getprop("ja37/navigation/gps-installed"));
+  ret = ret~sprintf("REG,%d,%d,%d|",getprop("ja37/sound/floor-ft"),getprop("fdm/jsbsim/fcs/max-alpha-deg"),getprop("ja37/sound/loadfactor-percent"));
+  ret = ret~sprintf("FUEL,%d|",getprop("ja37/systems/fuel-warning-extra-percent"));
+  ret = ret~sprintf("EP12,%d,%d,%d,%d,%d,%d,%d,%d,%d|",TI.ti.SVYactive,TI.ti.SVYscale,TI.ti.SVYrmax,TI.ti.SVYhmax,TI.ti.SVYsize,TI.ti.SVYinclude,TI.ti.ECMon,TI.ti.lnk99,TI.ti.displayFlight);
+  return ret;
+}
+
+var unserialize = func(m) {
+  var ret = {};
+  var points = split("|",m);
+  foreach(point;points) {
+    if (size(point)>4) {
+      var items = split(",", point);
+      var key = items[0];
+      if (key == "L") {
+        setprop("autopilot/plan-manager/destination/airport-1", items[1]);
+        setprop("autopilot/plan-manager/destination/airport-2", items[2]);
+        setprop("autopilot/plan-manager/destination/airport-3", items[3]);
+        setprop("autopilot/plan-manager/destination/airport-4", items[4]);
+      } elsif (key == "TI") {
+        if (num(items[1])==179) {
+          setprop("ja37/navigation/bulls-eye-defined",1);
+          setprop("ja37/navigation/bulls-eye-lon",num(items[2]));
+          setprop("ja37/navigation/bulls-eye-lat",num(items[3]));
+        } else {
+          ret["p"~items[1]] = {address: num(items[1]),color: num(items[2]),radius: num(items[3]),type: num(items[4]),lon: num(items[5]),lat: num(items[6])};
+        }
+      } elsif (key == "FPLDATA") {
+        setprop("ja37/hud/units-metric", num(items[1]));
+        setprop("ja37/navigation/gps-installed", num(items[2]));
+      } elsif (key == "EP12") {
+        # TI237 and MI settings:
+        TI.ti.SVYactive     = num(items[1]);
+        TI.ti.SVYscale      = num(items[2]);
+        TI.ti.SVYrmax       = num(items[3]);
+        TI.ti.SVYhmax       = num(items[4]);
+        TI.ti.SVYsize       = num(items[5]);
+        TI.ti.SVYinclude    = num(items[6]);
+        TI.ti.ECMon         = num(items[7]);
+        TI.ti.lnk99         = num(items[8]);
+        TI.ti.displayFlight = num(items[9]);# consider not loading this back in
+      } elsif (key == "REG") {
+        setprop("ja37/sound/floor-ft", num(items[1]));
+        setprop("fdm/jsbsim/fcs/max-alpha-deg", num(items[2]));
+        if (size(items) >= 4) {
+          setprop("ja37/sound/loadfactor-percent", num(items[3]));
+        }
+      } elsif (key == "FUEL") {
+        setprop("ja37/systems/fuel-warning-extra-percent", num(items[1]));
+      }
+    }
+  }
+  return ret;
+}
 
 # normal mode POS UT
 #
@@ -906,7 +1124,9 @@ var lv_temp = nil;# temp storage of LV point when its being edited.
 
 var ok          = RELEASE;
 var l           = RELEASE;
+var g           = RELEASE;
 var x           = RELEASE;
+var back        = RELEASE;
 var keyPressed  = nil;
 var settingKnob = getprop("ja37/navigation/dp-mode");
 var settingSign = getprop("ja37/navigation/ispos")==MINUS?-1:1;
@@ -917,7 +1137,10 @@ var settingPrevSign = getprop("ja37/navigation/ispos")==MINUS?-1:1;
 var settingPrevDir  = getprop("ja37/navigation/inout");
 var settingPrevPos  = POS;
 
-
+var resetSign = func {
+  settingSign = 1;
+  setprop("ja37/navigation/ispos", settingSign>0?PLUS:MINUS);
+}
 
 var toggleInOut = func {
   if (getprop("ja37/systems/variant") != 0) return;
@@ -985,7 +1208,7 @@ var switch = func {
 
 var keyPress = func (key) {
   if (getprop("ja37/systems/variant") != 0) return;
-  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+  if (!power.prop.acMainBool.getValue()){
     printDA("DAP: offline");
     return;
   }
@@ -1002,7 +1225,7 @@ var keyPress = func (key) {
 
 var okPress = func {
   if (getprop("ja37/systems/variant") != 0) return;
-  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+  if (!power.prop.acMainBool.getValue()){
     printDA("NAV: offline");
     return;
   }
@@ -1012,7 +1235,7 @@ var okPress = func {
 
 var okRelease = func {
   if (getprop("ja37/systems/variant") != 0) return;
-  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+  if (!power.prop.acMainBool.getValue()){
     printDA("NAV: offline");
     return;
   }
@@ -1022,7 +1245,7 @@ var okRelease = func {
 
 var lPress = func {
   if (getprop("ja37/systems/variant") != 0) return;
-  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+  if (!power.prop.acMainBool.getValue()){
     printDA("NAV: offline");
     return;
   }
@@ -1032,7 +1255,7 @@ var lPress = func {
 
 var lRelease = func {
   if (getprop("ja37/systems/variant") != 0) return;
-  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+  if (!power.prop.acMainBool.getValue()){
     printDA("NAV: offline");
     return;
   }
@@ -1040,23 +1263,57 @@ var lRelease = func {
   main();
 }
 
+var gPress = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+  if (!power.prop.acMainBool.getValue()){
+    printDA("NAV: offline");
+    return;
+  }
+  g = HOLD;
+  main();
+}
+
+var gRelease = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+  if (!power.prop.acMainBool.getValue()){
+    printDA("NAV: offline");
+    return;
+  }
+  g = RELEASE;
+  main();
+}
+
 var xPress = func {
   if (getprop("ja37/systems/variant") != 0) return;
-  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+  if (!power.prop.acMainBool.getValue()){
     printDA("NAV: offline");
     return;
   }
   x = HOLD;
-  main();
+  if (!route.Polygon.deleteSteerpoint()) {
+    main();
+  } else {
+    x = RELEASE;
+  }
 }
 
 var xRelease = func {
   if (getprop("ja37/systems/variant") != 0) return;
-  if (getprop("systems/electrical/outputs/dc-voltage") < 23){
+  if (!power.prop.acMainBool.getValue()){
     printDA("NAV: offline");
     return;
   }
   x = RELEASE;
+  main();
+}
+
+var backPress = func {
+  if (getprop("ja37/systems/variant") != 0) return;
+  if (!power.prop.acMainBool.getValue()){
+    printDA("NAV: offline");
+    return;
+  }
+  back = HOLD;
   main();
 }
 

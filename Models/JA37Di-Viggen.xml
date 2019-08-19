@@ -37,7 +37,7 @@
       <overlay-alpha>0</overlay-alpha>
       <overlay-glare type="float">0</overlay-glare>
       <use-reflection type="int">0</use-reflection>
-      <reflection-strength type="float">0.0</reflection-strength>
+      <reflection-strength type="float">1.0</reflection-strength>
       <use-mask type="int">0</use-mask>
       <use-reflection-lightmap type="int">0</use-reflection-lightmap>
       <lightmap-multi type="int">0</lightmap-multi>
@@ -820,22 +820,6 @@
 
 <!-- Fuselage animations -->
 
-    <animation>
-        <type>material</type>
-        <object-name>plaqueRight</object-name>
-        <property-base>ja37/texture</property-base>
-        <texture-prop>plaque-right</texture-prop>
-        <texture>plaque-right-ja.png</texture>
-    </animation>
-
-    <animation>
-        <type>material</type>
-        <object-name>plaqueLeft</object-name>
-        <property-base>ja37/texture</property-base>
-        <texture-prop>plaque-left</texture-prop>
-        <texture>plaque-left-ja.png</texture>
-    </animation>
-
   <animation>
      <type>translate</type>
      <object-name>outletCover</object-name>
@@ -989,10 +973,7 @@
   <type>rotate</type>
   <object-name>radarHeading</object-name>
   <condition>   
-    <greater-than>
-    <property>systems/electrical/outputs/dc-voltage</property>
-    <value>23</value>
-   </greater-than>
+    <property>ja37/elec/dc-bus-main-bool</property>
   </condition>
   <property>ja37/avionics/heading-magnetic-limited-deg</property>
   <factor>-1.0</factor>
@@ -1724,6 +1705,7 @@
    <object-name>gearFrontScissorBottom</object-name>
    <object-name>gearFrontWheel</object-name>
    <object-name>tyre-smoke-nose</object-name>
+   <object-name>tyre-rain-nose</object-name>
    <property>gear/gear[0]/compression-norm</property><!-- auto MP transmit -->
    <factor>0.3048</factor>
    <axis>
@@ -2186,6 +2168,7 @@
    <object-name>gearLeftWheel1</object-name>
    <object-name>gearLeftWheel2</object-name>
    <object-name>tyre-smoke-left</object-name>
+   <object-name>tyre-rain-left</object-name>
    <property>gear/gear[1]/compression-norm</property><!-- auto MP trasmit -->
    <factor>0.3048</factor>
    <axis>
@@ -2237,7 +2220,6 @@
    <object-name>gearLeftBottom</object-name>
    <object-name>gearLeftWheel1</object-name>
    <object-name>gearLeftWheel2</object-name>
-   <object-name>tyre-smoke-left</object-name>
    <property>gear/gear[1]/position-norm</property>
    <factor>-0.3048</factor>
    <offset-m>0.3048</offset-m>
@@ -2733,6 +2715,7 @@
    <object-name>gearRightWheel1</object-name>
    <object-name>gearRightWheel2</object-name>
    <object-name>tyre-smoke-right</object-name>
+   <object-name>tyre-rain-right</object-name>
    <property>gear/gear[2]/compression-norm</property><!-- auto MP trasmit -->
    <factor>0.3048</factor>
    <axis>
@@ -2783,7 +2766,6 @@
    <object-name>gearRightBottom</object-name>
    <object-name>gearRightWheel1</object-name>
    <object-name>gearRightWheel2</object-name>
-   <object-name>tyre-smoke-right</object-name>
    <property>gear/gear[2]/position-norm</property><!-- auto MP trasmit -->
    <factor>-0.3048</factor>
    <offset-m>0.3048</offset-m>
@@ -3488,11 +3470,11 @@
   </offsets>
  </model> -->
 
-<model>
-    <path>Aircraft/JA37/Models/Effects/vaporCone.xml</path>
-    <name>VaporCone</name>
+  <model>
+    <path>Aircraft/JA37/Models/Effects/mach-cone.xml</path>
+    <name>MachCone</name>
     <offsets>
-      <x-m>0</x-m>
+      <x-m>0.3</x-m>
       <y-m>0.0</y-m>
       <z-m>0</z-m>
     </offsets>
@@ -3841,6 +3823,16 @@
 <!-- ===================== start payload =========================== -->
 
 <!-- ====== rb 24j/74 ====== -->
+ 
+ <effect>
+    <inherits-from>Aircraft/JA37/Models/Effects/ja37-metal-paint</inherits-from>
+    <object-name>missile</object-name>
+    <object-name>missile1</object-name>
+    <object-name>missile2</object-name>
+    <object-name>missile3</object-name>
+    <object-name>missileLWO</object-name>
+    <object-name>missileRWO</object-name>
+  </effect>
  
 <animation>
   <object-name>missile</object-name><!-- Left wing pylon -->

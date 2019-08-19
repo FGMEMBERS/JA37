@@ -6,18 +6,13 @@
 
 *************************************************************************-->
 
-<PropertyList><!-- include="Systems/ja37-engines-off.xml">-->    <!-- change this to 'on' for fast testing/debugging -->
+<PropertyList>
     <sim>
-        <aircraft-version>4.313</aircraft-version>
-        <author>Anders Lejczak (Orig 3D Model and Textures), Justin Nicholson (Lots of Modeling, Testing and Misc.), Enrico Castaldi (Liveries), Joshua Davidson (Autopilot), Nicola B. Bernardelli (Cockpit and Testing), Isaac Protiva (Cockpit and Lightmap), Nikolai V. Chr. (rest)</author>
-        <minimum-fg-version>2017.3.1</minimum-fg-version>
+        <aircraft-version>4.315</aircraft-version>
+        <author>Anders Lejczak (Orig 3D Model and Textures), Justin Nicholson (Lots of Modeling, Testing and Misc.), Enrico Castaldi (Liveries), Joshua Davidson (Autopilot), Nicola B. Bernardelli (Cockpit and Testing), Isaac Protiva (Cockpit and Lightmap), Nikolai V. Chr.</author>
+        <minimum-fg-version>2018.3</minimum-fg-version>
 
-        <rating>
-            <FDM type="int">4</FDM>
-            <systems type="int">5</systems>
-            <cockpit type="int">3</cockpit>
-            <model type="int">4</model>
-        </rating>
+        
 
         <tags>
             <tag>saab</tag>
@@ -449,8 +444,6 @@
             </aerotow>
         </hitches>
 
-        <checklists include="gui/viggen-checklists.xml"/>
-
 
         <!--**********************************************************************
 
@@ -512,7 +505,7 @@
             </controls>
         </failure-manager>
         <model>
-            <fallback-model-index type="int">222</fallback-model-index>
+            <fallback-model-index type="int">522</fallback-model-index>
             <j37><!-- This will be written into the property tree of all that see this model, but it should not interfere with anything -->
                 <effect>
                     <flame-low-color-r type="double">0</flame-low-color-r>
@@ -528,6 +521,8 @@
     <ja37>
         <accelerations>
             <pilot-G type="double">1.0</pilot-G>
+            <pilot-G-lag type="double">1.0</pilot-G-lag>
+            <pilot-G-max type="double">1.0</pilot-G-max>
         </accelerations>
         <supported>
             <old-custom-fails type="int">0</old-custom-fails>
@@ -606,15 +601,21 @@
             <combat type="bool">false</combat>
             <bank-indicator type="bool">false</bank-indicator>
             <callsign type="bool">true</callsign>
-            <stroke-linewidth userarchive="y" type="double">4.0</stroke-linewidth>
+            <stroke-linewidth userarchive="y" type="double">5.0</stroke-linewidth>
             <TILS type="bool">true</TILS>
+            <TILS-on type="bool">false</TILS-on>
             <landing-mode type="bool">false</landing-mode>
             <brightness type="double">1.0</brightness>
+            <brightness-si type="double">1.0</brightness-si>
+            <brightness-res type="double">0.85</brightness-res>
             <overlay type="bool">true</overlay>
             <overlay-alpha type="double">0.35</overlay-alpha>
             <overlay-glare type="double">0.40</overlay-glare>
             <mask type="bool">true</mask>
+            <reflection type="bool">false</reflection>
             <emission type="double">1</emission>
+            <sample-res type="double">0.0009</sample-res><!-- was 0.0006-->
+            <sample-far type="double">1.0</sample-far><!-- was 2.5 -->
         </hud>
         <sound>
             <click-on type="bool">false</click-on>
@@ -623,7 +624,6 @@
             <stall-enabled type="bool">true</stall-enabled>
             <mp-volume type="double">0.4</mp-volume>
             <breath-volume type="double">0</breath-volume>
-            <annunciation-enabled type="bool">true</annunciation-enabled>
             <thunder1 type="bool">false</thunder1>
             <thunder2 type="bool">false</thunder2>
             <thunder3 type="bool">false</thunder3>
@@ -649,16 +649,21 @@
             <fuel-low-on type="bool">false</fuel-low-on>
             <fuel-low-2-on type="bool">false</fuel-low-2-on>
             <floor-ft type="double">-10000</floor-ft>
+            <loadfactor-percent type="int">100</loadfactor-percent>
         </sound>
         <damage>
             <enabled type="bool">true</enabled>
         </damage>
+        <engine>
+            <sparkplug type="bool">true</sparkplug>
+        </engine>
         <avionics>
             <altimeters-calibrated type="bool">0</altimeters-calibrated>
             <primaryData type="bool">false</primaryData>
             <ins-cmd type="bool">true</ins-cmd>
             <ins-init type="bool">false</ins-init>
             <ins type="bool">false</ins>
+            <button-snabbresn type="bool">false</button-snabbresn>
             <record-on type="bool">false</record-on>
             <vid type="bool">false</vid>
             <gps-cmd type="bool">false</gps-cmd>
@@ -699,11 +704,12 @@
             </annunciator>
             <reservkurs type="bool">false</reservkurs>
             <init-done type="bool">false</init-done>
+            <collision-warning type="bool">true</collision-warning>
         </avionics>
         <displays>
             <show-full-menus type="bool">true</show-full-menus>
             <live-map userarchive="y" type="bool">true</live-map>
-            <ti-contrast type="double">1.0</ti-contrast>
+            <ti-contrast type="double">1.25</ti-contrast>
         </displays>
         <systems>
             <oxygen-bottle-pressure type="double">0.0</oxygen-bottle-pressure>
@@ -715,6 +721,9 @@
             <input-controls-flight type="bool">true</input-controls-flight>
             <fuel-warning-extra-percent type="int">-1</fuel-warning-extra-percent>
             <state type="string">parked</state>
+            <battery-discharge-rate type="double">0.001666</battery-discharge-rate><!-- 0.001666 = 10 mins -->
+            <battery-recharge-rate type="double">0.001666</battery-recharge-rate>
+            <battery-reinit type="bool">false</battery-reinit>
         </systems>
         <radio>
             <kv1>
@@ -724,6 +733,15 @@
             <me31>
                 <button-mhz type="bool">true</button-mhz>
             </me31>
+            <fr29>
+                <!-- fr29 aka. fr31 knob for aural warning tones -->
+                <knob-vol type="double">0.25</knob-vol>
+            </fr29>
+            <fr31>
+                <knob-l type="int">0</knob-l>
+                <knob-t type="int">0</knob-t>
+                <s-m type="int">0</s-m>
+            </fr31>
         </radio>
         <faf>
             <friend-1 userarchive="y" type="string"></friend-1>
@@ -787,10 +805,43 @@
             <fel-steady type="bool">false</fel-steady>
             <fel-flash type="bool">false</fel-flash>
         </test>
+        <elec>
+            <dc-bus-battery-1-volt type="double">0</dc-bus-battery-1-volt>
+            <dc-bus-battery-2-volt type="double">0</dc-bus-battery-2-volt>
+            <dc-bus-battery-3-volt type="double">0</dc-bus-battery-3-volt>
+            <dc-bus-main-volt type="double">0</dc-bus-main-volt>
+            <dc-bus-secondary-volt type="double">0</dc-bus-secondary-volt>
+            <ac-bus-main-volt type="double">0</ac-bus-main-volt>
+            <ac-bus-secondary-volt type="double">0</ac-bus-secondary-volt>
+            <dc-bus-main-norm type="double">0</dc-bus-main-norm>
+            <dc-bus-secondary-norm type="double">0</dc-bus-secondary-norm>
+            <dc-bus-battery-2-norm type="double">0</dc-bus-battery-2-norm>
+            
+            <dc-bus-battery-1-bool type="bool">false</dc-bus-battery-1-bool>
+            <dc-bus-battery-2-bool type="bool">false</dc-bus-battery-2-bool>
+            <dc-bus-battery-3-bool type="bool">false</dc-bus-battery-3-bool>
+            <dc-bus-main-bool type="bool">false</dc-bus-main-bool>
+            <dc-bus-secondary-bool type="bool">false</dc-bus-secondary-bool>
+            <ac-bus-main-bool type="bool">false</ac-bus-main-bool>
+            <ac-bus-secondary-bool type="bool">false</ac-bus-secondary-bool>
+        </elec>
+        <fuses>
+            <krets type="bool">true</krets><!-- canopy ejection -->
+            <sa type="bool">true</sa><!-- dc autopilot -->
+            <trim type="bool">true</trim>
+            <gvv type="bool">true</gvv>
+            <motor type="bool">true</motor>
+            <course-indicator type="bool">true</course-indicator>
+        </fuses>
         <done type="bool">false</done>
     </ja37>
     <ai>
         <submodels>
+            <submodel n="0">
+                <flare-release type="bool">false</flare-release>
+                <flare-release-snd type="bool">false</flare-release-snd>
+                <flare-release-out-snd type="bool">false</flare-release-out-snd>
+            </submodel>
             <submodel n="2">
                 <random userarchive="y" type="bool">false</random>
             </submodel>
@@ -864,7 +915,7 @@
                     <gains>
                         <delta type="double">0.05</delta>
                         <int type="double">5</int>
-                        <int-feedback type="double">5</int-feedback>
+                        <int-feedback type="double">0.5</int-feedback>
                         <int-calm type="double">-0.5</int-calm>
                         <damp-q type="double">0.334</damp-q>
                         <damp-q-wow type="double">0.668</damp-q-wow>
@@ -896,25 +947,10 @@
                     </nose-wheel-steering>
                 </unit>
             </gear>
-            <ground>
-                <carrier-near type="bool">false</carrier-near>
-            </ground>
             <systems>
-                <catapult_free>
-                    <cat-launch-cmd type="bool">false</cat-launch-cmd>
-                </catapult_free>
-                <holdback_free>
-                    <holdback-cmd type="bool">false</holdback-cmd>
-                </holdback_free>
-                <launchbar_free>
-                    <lock-cmd type="bool">false</lock-cmd>
-                </launchbar_free>
                 <flapscontrol>
                     <serviceable/>
                 </flapscontrol>
-                <hook>
-                    <tailhook-cmd-norm type="bool">false</tailhook-cmd-norm>
-                </hook>
                 <hydraulics>
                     <system1>
                         <main>
@@ -937,6 +973,8 @@
                     <battery-charging-norm type="double">1.0</battery-charging-norm>
                     <battery-active type="bool">false</battery-active>
                     <generator-reserve-pos-norm type="double">0.0</generator-reserve-pos-norm>
+                    <generator-running-norm type="double">0.0</generator-running-norm>
+                    <generator-takeoff type="bool">false</generator-takeoff>
                     <external>
                         <enable-cmd type="bool">false</enable-cmd>
                         <switch type="bool">false</switch>
@@ -1014,9 +1052,6 @@
                     <cutoff-commanded type="bool">true</cutoff-commanded>
                 </engine>
             </propulsion>
-            <launchbar>
-                <launch-bar-pos-norm type="double">0</launch-bar-pos-norm>
-            </launchbar>
             <position>
                 <selection-view-offset type="double">5</selection-view-offset>
             </position>
@@ -1170,6 +1205,7 @@
     <environment>
         <damage type="bool">false</damage>
         <damage-smoke type="bool">false</damage-smoke>
+        <star-magnitude-cutoff type="float">6.5</star-magnitude-cutoff>
         <aircraft-effects>
             <splash-vector-x type="float" userarchive="n">0.0</splash-vector-x>
             <splash-vector-y type="float" userarchive="n">0.1</splash-vector-y>
@@ -1233,13 +1269,25 @@
         <internal>
             <target-roll-deg type="double">0</target-roll-deg>
         </internal>
+        <plan-manager>
+            <landing-base type="int">1</landing-base>
+            <destination>
+                <airport-1 type="string"></airport-1>
+                <airport-2 type="string"></airport-2>
+                <airport-3 type="string"></airport-3>
+                <airport-4 type="string"></airport-4>
+            </destination>
+            <!--<departure>
+                <airport type="string"></airport>
+            </departure>-->
+        </plan-manager>
     </autopilot>
     <systems>
         <path>Aircraft/JA37/Systems/systems.xml</path>
         <electrical>
             <outputs>
-                <dc-voltage type="double">0</dc-voltage>
-                <ac-instr-voltage type="double">0</ac-instr-voltage>
+                <!--<dc-voltage type="double">0</dc-voltage>
+                <ac-instr-voltage type="double">0</ac-instr-voltage>-->
                 <!--
       <hud type="double">0</hud>
       <radar type="double">0</radar>
@@ -1247,7 +1295,7 @@
       <comm n="0" type="double">0</comm>
       <comm n="1" type="double">0</comm>-->
             </outputs>
-            <dc-light type="double">0</dc-light>
+            <!--<dc-light type="double">0</dc-light>-->
         </electrical>
         <generator>
             <serviceable type="bool">true</serviceable>
@@ -1379,9 +1427,9 @@
 *************************************************************************-->
     <limits>
         <!--<max-gear-extension-speed>334.77</max-gear-extension-speed> -->       <!-- as per manual -->
-        <max-positive-g>7.0</max-positive-g>  <!-- Pilots were usually not allowed to exceed this -->
+        <max-positive-g>8.0</max-positive-g>  <!-- Pilots were usually not allowed to exceed this -->
         <max-negative-g>-3.0</max-negative-g> <!-- these values also depend on gear extended or not and stores. Dynamically controlled from JSB. -->
-        <vroll>172.8</vroll> <!-- source: SFI Fragår JA37 -->
+        <vroll>172.8</vroll> <!-- source: SFI Fragår JA37 (is KIAS) -->
     </limits>
 
     <!--**********************************************************************
@@ -1390,7 +1438,9 @@
 
 
 *************************************************************************-->
-
+    <timings>
+        <aaaa type="bool">false</aaaa>
+    </timings>
     <instrumentation>
         <comm n="0">
             <power-btn type="bool">true</power-btn>
@@ -1401,6 +1451,10 @@
             <power-good type="bool">false</power-good>
 			<volume type="double">0</volume>
         </comm>
+        <nav n="0">
+            <has-gs type="bool">false</has-gs>
+            <gs-in-range type="bool">false</gs-in-range>
+        </nav>
 		<nav n="1">
 			<volume type="double">0</volume>
 		</nav>
@@ -1456,6 +1510,7 @@
         <heading-indicator>
             <offset-deg type="double">0</offset-deg>
         </heading-indicator>
+        <terrain-override type="bool">false</terrain-override>
     </instrumentation>
 
     <!-- Using commandline these can be entered at start. Areas should max have 8 points. The others max 48 steerpoints including dest/dep. Format GPX or FG xml. -->
@@ -1495,6 +1550,9 @@
         <hack>
             <file>Aircraft/JA37/Nasal/hackCanvas.nas</file>
         </hack>
+        <power>
+            <file>Aircraft/JA37/Nasal/power.nas</file>
+        </power>
         <auto>
             <file>Aircraft/JA37/Nasal/flightPlanDelegate.nas</file>
             <file>Aircraft/JA37/Nasal/autopilot.nas</file>
@@ -1508,6 +1566,9 @@
         <callsign>
             <file>Aircraft/JA37/Nasal/callsign.nas</file>
         </callsign>
+        <timer>
+            <file>Aircraft/JA37/Nasal/timer.nas</file>
+        </timer>
         <ja37>
             <file>Aircraft/JA37/Nasal/ja37.nas</file>
             <file>Aircraft/JA37/Nasal/liveries.nas</file>
@@ -1589,6 +1650,9 @@
         <view>
           <file>Aircraft/JA37/Nasal/gamma.nas</file>
         </view>
+        <!--<view>
+          <file>Aircraft/JA37/Nasal/F-PLN.nas</file>
+        </view>-->
 
         <!--<proto>
             <file>Aircraft/JA37/Nasal/radar-prototype.nas</file>
@@ -1617,37 +1681,37 @@
          Remember that the filename below is absolute path, so modify that also -->
 
     <logging>
-      <!--<log>
-       <filename>C:/Users/Nikolai/Documents/ja37_flightlog.csv</filename>
+      <log>
+       <filename>C:/Users/Nikolai/AppData/Roaming/flightgear.org/Export/ja37_flightlog.csv</filename>
        <enabled>false</enabled>
-       <interval-ms>500</interval-ms>
+       <interval-ms>1000</interval-ms>
        <delimiter>,</delimiter>
        <entry>
         <enabled>true</enabled>
-        <title>Latitude</title>
-        <property>/position/latitude-deg</property>
+        <title>qbar</title>
+        <property>/fdm/jsbsim/aero/qbar-psf-red</property>
        </entry>
        <entry>
         <enabled>true</enabled>
-        <title>Longitude</title>
-        <property>/position/longitude-deg</property>
+        <title>alt</title>
+        <property>/fdm/jsbsim/atmosphere/density-altitude-red</property>
        </entry>
        <entry>
         <enabled>true</enabled>
-        <title>alt ft</title>
-        <property>/position/altitude-ft</property>
+        <title>elevon</title>
+        <property>/fdm/jsbsim/fcs/elevator/output-deg</property>
        </entry>
        <entry>
         <enabled>true</enabled>
-        <title>date</title>
-        <property>logging/date-log</property>
+        <title>alpha</title>
+        <property>/fdm/jsbsim/aero/alpha-deg</property>
        </entry>
        <entry>
         <enabled>true</enabled>
-        <title>time</title>
-        <property>logging/time-log</property>
+        <title>Nz</title>
+        <property>/fdm/jsbsim/accelerations/Nz</property>
        </entry>
-      </log>-->
+      </log>
       <!--<log>
        <filename>C:/Users/Nikolai/Documents/ja37_missile_flightlog.csv</filename>
        <enabled>false</enabled>
@@ -1757,7 +1821,7 @@
             <property>logging/missile/LOS-rate</property>
            </entry>
         </log>-->
-        <log>
+        <!--<log>
            <filename>C:/Users/Nikolai/Documents/ja37_drag_test.csv</filename>
            <enabled>false</enabled>
            <interval-ms>100</interval-ms>
@@ -1782,7 +1846,7 @@
             <title>Vi</title>
             <property>instrumentation/airspeed-indicator/indicated-speed-kmh</property>
            </entry>
-        </log>
+        </log>-->
         <time-log type="string">0:0:0</time-log>
         <date-log type="string">0/0/0</date-log>
         <missile>

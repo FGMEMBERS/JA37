@@ -337,8 +337,8 @@
                             <value>0</value>
                         </eq>
                         <lt>
-                            <property>/systems/electrical/outputs/dc-voltage</property>
-                            <value>23</value>
+                            <property>/ja37/elec/dc-bus-main-volt</property>
+                            <value>20</value>
                         </lt>
                         <eq>
                             <property>/controls/engines/engine/reverse-system/serviceable</property>
@@ -473,22 +473,38 @@
                         <property>/systems/electrical/serviceable</property>
                         <value>0</value>
                     </eq>
-                    <nq>
-                        <property>systems/electrical/generator-running-norm</property>
-                        <value>1</value>
-                    </nq>
-                    <eq>
-                        <property>/controls/electric/main</property>
-                        <value>0</value>
-                    </eq>
                     <lt>
-                        <property>systems/electrical/battery-producing-dc</property>
-                        <value>24</value>
+                        <property>systems/electrical/generator-running-norm</property>
+                        <value>0.99</value>
                     </lt>
+                    <lt>
+                        <property>/ja37/elec/dc-bus-battery-3-volt</property>
+                        <value>20</value>
+                    </lt>
+                    <and>
+                        <or>
+                            <eq>
+                                <property>/gear/gear[1]/position-norm</property>
+                                <value>1</value>
+                            </eq>
+                            <eq>
+                                <property>/gear/gear[2]/position-norm</property>
+                                <value>1</value>
+                            </eq>
+                        </or>
+                        <eq>
+                            <property>systems/electrical/generator-reserve-deploy-emergency-cmd</property>
+                            <value>1</value>
+                        </eq>
+                        <eq>
+                            <property>/systems/electrical/serviceable</property>
+                            <value>0</value>
+                        </eq>
+                    </and>
                 </or>
             </function>
         </fcs_function>
-
+        
         <switch name="systems/indicators/electrical">
             <default value="0"/>
             <test logic="OR" value="/ja37/blink/four-Hz/state">
@@ -516,19 +532,41 @@
                     </and>
                     <and>
                         <eq>
-                            <property>/controls/electric/reserve</property>
+                            <property>systems/electrical/generator-reserve-deploy-emergency-cmd</property><!-- should really be RAT extended but dont make sense.. -->
                             <value>1</value>
                         </eq>
-                        <or>
-                            <eq>
-                                <property>systems/electrical/generator-running-norm</property>
-                                <value>1</value>
-                            </eq>
-                            <eq>
-                                <property>/controls/electric/main</property>
-                                <value>0</value>
-                            </eq>
-                        </or>
+                        <eq>
+                            <property>systems/electrical/generator-running-norm</property>
+                            <value>1</value>
+                        </eq>
+                    </and>
+                    <and>
+                        <lt>
+                            <property>systems/electrical/generator-reserve-pos-norm</property>
+                            <value>1</value>
+                        </lt>
+                        <eq>
+                            <property>propulsion/starter_cmd</property>
+                            <value>1</value>
+                        </eq>
+                    </and>
+                    <and>
+                        <eq>
+                            <property>systems/electrical/generator-reserve-supplying</property>
+                            <value>0</value>
+                        </eq>
+                        <eq>
+                            <property>/gear/gear[0]/wow</property>
+                            <value>0</value>
+                        </eq>
+                        <eq>
+                            <property>/gear/gear[0]/position-norm</property>
+                            <value>1</value>
+                        </eq>                        
+                        <eq>
+                            <property>propulsion/starter_cmd</property>
+                            <value>1</value>
+                        </eq>
                     </and>
                 </or>
             </function>
@@ -712,8 +750,8 @@
                                 <value>0</value>
                             </eq>
                             <lt>
-                                <property>/systems/electrical/outputs/dc-voltage</property>
-                                <value>23</value>
+                                <property>/ja37/elec/dc-bus-main-volt</property>
+                                <value>20</value>
                             </lt>
                             <eq>
                                 <property>/controls/engines/engine/reverse-system/serviceable</property>
@@ -791,24 +829,29 @@
                 </or>
             </function>
         </fcs_function>
-
-        <fcs_function name="systems/indicators/oil-pressure">
+        
+        <fcs_function name="systems/indicators/oil-pressure-secondary">
             <function>
-                <and>
-                    <or>
-                        <eq>
-                            <property>systems/indicators/oil-pressure-primary</property>
-                            <value>1</value>
-                        </eq>
-                        <property>/controls/lighting/test-indicator-panels</property>
-                    </or>
-                    <eq>
-                        <property>/ja37/blink/four-Hz/state</property>
-                        <value>1</value>
-                    </eq>
-                </and>
+                <or>
+                    <lt>
+                        <property>propulsion/engine/oil-pressure-psi</property>
+                        <value>20.0</value>
+                    </lt>
+                    <gt>
+                        <property>systems/flight/oil/pressure-drop-norm</property>
+                        <value>0.20</value>
+                    </gt>
+                </or>
             </function>
         </fcs_function>
+
+        <switch name="systems/indicators/oil-pressure">
+            <default value="systems/indicators/oil-pressure-secondary"/>
+            <test logic="OR" value="/ja37/blink/four-Hz/state">
+                systems/indicators/oil-pressure-primary == 1
+                /controls/lighting/test-indicator-panels == 1
+            </test>
+        </switch>
 
 
         <!-- Swedish: OLJETEMP (blinking)
@@ -1427,12 +1470,12 @@
             <function>
                 <or>
                     <lt>
-                        <property>/systems/electrical/outputs/dc-voltage</property>
-                        <value>23</value>
+                        <property>/ja37/elec/dc-bus-main-volt</property>
+                        <value>20</value>
                     </lt>
                     <lt>
-                        <property>/systems/electrical/outputs/ac-main-voltage</property>
-                        <value>170</value>
+                        <property>/ja37/elec/ac-bus-secondary-volt</property>
+                        <value>180</value>
                     </lt>
                     <nq>
                         <property>systems/hydraulics/system1/pressure</property>
@@ -1468,7 +1511,7 @@
                 <or>
                     <lt>
                         <property>/systems/electrical/outputs/transponder</property>
-                        <value>23</value>
+                        <value>20</value>
                     </lt>
                     <property>/controls/lighting/test-indicator-panels</property>
                 </or>
@@ -1628,10 +1671,17 @@
         <fcs_function name="systems/indicators/low-fuel">
             <function>
                 <or>
-                    <eq>
-                        <property>systems/indicators/low-fuel-secondary</property>
-                        <value>1</value>
-                    </eq>
+                    <and>
+                        <eq>
+                            <property>systems/indicators/low-fuel-secondary</property>
+                            <value>1</value>
+                        </eq>
+                        <eq>
+                            <!-- delicate but works. If master-warning has been acknowledged this warning goes away -->
+                            <property>systems/indicators/master-warning/fuel-low-2</property>
+                            <value>3</value>
+                        </eq>
+                    </and>
                     <and>
                         <or>
                             <eq>
@@ -1711,8 +1761,8 @@
             <function>
                 <and>
                     <gt>
-                        <property>/systems/electrical/outputs/dc-voltage</property>
-                        <value>23</value>
+                        <property>/ja37/elec/dc-bus-main-volt</property>
+                        <value>20</value>
                     </gt>
                     <eq>
                         <property>systems/indicators/flightstick-primary</property>
@@ -1730,8 +1780,8 @@
             <function>
                 <and>
                     <gt>
-                        <property>/systems/electrical/outputs/dc-voltage</property>
-                        <value>23</value>
+                        <property>/ja37/elec/dc-bus-main-volt</property>
+                        <value>20</value>
                     </gt>
                     <and>
                         <gt>
@@ -1770,8 +1820,8 @@
             <function>
                 <and>
                     <gt>
-                        <property>/systems/electrical/outputs/dc-voltage</property>
-                        <value>23</value>
+                        <property>/ja37/elec/dc-bus-main-volt</property>
+                        <value>20</value>
                     </gt>   
                     <gt>
                         <property>/ja37/avionics/autopilot-mode</property>
@@ -1785,8 +1835,8 @@
             <function>
                 <and>
                     <gt>
-                        <property>/systems/electrical/outputs/dc-voltage</property>
-                        <value>23</value>
+                        <property>/ja37/elec/dc-bus-main-volt</property>
+                        <value>20</value>
                     </gt>
                     <gt>
                         <property>/ja37/avionics/autopilot-mode</property>
@@ -1829,8 +1879,8 @@
             <function>
                 <and>
                     <gt>
-                        <property>/systems/electrical/outputs/dc-voltage</property>
-                        <value>23</value>
+                        <property>/ja37/elec/dc-bus-main-volt</property>
+                        <value>20</value>
                     </gt>
                     <gt>
                         <property>/ja37/avionics/autopilot-mode</property>
@@ -1844,8 +1894,8 @@
             <function>
                 <and>
                     <gt>
-                        <property>/systems/electrical/outputs/dc-voltage</property>
-                        <value>23</value>
+                        <property>/ja37/elec/dc-bus-main-volt</property>
+                        <value>20</value>
                     </gt>
                     <gt>
                         <property>/ja37/avionics/autopilot-mode</property>
@@ -1902,6 +1952,31 @@
                 </and>
             </function>
         </fcs_function>
+        
+        <!-- sample is 2 secs -->
+        <!--<switch name="systems/indicators/transonic-aural-starttime">
+            <default value="sim-time-sec"/>
+            <test logic="AND" value="systems/indicators/transonic-aural-starttime">
+                systems/indicators/transonic == 1
+            </test>
+        </switch>
+
+        <fcs_function name="systems/indicators/transonic-aural-stoptime">
+            <function>
+                <sum>
+                    <p>systems/indicators/transonic-aural-starttime</p>
+                    <v>2.1</v>
+                </sum>
+            </function>
+        </fcs_function>
+        
+        <switch name="systems/indicators/transonic-aural">
+            <default value="0"/>
+            <test logic="AND" value="1">
+                systems/indicators/transonic-aural-stoptime gt sim-time-sec
+                systems/indicators/transonic-aural-starttime lt sim-time-sec
+            </test>
+        </switch>-->
 
         <fcs_function name="systems/indicators/transonic-warning">
             <function>
@@ -1946,15 +2021,12 @@
             </test>
         </switch>
 
-        <switch name="propulsion/engine/cutoff-ready">
+        <switch name="propulsion/engine/cutoff-indicator">
             <default value="0"/>
-            <test logic="AND" value="/systems/electrical/dc-light">
+            <test logic="OR" value="/systems/electrical/dc-light">
                 /controls/lighting/test-indicator-panels == 1
-            </test>      
-            <test logic="AND" value="/systems/electrical/dc-light">
-                propulsion/starter_cmd_copy == 1
-                propulsion/engine/cutoff-commanded == 1
-                propulsion/engine/n1 gt 5.2
+                propulsion/engine/cutoff-actual == 1
+                /controls/engines/engine[0]/cutoff-augmentation == 1
             </test>
         </switch>
 
@@ -1966,6 +2038,17 @@
             <test logic="AND" value="/systems/electrical/dc-light">
                 /controls/flight/aileron-trim lt 0.025
                 /controls/flight/aileron-trim gt -0.025
+            </test>
+        </switch>
+        
+        <switch name="/ja37/avionics/yaw-trim-centered">
+            <default value="0"/>
+            <test logic="OR" value="/systems/electrical/dc-light">
+                /controls/lighting/test-indicator-panels == 1
+            </test>
+            <test logic="AND" value="/systems/electrical/dc-light">
+                /controls/flight/rudder-trim lt 0.025
+                /controls/flight/rudder-trim gt -0.025
             </test>
         </switch>
         
@@ -2118,6 +2201,15 @@
                 </sum>
             </function>
         </fcs_function>
+        
+        <fcs_function name="/instrumentation/terrain-warning-steady-10">
+            <function>
+                <sum>
+                    <p>/instrumentation/terrain-warning-steady-time</p>
+                    <v>10</v>
+                </sum>
+            </function>
+        </fcs_function>
 
         <fcs_function name="/instrumentation/terrain-warning-hold">
             <function>
@@ -2151,6 +2243,14 @@
                 /instrumentation/terrain-warning-steady gt sim-time-sec
             </test>
         </switch>
+        
+        <switch name="/instrumentation/terrain-override">
+            <default value="0"/>
+            <test logic="OR" value="1">
+                /ja37/sound/terrain-on == 1
+                /instrumentation/terrain-warning-steady-10 gt sim-time-sec
+            </test>
+        </switch>
 
         <switch name="/instrumentation/terrain-warning-test">
             <default value="0"/>
@@ -2168,8 +2268,79 @@
             <test logic="OR" value="/systems/electrical/dc-light">
                 /instrumentation/terrain-warning-secondary == 1
             </test>
-        </switch>        
+        </switch>
+        
+        <switch name="/instrumentation/TLS-light-steady-time">
+            <default value="sim-time-sec"/>
+            <test logic="AND" value="/instrumentation/TLS-light-steady-time">
+                /ja37/hud/TILS-on == 0
+                /instrumentation/nav[0]/has-gs == 1
+            </test>
+        </switch>
 
+        <fcs_function name="/instrumentation/TLS-light-steady-hyst">
+            <function>
+                <sum>
+                    <p>/instrumentation/TLS-light-steady-time</p>
+                    <v>7</v>
+                </sum>
+            </function>
+        </fcs_function>
+        
+        <switch name="/instrumentation/TLS-light-blink-time">
+            <default value="sim-time-sec"/>
+            <test logic="OR" value="/instrumentation/TLS-light-blink-time">
+                /ja37/hud/TILS-on == 0
+            </test>
+        </switch>
+
+        <fcs_function name="/instrumentation/TLS-light-blink-hyst">
+            <function>
+                <sum>
+                    <p>/instrumentation/TLS-light-blink-time</p>
+                    <v>7</v>
+                </sum>
+            </function>
+        </fcs_function>
+        
+        <switch name="/instrumentation/TLS-light-steady">
+            <default value="0"/>
+            <test logic="AND" value="1">
+                /ja37/hud/TILS-on == 1
+                /instrumentation/nav[0]/gs-in-range == 1
+                /instrumentation/nav[0]/has-gs == 1
+            </test>
+            <test logic="AND" value="0">
+                /instrumentation/TLS-light-steady-hyst lt sim-time-sec
+            </test>
+            <test logic="AND" value="1">
+                /instrumentation/TLS-light-steady-hyst gt sim-time-sec
+                /instrumentation/TLS-light-steady == 1
+            </test>
+        </switch>
+        
+        <switch name="/instrumentation/TLS-light-blink">
+            <default value="0"/>
+            <test logic="OR" value="1">
+                /ja37/hud/TILS-on == 1
+            </test>
+            <test logic="AND" value="0">
+                /instrumentation/TLS-light-blink-hyst lt sim-time-sec
+            </test>
+            <test logic="AND" value="1">
+                /instrumentation/TLS-light-blink-hyst gt sim-time-sec
+                /instrumentation/TLS-light-blink == 1
+            </test>
+        </switch>
+        
+        <switch name="/instrumentation/TLS-light">
+            <default value="/instrumentation/TLS-light-steady"/>
+            <test logic="OR" value="/ja37/blink/four-Hz/state">
+                /instrumentation/TLS-light-blink == 1
+                /controls/lighting/test-indicator-panels == 1
+            </test>
+        </switch>
+        
     </channel>    
 
 
@@ -2574,8 +2745,9 @@
 
         <switch name="systems/indicators/master-warning/oil-pressure-low">
             <default value="0"/>
-            <test logic="OR" value="0">
+            <test logic="AND" value="0">
                 systems/indicators/oil-pressure-primary == 0
+                systems/indicators/oil-pressure-secondary == 0
             </test>
             <test logic="OR" value="1">
                 systems/indicators/master-warning/oil-pressure-low == 1
@@ -2586,6 +2758,9 @@
             </test>
             <test logic="AND" value="3">
                 systems/indicators/oil-pressure-primary == 1
+            </test>
+            <test logic="AND" value="2">
+                systems/indicators/oil-pressure-secondary == 1
             </test>
         </switch>
 
@@ -2720,7 +2895,7 @@
                 systems/indicators/master-warning/fuel-low gt 1
                 /ja37/avionics/master-warning-button == 1
             </test>
-            <test logic="AND" value="2">
+            <test logic="AND" value="3">
                 systems/indicators/low-fuel-primary == 1
             </test>
         </switch>
@@ -2752,7 +2927,7 @@
                 systems/indicators/master-warning/fuel-low-2 gt 1
                 /ja37/avionics/master-warning-button == 1
             </test>
-            <test logic="AND" value="2">
+            <test logic="AND" value="3">
                 systems/indicators/low-fuel-secondary == 1
             </test>
         </switch>
@@ -2884,7 +3059,7 @@
         <switch name="systems/indicators/master-warning/lamp1">
             <default value="0"/>
             <test logic="OR" value="0">
-                /systems/electrical/outputs/dc-voltage lt 23
+                /ja37/elec/dc-bus-main-volt lt 20
             </test>
             <test logic="OR" value="/ja37/blink/four-Hz/state">
                 /controls/lighting/test-indicator-panels == 1
@@ -2905,7 +3080,7 @@
         <switch name="systems/indicators/master-warning/lamp2">
             <default value="0"/>
             <test logic="OR" value="0">
-                /systems/electrical/outputs/dc-voltage lt 23
+                /ja37/elec/dc-bus-main-volt lt 20
             </test>
             <test logic="OR" value="systems/indicators/master-warning/tenHz-opposite">
                 /controls/lighting/test-indicator-panels == 1
@@ -2918,7 +3093,7 @@
 
         <switch name="systems/indicators/master-warning/audio">
             <default value="0"/>
-            <test logic="OR" value="/ja37/blink/third-Hz/state">
+            <test logic="OR" value="1">
                 /controls/lighting/test-indicator-panels == 1
                 systems/indicators/master-warning/warning == 3
             </test>

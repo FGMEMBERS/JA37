@@ -114,8 +114,10 @@ var bright = 0;
 var cursor = func {
 	cursorOn = !cursorOn;
 	if (!cursorOn) {
+		if (!getprop("ja37/systems/input-controls-flight")) {
+			ja37.notice("Cursor OFF. Flight ctrl ON.");
+		}
 		setprop("/ja37/systems/input-controls-flight", 1);
-		ja37.notice("Cursor OFF. Flight ctrl ON.");
 	}
 }
 
@@ -135,9 +137,7 @@ var MI = {
 			rad_alt:              "position/altitude-agl-ft",
 			radarEnabled:         "ja37/hud/tracks-enabled",
 			radarRange:           "instrumentation/radar/range",
-			radarScreenVoltage:   "systems/electrical/outputs/dc-voltage",
 			radarServ:            "instrumentation/radar/serviceable",
-			radarVoltage:         "systems/electrical/outputs/ac-main-voltage",
 			rmActive:             "autopilot/route-manager/active",
 			rmDist:               "autopilot/route-manager/wp/dist",
 			rmId:                 "autopilot/route-manager/wp/id",
@@ -150,7 +150,7 @@ var MI = {
 			headTrue:             "orientation/heading-deg",
 			headMagn:             "orientation/heading-magnetic-deg",
 			twoHz:                "ja37/blink/two-Hz/state",
-			station:          	  "controls/armament/station-select",
+			station:          	  "controls/armament/station-select-custom",
 			roll:             	  "orientation/roll-deg",
 			units:                "ja37/hud/units-metric",
 			callsign:             "ja37/hud/callsign",
@@ -160,12 +160,10 @@ var MI = {
 			tenHz:            	  "ja37/blink/four-Hz/state",
 			qfeActive:        	  "ja37/displays/qfe-active",
 	        qfeShown:		  	  "ja37/displays/qfe-shown",
-	        station:          	  "controls/armament/station-select",
 	        currentMode:          "ja37/hud/current-mode",
 	        ctrlRadar:        "controls/altimeter-radar",
 	        alphaJSB:         "fdm/jsbsim/aero/alpha-deg",
 	        mach:             "instrumentation/airspeed-indicator/indicated-mach",
-	        acInstrVolt:      "systems/electrical/outputs/ac-instr-voltage",
       	};
 
       	foreach(var name; keys(mi.input)) {
@@ -651,7 +649,7 @@ var MI = {
 			radar_logic.setSelection(nil);
 		}
 
-		if (me.input.acInstrVolt.getValue() < 100 or me.off == TRUE) {
+		if (!power.prop.acSecondBool.getValue() or me.off == TRUE) {
 			setprop("ja37/avionics/brightness-mi", 0);
 			setprop("ja37/avionics/cursor-on", FALSE);
 			#settimer(func me.loop(), 0.05);

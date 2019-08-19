@@ -141,7 +141,7 @@
   </animation>
 
   <model>
-    <path>Aircraft/JA37/Models/Cockpit/switch-a/oxygen.xml</path>
+    <path>Aircraft/JA37/Models/Cockpit/oxygenControl.xml</path>
     <name>switch-oxygen</name>
     <offsets>
       <x-m>  0.185</x-m>
@@ -203,7 +203,7 @@
       <z-m>  0.00</z-m>
     </offsets>
   </model>-->
-
+<!--
   <model>
     <path>Aircraft/JA37/Models/Cockpit/switch-d/smoke.xml</path>
     <name>follow</name>
@@ -212,7 +212,7 @@
       <y-m>  0.05</y-m>
       <z-m>  0.00</z-m>
     </offsets>
-  </model>
+  </model>-->
 
   <model>
     <path>Aircraft/JA37/Models/Cockpit/switch-a/warning-stall.xml</path>
@@ -358,5 +358,51 @@
        <z-m> -0.004</z-m>
      </offsets>
    </model>
+   
+   <model>
+     <path>Aircraft/JA37/Models/Instruments/Navpanel/navpanel-ja.xml</path>
+     <name>NavpanelJA</name>
+     <offsets>
+       <x-m>  0.3485</x-m>
+       <y-m>  0.050</y-m>
+       <z-m> -0.004</z-m>
+     </offsets>
+   </model>
+   
+   <animation>
+    <type>select</type>
+    <object-name>NavpanelJA</object-name>
+    <condition>
+       <equals>
+        <property>ja37/systems/variant</property>
+        <value>0</value>
+       </equals>
+    </condition>
+  </animation>
+  
+  <animation>
+    <type>select</type>
+    <object-name>Navpanel</object-name>
+    <object-name>stall</object-name>
+    <object-name>tilsG</object-name>
+    <object-name>switch-dme</object-name>
+    <object-name>switch-radar-alt</object-name>
+    <condition>
+       <greater-than>
+        <property>ja37/systems/variant</property>
+        <value>0</value>
+       </greater-than>
+    </condition>
+  </animation>
+  
+  <model>
+    <path>Aircraft/JA37/Models/Cockpit/switch-d/smoke.xml</path>
+    <name>smokie</name>
+    <offsets>
+      <x-m>  0.510</x-m>
+      <y-m>  0.025</y-m>
+      <z-m>  0.00</z-m>
+    </offsets>
+  </model>
 
 </PropertyList>

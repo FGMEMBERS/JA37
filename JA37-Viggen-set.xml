@@ -11,8 +11,15 @@
         <description>Saab JA-37Di Viggen</description>
         <status>Early production</status>
         <long-description>
-          The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards. The JA-37Di is the midlife upgrade from 1993.
+          The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has glass-cockpit, reverse thrust and very large canards. The JA-37Di is the midlife upgrade from 1993.
         </long-description>
+        
+        <rating>
+            <FDM type="int">4</FDM>
+            <systems type="int">5</systems>
+            <cockpit type="int">4</cockpit>
+            <model type="int">4</model>
+        </rating>
 
         <exclude-from-gui type="bool">false</exclude-from-gui>
 
@@ -72,16 +79,6 @@
             <preview>
                 <type>exterior</type>
                 <splash type="bool">true</splash>
-                <path>gui/newSplashes/ja2.png</path>
-            </preview>
-            <preview>
-                <type>exterior</type>
-                <splash type="bool">true</splash>
-                <path>gui/newSplashes/ja15.png</path>
-            </preview>
-            <preview>
-                <type>exterior</type>
-                <splash type="bool">true</splash>
                 <path>gui/newSplashes/ja4.png</path>
             </preview>
             <preview>
@@ -97,7 +94,12 @@
             <preview>
                 <type>exterior</type>
                 <splash type="bool">true</splash>
-                <path>gui/newSplashes/ja7.png</path>
+                <path>gui/newSplashes/ja10.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja11.png</path>
             </preview>
             <preview>
                 <type>exterior</type>
@@ -109,20 +111,31 @@
                 <splash type="bool">true</splash>
                 <path>gui/newSplashes/ja14.png</path>
             </preview>
+            
             <preview>
                 <type>exterior</type>
                 <splash type="bool">true</splash>
-                <path>gui/newSplashes/ja10.png</path>
+                <path>gui/newSplashes/ja15.png</path>
             </preview>
             <preview>
                 <type>exterior</type>
                 <splash type="bool">true</splash>
-                <path>gui/newSplashes/ja11.png</path>
+                <path>gui/newSplashes/ja16.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja17.png</path>
             </preview>
             <preview>
                 <type>panel</type>
                 <splash type="bool">false</splash>
-                <path>gui/newSplashes/ja12.png</path>
+                <path>gui/newSplashes/ja-interior-1.png</path>
+            </preview>
+            <preview>
+                <type>panel</type>
+                <splash type="bool">false</splash>
+                <path>gui/newSplashes/ja-interior-2.png</path>
             </preview>
         </previews>
 
@@ -322,6 +335,27 @@
                 </menu>
             </default>
         </menubar>
+
+        <checklists>
+            <group>
+                <name>JA37 Normal Operations</name>
+                <checklist include="gui/checklists/ja37-before-start.xml"/>
+                <checklist include="gui/checklists/ja37-start.xml"/>
+                <checklist include="gui/checklists/ja37-after-start.xml"/>
+                <checklist include="gui/checklists/ja37-before-taxi.xml"/>
+                <checklist include="gui/checklists/ja37-before-takeoff.xml"/>
+                <checklist include="gui/checklists/takeoff.xml"/>
+                <checklist include="gui/checklists/landing.xml"/>
+                <checklist include="gui/checklists/ja37-after-landing.xml"/>
+                <checklist include="gui/checklists/shutdown.xml"/>
+            </group>
+            <group>
+                <name>Emergency Procedures</name>
+                <checklist include="gui/checklists/ja37-in-air-start.xml"/>
+                <checklist include="gui/checklists/generator-failure.xml"/>
+                <checklist include="gui/checklists/fire.xml"/>
+            </group>
+        </checklists>
     </sim>
     <!--**********************************************************************
 
@@ -332,7 +366,7 @@
 
     <controls>
         <armament>
-            <station-select type="int">0</station-select>            <!-- cannon selected by default -->
+            <station-select-custom type="int">0</station-select-custom>            <!-- cannon selected by default -->
         </armament>
     </controls>
 
@@ -347,23 +381,23 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 71 Skyflash</name>
-                <lbs>425</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 99 Amraam</name>
-                <lbs>291</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="1">
@@ -376,19 +410,19 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 99 Amraam</name>
-                <lbs>291</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="2">
@@ -401,23 +435,23 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 71 Skyflash</name>
-                <lbs>425</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 99 Amraam</name>
-                <lbs>291</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="3">
@@ -430,19 +464,19 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 99 Amraam</name>
-                <lbs>291</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="4">
@@ -455,11 +489,11 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="5">
@@ -472,11 +506,11 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <!--<opt>
                 <name>TEST</name>
@@ -493,11 +527,11 @@
             </opt>
             <opt>
                 <name>Drop tank</name>
-                <lbs>211.64</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <!--  there is no room for these:
             <opt>
@@ -529,9 +563,8 @@
                 <msg type="bool">false</msg>
                 <damage type="bool">false</damage>
                 <rb-24j>                    <!-- RB-24J (Swedish version of aim-9j sidewinder) -->
-                    <vol-search type="double">0.075</vol-search>
-                    <vol-track type="double">0.25</vol-track>
-                    <vol-track-weak type="double">0.175</vol-track-weak>
+                    <vol-search type="double">0.15</vol-search>
+                    <vol-track type="double">1.00</vol-track>
                     <guidance type="string">heat</guidance>                       <!-- heat, radar or semi-radar -->
                     <all-aspect type="bool">false</all-aspect>                    <!-- all or rear-only -->
                     <max-fire-range-nm type="double">7.83</max-fire-range-nm> <!-- source -->
@@ -575,9 +608,8 @@
                     <ready-time type="double">1.5</ready-time>
                 </rb-24j>
                 <rb-74>             <!-- RB-74 (Swedish version of aim-9L sidewinder) -->
-                    <vol-search type="double">0.075</vol-search>
-                    <vol-track type="double">0.25</vol-track>
-                    <vol-track-weak type="double">0.175</vol-track-weak>
+                    <vol-search type="double">0.15</vol-search>
+                    <vol-track type="double">1</vol-track>
                     <guidance type="string">heat</guidance>                                   <!-- authentic -->
                     <all-aspect type="bool">true</all-aspect>                                 <!-- authentic -->
                     <max-fire-range-nm type="double">9.7</max-fire-range-nm>                  <!-- source -->
@@ -656,8 +688,7 @@
                 </rb-71>
                 <rb-99>         <!-- RB-99 specs (Swedish version of AIM-120B Amraam) -->
                     <vol-search type="double">0.00</vol-search>
-                    <vol-track type="double">0.15</vol-track>
-                    <vol-track-weak type="double">0.1</vol-track-weak>
+                    <vol-track type="double">1.00</vol-track>
                     <guidance type="string">radar</guidance>
                     <all-aspect type="bool">true</all-aspect>
                     <max-fire-range-nm type="int">38.8</max-fire-range-nm>
@@ -910,13 +941,14 @@
 
     <limits>
         <vne>789</vne>
+        <vne-mach>2.03</vne-mach>
     </limits>
 
     <fdm>
         <jsbsim>
             <fcs>
-                <max-alpha-deg type="int">23</max-alpha-deg>
-                <max-alpha-default-deg type="int">23</max-alpha-default-deg>
+                <max-alpha-deg type="int">34</max-alpha-deg>
+                <max-alpha-default-deg type="int">34</max-alpha-default-deg>
             </fcs>
         </jsbsim>
     </fdm>

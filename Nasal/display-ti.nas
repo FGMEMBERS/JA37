@@ -44,18 +44,33 @@ var KT2KMH = 1.85184;
 # map setup
 
 var tile_size = 256;
-var zoom = 9;
+
 var type = "light_nolabels";
 
 # index   = zoom level
 # content = meter per pixel of tiles
 #                   0                             5                               10                               15                      19
-meterPerPixel = [156412,78206,39103,19551,9776,4888,2444,1222,610.984,305.492,152.746,76.373,38.187,19.093,9.547,4.773,2.387,1.193,0.596,0.298];# at equator
-zooms      = [4, 7, 9, 11, 13];
-zoomLevels = [3.2, 1.6, 800, 400, 200];
-zoom_curr  = 2;
+var meterPerPixel = [156412,78206,39103,19551,9776,4888,2444,1222,610.984,305.492,152.746,76.373,38.187,19.093,9.547,4.773,2.387,1.193,0.596,0.298];# at equator
+#zooms      = [4, 7, 9, 11, 13];#old
+var zooms      = [5, 6, 7, 8, 9];
+var zoomLevels = [3.2, 1.6, 800, 400, 200];
+var zoom_curr  = 2;
+var zoom = zooms[zoom_curr];
+# display width = 0.3 meter
+# 381 pixels = 0.300 meter   1270 pixels/meter = 1:1
+# so at setting 800:1   1 meter = 800 meter    meter/pixel= 1270/800 = 1.58
+#cos = 0.63
+#print("200   = "~200000/1270);
+#print("400   = "~400000/1270);
+#print("800   = "~800000/1270);
+#print("1.6   = "~1600000/1270);
+#print("3.2   = "~3200000/1270);
+#print("");
+#for(i=0;i<20;i+=1) {
+#	print(i~"  ="~meterPerPixel[i]*math.cos(65*D2R)~" m/px");
+#}
 
-var M2TEX = 1/meterPerPixel[zoom];
+var M2TEX = 1/(meterPerPixel[zoom]*math.cos(getprop('/position/latitude-deg')*D2R));
 
 var zoomIn = func() {
 	if (ti.active == FALSE) return;
@@ -173,52 +188,21 @@ var contrastM = func {
 var bright = 0;
 
 #TI symbol colors
-var rWhite = 1.0; # other / self / own_missile
-var gWhite = 1.0;
-var bWhite = 1.0;
-var COLOR_WHITE = [1,1,1];#I will slowly convert all of TI to use vectored colors instead.
-
-var rYellow = 1.0;# possible threat
-var gYellow = 1.0;
-var bYellow = 0.0;
-var COLOR_YELLOW = [1,1,0];
-
-var rRed = 1.0;   # threat
-var gRed = 0.0;
-var bRed = 0.0;
-var COLOR_RED = [1,0,0];
-
-var rGreen = 0.0; # own side
-var gGreen = 1.0;
-var bGreen = 0.0;
-var COLOR_GREEN = [0,1,0];
-
-var rDTyrk = 0.20; # route polygon
-var gDTyrk = 0.75;
-var bDTyrk = 0.60;
-var COLOR_TYRK_DARK = [0.20,0.75,0.60];
-
-var rTyrk = 0.35; # navigation aid
-var gTyrk = 1.00;
-var bTyrk = 0.90;
-var COLOR_TYRK = [0.35,1.00,0.90];
-
-var rGrey = 0.5;   # inactive
-var gGrey = 0.5;
-var bGrey = 0.5;
-var COLOR_GREY = [0.5,0.5,0.5];
-
+var COLOR_WHITE      = [1.00,1.00,1.00];# self
+var COLOR_YELLOW     = [1.00,1.00,0.00];# possible threat LV
+var COLOR_RED        = [1.00,0.00,0.00];# threat LV
+var COLOR_GREEN      = [0.00,1.00,0.00];# own side LV
+var COLOR_GREEN_DARK = [0.00,0.50,0.00];# RWR
+var COLOR_BLUE_LIGHT = [0.65,0.65,1.00];
+var COLOR_TYRK_DARK  = [0.20,0.75,0.60];# route polygon
+var COLOR_TYRK       = [0.35,1.00,0.90];# navigation aids
+var COLOR_GREY       = [0.50,0.50,0.50];# inactive
 var COLOR_GREY_LIGHT = [0.70,0.70,0.70];
+var COLOR_BLACK      = [0.00,0.00,0.00];# active
+var COLOR_GREY_BLUE  = [0.60,0.60,0.85];# flight data
 
-var rBlack = 0.0;   # active
-var gBlack = 0.0;
-var bBlack = 0.0;
-var COLOR_BLACK = [0.0,0.0,0.0];
-
-var rGB = 0.5;   # flight data
-var gGB = 0.5;
-var bGB = 0.75;
-var COLOR_GB = [0.5,0.5,0.75];
+var COLOR_DAY   = "rgb(128,128,128)";# color fill behind map which will modulate to make it darker.
+var COLOR_NIGHT = "rgb( 64, 64, 64)";
 
 var a = 1.0;#alpha
 var w = 1.0;#stroke width
@@ -258,10 +242,10 @@ var extrapolate = func (x, x1, x2, y1, y2) {
     return y1 + ((x - x1) / (x2 - x1)) * (y2 - y1);
 };
 
-# notice the Swedish letter are missing accents in vertical menu items {ÅÖÄ} due to them not being always read correct by Nasal substr().
-# Å = \xC3\x85
-# Ö = \xC3\x96
-# Ä = \xC3\x84
+# notice the Swedish letter are missing accents in vertical menu items {ÅÖÄ} due to them not being always read correct by Nasal substr(). (fixed)
+# Å = \xC3\x85 å = \xC3\xA5
+# Ö = \xC3\x96 ö = \xC3\xB6
+# Ä = \xC3\x84 ä = \xC3\xA4
 
 # degree
 # \xc2\xb0
@@ -280,7 +264,7 @@ var dictSE = {
 	'10':  {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
 			'3': [TRUE, "ELKA"], '4': [TRUE, "ELKA"], '6': [TRUE, "SKAL"], '7': [TRUE, "MENY"], '14': [TRUE, "EOMR"], '15': [FALSE, "EOMR"], '16': [TRUE, "TID"],
 			'17': [TRUE, "HORI"], '18': [TRUE, "HKM"], '19': [TRUE, "DAG"]},
-	'11':  {'2': [TRUE, "INFG"], '3': [TRUE, "NY"], '5': [TRUE, "RADR"], # hack
+	'11':  {'2': [TRUE, "INFG"], '3': [TRUE, "NY"], #'5': [TRUE, "RADR"], # hack
 	        '8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
 			'4': [TRUE, "EDIT"], '6': [TRUE, "EDIT"], '7': [TRUE, "MENY"], '14': [TRUE, "EDIT"], '15': [TRUE, "\xC3\x85POL"], '16': [TRUE, "EDIT"],
 			'17': [TRUE, "UPOL"], '18': [TRUE, "EDIT"], '19': [TRUE, "EGLA"], '20': [TRUE, "KMAN"]},
@@ -291,7 +275,7 @@ var dictSE = {
 	'GPS': {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
 			'7': [TRUE, "MENU"], '14': [FALSE, "FIX"], '15': [TRUE, "INIT"]},
 	'SVY': {'8': [TRUE, "VAP"], '9': [TRUE, "SYST"], '10': [TRUE, "PMGD"], '11': [TRUE, "UDAT"], '12': [TRUE, "F\xC3\x96"], '13': [TRUE, "KONF"],
-			'5': [TRUE, "F\xC3\x96ST"], '6': [TRUE, "VISA"], '7': [TRUE, "MENU"], '14': [TRUE, "SKAL"], '15': [TRUE, "RMAX"], '16': [TRUE, "HMAX"]},
+			'5': [TRUE, "F\xC3\x96ST"], '6': [FALSE, "VISA"], '7': [TRUE, "MENU"], '14': [TRUE, "SKAL"], '15': [TRUE, "RMAX"], '16': [TRUE, "HMAX"]},
 };
 
 #ÅPOL = Return to base polygon (RPOL)
@@ -301,7 +285,7 @@ var dictEN = {
 	'HORI': {'0': [TRUE, "OFF"], '1': [TRUE, "CLR"], '2': [TRUE, "ON"]},
 	'0':   {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"]},
 	'8':   {'8': [TRUE, "T7L"], '9': [TRUE, "W7L"], '10': [TRUE, "F7L"], '11': [TRUE, "F7R"], '12': [TRUE, "W7R"], '13': [TRUE, "T7R"],
-			'7': [TRUE, "MENU"], '14': [TRUE, "AKAN"], '15': [FALSE, "CLR"], '3': [TRUE, "SEEK"], '17': [TRUE, "MODE"], '18': [TRUE, "MODE"], '19': [TRUE, "SEEK"], '20': [TRUE, "STA"], '2': [TRUE, "CAGE"]},
+			'7': [TRUE, "MENU"], '14': [TRUE, "AKAN"], '15': [TRUE, "CLR"], '3': [TRUE, "SEEK"], '17': [TRUE, "MODE"], '18': [TRUE, "MODE"], '19': [TRUE, "SEEK"], '20': [TRUE, "STA"], '2': [TRUE, "CAGE"]},
     '9':   {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
 	 		'1': [TRUE, "OFF"], '2': [TRUE, "DL"], '3': [TRUE, "OPT"], '4': [TRUE, "S"], '5': [TRUE, "MPOL"], '6': [TRUE, "TRAP"], '7': [TRUE, "MENU"],
 	 		'14': [TRUE, "FGHT"], '15': [FALSE, "ACRV"],'16': [TRUE, "RPOL"], '17': [TRUE, "LR"], '18': [TRUE, "LT"], '19': [TRUE, "LS"],'20': [TRUE, "L"]},
@@ -311,7 +295,7 @@ var dictEN = {
 	'10':  {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
 			'3': [TRUE, "EMAP"], '4': [TRUE, "EMAP"], '6': [TRUE, "SCAL"], '7': [TRUE, "MENU"], '14': [TRUE, "AAA"], '15': [TRUE, "AAA"], '16': [TRUE, "TIME"],
 			'17': [TRUE, "HORI"], '18': [TRUE, "CURS"], '19': [TRUE, "DAY"]},
-	'11':  {'2': [TRUE, "INS"], '3': [TRUE, "ADD"], '5': [TRUE, "DEL"], # unauthentic as this
+	'11':  {'2': [TRUE, "INS"], '3': [TRUE, "ADD"],# '5': [TRUE, "DEL"], # unauthentic as this
 		    '8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
 			'4': [TRUE, "EDIT"], '6': [TRUE, "EDIT"], '7': [TRUE, "MENU"], '14': [TRUE, "EDIT"], '15': [TRUE, "RPOL"], '16': [TRUE, "EDIT"],
 			'17': [TRUE, "MPOL"], '18': [TRUE, "EDIT"], '19': [TRUE, "MYPS"], '20': [TRUE, "MMAN"]},
@@ -322,7 +306,7 @@ var dictEN = {
 	'GPS': {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
 			'7': [TRUE, "MENU"], '14': [FALSE, "FIX"], '15': [TRUE, "INIT"]},
 	'SIDV': {'8': [TRUE, "WEAP"], '9': [TRUE, "SYST"], '10': [TRUE, "DISP"], '11': [TRUE, "MSDA"], '12': [TRUE, "FAIL"], '13': [TRUE, "CONF"],
-			'5': [TRUE, "WIN"], '6': [TRUE, "SHOW"], '7': [TRUE, "MENU"], '14': [TRUE, "SCAL"], '15': [TRUE, "RMAX"], '16': [TRUE, "AMAX"]},
+			'5': [TRUE, "WIN"], '6': [FALSE, "SHOW"], '7': [TRUE, "MENU"], '14': [TRUE, "SCAL"], '15': [TRUE, "RMAX"], '16': [TRUE, "AMAX"]},
 };
 
 var edgeButtonsStruct = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
@@ -371,6 +355,11 @@ var TI = {
 		me.rootRealCenter = root.createChild("group")
 			.setTranslation(width/2,height/2)
 			.set("z-index", 10);
+			
+		me.gridGroup = me.mapCenter.createChild("group")
+			.set("z-index", 24);
+		me.gridGroupText = me.mapCenter.createChild("group")
+			.set("z-index", 25);
 
 		# map scale
 		me.mapScaleTickPosX = width*0.975/2;
@@ -380,82 +369,82 @@ var TI = {
 		me.mapScale.createChild("path")
 			.moveTo(me.mapScaleTickPosX, height)
 			.vert(-height*2)
-			.setColor(rWhite,gWhite,bWhite, a)
+			.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
 		me.mapScaleTick0 = me.mapScale.createChild("path")
 			.moveTo(me.mapScaleTickPosX, 0)
 			.horiz(-width*0.025/2)
-			.setColor(rWhite,gWhite,bWhite, a)
+			.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
 		me.mapScaleTick0Txt = me.mapScale.createChild("text")
     		.setText("0")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-center")
     		.setTranslation(me.mapScaleTickPosTxtX, 0)
     		.setFontSize(15, 1);
     	me.mapScaleTick1 = me.mapScale.createChild("path")
 			.moveTo(me.mapScaleTickPosX, 0)
 			.horiz(-width*0.025/2)
-			.setColor(rWhite,gWhite,bWhite, a)
+			.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
 		me.mapScaleTick1Txt = me.mapScale.createChild("text")
     		.setText("50")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-center")
     		.setTranslation(me.mapScaleTickPosTxtX, -height/4)
     		.setFontSize(15, 1);
     	me.mapScaleTick2 = me.mapScale.createChild("path")
 			.moveTo(me.mapScaleTickPosX, 0)
 			.horiz(-width*0.025/2)
-			.setColor(rWhite,gWhite,bWhite, a)
+			.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
 		me.mapScaleTick2Txt = me.mapScale.createChild("text")
     		.setText("100")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-center")
     		.setTranslation(me.mapScaleTickPosTxtX, -height/2)
     		.setFontSize(15, 1);
     	me.mapScaleTick3 = me.mapScale.createChild("path")
 			.moveTo(me.mapScaleTickPosX, 0)
 			.horiz(-width*0.025/2)
-			.setColor(rWhite,gWhite,bWhite, a)
+			.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
 		me.mapScaleTick3Txt = me.mapScale.createChild("text")
     		.setText("150")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-center")
     		.setTranslation(me.mapScaleTickPosTxtX, -height/4)
     		.setFontSize(15, 1);
     	me.mapScaleTickM1 = me.mapScale.createChild("path")
 			.moveTo(me.mapScaleTickPosX, 0)
 			.horiz(-width*0.025/2)
-			.setColor(rWhite,gWhite,bWhite, a)
+			.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
 		me.mapScaleTickM1Txt = me.mapScale.createChild("text")
     		.setText("-50")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-center")
     		.setTranslation(me.mapScaleTickPosTxtX, -height/4)
     		.setFontSize(15, 1);
     	me.mapScaleTickM2 = me.mapScale.createChild("path")
 			.moveTo(me.mapScaleTickPosX, 0)
 			.horiz(-width*0.025/2)
-			.setColor(rWhite,gWhite,bWhite, a)
+			.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
 		me.mapScaleTickM2Txt = me.mapScale.createChild("text")
     		.setText("-100")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-center")
     		.setTranslation(me.mapScaleTickPosTxtX, -height/2)
     		.setFontSize(15, 1);
     	me.mapScaleTickM3 = me.mapScale.createChild("path")
 			.moveTo(me.mapScaleTickPosX, 0)
 			.horiz(-width*0.025/2)
-			.setColor(rWhite,gWhite,bWhite, a)
+			.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
 		me.mapScaleTickM3Txt = me.mapScale.createChild("text")
     		.setText("-150")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-center")
     		.setTranslation(me.mapScaleTickPosTxtX, -height/4)
     		.setFontSize(15, 1);
@@ -468,7 +457,7 @@ var TI = {
 		me.navBugs.createChild("path")
 		      .moveTo( width/2,  0)
 		      .vert(7.5*MM2TEX)
-		      .setColor(rWhite,gWhite,bWhite, a)
+		      .setColor(COLOR_WHITE)
 		      .setStrokeLineWidth(w)
 		      .set("z-index", 5);
 		# commanded direction of travel indicator
@@ -479,7 +468,7 @@ var TI = {
 		      .vert(12*MM2TEX)
 		      .moveTo(2.5*MM2TEX,  6*MM2TEX)
 		      .vert(9*MM2TEX)
-		      .setColor(rWhite,gWhite,bWhite, a)
+		      .setColor(COLOR_WHITE)
 		      .setStrokeLineWidth(w)
 		      .set("z-index", 5);
 
@@ -489,7 +478,7 @@ var TI = {
 		      .lineTo( 0,         0*MM2TEX)
 		      .lineTo( 5*MM2TEX, 15*MM2TEX)
 		      .lineTo(-5*MM2TEX, 15*MM2TEX)
-		      .setColor(rWhite,gWhite,bWhite, a)
+		      .setColor(COLOR_WHITE)
 		      .set("z-index", 10)
 		      .setStrokeLineWidth(w);
 		me.selfSymbolGPS = me.rootCenter.createChild("path")
@@ -497,8 +486,8 @@ var TI = {
 		      .lineTo( 0,         0*MM2TEX)
 		      .lineTo( 5*MM2TEX, 15*MM2TEX)
 		      .lineTo(-5*MM2TEX, 15*MM2TEX)
-		      .setColor(rWhite,gWhite,bWhite, a)
-		      .setColorFill(rWhite,gWhite,bWhite)
+		      .setColor(COLOR_WHITE)
+		      .setColorFill(COLOR_WHITE)
 		      .set("z-index", 10)
 		      .setStrokeLineWidth(w);
 		me.selfVectorG = me.rootCenter.createChild("group")
@@ -508,7 +497,7 @@ var TI = {
 			  .set("z-index", 10)
 			  .moveTo(0,  0)
 			  .lineTo(0, -1*MM2TEX)
-			  .setColor(rWhite,gWhite,bWhite, a)
+			  .setColor(COLOR_WHITE)
 		      .setStrokeLineWidth(w);
 
 		me.ppGrp = me.rootCenter.createChild("group")
@@ -529,7 +518,7 @@ var TI = {
 		var vector = grp2.createChild("path")
 		  .moveTo(0,  0)
 		  .lineTo(0, -1*MM2TEX)
-		  .setColor(rYellow,gYellow,bYellow, a)
+		  .setColor(COLOR_YELLOW)
 	      .setStrokeLineWidth(w);
 		var tri = grp.createChild("path")
 	       .moveTo(-7.5, 7.5)
@@ -538,7 +527,7 @@ var TI = {
            .moveTo(-3.75, 11.25)
            .arcSmallCW(3.75, 3.75, 0, 7.5, 0)
            .arcSmallCW(3.75, 3.75, 0, -7.5, 0)
-	       .setColor(rYellow,gYellow,bYellow, a)
+	       .setColor(COLOR_YELLOW)
 	       .setStrokeLineWidth(w);
 	    me.rrSymbol = me.radar_group.createChild("path")
 	       .moveTo(-15, 7.5)
@@ -559,7 +548,7 @@ var TI = {
 			var vector = grp2.createChild("path")
 			  .moveTo(0,  0)
 			  .lineTo(0, -1*MM2TEX)
-			  .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
+			  .setColor(i!=0?COLOR_YELLOW:COLOR_RED)
 		      .setStrokeLineWidth(w);
 			var tri = grp.createChild("path")
 		      .moveTo(-5*MM2TEX, 15*MM2TEX)
@@ -568,7 +557,7 @@ var TI = {
 		      .lineTo( 0,         0*MM2TEX)
 		      .moveTo(-5*MM2TEX, 15*MM2TEX)
 		      .lineTo( 5*MM2TEX, 15*MM2TEX)
-		      .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
+		      .setColor(i!=0?COLOR_YELLOW:COLOR_RED)
 		      .setStrokeLineWidth(w);
 		    append(me.echoesAircraft, grp);
 		    append(me.echoesAircraftTri, tri);
@@ -591,7 +580,7 @@ var TI = {
 		var vectorS = grpS2.createChild("path")
 		  .moveTo(0,  0)
 		  .lineTo(0, -1*MM2TEX)
-		  .setColor(rYellow,gYellow,bYellow, a)
+		  .setColor(COLOR_YELLOW)
 	      .setStrokeLineWidth(w);
 		var tri = grpS.createChild("path")
 	       .moveTo(-7.5, 7.5)
@@ -600,7 +589,7 @@ var TI = {
            .moveTo(-3.75, 11.25)
            .arcSmallCW(3.75, 3.75, 0, 7.5, 0)
            .arcSmallCW(3.75, 3.75, 0, -7.5, 0)
-	       .setColor(rYellow,gYellow,bYellow, a)
+	       .setColor(COLOR_YELLOW)
 	       .setStrokeLineWidth(w);
 	    append(me.echoesAircraftSvy, grpS);
 	    append(me.echoesAircraftSvyTri, tri);
@@ -611,7 +600,7 @@ var TI = {
 			var vector = grp.createChild("path")
 			  .moveTo(0,  0)
 			  .lineTo(0, -1*MM2TEX)
-			  .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
+			  .setColor(i!=0?COLOR_YELLOW:COLOR_RED)
 		      .setStrokeLineWidth(w);
 			var tri = grp.createChild("path")
 		      .moveTo(-5*MM2TEX, 15*MM2TEX)
@@ -620,7 +609,7 @@ var TI = {
 		      .lineTo( 0,         0*MM2TEX)
 		      .moveTo(-5*MM2TEX, 15*MM2TEX)
 		      .lineTo( 5*MM2TEX, 15*MM2TEX)
-		      .setColor(i!=0?rYellow:rRed,i!=0?gYellow:gRed,i!=0?bYellow:bRed, a)
+		      .setColor(i!=0?COLOR_YELLOW:COLOR_RED)
 		      .setStrokeLineWidth(w);
 		    append(me.echoesAircraftSvy, grp);
 		    append(me.echoesAircraftSvyTri, tri);
@@ -633,26 +622,26 @@ var TI = {
 		      .lineTo( 0,       0*MM2TEX)
 		      .moveTo(-5*MM2TEX,  15*MM2TEX)
 		      .lineTo( 5*MM2TEX,  15*MM2TEX)
-		      .setColor(rWhite,gWhite,bWhite, a)
+		      .setColor(COLOR_WHITE)
 		      .set("z-index", 10)
 		      .setStrokeLineWidth(w);
 		me.selfVectorSvy = me.svy_grp.createChild("path")
 			  .moveTo(0,  0)
 			  .set("z-index", 10)
 			  .lineTo(1*MM2TEX, 0)
-			  .setColor(rWhite,gWhite,bWhite, a)
+			  .setColor(COLOR_WHITE)
 		      .setStrokeLineWidth(w);
 		# SVY coordinate text
 		me.textSvyY = me.svy_grp.createChild("text")
     		.setText("40 KM")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("left-bottom")
     		.setTranslation(0, 0)
     		.set("z-index", 7)
     		.setFontSize(13, 1);
     	me.textSvyX = me.svy_grp.createChild("text")
     		.setText("120 KM")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-top")
     		.setTranslation(0, 0)
     		.set("z-index", 7)
@@ -667,18 +656,18 @@ var TI = {
 	               .lineTo(0, -1)
 	               .setStrokeLineWidth(w*1.5)
 	               .setStrokeLineCap("butt")
-	               .setColor(rTyrk,gTyrk,bTyrk, a)
+	               .setColor(COLOR_TYRK)
 	               .hide();
 	    me.runway_line = me.dest.createChild("path")
 	               .moveTo(0, 0)
 	               .lineTo(0, 1)
 	               .setStrokeLineWidth(w*4.5)
 	               .setStrokeLineCap("butt")
-	               .setColor(rWhite,gWhite,bWhite, a)
+	               .setColor(COLOR_WHITE)
 	               .hide();
 	    me.runway_name = me.dest.createChild("text")
     		.setText("32")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-center")
     		.setTranslation(25, 0)
     		.setFontSize(15, 1);
@@ -687,14 +676,14 @@ var TI = {
 	               .arcSmallCW(12.5, 12.5, 0, 25, 0)
 	               .arcSmallCW(12.5, 12.5, 0, -25, 0)
 	               .setStrokeLineWidth(w)
-	               .setColor(rTyrk,gTyrk,bTyrk, a);
+	               .setColor(COLOR_TYRK);
 	    me.approach_circle = me.rootCenter.createChild("path")
 	    			.set("z-index", 7)
 	               .moveTo(-100, 0)
 	               .arcSmallCW(100, 100, 0, 200, 0)
 	               .arcSmallCW(100, 100, 0, -200, 0)
 	               .setStrokeLineWidth(w*1.5)
-	               .setColor(rTyrk,gTyrk,bTyrk, a);
+	               .setColor(COLOR_TYRK);
 
 	    # threat circles
 	    me.threats = [];
@@ -704,33 +693,15 @@ var TI = {
 	               .arcSmallCW(100, 100, 0, 200, 0)
 	               .arcSmallCW(100, 100, 0, -200, 0)
 	               .setStrokeLineWidth(w)
-	               .setColor(rRed,gRed,bRed, a));
+	               .setColor(COLOR_RED));
 	    }
 
 	    # route symbols
 	    me.steerpoint = [];
 	    me.steerpointText = [];
 	    me.steerpointSymbol = [];
-	    for (var i = 0; i < maxSteers*7; i += 1) {#6 for routes, 1 for areas = 7 multiplier, maxSteers = 48
-       		var stGrp = me.rootCenter.createChild("group");
-       		append(me.steerpointText, stGrp.createChild("text")
-	    		.setText("B2")
-	    		.setColor(rWhite,gWhite,bWhite, a)
-	    		.setAlignment("right-center")
-	    		.setTranslation(-15*MM2TEX, 0)
-	    		.set("z-index", 6)
-	    		.setFontSize(13, 1));
-    		append(me.steerpointSymbol, stGrp.createChild("path")
-    		   .set("z-index", 6)
-               .moveTo(-10*MM2TEX, 0)
-               .lineTo(0, -15*MM2TEX)
-               .lineTo(10*MM2TEX, 0)
-               .lineTo(0, 15*MM2TEX)
-               .lineTo(-10*MM2TEX, 0)
-               .setStrokeLineWidth(w)
-               .setColor(rDTyrk,gDTyrk,bDTyrk, a));
-			append(me.steerpoint, stGrp);
-	    }
+	    me.steerPointMax = -1;
+	    
 	    me.rrSymbolS = me.rootCenter.createChild("path")
 	       .moveTo(-15, 0)
            .arcSmallCW(15, 15, 0, 30, 0)
@@ -752,7 +723,7 @@ var TI = {
 			var vector = grp2.createChild("path")
 			  .moveTo(0,  0)
 			  .lineTo(0, -1*MM2TEX)
-			  .setColor(rWhite,gWhite,bWhite, a)
+			  .setColor(COLOR_WHITE)
 		      .setStrokeLineWidth(w);
 			grp.createChild("path")
 		      .moveTo(-2.5*MM2TEX,  5*MM2TEX)
@@ -761,7 +732,7 @@ var TI = {
 		      .lineTo(   0,       -10*MM2TEX)
 		      .moveTo(-2.5*MM2TEX,  5*MM2TEX)
 		      .lineTo( 2.5*MM2TEX,  5*MM2TEX)
-		      .setColor(rWhite,gWhite,bWhite, a)
+		      .setColor(COLOR_WHITE)
 		      .setStrokeLineWidth(w);
 		    append(me.missiles, grp);
 		    append(me.missilesVector, vector);
@@ -774,27 +745,28 @@ var TI = {
 		      .horiz(            20*MM2TEX)
 		      .vert(             20*MM2TEX)
 		      .horiz(           -20*MM2TEX)
-		      .setColor(rTyrk,gTyrk,bTyrk, a)
+		      .setColor(COLOR_TYRK)
 		      .setStrokeLineWidth(w);
 
 		me.radar_limit_grp = me.radar_group.createChild("group");
 
+		var csize = 24;
 		me.cursor = root.createChild("path")# is off set 1 pixel to right
-				.moveTo(-24*MM2TEX,0)
-				.horiz(20*MM2TEX)
+				.moveTo(-csize*MM2TEX,0)
+				.horiz((csize-4)*MM2TEX)
 				.moveTo(0,0)
 				.horiz(1*MM2TEX)
 				.moveTo(6*MM2TEX,0)
-				.horiz(20*MM2TEX)
-				.moveTo(1*MM2TEX,-25*MM2TEX)
-				.vert(20*MM2TEX)
+				.horiz((csize-4)*MM2TEX)
+				.moveTo(1*MM2TEX,-(csize+1)*MM2TEX)
+				.vert((csize-4)*MM2TEX)
 				.moveTo(1*MM2TEX,5*MM2TEX)
-				.vert(20*MM2TEX)
-				.setStrokeLineWidth(w*3)
+				.vert((csize-4)*MM2TEX)
+				.setStrokeLineWidth(w*2)
 				.setTranslation(50*MM2TEX, height*0.5)
-				.setStrokeLineCap("round")
+				.setStrokeLineCap("butt")
 				.set("z-index", 25)#max
-		        .setColor(rWhite,gWhite,bWhite, a);
+		        .setColor(COLOR_WHITE);
 
 		# bulls eye
 
@@ -838,13 +810,13 @@ var TI = {
 
 		me.beTextDesc = me.beTextField.createChild("text")
     		.setText("B-E")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(beStartx+width*beW*0.1, beStarty-w)
     		.setFontSize(15, 1);
     	me.beText = me.beTextField.createChild("text")
     		.setText("190  A132")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(beStartx+width*beW*0.6, beStarty-w)
     		.setFontSize(15, 1);
@@ -871,41 +843,41 @@ var TI = {
 		      .horiz(            width*tgtW)
 		      .moveTo(tgtStartx+width*tgtW*0.2, tgtStarty)
 		      .vert(            -height*tgtH)
-		      .setColor(rWhite,gWhite,bWhite, a)
+		      .setColor(COLOR_WHITE)
 		      .setStrokeLineWidth(w);
 		me.tgtTextDistDesc = me.tgtTextField.createChild("text")
     		.setText("A")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(tgtStartx+width*tgtW*0.1, tgtStarty-height*tgtH*0.66-w)
     		.setFontSize(15, 1);
     	me.tgtTextDist = me.tgtTextField.createChild("text")
     		.setText("74")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(tgtStartx+width*tgtW*0.60, tgtStarty-height*tgtH*0.66-w)
     		.setFontSize(15, 1);
     	me.tgtTextHeiDesc = me.tgtTextField.createChild("text")
     		.setText("H")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(tgtStartx+width*tgtW*0.1, tgtStarty-height*tgtH*0.33-w)
     		.setFontSize(15, 1);
     	me.tgtTextHei = me.tgtTextField.createChild("text")
     		.setText("4700")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(tgtStartx+width*tgtW*0.60, tgtStarty-height*tgtH*0.33-w)
     		.setFontSize(15, 1);
     	me.tgtTextSpdDesc = me.tgtTextField.createChild("text")
     		.setText("M")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(tgtStartx+width*tgtW*0.1, tgtStarty-height*tgtH*0.0-w)
     		.setFontSize(15, 1);
     	me.tgtTextSpd = me.tgtTextField.createChild("text")
     		.setText("0,80")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(tgtStartx+width*tgtW*0.60, tgtStarty-height*tgtH*0.0-w)
     		.setFontSize(15, 1);
@@ -934,7 +906,7 @@ var TI = {
 		      .horiz(            width*me.wpW)
 		      .moveTo(me.wpStartx+width*me.wpW*0.3, me.wpStarty)
 		      .vert(            -height*me.wpH)
-		      .setColor(rWhite,gWhite,bWhite, a)
+		      .setColor(COLOR_WHITE)
 		      .setStrokeLineWidth(w);
 		me.wpTextFrame1    = me.wpTextField.createChild("path")
 			.moveTo(me.wpStartx,  me.wpStarty-height*me.wpH)#above bottom text field and next to fast menu sub boxes
@@ -943,77 +915,77 @@ var TI = {
 		      .vert(             height*me.wpH*0.2)
 		      .moveTo(me.wpStartx+width*me.wpW*0.3, me.wpStarty-height*me.wpH)
 		      .vert(            -height*me.wpH*0.2)
-		      .setColor(rWhite,gWhite,bWhite, a)
+		      .setColor(COLOR_WHITE)
 		      .setStrokeLineWidth(w);
 		me.wpText2Desc = me.wpTextField.createChild("text")
     		.setText("BEN")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.15, me.wpStarty-height*me.wpH*0.8-w)
     		.setFontSize(15, 1);
     	me.wpText2 = me.wpTextField.createChild("text")
     		.setText("1 AV 4")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.65, me.wpStarty-height*me.wpH*0.8-w)
     		.setFontSize(15, 1);
     	me.wpText3Desc = me.wpTextField.createChild("text")
     		.setText("B")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.15, me.wpStarty-height*me.wpH*0.6-w)
     		.setFontSize(15, 1);
     	me.wpText3 = me.wpTextField.createChild("text")
     		.setText("0 -> 1")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.65, me.wpStarty-height*me.wpH*0.6-w)
     		.setFontSize(15, 1);
     	me.wpText4Desc = me.wpTextField.createChild("text")
     		.setText("H")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.15, me.wpStarty-height*me.wpH*0.4-w)
     		.setFontSize(15, 1);
     	me.wpText4 = me.wpTextField.createChild("text")
     		.setText("10000")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.65, me.wpStarty-height*me.wpH*0.4-w)
     		.setFontSize(15, 1);
     	me.wpText5Desc = me.wpTextField.createChild("text")
     		.setText("M")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.15, me.wpStarty-height*me.wpH*0.2-w)
     		.setFontSize(15, 1);
     	me.wpText5 = me.wpTextField.createChild("text")
     		.setText("300")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.65, me.wpStarty-height*me.wpH*0.2-w)
     		.setFontSize(15, 1);
     	me.wpText6Desc = me.wpTextField.createChild("text")
     		.setText("ETA")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.15, me.wpStarty-height*me.wpH*0.0-w)
     		.setFontSize(15, 1);
     	me.wpText6 = me.wpTextField.createChild("text")
     		.setText("3:43")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.65, me.wpStarty-height*me.wpH*0.0-w)
     		.setFontSize(15, 1);
     	me.wpText1Desc = me.wpTextField.createChild("text")
     		.setText("TOP")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.15, me.wpStarty-height*me.wpH*1.0-w)
     		.setFontSize(15, 1);
     	me.wpText1 = me.wpTextField.createChild("text")
     		.setText("BLABLA")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(me.wpStartx+width*me.wpW*0.65, me.wpStarty-height*me.wpH*1.0-w)
     		.setFontSize(15, 1);
@@ -1023,31 +995,31 @@ var TI = {
 		me.bottom_text_grp = root.createChild("group");
 		me.textBArmType = me.bottom_text_grp.createChild("text")
     		.setText("74")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("left-top")
     		.setTranslation(0, height-height*0.09)
     		.setFontSize(35, 1);
     	me.textBArmAmmo = me.bottom_text_grp.createChild("text")
     		.setText("71")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(25, height-height*0.01)
     		.setFontSize(15, 1);
     	me.textBTactType1 = me.bottom_text_grp.createChild("text")
     		.setText("J")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-top")
     		.setTranslation(55, height-height*0.08)
     		.setFontSize(13, 1);
     	me.textBTactType2 = me.bottom_text_grp.createChild("text")
     		.setText("K")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-top")
     		.setTranslation(55, height-height*0.08+15)
     		.setFontSize(13, 1);
     	me.textBTactType3 = me.bottom_text_grp.createChild("text")
     		.setText("T")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-top")
     		.setTranslation(55, height-height*0.08+30)
     		.setFontSize(13, 1);
@@ -1057,17 +1029,17 @@ var TI = {
     		.vert(45)
     		.horiz(-12)
     		.vert(-45)
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
     	me.textBBase = me.bottom_text_grp.createChild("text")
     		.setText("9040T")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("center-bottom")
     		.setTranslation(80, height-height*0.01)
     		.setFontSize(10, 1);
     	me.textBlink = me.bottom_text_grp.createChild("text")
     		.setText("DL")
-    		.setColor(rGrey,gGrey,bGrey, a)
+    		.setColor(COLOR_GREY)
     		.setAlignment("center-top")
     		.setTranslation(72, height-height*0.08)
     		.set("z-index", 10)
@@ -1078,7 +1050,7 @@ var TI = {
     		.vert(12)
     		.horiz(-16)
     		.vert(-12)
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
 		me.textBLinkFrame2 = me.bottom_text_grp.createChild("path")
     		.moveTo(65, height-height*0.085)
@@ -1086,13 +1058,13 @@ var TI = {
     		.vert(12)
     		.horiz(-16)
     		.vert(-12)
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.set("z-index", 1)
-		    .setColorFill(rGreen, gGreen, bGreen, a)
+		    .setColorFill(COLOR_GREEN)
 		    .setStrokeLineWidth(w);
 		me.textBerror = me.bottom_text_grp.createChild("text")
     		.setText("F")
-    		.setColor(rGrey,gGrey,bGrey, a)
+    		.setColor(COLOR_GREY)
     		.setAlignment("center-top")
     		.setTranslation(89, height-height*0.08)
     		.set("z-index", 10)
@@ -1103,7 +1075,7 @@ var TI = {
     		.vert(12)
     		.horiz(-10)
     		.vert(-12)
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
 		    .setStrokeLineWidth(w);
 		me.textBerrorFrame2 = me.bottom_text_grp.createChild("path")
     		.moveTo(85, height-height*0.085)
@@ -1111,38 +1083,38 @@ var TI = {
     		.vert(12)
     		.horiz(-10)
     		.vert(-12)
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.hide()
     		.set("z-index", 1)
-		    .setColorFill(rGreen, gGreen, bGreen, a)
+		    .setColorFill(COLOR_GREEN)
 		    .setStrokeLineWidth(w);
     	me.textBMode = me.bottom_text_grp.createChild("text")
     		.setText("LF")
-    		.setColor(rTyrk,gTyrk,bTyrk, a)
+    		.setColor(COLOR_TYRK)
     		.setAlignment("center-center")
     		.setTranslation(125, height-height*0.05)
     		.setFontSize(40, 1);
     	me.textBDistN = me.bottom_text_grp.createChild("text")
     		.setText("A")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-bottom")
     		.setTranslation(width/2, height-height*0.015)
     		.setFontSize(20, 1);
     	me.textBDist = me.bottom_text_grp.createChild("text")
     		.setText("11")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("left-bottom")
     		.setTranslation(width/2, height-height*0.015)
     		.setFontSize(27, 1);
     	me.textBAlpha = me.bottom_text_grp.createChild("text")
     		.setText("ALFA 20,5")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-bottom")
     		.setTranslation(width, height-height*0.01)
     		.setFontSize(16, 1);
     	me.textBWeight = me.bottom_text_grp.createChild("text")
     		.setText("VIKT 13,4")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-top")
     		.setTranslation(width, height-height*0.085)
     		.setFontSize(16, 1);
@@ -1153,7 +1125,7 @@ var TI = {
     		.hide();
     	me.errorList = me.logRoot.createChild("text")
     		.setText("..OKAY..\n..OKAY..")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("left-top")
     		.setTranslation(0, 20)
     		.setFontSize(10, 1);
@@ -1173,7 +1145,7 @@ var TI = {
 			append(me.menuButton,
 				me.menuFastRoot.createChild("text")
     				.setText("M\nE\nN\nY")
-    				.setColor(rWhite,gWhite,bWhite, a)
+    				.setColor(COLOR_WHITE)
     				.setAlignment("left-center")
     				.setTranslation(width*0.025, height*0.09+(i-1)*height*0.11)
     				.setFontSize(12.5, 1));
@@ -1181,7 +1153,7 @@ var TI = {
 		for(var i = 8; i <= 13; i+=1) {
 			append(me.menuButton, me.menuMainRoot.createChild("text")
     			.setText("MAIN")
-    			.setColor(rWhite,gWhite,bWhite, a)
+    			.setColor(COLOR_WHITE)
     			.setAlignment("center-bottom")
     			.setPadding(0,0,0,0)
     			.setTranslation(width*0.135+(i-8)*width*0.1475, height)
@@ -1191,7 +1163,7 @@ var TI = {
 			append(me.menuButton,
 				me.menuFastRoot.createChild("text")
     				.setText("M\nE\nN\nY")
-    				.setColor(rWhite,gWhite,bWhite, a)
+    				.setColor(COLOR_WHITE)
     				.setAlignment("right-center")
     				.setTranslation(width*0.975, height*0.09+(6-(i-14))*height*0.11)
     				.setFontSize(12.5, 1));
@@ -1208,7 +1180,7 @@ var TI = {
     				.vert(6.25*8)
     				.horiz(-6.25*2)
     				.vert(-6.25*8)
-    				.setColor(rWhite,gWhite,bWhite, a)
+    				.setColor(COLOR_WHITE)
 		    		.setStrokeLineWidth(w));
 		}
 		for(var i = 8; i <= 13; i+=1) {
@@ -1218,7 +1190,7 @@ var TI = {
     				.vert(-6.25*2)
     				.horiz(-6.25*6)
     				.vert(6.25*2)
-    				.setColor(rWhite,gWhite,bWhite, a)
+    				.setColor(COLOR_WHITE)
 		    		.setStrokeLineWidth(w));
 		}
     	for(var i = 14; i <= 20; i+=1) {
@@ -1229,7 +1201,7 @@ var TI = {
     				.vert(6.25*8)
     				.horiz(6.25*2)
     				.vert(-6.25*8)
-    				.setColor(rWhite,gWhite,bWhite, a)
+    				.setColor(COLOR_WHITE)
 		    		.setStrokeLineWidth(w));
 		}
 
@@ -1240,8 +1212,8 @@ var TI = {
 			append(me.menuButtonSub,
 				me.menuFastRoot.createChild("text")
     				.setText("M\nE\nN\nY")
-    				.setColor(rWhite,gWhite,bWhite, a)
-    				.setColorFill(rGrey,gGrey,bGrey, a)
+    				.setColor(COLOR_WHITE)
+    				.setColorFill(COLOR_GREY)
     				.setAlignment("left-center")
     				.setTranslation(width*0.060, height*0.09+(i-1)*height*0.11)
     				.setFontSize(12.5, 1));
@@ -1253,8 +1225,8 @@ var TI = {
 			append(me.menuButtonSub,
 				me.menuFastRoot.createChild("text")
     				.setText("M\nE\nN\nY")
-    				.setColor(rWhite,gWhite,bWhite, a)
-    				.setColorFill(rGrey,gGrey,bGrey, a)
+    				.setColor(COLOR_WHITE)
+    				.setColorFill(COLOR_GREY)
     				.setAlignment("right-center")
     				.setTranslation(width*0.940, height*0.09+(6-(i-14))*height*0.11)
     				.setFontSize(12.5, 1));
@@ -1271,7 +1243,7 @@ var TI = {
     				.vert(6.25*8)
     				.horiz(-6.25*2)
     				.vert(-6.25*8)
-    				.setColor(rWhite,gWhite,bWhite, a)
+    				.setColor(COLOR_WHITE)
 		    		.setStrokeLineWidth(w));
 		}
 		for(var i = 8; i <= 13; i+=1) {
@@ -1285,7 +1257,7 @@ var TI = {
     				.vert(6.25*8)
     				.horiz(6.25*2)
     				.vert(-6.25*8)
-    				.setColor(rWhite,gWhite,bWhite, a)
+    				.setColor(COLOR_WHITE)
 		    		.setStrokeLineWidth(w));
 		}
 
@@ -1303,11 +1275,11 @@ var TI = {
 	               .arcSmallCW(20, 20, 0, 40, 0)
 	               .arcSmallCW(20, 20, 0, -40, 0)
 	               .setStrokeLineWidth(w)
-	               .setColor(rTyrk,gTyrk,bTyrk, a));
+	               .setColor(COLOR_TYRK));
 			append(me.baseLargeText,
 				me.base_grp.createChild("text")
     				.setText("ICAO")
-    				.setColor(rTyrk,gTyrk,bTyrk, a)
+    				.setColor(COLOR_TYRK)
     				.setAlignment("center-center")
     				.setTranslation(0,0)
     				.hide()
@@ -1317,66 +1289,67 @@ var TI = {
 		me.ecm_grp = me.rootCenter.createChild("group")
 			.set("z-index", 0);
 		me.ecmRadius = 50;
-		me.ecm12 = me.ecm_grp.createChild("path")
-			.moveTo(circlePosH(-14, me.ecmRadius)[0], circlePosH(-14, me.ecmRadius)[1])
-	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(14, me.ecmRadius)[0]-circlePosH(-14, me.ecmRadius)[0], circlePosH(14, me.ecmRadius)[1]-circlePosH(-14, me.ecmRadius)[1])
-	        .setStrokeLineWidth(w*10)
-	        .setColor(rGreen,gGreen,bGreen, a);
-	    me.ecm1 = me.ecm_grp.createChild("path")
+		me.ecm = [];
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(16, me.ecmRadius)[0], circlePosH(16, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(44, me.ecmRadius)[0]-circlePosH(16, me.ecmRadius)[0], circlePosH(44, me.ecmRadius)[1]-circlePosH(16, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rRed,gRed,bRed, a);
-	    me.ecm2 = me.ecm_grp.createChild("path")
+	        .setColor(COLOR_RED));
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(46, me.ecmRadius)[0], circlePosH(46, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(74, me.ecmRadius)[0]-circlePosH(46, me.ecmRadius)[0], circlePosH(74, me.ecmRadius)[1]-circlePosH(46, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rYellow,gYellow,bYellow, a);
-	    me.ecm3 = me.ecm_grp.createChild("path")
+	        .setColor(COLOR_YELLOW));
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(76, me.ecmRadius)[0], circlePosH(76, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(104, me.ecmRadius)[0]-circlePosH(76, me.ecmRadius)[0], circlePosH(104, me.ecmRadius)[1]-circlePosH(76, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rYellow,gYellow,bYellow, a);
-	    me.ecm4 = me.ecm_grp.createChild("path")
+	        .setColor(COLOR_YELLOW));
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(106, me.ecmRadius)[0], circlePosH(106, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(134, me.ecmRadius)[0]-circlePosH(106, me.ecmRadius)[0], circlePosH(134, me.ecmRadius)[1]-circlePosH(106, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rYellow,gYellow,bYellow, a);
-	    me.ecm5 = me.ecm_grp.createChild("path")
+	        .setColor(COLOR_YELLOW));
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(136, me.ecmRadius)[0], circlePosH(136, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(164, me.ecmRadius)[0]-circlePosH(136, me.ecmRadius)[0], circlePosH(164, me.ecmRadius)[1]-circlePosH(136, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rYellow,gYellow,bYellow, a);
-	    me.ecm6 = me.ecm_grp.createChild("path")
+	        .setColor(COLOR_YELLOW));
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(166, me.ecmRadius)[0], circlePosH(166, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(194, me.ecmRadius)[0]-circlePosH(166, me.ecmRadius)[0], circlePosH(194, me.ecmRadius)[1]-circlePosH(166, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rYellow,gYellow,bYellow, a);
-	    me.ecm7 = me.ecm_grp.createChild("path")
+	        .setColor(COLOR_YELLOW));
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(196, me.ecmRadius)[0], circlePosH(196, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(224, me.ecmRadius)[0]-circlePosH(196, me.ecmRadius)[0], circlePosH(224, me.ecmRadius)[1]-circlePosH(196, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rYellow,gYellow,bYellow, a);
-	    me.ecm8 = me.ecm_grp.createChild("path")
+	        .setColor(COLOR_YELLOW));
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(226, me.ecmRadius)[0], circlePosH(226, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(254, me.ecmRadius)[0]-circlePosH(226, me.ecmRadius)[0], circlePosH(254, me.ecmRadius)[1]-circlePosH(226, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rYellow,gYellow,bYellow, a);
-	    me.ecm9 = me.ecm_grp.createChild("path")
+	        .setColor(COLOR_YELLOW));
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(256, me.ecmRadius)[0], circlePosH(256, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(284, me.ecmRadius)[0]-circlePosH(256, me.ecmRadius)[0], circlePosH(284, me.ecmRadius)[1]-circlePosH(256, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rYellow,gYellow,bYellow, a);
-	    me.ecm10 = me.ecm_grp.createChild("path")
+	        .setColor(COLOR_YELLOW));
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(286, me.ecmRadius)[0], circlePosH(286, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(314, me.ecmRadius)[0]-circlePosH(286, me.ecmRadius)[0], circlePosH(314, me.ecmRadius)[1]-circlePosH(286, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rYellow,gYellow,bYellow, a);
-	    me.ecm11 = me.ecm_grp.createChild("path")
+	        .setColor(COLOR_YELLOW));
+	    append(me.ecm, me.ecm_grp.createChild("path")
 			.moveTo(circlePosH(316, me.ecmRadius)[0], circlePosH(316, me.ecmRadius)[1])
 	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(344, me.ecmRadius)[0]-circlePosH(316, me.ecmRadius)[0], circlePosH(344, me.ecmRadius)[1]-circlePosH(316, me.ecmRadius)[1])
 	        .setStrokeLineWidth(w*10)
-	        .setColor(rYellow,gYellow,bYellow, a);
+	        .setColor(COLOR_YELLOW));
+	    append(me.ecm, me.ecm_grp.createChild("path")
+			.moveTo(circlePosH(-14, me.ecmRadius)[0], circlePosH(-14, me.ecmRadius)[1])
+	        .arcSmallCW(me.ecmRadius, me.ecmRadius, 0, circlePosH(14, me.ecmRadius)[0]-circlePosH(-14, me.ecmRadius)[0], circlePosH(14, me.ecmRadius)[1]-circlePosH(-14, me.ecmRadius)[1])
+	        .setStrokeLineWidth(w*10)
+	        .setColor(COLOR_GREEN));
 
 		# small airports
 		me.baseSmallText = [];
@@ -1410,11 +1383,11 @@ var TI = {
 	               .arcSmallCW(15, 15, 0, circlePos(355, 15)[0]-circlePos(320, 15)[0], circlePos(355, 15)[1]-circlePos(320, 15)[1])
 
 	               .setStrokeLineWidth(w)
-	               .setColor(rTyrk,gTyrk,bTyrk, a));
+	               .setColor(COLOR_TYRK));
 			append(me.baseSmallText,
 				me.base_grp.createChild("text")
     				.setText("ICA")
-    				.setColor(rTyrk,gTyrk,bTyrk, a)
+    				.setColor(COLOR_TYRK)
     				.setAlignment("center-center")
     				.setTranslation(0,0)
     				.hide()
@@ -1448,7 +1421,7 @@ var TI = {
 		      .moveTo(w*1, -texel_per_degree*fpi_min)
 		      .lineTo(w*1, -texel_per_degree*fpi_med)
 		      .setStrokeLineWidth(w*2)
-		      .setColor(rGB,gGB,bGB, a);
+		      .setColor(COLOR_GREY_BLUE);
 
 
 		me.horizon_group = me.rootRealCenter.createChild("group");
@@ -1458,13 +1431,13 @@ var TI = {
 		                     .moveTo(-height*0.75, 0)
 		                     .horiz(height*1.5)
 		                     .setStrokeLineWidth(w*2)
-		                     .setColor(rGB,gGB,bGB, a);
+		                     .setColor(COLOR_GREY_BLUE);
 		me.horizon_alt = me.horizon_group2.createChild("text")
 				.setText("????")
 				.setFontSize((25/512)*width, 1.0)
 		        .setAlignment("center-bottom")
 		        .setTranslation(-width*1/3, -w*4)
-		        .setColor(rGB,gGB,bGB, a);
+		        .setColor(COLOR_GREY_BLUE);
 
 		# ground
 		me.ground_grp = me.rootRealCenter.createChild("group");
@@ -1480,7 +1453,7 @@ var TI = {
 				.moveTo(  30*texel_per_degree, 7.5*texel_per_degree)
 				.lineTo(  60*texel_per_degree, 30*texel_per_degree)
 				.setStrokeLineWidth(w*2)
-		        .setColor(rGB,gGB,bGB, a);
+		        .setColor(COLOR_GREY_BLUE);
 
 		# Collision warning arrow
 		me.arr_15  = 5*0.75;
@@ -1492,8 +1465,8 @@ var TI = {
 		me.arrow_trans = me.arrow_group.createTransform();
 		me.arrow =
 		      me.arrow_group.createChild("path")
-		      .setColor(rRed,gRed,bRed, a)
-		      .setColorFill(rRed,gRed,bRed, a)
+		      .setColor(COLOR_RED)
+		      .setColorFill(COLOR_RED)
 		      .moveTo(-me.arr_15*MM2TEX,  me.arr_90*MM2TEX)
 		      .lineTo(-me.arr_15*MM2TEX, -me.arr_90*MM2TEX)
 		      .lineTo(-me.arr_30*MM2TEX, -me.arr_90*MM2TEX)
@@ -1507,14 +1480,14 @@ var TI = {
 		# time
 		me.textTime = root.createChild("text")
     		.setText("h:min:s")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("right-top")
     		.setTranslation(width, 4)
     		.set("z-index", 7)
     		.setFontSize(13, 1);
     	me.textFTime = root.createChild("text")
     		.setText("FTIME h:min")
-    		.setColor(rWhite,gWhite,bWhite, a)
+    		.setColor(COLOR_WHITE)
     		.setAlignment("left-top")
     		.setTranslation(0, 4)
     		.set("z-index", 7)
@@ -1529,13 +1502,10 @@ var TI = {
 			APTgtAgl:             "autopilot/settings/target-agl-ft",
 			APTgtAlt:             "autopilot/settings/target-altitude-ft",
 			heading:              "instrumentation/heading-indicator/indicated-heading-deg",
-			hydrPressure:         "fdm/jsbsim/systems/hydraulics/system1/pressure",
 			rad_alt:              "position/altitude-agl-ft",
 			radarEnabled:         "ja37/hud/tracks-enabled",
 			radarRange:           "instrumentation/radar/range",
-			radarScreenVoltage:   "systems/electrical/outputs/dc-voltage",
 			radarServ:            "instrumentation/radar/serviceable",
-			radarVoltage:         "systems/electrical/outputs/ac-main-voltage",
 			rmActive:             "autopilot/route-manager/active",
 			rmDist:               "autopilot/route-manager/wp/dist",
 			rmId:                 "autopilot/route-manager/wp/id",
@@ -1548,7 +1518,7 @@ var TI = {
 			headTrue:             "orientation/heading-deg",
 			headMagn:             "orientation/heading-magnetic-deg",
 #			twoHz:                "ja37/blink/two-Hz/state",
-			station:          	  "controls/armament/station-select",
+			station:          	  "controls/armament/station-select-custom",
 			roll:             	  "orientation/roll-deg",
 			pitch:             	  "orientation/pitch-deg",
 			units:                "ja37/hud/units-metric",
@@ -1558,10 +1528,8 @@ var TI = {
 			tenHz:            	  "ja37/blink/four-Hz/state",
 			qfeActive:        	  "ja37/displays/qfe-active",
 	        qfeShown:		  	  "ja37/displays/qfe-shown",
-	        station:          	  "controls/armament/station-select",
 	        currentMode:          "ja37/hud/current-mode",
 	        ctrlRadar:        	  "controls/altimeter-radar",
-	        acInstrVolt:      	  "systems/electrical/outputs/ac-instr-voltage",
 	        nav0InRange:      	  "instrumentation/nav[0]/in-range",
 	        fullMenus:            "ja37/displays/show-full-menus",
 	        APLockHeading:    	  "autopilot/locks/heading",
@@ -1589,28 +1557,51 @@ var TI = {
 			ailCmd:               "fdm/jsbsim/fcs/aileron-cmd-norm",
 			trigger:              "controls/armament/trigger",
 			instrNorm:            "controls/lighting/instruments-norm",
+			bullseyeOn:           "ja37/navigation/bulls-eye-defined",
+			bullseyeLat:          "ja37/navigation/bulls-eye-lat",
+			bullseyeLon:          "ja37/navigation/bulls-eye-lon",
       	};
 
       	foreach(var name; keys(ti.input)) {
         	ti.input[name] = props.globals.getNode(ti.input[name], 1);
       	}
-
+      	ti.input["tiLight"] = [];
+      	for (i=0;i<22;i+=1) {
+      		append(ti.input.tiLight, props.globals.getNode("ja37/light/ti"~i,1));
+      	}
+      	
       	ti.setupCanvasSymbols();
-      	ti.day = TRUE;
-      	ti.setupMap();
-
+      	
       	#map
       	ti.lat = ti.input.latitude.getValue();
 		ti.lon = ti.input.longitude.getValue();
       	ti.mapSelfCentered = TRUE;
+      	ti.day = TRUE;
+		ti.ownPosition = 0.25;
+		ti.ownPositionDigital = 2;
+		ti.mapPlaces = CLEANMAP;
+      	ti.setupMap();
 
+      	# radar limit overlay
       	ti.lastRRT = 0;
 		ti.lastRR  = 0;
 		ti.lastZ   = 0;
-
-
+		
+		#grid
+		ti.last_lat = 0;
+		ti.last_lon = 0;
+		ti.last_range = 0;
+		ti.last_result = 0;
+		ti.gridTextO = [];
+		ti.gridTextA = [];
+		ti.gridTextMaxA = -1;
+		ti.gridTextMaxO = -1;
+		
+		# display
 		ti.brightness = 1;
+		ti.active = TRUE;
 
+		# menu system
 		ti.menuShowMain = FALSE;
 		ti.menuShowFast = FALSE;
 		ti.menuMain     = -MAIN_SYSTEMS;
@@ -1624,34 +1615,43 @@ var TI = {
 		ti.trapECM      = FALSE;
 		ti.trapLand     = FALSE;
 		ti.trapAll      = FALSE;
+		ti.upText = FALSE;
+		ti.logPage = 0;
+		ti.off = FALSE;
+		ti.showFullMenus = TRUE;
+		ti.mapshowing = TRUE;
 
-		# SVY
+		# SidVY
 		ti.SVYactive    = FALSE;
 		ti.SVYscale     = SVY_ELKA;
-		ti.SVYrmax      = 120;# 15 -120
-		ti.SVYhmax      = 20;# 5, 10, 20 or 40 KM
+		ti.SVYrmax      = 3;
+		ti.SVYrmaxSE    = [15,30,60, 120];#km
+		ti.SVYrmaxEN    = [8, 16, 32, 64];#nm
+		ti.SVYhmax      = 2;
+		ti.SVYhmaxSE    = [5, 10, 20, 40];#km
+		ti.SVYhmaxEN    = [15,30,50, 100];#kFT
 		ti.SVYsize      = 2;#size 1-3
 		ti.SVYinclude   = SVY_ALL;
 		ti.SVYheight    = 0;
 		ti.SVYoriginY   = 0;
 
-		ti.upText = FALSE;
-		ti.logPage = 0;
-		ti.off = FALSE;
-		ti.showFullMenus = TRUE;
+		# flight data overlay
 		ti.displayFlight = FLIGHTDATA_OFF;
+		
+		# time/startfix overlay
 		ti.displayTime = FALSE;
 		ti.displayFTime = FALSE;
-		ti.ownPosition = 0.25;
-		ti.ownPositionDigital = 2;
-		ti.mapPlaces = CLEANMAP;
+		
+		# system stuff
 		ti.ModeAttack = FALSE;
-		#ti.GPSinit    = FALSE;
 		ti.fr28Top    = FALSE;
 		ti.dataLink   = FALSE;
-		ti.mapshowing = TRUE;
+		
+		# Base overlay
 		ti.basesNear  = [];
 		ti.basesEnabled = FALSE;
+		
+		# log pages
 		ti.logEvents  = events.LogBuffer.new(echo: 0);#compatible with older FG?
 		ti.logBIT     = events.LogBuffer.new(echo: 0);#compatible with older FG?
 		ti.logLand    = events.LogBuffer.new(echo: 0);#compatible with older FG?
@@ -1661,15 +1661,23 @@ var TI = {
 		ti.BITok2 = FALSE;
 		ti.BITok3 = FALSE;
 		ti.BITok4 = FALSE;
-		ti.active = TRUE;
-		ti.showHostileZones = TRUE;
-		ti.showFriendlyZones = TRUE;
 		ti.newFails = FALSE;
 		ti.lastFailBlink = TRUE;
+		ti.battChargeReported = 0;
 		ti.landed = TRUE;
+		
+		# LV overlay
+		ti.showHostileZones = TRUE;
+		ti.showFriendlyZones = TRUE;
+		
+		# radar echoes overlay
 		ti.foes    = [];
 		ti.friends = [];
+		
+		# rwr overlay
 		ti.ECMon   = FALSE;
+		
+		# RB99 datalink
 		ti.lnk99   = FALSE;
 		ti.tele    = [];
 
@@ -1683,6 +1691,11 @@ var TI = {
 		ti.blinkBox4 = FALSE;
 		ti.blinkBox5 = FALSE;
 		ti.blinkBox6 = FALSE;
+		ti.cursorDidSomething = FALSE;
+		ti.lvffDrag = nil;
+		ti.sDrag = nil;
+		ti.cursorTrigger = FALSE;
+		ti.cursorTriggerPrev = FALSE;
 
 		# steerpoints
 		ti.newSteerPos = nil;
@@ -1696,12 +1709,11 @@ var TI = {
 		# MI
 		ti.mreg = FALSE;
 
-		#ti.cursorIsClicking = FALSE;
-
 		ti.startFailListener();
-
+		
+		# misc
 		ti.twoHz = 0;
-		ti.battChargeReported = 0;
+		
 
       	return ti;
 	},
@@ -1727,10 +1739,8 @@ var TI = {
 
 
 	loop: func {
-		#if ( gone == TRUE) {
-		#	return;
-		#}
 		me.interoperability = me.input.units.getValue();
+		me.swedishMode = me.interoperability == displays.METRIC;
 
 		if (me.brightness < 0.25) {
 			me.brightness = 0.25;
@@ -1738,10 +1748,10 @@ var TI = {
 			me.brightness = 1;
 		}
 
-		if (me.input.acInstrVolt.getValue() < 100 or me.off == TRUE) {
+		if (!power.prop.acSecondBool.getValue() or me.off == TRUE) {
 			setprop("ja37/avionics/brightness-ti", 0);
 			#setprop("ja37/avionics/cursor-on", FALSE);
-			#settimer(func me.loop(), 0.25);
+			
 			return;
 		} else {
 			setprop("ja37/avionics/brightness-ti", me.brightness);
@@ -1756,18 +1766,17 @@ var TI = {
 		me.whereIsMap();#must be before mapUpdate
 		me.updateMap();
 		me.showMapScale();
-		M2TEX = 1/(meterPerPixel[zoom]*math.cos(me.input.latitude.getValue()*D2R));
 		me.updateSVY();# must be before displayRadarTracks and showselfvector
 		me.showSelfVector();
 		me.defineEnemies();# must be before displayRadarTracks
 		me.displayRadarTracks();
 		me.showRunway();
 		me.showRadarLimit();
-		me.showBottomText();# must be after displayRadarTracks
 		me.menuUpdate();
 		me.showTime();
 		me.showFlightTime();
 		me.showSteerPoints();
+		me.showBottomText();# must be after displayRadarTracks and showsteerpoints
 		me.showSteerPointInfo();
 		me.showPoly();#must be under showSteerPoints
 		me.showLVFF();
@@ -1775,9 +1784,9 @@ var TI = {
 		me.updateMapNames();
 		me.showBasesNear();
 		me.ecmOverlay();
+		me.gridOverlay();
 		me.showBullsEye();
-		#settimer(func me.loop(), 0.5);
-		#me.cursorIsClicking = FALSE;# TODO: test that this works proper
+		
 		me.twoHz = !me.twoHz;
 		if (!me.battChargeReported and getprop("fdm/jsbsim/systems/electrical/battery-charge-norm") < 0.1) {
             FailureMgr._failmgr.logbuf.push("Warning: Battery charge less than 10%!");# dangerous, is private method!
@@ -1789,10 +1798,9 @@ var TI = {
 	},
 
 	loopFast: func {
-		if (me.input.acInstrVolt.getValue() < 100 or me.off == TRUE) {
+		if (!power.prop.acSecondBool.getValue() or me.off == TRUE) {
 			#settimer(func me.loopFast(), 0.05);
 			return;
-		} else {
 		}
 		me.updateFlightData();
 		me.showHeadingBug();
@@ -1802,18 +1810,14 @@ var TI = {
 		#me.rate = getprop("sim/frame-rate-worst");
 		#me.rate = me.rate !=nil?clamp(1/(me.rate+0.001), 0.05, 0.5):0.5;
 		#me.rate = 0.05;
-		#settimer(func me.loopFast(), me.rate);#0.001 is to prevent divide by zero
 	},
 
 	loopSlow: func {
-		if (me.input.acInstrVolt.getValue() < 100 or me.off == TRUE) {
+		if (!power.prop.acSecondBool.getValue() or me.off == TRUE) {
 			#settimer(func me.loopSlow(), 0.05);
 			return;
-		} else {
 		}
 		me.updateBasesNear();
-
-		#settimer(func me.loopSlow(), 180);
 	},
 
 
@@ -1867,27 +1871,45 @@ var TI = {
 				me.drawLog = FALSE;
 				if (me.trapFire == TRUE) {
 					me.buffer = armament.fireLog;
-					me.bufferStr = "       Fire log:\n";
+					if (me.swedishMode)
+						me.bufferStr = "       Registrerede avfyringar:\n";
+					else
+						me.bufferStr = "       Fire log:\n";
 					me.drawLog = TRUE;
 				} elsif (me.trapMan == TRUE) {
 					me.buffer = me.logEvents;
-					me.bufferStr = "       Event log:\n";
+					if (me.swedishMode)
+						me.bufferStr = "       Manuella markeringar:\n";
+					else
+						me.bufferStr = "       Manual event log:\n";
 					me.drawLog = TRUE;
 				} elsif (me.trapLock == TRUE) {
 					me.buffer = radar_logic.lockLog;
-					me.bufferStr = "       Lock log:\n";
+					if (me.swedishMode)
+						me.bufferStr = "       Registrerede inl\xC3\xA5sninger:\n";
+					else
+						me.bufferStr = "       Lock log:\n";
 					me.drawLog = TRUE;
 				} elsif (me.trapLand == TRUE) {
 					me.buffer = me.logLand;
-					me.bufferStr = "       Landing log:\n";
+					if (me.swedishMode)
+						me.bufferStr = "       Registrerede s\xC3\xA4ttningar:\n";
+					else
+						me.bufferStr = "       Landing log:\n";
 					me.drawLog = TRUE;
 				} elsif (me.trapECM == TRUE) {
 					me.buffer = armament.ecmLog;
-					me.bufferStr = "       ECM log:\n";
+					if (me.swedishMode)
+						me.bufferStr = "       Registrerede motmedelsf\xC3\xA4llninger:\n";
+					else
+						me.bufferStr = "       ECM log:\n";
 					me.drawLog = TRUE;
 				} elsif (me.trapAll == TRUE) {
 					me.bufferContent = events.combineBuffers([armament.ecmLog.get_buffer(), me.logLand.get_buffer(), radar_logic.lockLog.get_buffer(), me.logEvents.get_buffer(), armament.fireLog.get_buffer()]);
-					me.bufferStr = "       All logs:\n";
+					if (me.swedishMode)
+						me.bufferStr = "       Alla h\xC3\xA4ndelser:\n";
+					else
+						me.bufferStr = "       All logs:\n";
 					me.drawLog = TRUE;
 				}
 				if (me.drawLog == TRUE) {
@@ -1913,7 +1935,7 @@ var TI = {
 				me.logRoot.show();
 				call(func {
 					me.buffer = FailureMgr.get_log_buffer();
-					me.str = "       Failure log:\n";
+					me.str = "       F\xC3\xB6rvillelser:\n";
 	    			foreach(entry; me.buffer) {
 	      				me.str = me.str~"    "~entry.time~" "~entry.message~"\n";
 	    			}
@@ -2086,7 +2108,7 @@ var TI = {
 
 	compileMainMenu: func (button) {
 		me.str = nil;
-		if (me.interoperability == displays.METRIC) {
+		if (me.swedishMode) {
 			me.str = dictSE[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":''~math.abs(me.menuMain)))];
 		} else {
 			me.str = dictEN[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":''~math.abs(me.menuMain)))];
@@ -2114,6 +2136,9 @@ var TI = {
 		}
 		if (me.menuMain == MAIN_WEAPONS and me.input.station.getValue() == 0) {
 			me.menuButtonBox[14].show();
+		}
+		if (me.menuMain == MAIN_WEAPONS and me.input.station.getValue() == -1) {
+			me.menuButtonBox[15].show();
 		}
 		if (math.abs(me.menuMain) == MAIN_SYSTEMS) {
 			if (me.menuTrap == FALSE) {
@@ -2206,7 +2231,7 @@ var TI = {
 
 	compileFastMenu: func (button) {
 		me.str = nil;
-		if (me.interoperability == displays.METRIC) {
+		if (me.swedishMode) {
 			me.str = dictSE[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":''~math.abs(me.menuMain)))];
 		} else {
 			me.str = dictEN[me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":''~math.abs(me.menuMain)))];
@@ -2250,7 +2275,7 @@ var TI = {
 		me.menuButtonSub[7].show();
 		me.menuButtonSubBox[7].show();
 		me.seven = nil;
-		if (me.interoperability == displays.METRIC) {
+		if (me.swedishMode) {
 			me.seven = me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SVY":(dictSE['0'][''~math.abs(me.menuMain)][1])));
 		} else {
 			me.seven = me.menuGPS==TRUE?"GPS":(me.menuTrap==TRUE?"TRAP":(me.menuSvy==TRUE?"SIDV":(dictEN['0'][''~math.abs(me.menuMain)][1])));
@@ -2309,7 +2334,7 @@ var TI = {
 			me.menuButtonSub[17].show();
 			me.menuButtonSubBox[17].show();
 			me.seventeen = nil;
-			if (me.interoperability == displays.METRIC) {
+			if (me.swedishMode) {
 				me.seventeen = dictSE['HORI'][''~me.displayFlight][1];
 			} else {
 				me.seventeen = dictEN['HORI'][''~me.displayFlight][1];
@@ -2323,7 +2348,7 @@ var TI = {
 			me.menuButtonSub[6].setText(me.vertStr(me.six));
 
 			# day/night map
-			me.menuButtonSub[19].setText(me.vertStr(me.interoperability == displays.METRIC?"NATT":"NGHT"));
+			me.menuButtonSub[19].setText(me.vertStr(me.swedishMode?"NATT":"NGHT"));
 			me.menuButtonSub[19].show();
 			if (me.day == FALSE) {
 				me.menuButtonSubBox[19].show();
@@ -2337,21 +2362,21 @@ var TI = {
 			#}
 
 			# airports overlay
-			me.menuButtonSub[4].setText(me.vertStr(me.interoperability == displays.METRIC?"TMAD":"AIRP"));
+			me.menuButtonSub[4].setText(me.vertStr(me.swedishMode?"TMAD":"AIRP"));
 			me.menuButtonSub[4].show();
 			if (me.basesEnabled == TRUE) {
 				me.menuButtonSubBox[4].show();
 			}
 
 			# threat overlay
-			me.menuButtonSub[14].setText(me.vertStr(me.interoperability == displays.METRIC?"FI":"HSTL"));
+			me.menuButtonSub[14].setText(me.vertStr(me.swedishMode?"FI":"HSTL"));
 			me.menuButtonSub[14].show();
 			if (me.showHostileZones == TRUE) {
 				me.menuButtonSubBox[14].show();
 			}
 
 			# friendly AAA
-			me.menuButtonSub[15].setText(me.vertStr(me.interoperability == displays.METRIC?"EGET":"FRND"));
+			me.menuButtonSub[15].setText(me.vertStr(me.swedishMode?"EGET":"FRND"));
 			me.menuButtonSub[15].show();
 			if (me.showFriendlyZones == TRUE) {
 				me.menuButtonSubBox[15].show();
@@ -2374,7 +2399,7 @@ var TI = {
 				me.menuButtonSubBox[5].show();
 			}
 
-			me.menuButtonSub[16].setText(me.vertStr(route.Polygon.flyRTB.getNameVariant()));
+			me.menuButtonSub[16].setText(me.vertStr(route.Polygon.flyRTB.getName()));
 			me.menuButtonSub[16].show();
 			if (route.Polygon.flyRTB == route.Polygon.primary) {
 				me.menuButtonSubBox[16].show();
@@ -2389,18 +2414,18 @@ var TI = {
 
 			me.isP = route.Polygon.editing != nil and route.Polygon.editing.type == route.TYPE_AREA;
 			#hack:
-			me.menuButtonSub[2].setText(me.vertStr(me.isP?"P":(me.interoperability == displays.METRIC?"B":"S")));
+			me.menuButtonSub[2].setText(me.vertStr(me.isP?"P":(me.swedishMode?"B":"S")));
 			me.menuButtonSub[2].show();
 			if (route.Polygon.insertSteer) {
 				me.menuButtonSubBox[2].show();
 			}
-			me.menuButtonSub[3].setText(me.vertStr(me.isP?"P":(me.interoperability == displays.METRIC?"B":"S")));
+			me.menuButtonSub[3].setText(me.vertStr(me.isP?"P":(me.swedishMode?"B":"S")));
 			me.menuButtonSub[3].show();
 			if (route.Polygon.appendSteer) {
 				me.menuButtonSubBox[3].show();
 			}
-			me.menuButtonSub[5].setText(me.vertStr(me.isP?"P":(me.interoperability == displays.METRIC?"B":"S")));
-			me.menuButtonSub[5].show();
+			#me.menuButtonSub[5].setText(me.vertStr(me.isP?"P":(me.swedishMode?"B":"S")));
+			#me.menuButtonSub[5].show();
 
 			me.menuButtonSub[6].setText(me.vertStr("POLY"));
 			me.menuButtonSub[6].show();
@@ -2417,14 +2442,14 @@ var TI = {
 				me.menuButtonSub[19].show();
 				me.menuButtonSubBox[19].show();
 			}
-			me.menuButtonSub[18].setText(me.vertStr(me.isP?"P":(me.interoperability == displays.METRIC?"B":"S")));
+			me.menuButtonSub[18].setText(me.vertStr(me.isP?"P":(me.swedishMode?"B":"S")));
 			me.menuButtonSub[18].show();
-			if (route.Polygon.editSteer) {
+			if (route.Polygon.dragSteer) {
 				me.menuButtonSubBox[18].show();
 			}
-			me.menuButtonSub[14].setText(me.vertStr(me.interoperability == displays.METRIC?"\xC3\x85POL":"RPOL"));
-			me.menuButtonSub[16].setText(me.vertStr(me.interoperability == displays.METRIC?"UPOL":"MPOL"));
-			me.menuButtonSub[15].setText(me.vertStr(route.Polygon.editRTB.getNameVariant()));
+			me.menuButtonSub[14].setText(me.vertStr(me.swedishMode?"\xC3\x85POL":"RPOL"));
+			me.menuButtonSub[16].setText(me.vertStr(me.swedishMode?"UPOL":"MPOL"));
+			me.menuButtonSub[15].setText(me.vertStr(route.Polygon.editRTB.getName()));
 			me.menuButtonSub[17].setText(me.vertStr(route.Polygon.editMiss.getNameNumber()));
 			me.menuButtonSub[17].show();
 			me.menuButtonSub[15].show();
@@ -2440,7 +2465,7 @@ var TI = {
 		if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == FALSE and me.menuSvy == FALSE) {
 			# use top or belly antaenna
 			me.ant = nil;
-			if (me.interoperability == displays.METRIC) {
+			if (me.swedishMode) {
 				me.ant = me.fr28Top==TRUE?"RYG":"BUK";
 			} else {
 				me.ant = me.fr28Top==TRUE?"OVER":"UNDR";
@@ -2457,17 +2482,17 @@ var TI = {
 			me.menuButtonSub[5].show();
 			me.menuButtonSubBox[5].show();
 			if (me.SVYinclude == SVY_ALL) {
-				me.menuButtonSub[6].setText(me.vertStr(me.interoperability == displays.METRIC?"ALLT":"ALL"));
+				me.menuButtonSub[6].setText(me.vertStr(me.swedishMode?"ALLT":"ALL"));
 			} elsif (me.SVYinclude == SVY_120) {
 				me.menuButtonSub[6].setText(me.vertStr("120"));
 			} else {
-				me.menuButtonSub[6].setText(me.vertStr(me.interoperability == displays.METRIC?"RR":"RR"));
+				me.menuButtonSub[6].setText(me.vertStr(me.swedishMode?"RR":"RR"));
 			}
 			me.menuButtonSub[6].show();
 			me.menuButtonSubBox[6].show();
 
 			me.skal = nil;
-			if (me.interoperability == displays.METRIC) {
+			if (me.swedishMode) {
 				me.skal = me.SVYscale==SVY_ELKA?"ELKA":(me.SVYscale==SVY_MI?"MI":"RMAX");
 			} else {
 				me.skal = me.SVYscale==SVY_ELKA?"EMAP":(me.SVYscale==SVY_MI?"MI":"RMAX");
@@ -2475,12 +2500,17 @@ var TI = {
 			me.menuButtonSub[14].setText(me.vertStr(me.skal));
 			me.menuButtonSub[14].show();
 			me.menuButtonSubBox[14].show();
-
-			me.menuButtonSub[15].setText(me.vertStr(sprintf("%d", me.SVYrmax*1000*M2NM)));
+			if (me.swedishMode) {
+				me.menuButtonSub[15].setText(me.vertStr(sprintf("%d", me.SVYrmaxSE[me.SVYrmax])));
+				me.menuButtonSub[16].setText(me.vertStr(sprintf("%d", me.SVYhmaxSE[me.SVYhmax])));
+			} else {
+				me.menuButtonSub[15].setText(me.vertStr(sprintf("%d", me.SVYrmaxEN[me.SVYrmax])));
+				me.menuButtonSub[16].setText(me.vertStr(sprintf("%d", me.SVYhmaxEN[me.SVYhmax])));
+			}
 			me.menuButtonSub[15].show();
 			me.menuButtonSubBox[15].show();
 
-			me.menuButtonSub[16].setText(me.vertStr(sprintf("%d", me.SVYhmax*M2FT)));
+			
 			me.menuButtonSub[16].show();
 			me.menuButtonSubBox[16].show();
 		}
@@ -2508,7 +2538,7 @@ var TI = {
 	########################################################################################################
 	########################################################################################################
 	#
-	#  MI functions
+	#  functions called from MI display buttons
 	#
 	#
 	########################################################################################################
@@ -2609,9 +2639,10 @@ var TI = {
 		me.elapsedTime = me.input.timeElapsed.getValue();
 		for (me.i = 0; me.i <22;me.i+=1) {
 			if (me.elapsedTime-edgeButtonsStruct[me.i]<0.30) {
-				setprop("ja37/light/ti"~me.i,0.75);
+				# todo: stop using setprop
+				me.input.tiLight[me.i].setDoubleValue(0.75);
 			} else {
-				setprop("ja37/light/ti"~me.i,me.lightNorm);
+				me.input.tiLight[me.i].setDoubleValue(me.lightNorm);
 			}
 		}
 	},
@@ -2624,6 +2655,239 @@ var TI = {
 	#
 	########################################################################################################
 	########################################################################################################
+	
+	
+	gridOverlay: func {
+		#line finding algorithm taken from $fgdata mapstructure:
+		var lines = [];
+		if (me.menuMain != MAIN_MISSION_DATA) {
+			me.gridGroup.hide();
+			me.gridGroupText.hide();
+			return;
+		}
+		if (zoomLevels[zoom_curr] == 3.2) {
+			me.gridGroup.hide();
+			me.gridGroupText.hide();
+			return;
+		} elsif (zoomLevels[zoom_curr] == 1.6) {
+			me.granularity_lon = 2;
+			me.granularity_lat = 2;
+			me.dLon = 0;
+		} elsif (zoomLevels[zoom_curr] == 800) {
+			me.granularity_lon = 1;
+			me.granularity_lat = 1;
+			me.dLon = 0;
+		} elsif (zoomLevels[zoom_curr] == 400) {
+			me.granularity_lon = 0.5;
+			me.granularity_lat = 0.5;
+			me.dLon = 30;
+		} elsif (zoomLevels[zoom_curr] == 200) {
+			me.granularity_lon = 0.25;
+			me.granularity_lat = 0.25;
+			me.dLon = 15;
+		}
+		
+		var delta_lon = me.granularity_lon;
+		var delta_lat = me.granularity_lat;
+
+		# Find the nearest lat/lon line to the map position.  If we were just displaying
+		# integer lat/lon lines, this would just be rounding.
+		
+		var lat = delta_lat * math.round(me.lat / delta_lat);
+	  	var lon = delta_lon * math.round(me.lon / delta_lon);
+	  	
+		var range = 0.75*height*M2NM/M2TEX;#simplified
+		#printf("grid range=%d %.3f %.3f",range,me.lat,me.lon);
+
+		# Return early if no significant change in lat/lon/range - implies no additional
+		# grid lines required
+		if ((lat == me.last_lat) and (lon == me.last_lon) and (range == me.last_range)) {
+			lines = me.last_result;
+		} else {
+
+			# Determine number of degrees of lat/lon we need to display based on range
+			# 60nm = 1 degree latitude, degree range for longitude is dependent on latitude.
+			var lon_range = 1;
+			call(func{lon_range = math.ceil(geo.Coord.new().set_latlon(lat,lon,me.input.alt_ft.getValue()*FT2M).apply_course_distance(90.0, range*NM2M).lon() - lon);},nil, var err=[]);
+			#courseAndDistance
+			if (size(err)) {
+				#printf("fail lon %.7f  lat %.7f  ft %.2f  ft %.2f",lon,lat,me.input.alt_ft.getValue(),range*NM2M);
+				# typically this fail close to poles. Floating point exception in geo asin.
+			}
+			lon_range = clamp(lon_range,delta_lon,250);
+			var lat_range = clamp(math.ceil(range/60.0),delta_lat,250);
+			
+			#printf("range lon %d  lat %d",lon_range,lat_range);
+			var ddLon = 0;
+			var xx = (lon - lon_range)-int(lon - lon_range);
+			if (xx==0.5) {
+				ddLon = 30;
+			} elsif (xx==0.25) {
+				ddLon = 15;
+			} elsif (xx==0.75) {
+				ddLon = 45;
+			}
+			for (var x = (lon - lon_range); x <= (lon + lon_range); x += delta_lon) {
+				var coords = [];
+				if (x>180) {
+				#	x-=360;
+					continue;
+				} elsif (x<-180) {
+				#	x+=360;
+					continue;
+				}
+				# We could do a simple line from start to finish, but depending on projection,
+				# the line may not be straight.
+				for (var y = (lat - lat_range); y <= (lat + lat_range); y +=  delta_lat) {
+					append(coords, {lon:x, lat:y});
+				}
+#				print(ddLon ~"  "~ x);
+				append(lines, {
+					id: x,
+					type: "lon",
+					text1: sprintf("%4d",int(x)),
+					text2: ddLon==0?"":ddLon~"",
+					path: coords,
+					equals: func(o){
+						return (me.id == o.id and me.type == o.type); # We only display one line of each lat/lon
+					}
+				});
+				
+				ddLon += me.dLon;
+				if (ddLon >= 60) {
+					ddLon = 0;
+				}
+			}
+			
+			# Lines of latitude
+			var yy = (lat - lat_range)-int(lat - lat_range);
+			ddLon = 0;
+			if (yy==0.5) {
+				ddLon = 30;
+			} elsif (yy==0.25) {
+				ddLon = 15;
+			} elsif (yy==0.75) {
+				ddLon = 45;
+			}
+			for (var y = (lat - lat_range); y <= (lat + lat_range); y += delta_lat) {
+				var coords = [];
+				if (y>90 or y<-90) continue;
+				# We could do a simple line from start to finish, but depending on projection,
+				# the line may not be straight.
+				for (var x = (lon - lon_range); x <= (lon + lon_range); x += delta_lon) {
+					append(coords, {lon:x, lat:y});
+				}
+
+				append(lines, {
+					id: y,
+					type: "lat",
+					text: ""~int(y)~(ddLon==0?"   ":" "~ddLon),
+					path: coords,
+					equals: func(o){
+						return (me.id == o.id and me.type == o.type); # We only display one line of each lat/lon
+					}
+				});
+				
+				ddLon += me.dLon;
+				if (ddLon >= 60) {
+					ddLon = 0;
+				}
+			}
+#printf("range %d  lines %d",range, size(lines));
+		}
+		me.last_result = lines;
+		me.last_lat = lat;
+		me.last_lon = lon;
+		me.last_range = range;
+		
+		
+		me.gridGroup.removeAllChildren();
+		#me.gridGroupText.removeAllChildren();
+		me.gridTextNoA = 0;
+		me.gridTextNoO = 0;
+		me.gridH = height*0.80;
+		foreach (var line;lines) {
+			var skip = 1;
+			me.posi1 = [];
+			foreach (var coord;line.path) {
+				if (!skip) {
+					me.posi2 = me.laloToTexelMap(coord.lat,coord.lon);
+					me.aline.lineTo(me.posi2);
+					if (line.type=="lon") {
+						var arrow = [(me.posi1[0]*4+me.posi2[0])/5,(me.posi1[1]*4+me.posi2[1])/5];
+						me.aline.moveTo(arrow);
+						me.aline.lineTo(arrow[0]-7,arrow[1]+10);
+						me.aline.moveTo(arrow);
+						me.aline.lineTo(arrow[0]+7,arrow[1]+10);
+						me.aline.moveTo(me.posi2);
+						if (me.posi2[0]<me.gridH and me.posi2[0]>-me.gridH and me.posi2[1]<me.gridH and me.posi2[1]>-me.gridH) {
+							# sadly when zoomed in alot it draws too many crossings, this condition should help
+							me.setGridTextO(line.text1,[me.posi2[0]-20,me.posi2[1]+5]);
+					    	if (line.text2 != "") {
+					    		me.setGridTextO(line.text2,[me.posi2[0]+12,me.posi2[1]+5]);
+						    }
+						}
+					} else {
+						me.posi3 = [(me.posi1[0]+me.posi2[0])*0.5, (me.posi1[1]+me.posi2[1])*0.5-5];
+						if (me.posi3[0]<me.gridH and me.posi3[0]>-me.gridH and me.posi3[1]<me.gridH and me.posi3[1]>-me.gridH) {
+							# sadly when zoomed in alot it draws too many crossings, this condition should help
+							me.setGridTextA(line.text,me.posi3);
+						}
+					}
+					me.posi1=me.posi2;
+				} else {
+					me.posi1 = me.laloToTexelMap(coord.lat,coord.lon);
+					me.aline = me.gridGroup.createChild("path")
+						.moveTo(me.posi1)
+						.setStrokeLineWidth(w)
+						.setColor(COLOR_BLUE_LIGHT);
+				}
+				skip = 0;
+			}
+		}
+		for (me.jjjj = me.gridTextNoO;me.jjjj<=me.gridTextMaxO;me.jjjj+=1) {
+			me.gridTextO[me.jjjj].hide();
+		}
+		for (me.kkkk = me.gridTextNoA;me.kkkk<=me.gridTextMaxA;me.kkkk+=1) {
+			me.gridTextA[me.kkkk].hide();
+		}
+		me.gridGroupText.update();
+		me.gridGroup.update();
+		me.gridGroupText.show();
+		me.gridGroup.show();
+	},
+	
+	setGridTextO: func (text, pos) {
+		if (me.gridTextNoO > me.gridTextMaxO) {
+				append(me.gridTextO,me.gridGroupText.createChild("text")
+    					.setText(text)
+			    		.setColor(COLOR_BLUE_LIGHT)
+			    		.setAlignment("center-top")
+			    		.setTranslation(pos)
+			    		.setFontSize(14, 1));
+			me.gridTextMaxO += 1;	
+		} else {
+			me.gridTextO[me.gridTextNoO].setText(text).setTranslation(pos);
+		}
+		me.gridTextO[me.gridTextNoO].show();
+		me.gridTextNoO += 1;
+	},
+	
+	setGridTextA: func (text, pos) {
+		if (me.gridTextNoA > me.gridTextMaxA) {
+				append(me.gridTextA,me.gridGroupText.createChild("text")
+    					.setText(text)
+			    		.setColor(COLOR_BLUE_LIGHT)
+			    		.setAlignment("center-bottom")
+			    		.setTranslation(pos)
+			    		.setFontSize(14, 1));
+			me.gridTextMaxA += 1;	
+		} else {
+			me.gridTextA[me.gridTextNoA].setText(text).setTranslation(pos);
+		}
+		me.gridTextA[me.gridTextNoA].show();
+		me.gridTextNoA += 1;
+	},
 
 	isCursorOnMap: func {
 		if (me.cursorGPosY < height*0.9-height*0.025*me.upText) {
@@ -2643,15 +2907,29 @@ var TI = {
 		}
 		return FALSE;
 	},
+	
+	setupMMAP: func {
+		# center cursor in display
+		me.cursorPosX = 0;
+		me.cursorPosY = (-me.rootCenterY+height-me.rootCenterY)*0.5;
+		displays.common.cursor = displays.TI;
+	},
 
 	showCursor: func {
+		# this function is called more often than regular overlays
 		if (displays.common.cursor == displays.TI and MI.cursorOn == TRUE) {
 			me.cursorSpeedY = me.input.cursorControlY.getValue();
 			me.cursorSpeedX = me.input.cursorControlX.getValue();
 			me.cursorMoveY  = 150 * 0.05 * me.cursorSpeedY;
 			me.cursorMoveX  = 150 * 0.05 * me.cursorSpeedX;
-			me.cursorPosX  += me.cursorMoveX;
-			me.cursorPosY  += me.cursorMoveY;
+			if (me.dragMapEnabled) {
+				me.newMapPos = me.TexelToLaLoMap(me.cursorMoveX, me.cursorMoveY);
+				me.lat = me.newMapPos[0];
+				me.lon = me.newMapPos[1];
+			} else {
+				me.cursorPosX  += me.cursorMoveX;
+				me.cursorPosY  += me.cursorMoveY;
+			}
 			me.cursorPosX   = clamp(me.cursorPosX, -width*0.5,  width*0.5);
 			me.cursorPosY   = clamp(me.cursorPosY, -me.rootCenterY, height-me.rootCenterY);#relative to map center
 			me.cursorGPosX = me.cursorPosX + width*0.5;
@@ -2662,52 +2940,55 @@ var TI = {
 			#me.cursorRPosY = me.cursorPosY + me.rootCenterTranslation[1];# relative to own position
 			me.cursor.setTranslation(me.cursorGPosX,me.cursorGPosY);# is off set 1 pixel to right
 			me.cursorTrigger = me.input.cursorSelect.getValue();
+			if (me.lvffDrag == nil and me.sDrag == nil) {
+				me.cursorDidSomething = FALSE;
+			} else {
+				me.cursorDidSomething = TRUE;
+			}
 			#printf("(%d,%d) %d",me.cursorPosX,me.cursorPosY, me.cursorTrigger);
 			if (route.Polygon.editBullsEye) {
 				if(me.cursorTrigger and !me.cursorTriggerPrev) {
 					me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
-					setprop("ja37/navigation/bulls-eye-defined", TRUE);
-					setprop("ja37/navigation/bulls-eye-lat", me.newSteerPos[0]);
-					setprop("ja37/navigation/bulls-eye-lon", me.newSteerPos[1]);
+					me.input.bullseyeOn.setBoolValue(TRUE);
+					me.input.bullseyeLat.setDoubleValue(me.newSteerPos[0]);
+					me.input.bullseyeLon.setDoubleValue(me.newSteerPos[1]);
+					dap.checkLVSave();
+					me.cursorDidSomething = TRUE;
 				}
-			} elsif (route.Polygon.editSteer) {
+			} elsif (me.sDrag != nil) {
 				#print("dragging steerpoint: "~geo.format(me.newSteerPos[0],me.newSteerPos[1]));
-				if(me.cursorTrigger and !me.cursorTriggerPrev) {
+				if(me.cursorTrigger) {
+					# drag the steer to new place
 					me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
 					route.Polygon.editApply(me.newSteerPos[0],me.newSteerPos[1]);
+					me.cursorDidSomething = TRUE;
+				} elsif (!me.cursorTrigger and me.cursorTriggerPrev) {
+					# finished dragging a steer
+					route.Polygon.editFinish();
+					me.sDrag = nil;
+					me.cursorDidSomething = TRUE;
 				}
 			} elsif (route.Polygon.insertSteer) {
 				if(me.cursorTrigger and !me.cursorTriggerPrev) {
 					me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
 					route.Polygon.insertApply(me.newSteerPos[0],me.newSteerPos[1]);
+					me.cursorDidSomething = TRUE;
 				}
 				#me.newSteerPos = nil;
 			} elsif (route.Polygon.appendSteer) {
 				if(me.cursorTrigger and !me.cursorTriggerPrev) {#if this is nested condition then only this can be done. Is this what we want?
 					me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
 					route.Polygon.appendApply(me.newSteerPos[0],me.newSteerPos[1]);
+					me.cursorDidSomething = TRUE;
 				}
 				#me.newSteerPos = nil;
-#				if (menuMain != MAIN_MISSION_DATA and me.cursorTrigger and !me.cursorTriggerPrev) {
-#						me.cursorIsClicking = TRUE;
-#						me.newSteerPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
-#						#print("selecting on map: "~geo.format(me.newSteerPos[0],me.newSteerPos[1]));
-#						me.selectResult = route.Polygon.cursorSelectSteer(me.newSteerPos[0],me.newSteerPos[1]);
-#						if (!me.selectResult) {
-#							radar_logic.cursorSelectEcho(me.newSteerPos[0],me.newSteerPos[1]);
-#						}
-#					}
 			} elsif (me.cursorTrigger and !me.cursorTriggerPrev) {
 				# click on edge buttons
 				me.newSteerPos = nil;
 				me.bMethod = me.getButtonMethod();
 				if (me.bMethod != nil) {
 					me.bMethod();
-				} elsif (me.dragMapEnabled) {
-					me.newMapPos = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
-					me.lat = me.newMapPos[0];
-					me.lon = me.newMapPos[1];
-					me.mapSelfCentered = FALSE;
+					me.cursorDidSomething = TRUE;
 				}
 			}
 			me.cursor.show();
@@ -2788,21 +3069,17 @@ var TI = {
 			if (me.cursorGPosY > height*0.09+(7-1)*height*0.11-6.25*4 and me.cursorGPosY < height*0.09+(7-1)*height*0.11-6.25*4+8*6.25) {
 				return me.b14;
 			}
-		} elsif (me.cursorGPosY > me.wpStarty-me.wpH*height and me.cursorGPosY < me.wpStarty and me.cursorGPosX < me.wpStartx+me.wpW*width and me.cursorGPosX > me.wpStartx) {
+		} elsif (me.wpTextField.getVisible() and me.cursorGPosY > me.wpStarty-me.wpH*height and me.cursorGPosY < me.wpStarty and me.cursorGPosX < me.wpStartx+me.wpW*width and me.cursorGPosX > me.wpStartx) {
 			# possible infoBox click
-			if (me.cursorGPosY < me.wpStarty-0.8*me.wpH*height) {
+			if      (me.cursorGPosY < me.wpStarty-0.8*me.wpH*height and (me.wpText2.getVisible() or me.blinkBox2)) {
 				return me.box2;
-			}
-			if (me.cursorGPosY < me.wpStarty-0.6*me.wpH*height) {
+			} elsif (me.cursorGPosY < me.wpStarty-0.6*me.wpH*height and (me.wpText3.getVisible() or me.blinkBox3)) {
 				return me.box3;
-			}
-			if (me.cursorGPosY < me.wpStarty-0.4*me.wpH*height) {
+			} elsif (me.cursorGPosY < me.wpStarty-0.4*me.wpH*height and (me.wpText4.getVisible() or me.blinkBox4)) {
 				return me.box4;
-			}
-			if (me.cursorGPosY < me.wpStarty-0.2*me.wpH*height) {
+			} elsif (me.cursorGPosY < me.wpStarty-0.2*me.wpH*height and (me.wpText5.getVisible() or me.blinkBox5)) {
 				return me.box5;
-			}
-			if (me.cursorGPosY < me.wpStarty-0.0*me.wpH*height) {
+			} elsif (me.cursorGPosY < me.wpStarty-0.0*me.wpH*height and (me.wpText6.getVisible() or me.blinkBox6)) {#  wont work if blinking
 				return me.box6;
 			}
 		}
@@ -3010,7 +3287,7 @@ var TI = {
 			if (input != nil) {
 				var alt = num(input);
 				print("TI recieved alt from DAP: "~alt);
-				route.Polygon.setAlt(myself.interoperability == displays.METRIC?alt*M2FT:alt);#important!!! running in metric will input metric also!
+				route.Polygon.setAlt(myself.swedishMode?alt*M2FT:alt);#important!!! running in metric will input metric also!
 			} else {
 				print("TI recieved no alt from DAP");
 				route.Polygon.setAlt(nil);#important!!! running in metric will input metric also!
@@ -3021,89 +3298,14 @@ var TI = {
 
 	ecmOverlay: func {
 		if (me.ECMon == TRUE) {
-			if (getprop("ja37/sound/incoming12") == TRUE) {
-				me.ecm12.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[11] == TRUE) {
-				me.ecm12.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm12.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming1") == TRUE) {
-				me.ecm1.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[0] == TRUE) {
-				me.ecm1.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm1.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming2") == TRUE) {
-				me.ecm2.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[1] == TRUE) {
-				me.ecm2.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm2.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming3") == TRUE) {
-				me.ecm3.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[2] == TRUE) {
-				me.ecm3.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm3.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming4") == TRUE) {
-				me.ecm4.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[3] == TRUE) {
-				me.ecm4.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm4.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming5") == TRUE) {
-				me.ecm5.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[4] == TRUE) {
-				me.ecm5.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm5.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming6") == TRUE) {
-				me.ecm6.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[5] == TRUE) {
-				me.ecm6.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm6.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming7") == TRUE) {
-				me.ecm7.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[6] == TRUE) {
-				me.ecm7.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm7.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming8") == TRUE) {
-				me.ecm8.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[7] == TRUE) {
-				me.ecm8.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm8.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming9") == TRUE) {
-				me.ecm9.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[8] == TRUE) {
-				me.ecm9.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm9.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming10") == TRUE) {
-				me.ecm10.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[9] == TRUE) {
-				me.ecm10.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm10.setColor(rGreen,gGreen,bGreen,a);
-			}
-			if (getprop("ja37/sound/incoming11") == TRUE) {
-				me.ecm11.setColor(rRed,gRed,bRed,a);
-			} elsif (radar_logic.rwr[10] == TRUE) {
-				me.ecm11.setColor(rYellow,gYellow,bYellow,a);
-			} else {
-				me.ecm11.setColor(rGreen,gGreen,bGreen,a);
+			for (me.ijk =0;me.ijk<12;me.ijk+=1) {
+				if (getprop("ja37/sound/incoming"~(me.ijk+1)) == TRUE) {
+					me.ecm[me.ijk].setColor(COLOR_RED);
+				} elsif (radar_logic.rwr[me.ijk] == TRUE) {
+					me.ecm[me.ijk].setColor(COLOR_YELLOW);
+				} else {
+					me.ecm[me.ijk].setColor(COLOR_GREEN_DARK);
+				}
 			}
 			me.ecm_grp.show();
 		} else {
@@ -3112,7 +3314,7 @@ var TI = {
 	},
 
 	testLanding: func {
-		me.wow = me.input.wow0.getValue() and me.input.wow0.getValue() and me.input.wow0.getValue();
+		me.wow = me.input.wow0.getValue() and me.input.wow1.getValue() and me.input.wow2.getValue();
 		if (me.landed == FALSE and me.wow == TRUE) {
 			me.logLand.push("Has landed.");
 			me.landed = TRUE;
@@ -3130,8 +3332,8 @@ var TI = {
 			me.SVYoriginY = height*0.125+height*0.125*me.SVYsize-height*0.05;#texel
 			me.SVYwidth   = width*0.90;#texel
 			me.SVYheight  = height*0.125+height*0.125*me.SVYsize-height*0.10;#texel
-			me.SVYalt     = me.SVYhmax*1000;#meter
-			me.SVYrange   = me.SVYscale==SVY_MI?me.input.radarRange.getValue():(me.SVYscale==SVY_RMAX?me.SVYrmax*1000:me.SVYwidth/M2TEX);#meter
+			me.SVYalt     = me.swedishMode?me.SVYhmaxSE[me.SVYhmax]*1000:me.SVYhmaxEN[me.SVYhmax]*1000*FT2M;#meter
+			me.SVYrange   = me.SVYscale==SVY_MI?me.input.radarRange.getValue():(me.SVYscale==SVY_RMAX?(me.swedishMode?me.SVYrmaxSE[me.SVYrmax]*1000:me.SVYrmaxEN[me.SVYrmax]*NM2M):me.SVYwidth/M2TEX);#meter
 			me.SVYticksize= width*0.01;#texel
 
 			# not the most efficient code..
@@ -3156,22 +3358,36 @@ var TI = {
 				.moveTo(me.SVYoriginX+me.SVYwidth*0.25, me.SVYoriginY-me.SVYticksize)
 				.vert(me.SVYticksize*2)
 				.setStrokeLineWidth(w)
-				.setColor(rWhite,gWhite,bWhite,a);
+				.setColor(COLOR_WHITE);
 
-			me.selfSymbolSvy.setTranslation(me.SVYoriginX, me.SVYoriginY-me.SVYheight*me.input.alt_ft.getValue()*FT2M/me.SVYalt);
+			me.selfSvyPos = [me.SVYoriginX, me.SVYoriginY-me.SVYheight*me.input.alt_ft.getValue()*FT2M/me.SVYalt];
+			me.selfSymbolSvy.setTranslation(me.selfSvyPos);
 			me.selfSymbolSvy.setRotation(90*D2R);
-			me.selfVectorSvy.setTranslation(me.SVYoriginX, me.SVYoriginY-me.SVYheight*me.input.alt_ft.getValue()*FT2M/me.SVYalt);
-			#me.selfVectorSvy.setRotation(90*D2R);
+			me.selfVectorSvy.setTranslation(me.selfSvyPos);#scale is set elsewhere
+			
+			# this code works, but is kinda stupid as long as radar bar size is +/- 60 degs:
+			#me.svyRadarLowX = me.SVYoriginX+me.SVYwidth*(FT2M*-me.input.alt_ft.getValue()/math.tan(-60*D2R))/me.SVYrange;
+			#me.svyRadarLowY = me.SVYoriginY;
+			#me.svyRadarHighX = me.SVYoriginX+me.SVYwidth*((me.SVYalt-FT2M*me.input.alt_ft.getValue())/math.tan(60*D2R))/me.SVYrange;
+			#me.svyRadarHighY = me.SVYoriginY-me.SVYheight;
+			
+			#me.svy_grp2.createChild("path")
+			#	.moveTo(me.selfSvyPos)
+			#	.lineTo(me.svyRadarLowX,me.svyRadarLowY)
+			#	.moveTo(me.selfSvyPos)
+			#	.lineTo(me.svyRadarHighX,me.svyRadarHighY)
+			#	.setStrokeLineWidth(w)
+			#	.setColor(COLOR_WHITE);
 
 			me.textX = "";
 			me.textY = "";
 
-			if (me.interoperability == displays.METRIC) {
-				me.textX = sprintf("%d KM" ,me.SVYrange*0.001);
-				me.textY = sprintf("%d KM" ,me.SVYhmax);
+			if (me.swedishMode) {
+				me.textX = sprintf("%d KM" ,me.SVYscale==SVY_MI?me.input.radarRange.getValue()*0.001:(me.SVYscale==SVY_RMAX?me.SVYrmaxSE[me.SVYrmax]:0.001*me.SVYwidth/M2TEX));
+				me.textY = sprintf("%d KM" ,me.SVYhmaxSE[me.SVYhmax]);
 			} else {
-				me.textX = sprintf("%d NM" ,me.SVYrange*M2NM);
-				me.textY = sprintf("%dK FT" ,me.SVYhmax*M2FT);
+				me.textX = sprintf("%d NM" ,me.SVYscale==SVY_MI?me.input.radarRange.getValue()*M2NM:(me.SVYscale==SVY_RMAX?me.SVYrmaxEN[me.SVYrmax]:M2NM*me.SVYwidth/M2TEX));
+				me.textY = sprintf("%d kFT" ,me.SVYhmaxEN[me.SVYhmax]);
 			}
 
 			me.textSvyX.setText(me.textX);
@@ -3197,6 +3413,7 @@ var TI = {
 	},
 
 	updateBasesNear: func {
+		# this function is run in a very slow loop as its very expensive
 		if (me.basesEnabled == TRUE) {
 			me.basesNear = [];
 			me.ports = findAirportsWithinRange(75);
@@ -3271,17 +3488,23 @@ var TI = {
 			var tick1 = 0;
 			var tick2 = 0;
 			var tick3 = 0;
-			if (me.interoperability == displays.METRIC) {
+			if (me.swedishMode) {
 				if (zoom == 4) {
-					tick1 = 1000;
+					tick1 = 800;
+				} elsif (zoom == 5) {
+					tick1 = 400;
+				} elsif (zoom == 6) {
+					tick1 = 200;
 				} elsif (zoom == 7) {
-					tick1 = 150;
+					tick1 = 100;
+				} elsif (zoom == 8) {
+					tick1 = 50;
 				} elsif (zoom == 9) {
-					tick1 = 35;
+					tick1 = 25;
 				} elsif (zoom == 11) {
-					tick1 = 10;
+					tick1 = 6;
 				} elsif (zoom == 13) {
-					tick1 = 2;
+					tick1 = 1;
 				}
 				tick2 = tick1*2;
 				tick3 = tick1*3;
@@ -3305,11 +3528,17 @@ var TI = {
 				me.mapScaleTickM3Txt.setText("-"~tick3);
 			} else {
 				if (zoom == 4) {
-					tick1 = 500;
+					tick1 = 400;
+				} elsif (zoom == 5) {#using 5-9
+					tick1 =  200;
+				} elsif (zoom == 6) {
+					tick1 =  100;
 				} elsif (zoom == 7) {
-					tick1 =  75;
+					tick1 =  50;
+				} elsif (zoom == 8) {
+					tick1 =  25;
 				} elsif (zoom == 9) {
-					tick1 =  20;
+					tick1 =  15;
 				} elsif (zoom == 11) {
 					tick1 =   4;
 				} elsif (zoom == 13) {
@@ -3344,11 +3573,11 @@ var TI = {
 
 	showTargetInfo: func {
 		if (me.mapshowing == TRUE and radar_logic.selection != nil and (me.tgt_dist != nil or me.tgt_alt != nil)) {# and me.input.currentMode.getValue() == displays.COMBAT and radar_logic.selection.isPainted() == TRUE) {
-			# this is info about the locked target.
+			# this is a little infobox about the locked target.
 
 	  		if (me.tgt_dist != nil) {
 	  			# distance
-	  			if (me.interoperability == displays.METRIC) {
+	  			if (me.swedishMode) {
 	  	  			me.tgtTextDistDesc.setText("A");
 					if (me.tgt_dist < 10000) {
 						me.distText = sprintf("%d", me.tgt_dist/1000);
@@ -3373,7 +3602,7 @@ var TI = {
 	  			# altitude
 	  			me.alt = me.tgt_alt;
 	  			me.text = "";
-				if (me.interoperability == displays.METRIC) {
+				if (me.swedishMode) {
 					me.tgtTextHeiDesc.setText("H");
 					if(me.alt < 1000) {
 						me.text = ""~int(roundabout(me.alt/10)*10);
@@ -3445,7 +3674,7 @@ var TI = {
 			}
 			me.wpText5.setText(me.gps5);
 
-			me.wpText6Desc.setText(me.interoperability==displays.METRIC?"FEL":"ERR");# error
+			me.wpText6Desc.setText(me.swedishMode?"FEL":"ERR");# error
 			me.wpText6.setText(getprop("ja37/navigation/gps-installed")?(getprop("fdm/jsbsim/systems/electrical/battery-charge-norm")<0.1?"BATT":""):"FPLDATA");#TODO: Don't know what the real error would look like in FPLDATA case.
 
 			me.wpText2.update();
@@ -3493,9 +3722,9 @@ var TI = {
 
 				me.constraint_alt = "-----";
 				if (route.Polygon.selectSteer[0].alt_cstr != nil and route.Polygon.selectSteer[0].alt_cstr_type == "at" and route.Polygon.selectSteer[0].alt_cstr>-5000) {#Fg has habit of defaulting it to -9999
-					me.constraint_alt = sprintf("%5d",me.interoperability==displays.METRIC?FT2M*route.Polygon.selectSteer[0].alt_cstr:route.Polygon.selectSteer[0].alt_cstr);
+					me.constraint_alt = sprintf("%5d",me.swedishMode?FT2M*route.Polygon.selectSteer[0].alt_cstr:route.Polygon.selectSteer[0].alt_cstr);
 				}
-				me.wpText4Desc.setText(me.interoperability==displays.METRIC?"H":"A");
+				me.wpText4Desc.setText(me.swedishMode?"H":"A");
 				me.wpText4.setText(me.constraint_alt);
 				if (me.blinkBox4 == FALSE or me.twoHz) {
 					me.wpText4.show();
@@ -3508,7 +3737,7 @@ var TI = {
 				if (route.Polygon.selectSteer[0].speed_cstr != nil and (route.Polygon.selectSteer[0].speed_cstr_type == "mach" or route.Polygon.selectSteer[0].speed_cstr_type == "computed-mach")) {
 					me.constraint_speed = sprintf("%0.2f",route.Polygon.selectSteer[0].speed_cstr);
 				}
-				me.wpText5Desc.setText(me.interoperability==displays.METRIC?"M":"M");
+				me.wpText5Desc.setText(me.swedishMode?"M":"M");
 				me.wpText5.setText(me.constraint_speed);
 				if (me.blinkBox5 == FALSE or me.twoHz) {
 					me.wpText5.show();
@@ -3517,12 +3746,13 @@ var TI = {
 				}
 				me.wpText5.update();
 
-				#me.of = me.interoperability==displays.METRIC?" AV ":" OF ";
-				#me.wpText6Desc.setText(me.interoperability==displays.METRIC?"B":"S");
+				#me.of = me.swedishMode?" AV ":" OF ";
+				#me.wpText6Desc.setText(me.swedishMode?"B":"S");
 				#me.wpText6.setText((1+route.Polygon.selectSteer[1])~me.of~route.Polygon.editing.getSize());
 
 				me.wpText6Desc.setText("TYP");
-				me.wpText6.setText(route.Polygon.selectSteer[0].fly_type);
+				# Hold = target
+				me.wpText6.setText(route.Polygon.selectSteer[0].fly_type=="flyOver"?(me.swedishMode?"M\xC3\x85L":"TARGET"):(me.swedishMode?"BRYT":"STEER"));
 				if (me.blinkBox6 == FALSE or me.twoHz) {
 					me.wpText6.show();
 				} else {
@@ -3546,8 +3776,8 @@ var TI = {
 					me.wpText2.hide();
 				}
 
-				me.of = me.interoperability==displays.METRIC?" AV ":" OF ";
-				me.wpText3Desc.setText(route.Polygon.selectSteer != nil?(me.interoperability==displays.METRIC?"PKT":"PNT"):"");
+				me.of = me.swedishMode?" AV ":" OF ";
+				me.wpText3Desc.setText(route.Polygon.selectSteer != nil?(me.swedishMode?"PKT":"PNT"):"");
 				me.wpText3.setText(route.Polygon.selectSteer != nil?((1+route.Polygon.selectSteer[1])~me.of~route.Polygon.editing.getSize()):"");
 
 				me.wpText4Desc.setText(route.Polygon.selectSteer != nil?"LON":"");
@@ -3610,7 +3840,7 @@ var TI = {
 				me.wpNum  = me.wp+1;
 
 				me.legs   = me.points-1;
-				me.legText = (me.legs==0 or me.wpNum == 1)?"":(me.wpNum-1)~(me.interoperability==displays.METRIC?" AV ":" OF ")~me.legs;
+				me.legText = (me.legs==0 or me.wpNum == 1)?"":(me.wpNum-1)~(me.swedishMode?" AV ":" OF ")~me.legs;
 
 				me.wpAlt  = me.node.getNode("altitude-ft");
 				if (me.wpAlt != nil) {
@@ -3623,7 +3853,7 @@ var TI = {
 					me.wpAlt = "-----";
 				} else {
 					# bad coding, shame on me..
-					me.wpAlt  = me.interoperability==displays.METRIC?me.wpAlt*FT2M:me.wpAlt;
+					me.wpAlt  = me.swedishMode?me.wpAlt*FT2M:me.wpAlt;
 					me.wpAlt = sprintf("%d", me.wpAlt);
 				}
 
@@ -3643,14 +3873,14 @@ var TI = {
 				me.wpETA  = int(getprop("autopilot/route-manager/ete")/60);#mins
 				me.wpETAText = sprintf("%d", me.wpETA);
 				if (me.wpETA > 500) {
-					me.wpETAText = "---";
+					me.wpETAText = "---";#todo should be time predicted when steerpoint is passed like 12:40:31. Also There should be a T field above it same formating, no clue what for.
 				}
 
-				me.wpText2Desc.setText(me.interoperability==displays.METRIC?"BEN":"LEG");
+				me.wpText2Desc.setText(me.swedishMode?"BEN":"LEG");
 				me.wpText2.setText(me.legText);
-				me.wpText3Desc.setText(me.interoperability==displays.METRIC?"B":"S");
+				me.wpText3Desc.setText(me.swedishMode?"B":"S");
 				me.wpText3.setText((me.wpNum-1)~" -> "~me.wpNum);
-				me.wpText4Desc.setText(me.interoperability==displays.METRIC?"H":"A");
+				me.wpText4Desc.setText(me.swedishMode?"H":"A");
 				me.wpText4.setText(me.wpAlt);
 				me.wpText5Desc.setText("M");
 				me.wpText5.setText(me.wpSpeed);
@@ -3673,6 +3903,32 @@ var TI = {
 			}
 		}
 	},
+	
+	createSteerpoint: func (wp) {
+		#TODO: double check that it can only increase by 1 from max
+		if (wp > me.steerPointMax) {
+	   		var stGrp = me.rootCenter.createChild("group").setTranslation(2000, 2000);
+	   		append(me.steerpointText, stGrp.createChild("text")
+	    		.setText("B2")
+	    		.setColor(COLOR_WHITE)
+	    		.setAlignment("right-center")
+	    		.setTranslation(-15*MM2TEX, 0)
+	    		.set("z-index", 6)
+	    		.setFontSize(13, 1));
+			append(me.steerpointSymbol, stGrp.createChild("path")
+			   .set("z-index", 6)
+	           .moveTo(-10*MM2TEX, 0)
+	           .lineTo(0, -15*MM2TEX)
+	           .lineTo(10*MM2TEX, 0)
+	           .lineTo(0, 15*MM2TEX)
+	           .lineTo(-10*MM2TEX, 0)
+	           .setStrokeLineWidth(w)
+	           .setColor(COLOR_TYRK_DARK));
+			append(me.steerpoint, stGrp);
+			me.steerPointMax += 1;
+		}
+		if (wp>me.steerPointMax) print (wp~" - "~me.steerPointMax);
+	},
 
 	showSteerPoints: func {
 		# steerpoints on map
@@ -3681,18 +3937,7 @@ var TI = {
 		me.steerRot = -me.input.heading.getValue()*D2R;
 		if (me.menuMain == MAIN_MISSION_DATA) {
 			if (route.Polygon.primary.type == route.TYPE_MIX) {
-				append(me.all_plans, [route.Polygon.primary, route.Polygon.primary == route.Polygon.editing, TRUE]);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
+				me.all_plans = [[route.Polygon.primary, route.Polygon.primary == route.Polygon.editing, TRUE],nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil];
 			} else {
 				append(me.all_plans, [route.Polygon.polys["1"], route.Polygon.polys["1"] == route.Polygon.editing, TRUE]);
 				append(me.all_plans, [route.Polygon.polys["2"], route.Polygon.polys["2"] == route.Polygon.editing, TRUE]);
@@ -3700,6 +3945,12 @@ var TI = {
 				append(me.all_plans, [route.Polygon.polys["4"], route.Polygon.polys["4"] == route.Polygon.editing, TRUE]);
 				append(me.all_plans, [route.Polygon.polys["1A"], route.Polygon.polys["1A"] == route.Polygon.editing, TRUE]);
 				append(me.all_plans, [route.Polygon.polys["1B"], route.Polygon.polys["1B"] == route.Polygon.editing, TRUE]);
+				append(me.all_plans, [route.Polygon.polys["2A"], route.Polygon.polys["2A"] == route.Polygon.editing, TRUE]);
+				append(me.all_plans, [route.Polygon.polys["2B"], route.Polygon.polys["2B"] == route.Polygon.editing, TRUE]);
+				append(me.all_plans, [route.Polygon.polys["3A"], route.Polygon.polys["3A"] == route.Polygon.editing, TRUE]);
+				append(me.all_plans, [route.Polygon.polys["3B"], route.Polygon.polys["3B"] == route.Polygon.editing, TRUE]);
+				append(me.all_plans, [route.Polygon.polys["4A"], route.Polygon.polys["4A"] == route.Polygon.editing, TRUE]);
+				append(me.all_plans, [route.Polygon.polys["4B"], route.Polygon.polys["4B"] == route.Polygon.editing, TRUE]);
 				append(me.all_plans, [route.Polygon.polys["OP1"], route.Polygon.polys["OP1"] == route.Polygon.editing, TRUE]);
 				append(me.all_plans, [route.Polygon.polys["OP2"], route.Polygon.polys["OP2"] == route.Polygon.editing, TRUE]);
 				append(me.all_plans, [route.Polygon.polys["OP3"], route.Polygon.polys["OP3"] == route.Polygon.editing, TRUE]);
@@ -3709,12 +3960,7 @@ var TI = {
 			}
 		} else {
 			if (route.Polygon.primary.type != route.TYPE_MIX) {
-				append(me.all_plans, [route.Polygon.primary, FALSE, FALSE]);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
+				me.all_plans = [[route.Polygon.primary, FALSE, FALSE],nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil];
 				append(me.all_plans, [route.Polygon.polys["OP1"], FALSE, FALSE]);
 				append(me.all_plans, [route.Polygon.polys["OP2"], FALSE, FALSE]);
 				append(me.all_plans, [route.Polygon.polys["OP3"], FALSE, FALSE]);
@@ -3722,18 +3968,7 @@ var TI = {
 				append(me.all_plans, [route.Polygon.polys["OP5"], FALSE, FALSE]);
 				append(me.all_plans, [route.Polygon.polys["OP6"], FALSE, FALSE]);
 			} else {
-				append(me.all_plans, [route.Polygon.primary, route.Polygon.primary == route.Polygon.editing, TRUE]);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
-				append(me.all_plans, nil);
+				me.all_plans = [[route.Polygon.primary, route.Polygon.primary == route.Polygon.editing, TRUE],nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil,nil];
 			}
 		}
 
@@ -3743,12 +3978,12 @@ var TI = {
 		}
 
 		me.poly = [];#0: lat  1: lon  2: draw leg 3: color 4: z-index 5: -1 = first, +1 = last, 0 = not area
-		me.steerSE = me.interoperability == displays.METRIC;
-		me.steerB = me.steerSE?"B":"S";
-		me.steerA = me.steerSE?"\xC3\x85":"R";
-		me.steerM = me.steerSE?"M":"T";
 
-		for(me.steerCounter = 0;me.steerCounter < 12; me.steerCounter += 1) {
+		me.steerB = me.swedishMode?"B":"S";
+		me.steerA = me.swedishMode?"\xC3\x85":"R";
+		me.steerM = me.swedishMode?"M":"T";
+		me.wpIndex = -1;
+		for(me.steerCounter = 0;me.steerCounter < 18; me.steerCounter += 1) {
 			me.curr_plan = me.all_plans[me.steerCounter];
 			if (me.curr_plan != nil and me.curr_plan[0].type == route.TYPE_AREA) {#maybe more solid to check steercounter
 				me.isArea = TRUE;
@@ -3766,29 +4001,32 @@ var TI = {
 				} else {
 					me.wpSelect = nil;
 				}
+			} else {
+				me.points = 0;
 			}
-			for (var wp = 0; wp < (me.steerCounter>5?8:maxSteers); wp += 1) {
+			for (var wp = 0; wp < me.points; wp += 1) {
 				# wp      = local index inside a polygon
-				# wpindex = global index for use with canvas elements
-				me.wpIndex = wp+48*me.steerCounter;
-				if (me.steerCounter>5) {
-					me.wpIndex = wp+48*6+8*(me.steerCounter-6);
-				}
+				# wpIndex = global index for use with canvas elements
+				
+				
 				me.isSelectable = FALSE;
 				me.doRR = FALSE;
 				if (me.curr_plan != nil and me.points > wp and ((me.isArea or (route.Polygon.isPrimaryActive() == TRUE and me.curr_plan[0].isPrimary())) or me.menuMain == MAIN_MISSION_DATA)) {
 					me.node = me.polygon[wp];
 	  				if (me.node == nil or me.showSteers == FALSE) {
-	  					me.steerpoint[me.wpIndex].hide();
+	  					#me.steerpoint[me.wpIndex].hide();
 	    				continue;
 	  				}
+	  				me.wpIndex += 1;
+	  				me.createSteerpoint(me.wpIndex);
 					me.lat_wp = me.node.wp_lat;
 	  				me.lon_wp = me.node.wp_lon;
+	  				me.target_wp = me.node.fly_type=="flyOver";
 	  				#me.alt = node.getNode("altitude-m").getValue();
 					me.name = me.node.id;
 					me.texCoord = me.laloToTexel(me.lat_wp, me.lon_wp);
 					if (me.isArea) {
-						# point is part of area
+						# this point is part of area
 						#printf("doing for %d", me.wpSelect);
 						me.steerpoint[me.wpIndex].setColor(me.wpSelect == wp?COLOR_WHITE:me.curr_plan[0].color);
 						me.steerpointSymbol[me.wpIndex].setScale(0.25);
@@ -3797,7 +4035,7 @@ var TI = {
 						me.areaEnd = wp==0?-1:(me.points == wp+1 and wp>1?1:0);
 						append(me.poly, [me.texCoord[0], me.texCoord[1], wp != 0, me.curr_plan[1] == TRUE?COLOR_WHITE:me.curr_plan[0].color, me.curr_plan ==route.Polygon.editing?2:1, me.areaEnd]);
 					} elsif (me.wpSelect == wp) {
-						# waypoint is selected in MSDA
+						# this waypoint is selected in MSDA
 						#printf("doing for %d", me.wpSelect);
 						me.steerpoint[me.wpIndex].setColor(COLOR_WHITE);
 						me.steerpointSymbol[me.wpIndex].setScale(1);
@@ -3806,7 +4044,7 @@ var TI = {
 						append(me.poly, [me.texCoord[0], me.texCoord[1], wp != 0, COLOR_TYRK, 2, 0]);
 						me.nextActive = FALSE;
 					} elsif ((land.showActiveSteer == FALSE and me.curr_plan[2] == FALSE) and me.curr_plan[0].isPrimary() == TRUE and me.curr_plan[0].isPrimaryActive() == TRUE and me.curr_plan[0].getLeg() != nil and me.curr_plan[0].getLeg().id == me.node.id) {
-						# we are not in MSDA and waypoint is hidden
+						# The route is being flown. We are not in MSDA and waypoint is current but should not be shown.
 						me.steerpoint[me.wpIndex].hide();
 						if (wp != me.points-1) {
 							# airport is not last steerpoint, we make a leg to/from that also
@@ -3815,7 +4053,7 @@ var TI = {
 						me.nextActive = me.nextDist*NM2M<20000;
 	    				continue;
 					} elsif (me.curr_plan[2] == FALSE and me.curr_plan[0].isPrimary() == TRUE and me.curr_plan[0].isPrimaryActive() == TRUE and me.curr_plan[0].getLeg() != nil and me.curr_plan[0].getLeg().id == me.node.id) {
-						# waypoint is the active and we not in MSDA menu
+						# Route is being flown, waypoint is current and we not in MSDA menu.
 						me.steerpoint[me.wpIndex].setColor(COLOR_TYRK);
 						me.steerpoint[me.wpIndex].set("z-index", 10);
 						me.steerpointSymbol[me.wpIndex].setScale(1);
@@ -3825,7 +4063,7 @@ var TI = {
 						append(me.poly, [me.texCoord[0], me.texCoord[1], TRUE, COLOR_TYRK_DARK, 1, 0]);
 						me.nextActive = me.nextDist*NM2M<20000;
 					} elsif (me.curr_plan[1] == TRUE) {
-						# waypoint is in the polygon selected for editing
+						# We are in MSDA, waypoint is in the polygon selected for editing.
 						me.steerpoint[me.wpIndex].setColor(COLOR_TYRK);
 						me.steerpoint[me.wpIndex].set("z-index", 10);
 						me.steerpointSymbol[me.wpIndex].setScale(1);
@@ -3833,7 +4071,7 @@ var TI = {
 						append(me.poly, [me.texCoord[0], me.texCoord[1], wp != 0, COLOR_TYRK, 2, 0]);
 						me.nextActive = FALSE;
 					} else {
-						# ordinary waypoint (might be in MSDA)
+						# ordinary waypoint (MSDA or not)
 						me.steerpoint[me.wpIndex].set("z-index", 5);
 						me.steerpoint[me.wpIndex].setColor(COLOR_TYRK_DARK);
 						me.steerpointSymbol[me.wpIndex].setScale(1);
@@ -3846,37 +4084,49 @@ var TI = {
 					}
 					me.steerpoint[me.wpIndex].setTranslation(me.texCoord[0], me.texCoord[1]);
 					if (me.doRR) {
+						#draw steerorder symbol around steerpoint.
 						me.rrSymbolS.setTranslation(me.texCoord[0], me.texCoord[1]);
 						me.rrSymbolS.show();
 					}
-					if (me.isSelectable and me.cursorTrigger) {
-						# not in MSDA so check if cursor is clicking on the steerpoint
+					if (me.isSelectable and me.cursorTrigger and !me.cursorDidSomething) {
+						# not in MSDA so check if cursor is clicking on the steerpoint and if so, set it current.
 						me.cursorDistX = me.cursorOPosX-me.texCoord[0];
 						me.cursorDistY = me.cursorOPosY-me.texCoord[1];
 						me.cursorDist = math.sqrt(me.cursorDistX*me.cursorDistX+me.cursorDistY*me.cursorDistY);
 						if (me.cursorDist < 12) {
 							route.Polygon.jumpTo(me.node, wp);
 							me.cursorTriggerPrev = TRUE;#a hack. It CAN happen that a steerpoint gets selected through infobox, in that case lets make sure infobox is not activated. bad UI fix. :(
+							me.cursorDidSomething = TRUE;
 						}
 					}
-					if (me.curr_plan[1] and me.cursorTrigger and !route.Polygon.editSteer and !route.Polygon.insertSteer and !route.Polygon.appendSteer and !me.isDAPActive()) {
-						# I think this is where cursor select a steer when a plan is in edit mode..
+					if (me.curr_plan[1] and me.cursorTrigger and !me.cursorDidSomething and !route.Polygon.editSteer and !route.Polygon.insertSteer and !route.Polygon.appendSteer and !me.isDAPActive()) {
+						# This is where cursor select a steer when a plan is in edit mode..
 						me.cursorDistX = me.cursorOPosX-me.texCoord[0];
 						me.cursorDistY = me.cursorOPosY-me.texCoord[1];
 						me.cursorDist = math.sqrt(me.cursorDistX*me.cursorDistX+me.cursorDistY*me.cursorDistY);
 						if (me.cursorDist < 12) {
+							# select the steerpoint
 							route.Polygon.selectSteerpoint(me.curr_plan[0].getName(), me.node, wp);# dangerous!!! what if somebody is editing plan in routemanager?
 							me.steerpoint[me.wpIndex].setColor(COLOR_WHITE);
 							me.cursorTriggerPrev = TRUE;#a hack. It CAN happen that a steerpoint gets selected through infobox, in that case lets make sure infobox is not activated. bad UI fix. :(
+							me.cursorDidSomething = TRUE;
+							if (route.Polygon.dragSteer and me.sDrag == nil) {
+								me.dragOk = route.Polygon.startDragging();
+								if (me.dragOk) {
+									# start dragging
+									me.sDrag = me.node;
+								}
+							}
 						}
 					}
 					me.steerpoint[me.wpIndex].setRotation(me.steerRot);
 					if (me.curr_plan[1] or (!me.curr_plan[1] and !me.curr_plan[2])) {
-						# plan is being edited or we are not in MSDA page:
-						me.wp_pre = me.curr_plan[0].type == route.TYPE_AREA?"":(me.curr_plan[0].type == route.TYPE_MIX?me.steerB:(me.curr_plan[0].type == route.TYPE_MISS?me.steerB:me.steerA));
+						# plan is being edited or we are not in MSDA page so set text name by it.
+						me.wp_pre = me.curr_plan[0].type == route.TYPE_AREA?"":(me.curr_plan[0].type == route.TYPE_MIX?me.steerB:(me.target_wp?me.steerM:(me.curr_plan[0].type == route.TYPE_MISS?me.steerB:me.steerA)));
 						me.steerpointText[me.wpIndex].setText(me.wp_pre~(wp+1));
+						me.steerpointText[me.wpIndex].show();
 					} else {
-						me.steerpointText[me.wpIndex].setText("");
+						me.steerpointText[me.wpIndex].hide();
 					}
 					if (!me.isArea or (me.curr_plan[2] and me.curr_plan[1])) {
 						# its either part of a plan or we in MSDA menu and its being edited
@@ -3886,9 +4136,14 @@ var TI = {
   						me.steerpoint[me.wpIndex].hide();
   					}
 				} else {
-					me.steerpoint[me.wpIndex].hide();
+					#me.steerpoint[me.wpIndex].hide();
 				}
 	  		}
+	  	}
+	  	#me.wpIndex = me.wpIndex==-1?0:me.wpIndex;
+	  	me.wpIndex += 1;
+	  	for (me.j = me.wpIndex;me.j<=me.steerPointMax;me.j+=1) {
+	  		me.steerpoint[me.j].hide();
 	  	}
 	  	route.Polygon.jumpExecute();
   	},
@@ -3902,6 +4157,17 @@ var TI = {
 		me.pos_xx		 = -me.coordSelf.distance_to(me.coord)*M2TEX * math.cos(me.angle + math.pi/2);
 		me.pos_yy		 = -me.coordSelf.distance_to(me.coord)*M2TEX * math.sin(me.angle + math.pi/2);
   		return [me.pos_xx, me.pos_yy];#relative to rootCenter
+  	},
+  	
+  	laloToTexelMap: func (la, lo) {
+		me.coord = geo.Coord.new();
+  		me.coord.set_latlon(la, lo);
+  		me.coordSelf = geo.Coord.new();#TODO: dont create this every time method is called
+  		me.coordSelf.set_latlon(me.lat, me.lon);
+  		me.angle = (me.coordSelf.course_to(me.coord))*D2R;
+		me.pos_xx		 = -me.coordSelf.distance_to(me.coord)*M2TEX * math.cos(me.angle + math.pi/2);
+		me.pos_yy		 = -me.coordSelf.distance_to(me.coord)*M2TEX * math.sin(me.angle + math.pi/2);
+  		return [me.pos_xx, me.pos_yy];#relative to mapCenter
   	},
 
   	TexelToLaLoMap: func (x,y) {#relative to map center
@@ -3942,7 +4208,7 @@ var TI = {
   				me.cs.set_latlon(me.cursorLaLo[0], me.cursorLaLo[1],0);
   				me.bear = geo.normdeg(me.be.course_to(me.cs));
   				me.beDist = me.be.distance_to(me.cs);
-  				me.beDist = me.interoperability==displays.METRIC?0.001*me.beDist:M2NM*me.beDist;
+  				me.beDist = me.swedishMode?0.001*me.beDist:M2NM*me.beDist;
   				me.beDistTxt = sprintf("%d",me.beDist);
   				if (me.beDist > 10000) {
   					me.beDistTxt = sprintf("%dK",me.beDist*0.001);
@@ -3952,7 +4218,7 @@ var TI = {
   				if (!me.isCursorOnMap()) {
   					me.beText.setText("");
   				} else {
-  					me.beText.setText(sprintf("%03d\xc2\xb0 %s%s",me.bear,me.interoperability==displays.METRIC?" A":"NM",me.beDistTxt));
+  					me.beText.setText(sprintf("%03d\xc2\xb0 %s%s",me.bear,me.swedishMode?" A":"NM",me.beDistTxt));
   				}
   				me.beTextField.show();
   			} elsif (radar_logic.selection != nil) {
@@ -3963,14 +4229,14 @@ var TI = {
   				me.cs.set_latlon(me.lck.lat(), me.lck.lon(),0);
   				me.bear = geo.normdeg(me.be.course_to(me.cs));
   				me.beDist = me.be.distance_to(me.cs);
-  				me.beDist = me.interoperability==displays.METRIC?0.001*me.beDist:M2NM*me.beDist;
+  				me.beDist = me.swedishMode?0.001*me.beDist:M2NM*me.beDist;
   				me.beDistTxt = sprintf("%d",me.beDist);
   				if (me.beDist > 10000) {
   					me.beDistTxt = sprintf("%dK",me.beDist*0.001);
   				} elsif (me.beDist > 1000) {
   					me.beDistTxt = sprintf("%.1fK",me.beDist*0.001);
   				}
-  				me.beText.setText(sprintf("%03d\xc2\xb0 %s%s",me.bear,me.interoperability==displays.METRIC?" A":"NM",me.beDistTxt));
+  				me.beText.setText(sprintf("%03d\xc2\xb0 %s%s",me.bear,me.swedishMode?" A":"NM",me.beDistTxt));
   				me.beTextField.show();
   			} else {
   				me.beTextField.hide();
@@ -3986,18 +4252,27 @@ var TI = {
   		# LV and FF points
   		#
   		# address, color (0=red 1=yellow 2=tyrk), radius(KM) (-1= 3.5mm), type (0=LV, 1=FF, 2=STRIL), lon, lat
-
+  		if (!me.cursorTrigger or me.menuMain != MAIN_MISSION_DATA) {
+  			me.lvffDrag = nil;
+  		}
   		me.lv = dap.lv;
   		me.ppGrp.removeAllChildren();
   		foreach(me.lvp;keys(me.lv)) {
   			# for now just paint all of them and hope the pilot do not input tons at the same time
   			me.pp = me.lv[me.lvp];
 
-  			me.ppCol = me.pp.color==0?COLOR_RED:(me.pp.color==1?COLOR_YELLOW:COLOR_TYRK);
+  			me.ppCol = me.pp.color==0?COLOR_RED:(me.pp.color==1?COLOR_YELLOW:(me.pp.color==2?COLOR_TYRK:COLOR_GREEN));
   			me.ppRad = me.pp.radius==-1?15:M2TEX*me.pp.radius*1000;
   			me.ppNum = sprintf("%03d",me.pp.address);
-  			me.ppXY  = me.laloToTexel(me.pp.lat, me.pp.lon);
-
+  			if (me.lvffDrag == me.pp.address) {
+  				me.laloDap = me.TexelToLaLoMap(me.cursorPosX, me.cursorPosY);
+  				dap.lv[me.lvp].lat = me.laloDap[0];
+  				dap.lv[me.lvp].lon = me.laloDap[1];
+  				me.ppXY = [me.cursorOPosX, me.cursorOPosY];
+  			} else {
+  				me.ppXY  = me.laloToTexel(me.pp.lat, me.pp.lon);
+  			}
+  			
   			if (me.pp.type==1) {
   				# FF
   				me.ppGrp.createChild("group")
@@ -4024,21 +4299,42 @@ var TI = {
   				}
 			} else {
 				# LV
-				me.ppGrp.createChild("path")
-  						.moveTo(me.ppXY[0]-me.ppRad, me.ppXY[1])
-  						.arcSmallCW(me.ppRad, me.ppRad, 0, me.ppRad*2, 0)
-           				.arcSmallCW(me.ppRad, me.ppRad, 0, -me.ppRad*2, 0)
-  						.setColor(me.ppCol)
-  						.setStrokeLineWidth(w);
-				if (me.menuMain==MAIN_MISSION_DATA or dap.settingKnob == dap.KNOB_TI) {
-  					me.ppGrp.createChild("text")
+				if (me.menuMain==MAIN_MISSION_DATA or ((me.pp.color == 0 or me.pp.color == 1) and me.showHostileZones) or (me.pp.color == 3 and me.showFriendlyZones)) {
+					me.ppGrp.createChild("path")
+	  						.moveTo(me.ppXY[0]-me.ppRad, me.ppXY[1])
+	  						.arcSmallCW(me.ppRad, me.ppRad, 0, me.ppRad*2, 0)
+	           				.arcSmallCW(me.ppRad, me.ppRad, 0, -me.ppRad*2, 0)
+	  						.setColor(me.ppCol)
+	  						.setStrokeLineWidth(w);
+  				}
+				if (me.menuMain==MAIN_MISSION_DATA or (dap.settingKnob == dap.KNOB_TI and (((me.pp.color == 0 or me.pp.color == 1) and me.showHostileZones) or (me.pp.color == 3 and me.showFriendlyZones)))) {
+					me.lvPadX = 0;
+					me.lvPadY = 0;
+					me.lvAlign = "center-center";
+  					if (me.ppRad < 20) {
+  						# the circle is so small that the text wont fit inside it.
+  						me.lvPadX = (me.ppRad+5)*math.cos(-me.input.heading.getValue()*D2R);
+  						me.lvPadY = (me.ppRad+5)*math.sin(-me.input.heading.getValue()*D2R);
+						me.lvAlign = "left-center";
+  					}
+  					me.ppGrp.createChild("text")#TODO: Make this and FF texts be reused. (like gridlines text do) As text is very heavy to create.
   						.setText(me.ppNum)
   						.setColor(me.ppCol)
-    					.setAlignment("center-center")
-    					.setTranslation(me.ppXY[0], me.ppXY[1])
+    					.setAlignment(me.lvAlign)
+    					.setTranslation(me.ppXY[0]+me.lvPadX, me.ppXY[1]+me.lvPadY)
     					.setRotation(-me.input.heading.getValue()*D2R)
     					.setFontSize(15, 1);
   				}
+			}
+			#printf("%d %d %d %d %d ",me.menuMain == MAIN_MISSION_DATA,me.cursorTrigger,!me.cursorDidSomething,route.Polygon.editing == nil,me.lvffDrag == nil);
+			if (me.menuMain == MAIN_MISSION_DATA and me.cursorTrigger and !me.cursorDidSomething and route.Polygon.editing == nil and me.lvffDrag == nil) {
+				me.cursorDistX = me.cursorOPosX-me.ppXY[0];
+				me.cursorDistY = me.cursorOPosY-me.ppXY[1];
+				me.cursorDist = math.sqrt(me.cursorDistX*me.cursorDistX+me.cursorDistY*me.cursorDistY);
+				if (me.cursorDist < 12) {
+					me.lvffDrag = me.pp.address;
+					me.cursorDidSomething = TRUE;
+				}
 			}
   		}
   		me.ppGrp.update();
@@ -4089,7 +4385,7 @@ var TI = {
   	},
 
   	showTime: func {
-		if (me.displayTime == TRUE) {
+		if (me.displayTime == TRUE or (route.Polygon.editing != nil and route.Polygon.editing.type != route.TYPE_AREA)) {
 			me.textTime.setText(getprop("sim/time/gmt-string")~" Z  ");# should really be local time
 			me.textTime.show();
 		} elsif (getprop("/ja37/avionics/ins-init") > 0) {
@@ -4101,6 +4397,7 @@ var TI = {
 	},
 
 	showFlightTime: func {
+		# set true from DAP, when DAP knob is in TI (OUT).
 		if (me.displayFTime == TRUE) {
 			me.fhour = int(displays.common.ftime/60/60);
 			me.fmin  = int((displays.common.ftime-me.fhour*60*60)/60);
@@ -4113,7 +4410,7 @@ var TI = {
 
 	updateFlightData: func {
 		me.fData = FALSE;
-		if (me.input.terrainOn.getValue() == TRUE or me.input.terrainWarn.getValue() == TRUE) {
+		if (me.input.terrainOn.getValue() == TRUE or me.input.terrainWarn.getValue() == TRUE) {#todo: why do 2 checks here???
 			me.fData = TRUE;
 		} elsif (me.displayFlight == FLIGHTDATA_ON) {
 			me.fData = TRUE;
@@ -4155,7 +4452,7 @@ var TI = {
 		me.alt = getprop("instrumentation/altimeter/indicated-altitude-ft");
 		if (me.alt != nil) {
 			me.text = "";
-			if (me.interoperability == displays.METRIC) {
+			if (me.swedishMode) {
 				if(me.alt*FT2M < 1000) {
 					me.text = ""~roundabout(me.alt*FT2M/10)*10;
 				} else {
@@ -4193,9 +4490,9 @@ var TI = {
 			me.ground_grp_trans.setRotation(-me.input.roll.getValue() * D2R);
 			me.groundCurve.setTranslation(0, me.dist);
 			if (me.time < 10 and me.time != 0) {
-				me.groundCurve.setColor(rRed,gRed,bRed, a);
+				me.groundCurve.setColor(COLOR_RED);
 			} else {
-				me.groundCurve.setColor(rGB,gGB,bGB, a);
+				me.groundCurve.setColor(COLOR_GREY_BLUE);
 			}
 			me.ground_grp.show();
 		} else {
@@ -4219,7 +4516,7 @@ var TI = {
 	    	me.ammoT = me.ammo~"";
 	    }
 		me.textBArmAmmo.setText(me.ammoT);
-		if (me.interoperability == displays.METRIC) {
+		if (me.swedishMode) {
 			if (me.ModeAttack == TRUE) {
 				me.textBTactType1.setText("A");
 				me.textBTactType2.setText("T");
@@ -4248,30 +4545,37 @@ var TI = {
 		# RR: radar guided steering
 		if (radar_logic.steerOrder == TRUE and radar_logic.selection != nil) {
 			me.mode = "RR";# landing steerpoint
-			me.textBMode.setColor(rWhite,gWhite,bWhite);
+			me.textBMode.setColor(COLOR_WHITE);
 		} elsif (land.mode_LB_active == TRUE) {
-			me.mode = me.interoperability == displays.METRIC?"LB":"LS";# landing steerpoint
-			me.textBMode.setColor(rWhite,gWhite,bWhite);
+			me.mode = me.swedishMode?"LB":"LS";# landing steerpoint
+			me.textBMode.setColor(COLOR_WHITE);
 		} elsif (land.mode_LF_active == TRUE) {
-			me.mode = me.interoperability == displays.METRIC?"LF":"LT";# landing touchdown point
-			me.textBMode.setColor(rWhite,gWhite,bWhite);
+			me.mode = me.swedishMode?"LF":"LT";# landing touchdown point
+			me.textBMode.setColor(COLOR_WHITE);
 		} elsif (land.mode_L_active == TRUE) {
 			me.mode = "L ";# steering to landing base
-			me.textBMode.setColor(rTyrk,gTyrk,bTyrk);
-		} elsif (land.mode_B_active == TRUE) {
-			me.mode = me.interoperability == displays.METRIC?"B ":"S";# following steerpoint route
-			me.textBMode.setColor(rTyrk,gTyrk,bTyrk);
+			me.textBMode.setColor(COLOR_TYRK);
 		} elsif (land.mode_OPT_active == TRUE) {
 			me.mode = "OP";# visual landing phase
-			me.textBMode.setColor(rWhite,gWhite,bWhite);
+			me.textBMode.setColor(COLOR_WHITE);
+		} elsif ((land.mode_B_active == TRUE or land.mode_LA_active == TRUE) and route.Polygon.primary != nil) {
+			me.target_wp = route.Polygon.primary.isTarget(route.Polygon.primary.getIndex());
+			me.wp_pre = route.Polygon.primary.type == route.TYPE_MIX?me.steerB:(me.target_wp?me.steerM:(route.Polygon.primary.type == route.TYPE_MISS?me.steerB:me.steerA));
+			me.wp_post = route.Polygon.primary.getIndex()+1;
+			me.mode = me.wp_pre~me.wp_post;
+			if (route.Polygon.primary.type == route.TYPE_MIX or !me.target_wp) {
+				me.textBMode.setColor(COLOR_TYRK);
+			} else {
+				me.textBMode.setColor(COLOR_WHITE);
+			}
 		} else {
 			me.mode = "  ";# VFR
-			me.textBMode.setColor(rWhite,gWhite,bWhite);
+			me.textBMode.setColor(COLOR_WHITE);
 		}
 		me.textBMode.setText(me.mode);
 
 		if (displays.common.distance_m != -1) {
-			if (me.interoperability == displays.METRIC) {
+			if (me.swedishMode) {
 				me.distance_un = displays.common.distance_m/1000;
 				me.textBDistN.setText("A");
 			} else {
@@ -4288,9 +4592,9 @@ var TI = {
 			me.textBDistN.setText(" ");
 		}
 		if (me.input.currentMode.getValue() == displays.LANDING and me.input.gearsPos.getValue() == 1) {
-			me.alphaT  = me.interoperability == displays.METRIC?"ALFA":"ALPH";
-			me.weightT = me.interoperability == displays.METRIC?"VIKT":"WEIG";
-			if (me.interoperability == displays.METRIC) {
+			me.alphaT  = me.swedishMode?"ALFA":"ALPH";
+			me.weightT = me.swedishMode?"VIKT":"WEIG";
+			if (me.swedishMode) {
 				me.weight = getprop("fdm/jsbsim/inertia/weight-lbs")*LB2KG*0.001;
 			} else {
 				me.weight = getprop("fdm/jsbsim/inertia/weight-lbs")*0.001;
@@ -4327,25 +4631,23 @@ var TI = {
 			} else {
 				me.textBAlpha.setText("");
 			}
-		}# else {
-		#	me.textBWeight.setText("");
-		#	me.textBAlpha.setText("");
-		#}
+		}
+		
 		if (displays.common.error == FALSE) {
-			me.textBerror.setColor(rGrey, gGrey, bGrey, a);
+			me.textBerror.setColor(COLOR_GREY);
 			me.textBerrorFrame2.hide();
 			me.textBerrorFrame1.show();
 		} else {
-			me.textBerror.setColor(rBlack, gBlack, bBlack, a);
+			me.textBerror.setColor(COLOR_BLACK);
 			me.textBerrorFrame1.hide();
 			me.textBerrorFrame2.show();
 		}
 		if (me.dataLink == FALSE) {
-			me.textBlink.setColor(rGrey, gGrey, bGrey, a);
+			me.textBlink.setColor(COLOR_GREY);
 			me.textBLinkFrame2.hide();
 			me.textBLinkFrame1.show();
 		} else {
-			me.textBlink.setColor(rBlack, gBlack, bBlack, a);
+			me.textBlink.setColor(COLOR_BLACK);
 			me.textBLinkFrame1.hide();
 			me.textBLinkFrame2.show();
 		}
@@ -4366,7 +4668,7 @@ var TI = {
 					.lineTo(me.leftX*0.80, me.leftY*0.80)
 					.moveTo(-me.leftX, me.leftY)
 					.lineTo(-me.leftX*0.80, me.leftY*0.80)
-					.setColor(rTyrk,gTyrk,bTyrk, a)
+					.setColor(COLOR_TYRK)
 			    	.setStrokeLineWidth(w);
 			    me.lastRRT = me.input.timeElapsed.getValue();
 			    me.lastRR  = me.input.radarRange.getValue();
@@ -4396,7 +4698,7 @@ var TI = {
 
 		  if (land.show_runway_line == TRUE) {
 		    me.runway_l = land.line*1000;
-		    me.scale = me.runway_l*M2TEX;
+		    me.scale = clamp(me.runway_l*M2TEX,10*MM2TEX,1000);#in the real they are always 10mm, cheated abit.
 		    me.approach_line.setScale(1, me.scale);
 		    me.heading = me.input.heading.getValue();#true
 		    me.dest.setRotation((180+land.head-me.heading)*D2R);
@@ -4425,8 +4727,8 @@ var TI = {
 		      me.pixelX =  me.pixelDistance * math.cos(me.xa_rad + math.pi/2);
 		      me.pixelY =  me.pixelDistance * math.sin(me.xa_rad + math.pi/2);
 		      me.approach_circle.setTranslation(me.pixelX, me.pixelY);
-		      me.approach_circle.show();
 		      me.approach_circle.update();#needed
+		      me.approach_circle.show();
 		    } else {
 		      me.approach_circle.hide();#pitch.......1x.......................................................
 		    }
@@ -4561,7 +4863,7 @@ var TI = {
 		    } elsif (me.ordn == FALSE) {
 		    	me.echoesAircraft[me.currentIndexT].setTranslation(me.pos_xx, me.pos_yy);
 
-		    	if (me.menuMain != MAIN_MISSION_DATA and me.currentIndexT != 0 and me.cursorTrigger and me.isCursorOnMap()) {
+		    	if (me.menuMain != MAIN_MISSION_DATA and me.currentIndexT != 0 and me.cursorTrigger and me.isCursorOnMap() and !me.cursorDidSomething) {
 					# not in MSDA so check if cursor is clicking on the aircraft
 					me.cursorDistX = me.cursorOPosX-me.pos_xx;
 					me.cursorDistY = me.cursorOPosY-me.pos_yy;
@@ -4570,18 +4872,19 @@ var TI = {
 					if (me.cursorDist < 12) {
 						radar_logic.jumpTo(contact);
 						me.cursorTriggerPrev = TRUE;#a hack. It CAN happen that a contact gets selected through infobox, in that case lets make sure infobox is not activated. bad UI fix. :(
+						me.cursorDidSomething = TRUE;
 					}
 				}
 
 		    	if (me.boogie == 1) {
-		    		me.echoesAircraftTri[me.currentIndexT].setColor(rGreen,gGreen,bGreen,a);
-		    		me.echoesAircraftVector[me.currentIndexT].setColor(rGreen,gGreen,bGreen,a);
+		    		me.echoesAircraftTri[me.currentIndexT].setColor(COLOR_GREEN);
+		    		me.echoesAircraftVector[me.currentIndexT].setColor(COLOR_GREEN);
 		    	} elsif (me.boogie == -1) {
-		    		me.echoesAircraftTri[me.currentIndexT].setColor(rRed,gRed,bRed,a);
-		    		me.echoesAircraftVector[me.currentIndexT].setColor(rRed,gRed,bRed,a);
+		    		me.echoesAircraftTri[me.currentIndexT].setColor(COLOR_RED);
+		    		me.echoesAircraftVector[me.currentIndexT].setColor(COLOR_RED);
 		    	} else {
-		    		me.echoesAircraftTri[me.currentIndexT].setColor(rYellow,gYellow,bYellow,a);
-		    		me.echoesAircraftVector[me.currentIndexT].setColor(rYellow,gYellow,bYellow,a);
+		    		me.echoesAircraftTri[me.currentIndexT].setColor(COLOR_YELLOW);
+		    		me.echoesAircraftVector[me.currentIndexT].setColor(COLOR_YELLOW);
 		    	}
 
 			    if (me.tgtHeading != nil) {
@@ -4612,7 +4915,7 @@ var TI = {
 					me.pos_yyy = me.SVYoriginY-me.SVYheight*me.altsvy/me.SVYalt;
 					me.echoesAircraftSvy[me.currentIndexT].setTranslation(me.pos_xxx, me.pos_yyy);
 
-					if (me.menuMain != MAIN_MISSION_DATA and me.currentIndexT != 0 and me.cursorTrigger and me.isCursorOnSVY()) {
+					if (me.menuMain != MAIN_MISSION_DATA and me.currentIndexT != 0 and me.cursorTrigger and me.isCursorOnSVY() and !me.cursorDidSomething) {
 						# not in MSDA so check if cursor is clicking on the aircraft
 						me.cursorDistX = me.cursorGPosX-me.pos_xxx;
 						me.cursorDistY = me.cursorGPosY-me.pos_yyy;
@@ -4621,18 +4924,19 @@ var TI = {
 						if (me.cursorDist < 12) {
 							radar_logic.jumpTo(contact);
 							me.cursorTriggerPrev = TRUE;#a hack. It CAN happen that a contact gets selected through infobox, in that case lets make sure infobox is not activated. bad UI fix. :(
+							me.cursorDidSomething = TRUE;
 						}
 					}
 
 					if (me.boogie == 1) {
-			    		me.echoesAircraftSvyTri[me.currentIndexT].setColor(rGreen,gGreen,bGreen,a);
-			    		me.echoesAircraftSvyVector[me.currentIndexT].setColor(rGreen,gGreen,bGreen,a);
+			    		me.echoesAircraftSvyTri[me.currentIndexT].setColor(COLOR_GREEN);
+			    		me.echoesAircraftSvyVector[me.currentIndexT].setColor(COLOR_GREEN);
 			    	} elsif (me.boogie == -1) {
-			    		me.echoesAircraftSvyTri[me.currentIndexT].setColor(rRed,gRed,bRed,a);
-			    		me.echoesAircraftSvyVector[me.currentIndexT].setColor(rRed,gRed,bRed,a);
+			    		me.echoesAircraftSvyTri[me.currentIndexT].setColor(COLOR_RED);
+			    		me.echoesAircraftSvyVector[me.currentIndexT].setColor(COLOR_RED);
 			    	} else {
-			    		me.echoesAircraftSvyTri[me.currentIndexT].setColor(rYellow,gYellow,bYellow,a);
-			    		me.echoesAircraftSvyVector[me.currentIndexT].setColor(rYellow,gYellow,bYellow,a);
+			    		me.echoesAircraftSvyTri[me.currentIndexT].setColor(COLOR_YELLOW);
+			    		me.echoesAircraftSvyVector[me.currentIndexT].setColor(COLOR_YELLOW);
 			    	}
 				    if (me.tgtHeading != nil) {
 				        me.relHeading = me.tgtHeading - me.myHeading;
@@ -4682,7 +4986,7 @@ var TI = {
 					me.track_index = -1;
 				}
 			}
-			if (((me.showHostileZones == TRUE and me.boogie < 1) or (me.showFriendlyZones == TRUE and me.boogie == 1)) and me.threatIndex < maxThreats-1) {
+			if (1==0 and ((me.showHostileZones == TRUE and me.boogie < 1) or (me.showFriendlyZones == TRUE and me.boogie == 1)) and me.threatIndex < maxThreats-1) {
 				me.threatRadiusNM = -1;
 				if (contact.get_model()      == "missile_frigate" or contact.get_model()      == "fleet") {
 					me.threatRadiusNM = 80;
@@ -4693,9 +4997,9 @@ var TI = {
 					me.threatIndex += 1;
 					me.threats[me.threatIndex].setTranslation(me.pos_xx, me.pos_yy);
 					if (me.boogie == 1) {
-			    		me.threats[me.threatIndex].setColor(rGreen,gGreen,bGreen,a);
+			    		me.threats[me.threatIndex].setColor(COLOR_GREEN);
 			    	} else {
-			    		me.threats[me.threatIndex].setColor(rRed,gRed,bRed,a);
+			    		me.threats[me.threatIndex].setColor(COLOR_RED);
 			    	}
 					me.scale = me.threatRadiusNM*NM2M*M2TEX/100;
 			      	me.threats[me.threatIndex].setStrokeLineWidth(w/me.scale);
@@ -4732,7 +5036,7 @@ var TI = {
 	    #	me.desired_mag_heading = me.input.APnav0HeadingErr.getValue()+me.input.headMagn.getValue();
 	    #} els
 	    if (radar_logic.steerOrder == TRUE and radar_logic.selection != nil) {
-	    	me.desired_mag_heading = radar_logic.selection.getMagBearing();
+	    	me.desired_mag_heading = radar_logic.selection.getMagInterceptBearing();
 	    } elsif (me.input.RMActive.getValue() == TRUE) {
 	    	me.desired_mag_heading = me.input.RMWaypointBearing.getValue();
 #	    } elsif (me.input.nav0InRange.getValue() == TRUE) {
@@ -4863,11 +5167,6 @@ var TI = {
 					me.active = !me.off;
 				} else {
 					radar_logic.toggleRadarSteerOrder();
-#					if (getprop("/autopilot/target-tracking-ja37/enable") == TRUE) {
-#						auto.unfollow();
-#					} else {
-#						auto.follow();
-#					}
 				}
 			}
 		}
@@ -5035,7 +5334,7 @@ var TI = {
 				}
 			}
 			if(me.menuMain == MAIN_MISSION_DATA) {
-				route.Polygon.deleteSteerpoint();
+			#	route.Polygon.deleteSteerpoint();
 			}
 		}
 	},
@@ -5063,10 +5362,13 @@ var TI = {
 			}
 			if (me.menuMain == MAIN_DISPLAY) {
 				# change zoom
-				zoomIn();
+				zoomOut();
 			}
 			if (me.menuMain == MAIN_MISSION_DATA) {
 				route.Polygon.setToggleAreaEdit();
+				if (route.Polygon.editing != nil) {
+					displays.common.cursor = displays.TI;
+				}
 			}
 			if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == FALSE and me.menuSvy == FALSE) {
 				me.fr28Top = !me.fr28Top;
@@ -5240,19 +5542,7 @@ var TI = {
 				armament.ecmLog.clear();
 			}
 			if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == TRUE) {
-				# GPS fix
-#				if (getprop("ja37/avionics/gps-nav") == TRUE) {
-#					  me.coord = geo.aircraft_position();
-#
-#					  me.ground = geo.elevation(me.coord.lat(), me.coord.lon());
-#    				  if(me.ground != nil) {
-#      						me.coord.set_alt(me.ground);
-#      				  }
-#                                                                                    disabled feature since this is not what the fix is for
-#					  me.contact = radar_logic.ContactGPS.new("FIX", me.coord);
-#
-#					  radar_logic.setSelection(me.contact);
-#				}
+
 			}
 			if (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == TRUE) {
 				# svy scale
@@ -5275,6 +5565,7 @@ var TI = {
 			if (me.menuMain == MAIN_MISSION_DATA) {
 				if (route.Polygon.editing != route.Polygon.editRTB) {
 					route.Polygon.editPlan(route.Polygon.editRTB);
+					displays.common.cursor = displays.TI;
 				} else {
 					route.Polygon.editPlan(nil);
 				}
@@ -5293,7 +5584,7 @@ var TI = {
 				me.quickOpen = 3;
 			}
 			if (me.menuMain == MAIN_WEAPONS) {
-				#clear weapon selection
+				me.input.station.setIntValue(-1);
 			}
 			if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == TRUE) {
 				setprop("ja37/avionics/gps-cmd", !getprop("ja37/avionics/gps-cmd"));
@@ -5303,9 +5594,9 @@ var TI = {
 				}
 			}
 			if (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == TRUE) {
-				me.SVYrmax *= 2;
-				if (me.SVYrmax > 120) {
-					me.SVYrmax = 15;
+				me.SVYrmax += 1;
+				if (me.SVYrmax > 3) {
+					me.SVYrmax = 0;
 				}
 			}
 			if (me.menuMain == MAIN_DISPLAY) {
@@ -5313,15 +5604,7 @@ var TI = {
 				me.showFriendlyZones = !me.showFriendlyZones;
 			}
 			if (me.menuMain == MAIN_MISSION_DATA) {
-				me.replaceEdit = route.Polygon.editRTB == route.Polygon.editing;
-				if (route.Polygon.editRTB == route.Polygon.polys["1A"]) {
-					route.Polygon.editRTB = route.Polygon.polys["1B"];
-				} elsif (route.Polygon.editRTB == route.Polygon.polys["1B"]) {
-					route.Polygon.editRTB = route.Polygon.polys["1A"];
-				}
-				if (me.replaceEdit == TRUE) {
-					route.Polygon.editPlan(route.Polygon.editRTB);
-				}
+				route.Polygon.toggleEditRTB();
 			}
 		}
 	},
@@ -5340,9 +5623,9 @@ var TI = {
 				me.displayTime = !me.displayTime;
 			}
 			if (me.menuMain == MAIN_CONFIGURATION and me.menuSvy == TRUE) {
-				me.SVYhmax *= 2;
-				if (me.SVYhmax > 40) {
-					me.SVYhmax = 5;
+				me.SVYhmax += 1;
+				if (me.SVYhmax > 3) {
+					me.SVYhmax = 0;
 				}
 			}
 			if (me.menuMain == MAIN_CONFIGURATION and me.menuGPS == TRUE) {
@@ -5352,29 +5635,12 @@ var TI = {
 			}
 			if (math.abs(me.menuMain) == MAIN_SYSTEMS and me.menuTrap == FALSE) {
 				dap.syst();
-				me.activateAlso = FALSE;
-				me.startAlso = FALSE;
-				if (route.Polygon.flyRTB.isPrimary() == TRUE) {
-					me.activateAlso = TRUE;
-					if (route.Polygon.isPrimaryActive() == TRUE) {
-						me.startAlso = TRUE;
-					}
-				}
-				if (route.Polygon.flyRTB == route.Polygon.polys["1A"]) {
-					route.Polygon.flyRTB = route.Polygon.polys["1B"];
-				} elsif (route.Polygon.flyRTB == route.Polygon.polys["1B"]) {
-					route.Polygon.flyRTB = route.Polygon.polys["1A"];
-				}
-				if (me.activateAlso == TRUE) {
-					route.Polygon.flyRTB.setAsPrimary();
-					if (me.startAlso == TRUE) {
-						route.Polygon.startPrimary();
-					}
-				}
+				route.Polygon.toggleFlyRTB();
 			}
 			if (me.menuMain == MAIN_MISSION_DATA) {
 				if (route.Polygon.editing != route.Polygon.editMiss) {
 					route.Polygon.editPlan(route.Polygon.editMiss);
+					displays.common.cursor = displays.TI;
 				} else {
 					route.Polygon.editPlan(nil);
 				}
@@ -5452,7 +5718,7 @@ var TI = {
 				land.LF();
 			}
 			if(me.menuMain == MAIN_MISSION_DATA) {
-				route.Polygon.editSteerpoint();
+				route.Polygon.editSteerpoint();#toogle draggable steerpoints
 			}
 			if(me.menuMain == MAIN_WEAPONS) {
 				me.aim9 = displays.common.armActive();
@@ -5545,6 +5811,7 @@ var TI = {
 				if (!me.mapSelfCentered) {
 					me.lat = me.lat_own;
 					me.lon = me.lon_own;
+					me.setupMMAP();
 				}
 			}
 			if(me.menuMain == MAIN_FAILURES) {
@@ -5574,11 +5841,11 @@ var TI = {
 		for(var x = 0; x < num_tiles[0]; x += 1) {
 		  	tiles[x] = setsize([], num_tiles[1]);
 		  	for(var y = 0; y < num_tiles[1]; y += 1) {
-		    	tiles[x][y] = me.mapFinal.createChild("image", "map-tile");
+		    	tiles[x][y] = me.mapFinal.createChild("image", "map-tile").set("z-index", 15);
 		    	if (me.day == TRUE) {
-		    		tiles[x][y].set("fill", "rgb(128,128,128)");
+		    		tiles[x][y].set("fill", COLOR_DAY);
 	    		} else {
-	    			tiles[x][y].set("fill", "rgb(64,64,64)");
+	    			tiles[x][y].set("fill", COLOR_NIGHT);
 	    		}
 	    	}
 		}
@@ -5592,7 +5859,8 @@ var TI = {
 			# get current position
 			me.lat = me.lat_own;
 			me.lon = me.lon_own;# TODO: USE GPS/INS here.
-		}
+		}		
+		M2TEX = 1/(meterPerPixel[zoom]*math.cos(me.lat*D2R));
 	},
 
 	updateMap: func {
@@ -5604,7 +5872,7 @@ var TI = {
 		if (!me.mapSelfCentered) {
 			me.lat_wp   = me.input.latitude.getValue();
 			me.lon_wp   = me.input.longitude.getValue();
-			me.tempReal = me.laloToTexel(me.lat,me.lon);#delicate
+			me.tempReal = me.laloToTexel(me.lat,me.lon);
 			me.rootCenter.setTranslation(width/2-me.tempReal[0], me.rootCenterY-me.tempReal[1]);
 			#me.rootCenterTranslation = [width/2-me.tempReal[0], me.rootCenterY-me.tempReal[1]];
 		} else {
@@ -5644,7 +5912,8 @@ var TI = {
 		}
 
 		me.liveMap = getprop("ja37/displays/live-map");
-		if(me.center_tile_int[0] != last_tile[0] or me.center_tile_int[1] != last_tile[1] or type != last_type or zoom != last_zoom or me.liveMap != lastLiveMap or lastDay != me.day)  {
+		me.zoomed = zoom != last_zoom;
+		if(me.center_tile_int[0] != last_tile[0] or me.center_tile_int[1] != last_tile[1] or type != last_type or me.zoomed or me.liveMap != lastLiveMap or lastDay != me.day)  {
 			for(var x = 0; x < num_tiles[0]; x += 1) {
 		  		for(var y = 0; y < num_tiles[1]; y += 1) {
 		  			# inside here we use 'var' instead of 'me.' due to generator function, should be able to remember it.
@@ -5723,3 +5992,32 @@ var init = func {
 }
 
 #idl = setlistener("ja37/supported/initialized", init, 0, 0);
+
+var MapStructure_selfTest = func() {
+	var temp = {};
+	temp.dlg = canvas.Window.new([600,400],"dialog");
+	temp.canvas = temp.dlg.createCanvas().setColorBackground(1,1,1,1);
+	temp.root = temp.canvas.createGroup();
+	var TestMap = temp.root.createChild("map");
+	TestMap.setController("Aircraft position");
+	TestMap.setRange(50); # TODO: implement zooming/panning via mouse/wheel here, for lack of buttons :-/
+	TestMap.setTranslation(
+		temp.canvas.get("view[0]")/2,
+		temp.canvas.get("view[1]")/2
+	);
+	var r = func(name,vis=1,zindex=nil) return caller(0)[0];
+	# TODO: we'll need some z-indexing here, right now it's just random
+	# TODO: use foreach/keys to show all layers in this case by traversing SymbolLayer.registry direclty ?
+	# maybe encode implicit z-indexing for each lcontroller ctor call ? - i.e. preferred above/below order ?
+#	foreach(var type; [r('TFC',0),r('APT'),r('DME'),r('VOR'),r('NDB'),r('FIX',0),r('RTE'),r('WPT'),r('FLT'),r('WXR'),r('APS'), ] )
+#		TestMap.addLayer(factory: canvas.SymbolLayer, type_arg: type.name,
+#					visible: type.vis, priority: type.zindex,
+#		);
+	foreach(var type; [ r('SLIPPY')]) {
+			TestMap.addLayer(factory: canvas.OverlayLayer, type_arg: type.name,
+											 visible: type.vis, priority: type.zindex
+											  );
+	}
+};
+
+#MapStructure_selfTest();

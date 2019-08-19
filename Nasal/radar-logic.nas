@@ -6,7 +6,7 @@ var rad2deg = 180.0/math.pi;
 var kts2kmh = 1.852;
 var feet2meter = 0.3048;
 var round0 = func(x) { return math.abs(x) > 0.01 ? x : 0; };
-var radarRange = getprop("ja37/systems/variant") == 0?120000:120000;#meter, is estimate. The AJ(S)-37 has 120KM and JA37 is almost 10 years newer, so is reasonable I think.
+var radarRange = getprop("ja37/systems/variant") == 0?120000:120000;#meter
 
 var containsVector = func (vec, item) {
   foreach(test; vec) {
@@ -38,9 +38,11 @@ var getClock = func (bearing) {
 }
 
 var toggleRadarSteerOrder = func {
-  steerOrder = !steerOrder;
-  if (steerOrder == TRUE) {
+  if (!steerOrder and selection != nil) {
+    steerOrder = TRUE;
     land.RR();
+  } else {
+    steerOrder = FALSE;
   }
 }
 
@@ -92,9 +94,6 @@ var input = {
         roll:             "/orientation/roll-deg",
         tracks_enabled:   "ja37/hud/tracks-enabled",
         callsign:         "/ja37/hud/callsign",
-        carrierNear:      "fdm/jsbsim/ground/carrier-near",
-        voltage:          "systems/electrical/outputs/ac-main-voltage",
-        hydrPressure:     "fdm/jsbsim/systems/hydraulics/system1/pressure",
         ai_models:        "/ai/models",
         lookThrough:      "ja37/radar/look-through-terrain",
         dopplerOn:        "ja37/radar/doppler-enabled",
@@ -179,7 +178,7 @@ var RadarLogic = {
       me.processTracks(me.carriers, TRUE, FALSE, FALSE, MARINE);
 
       if(input.tracks_enabled.getValue() == TRUE and input.radar_serv.getValue() > FALSE
-         and input.voltage.getValue() > 170 and input.hydrPressure.getValue() == TRUE) {
+         and power.prop.dcSecondBool.getValue() and power.prop.acSecondBool.getValue() and power.prop.hyd1Bool.getValue()) {
         setprop("ja37/radar/active" , TRUE);
       } else {
         # Do not supply target info to the missiles if radar is off.
@@ -207,7 +206,6 @@ var RadarLogic = {
   },
 
   processTracks: func (vector, carrier, missile = 0, mp = 0, type = -1) {
-    me.carrierNear = FALSE;
     foreach (var track; vector) {
       if(track != nil and track.getChild("valid") != nil and track.getChild("valid").getValue() == TRUE) {#only the tracks that are valid are sent here
         me.trackInfo = nil;
@@ -231,12 +229,7 @@ var RadarLogic = {
             me.pathNode = track.getNode("sim/model/path");
             if (me.pathNode != nil) {
               me.path = me.pathNode.getValue();
-
               me.model = split(".", split("/", me.path)[-1])[0];
-
-              if (me.distance < 1000 and (me.model == "mp-clemenceau" or me.model == "mp-eisenhower" or me.model == "mp-nimitz" or me.model == "mp-vinson")) {
-                me.carrierNear = TRUE;
-              }
 
               me.model = me.remove_suffix(me.model, "-model");
               me.model = me.remove_suffix(me.model, "-anim");
@@ -279,19 +272,14 @@ var RadarLogic = {
             }
           }
 
-          # tell the jsbsim hook system that if we are near a carrier
-          if(carrier == TRUE and me.distance < 1000) {
-            # is carrier and is within 1 Km range
-            me.carrierNear = TRUE;
-          }
-
           me.unique = track.getChild("unique");
           if (me.unique == nil) {
             me.unique = track.addChild("unique");
             me.unique.setDoubleValue(rand());
           }
-
-          append(tracks, me.trackInfo);
+          if (track.getName() == "rb-99" or rcs.inRadarRange(me.contact, 40, 3.2) == TRUE) {
+            append(tracks, me.trackInfo);
+          }
 
           if(1==0 and selection == nil and getprop("ja37/avionics/cursor-on") != FALSE) {
             #this is first tracks in radar field, so will be default selection
@@ -329,11 +317,6 @@ var RadarLogic = {
   #});      
       }#end of valid check
     }#end of foreach
-    if(carrier == TRUE) {
-      if(me.carrierNear != input.carrierNear.getValue()) {
-        input.carrierNear.setBoolValue(me.carrierNear);
-      }      
-    }
   },#end of processTracks
 
   paint: func (node, painted) {
@@ -509,18 +492,8 @@ var RadarLogic = {
 
         me.contact = Contact.new(node, type);
 
-        if (node.getName() == "rb-99" or rcs.inRadarRange(me.contact, 40, 3.2) == TRUE) {
-          return me.contact;
-        } else {
-          return nil;
-        }        
-
-      } elsif (carrier == TRUE) {
-        # need to return carrier even if out of radar cone, due to carrierNear calc
-        me.contact = Contact.new(node, type);
-        #me.contact.setPolar(900000, me.xa_rad_corr, me.xa_rad, me.ya_rad);#TODO: fix
-        #me.contact.setCartesian(900000, 900000);# 900000 used in hud to know if out of radar cone.
         return me.contact;
+        
       }
     }
     return nil;
@@ -1156,6 +1129,18 @@ var Contact = {
       me.mag_offset = getprop("/orientation/heading-magnetic-deg") - getprop("/orientation/heading-deg");
       return geo.normdeg(me.get_bearing() + me.mag_offset);
     },
+    
+    getMagInterceptBearing: func() {
+      # intercept vector to radar echo
+      me.mag_offset = getprop("/orientation/heading-magnetic-deg") - getprop("/orientation/heading-deg");
+      var ic = get_intercept(me.get_bearing(), me.get_Coord().distance_to(geo.aircraft_position()), me.get_heading(), me.get_Speed()*KT2MPS, ja37.horiSpeed()*KT2MPS);
+      if (ic == nil) {
+        printf("no intercept, return %d", me.getMagBearing());
+        return nil;#me.getMagBearing();
+      }
+      #printf("intercept! return %d - %d",ic[1], getprop("instrumentation/gps/magnetic-bug-error-deg"));
+      return geo.normdeg(ic[1] + me.mag_offset);
+    },
 
     get_reciprocal_bearing: func(){
         return geo.normdeg(me.get_bearing() + 180);
@@ -1438,6 +1423,10 @@ var ContactGPS = {
     me.mag_offset = getprop("/orientation/heading-magnetic-deg") - getprop("/orientation/heading-deg");
     return geo.normdeg(me.get_bearing() + me.mag_offset);
   },
+  
+  getMagInterceptBearing: func {
+    return me.getMagBearing();
+  },
 
   get_deviation: func(true_heading_ref, coord){
       me.deviation =  - deviation_normdeg(true_heading_ref, me.get_bearing_from_Coord(coord));
@@ -1702,6 +1691,16 @@ var ContactGhost = {
     me.mag_offset = getprop("/orientation/heading-magnetic-deg") - getprop("/orientation/heading-deg");
     return geo.normdeg(me.get_bearing() + me.mag_offset);
   },
+  
+  getMagInterceptBearing: func() {
+    # intercept vector to radar echo
+    me.mag_offset = getprop("/orientation/heading-magnetic-deg") - getprop("/orientation/heading-deg");
+    var ic = get_intercept(me.get_bearing(), me.get_Coord().distance_to(geo.aircraft_position()), me.get_heading(), me.get_Speed()*KT2MPS, ja37.horiSpeed()*KT2MPS);
+    if (ic == nil) {
+      return nil;#me.getMagBearing();
+    }
+    return geo.normdeg(ic[1]+me.mag_offset);
+  },
 
   get_deviation: func(true_heading_ref, coord){
       me.deviation =  - deviation_normdeg(true_heading_ref, me.get_bearing_from_Coord(coord));
@@ -1868,3 +1867,59 @@ var starter = func () {
   }
 };
 #var lsnr = setlistener("ja37/supported/initialized", starter);
+
+var get_intercept = func(bearing, dist_m, runnerHeading, runnerSpeed, chaserSpeed) {
+    # implementation by pinto
+    # needs: bearing, dist_m, runnerHeading, runnerSpeed, chaserSpeed
+    #        dist_m > 0 and chaserSpeed > 0
+
+    #var bearing = 184;var dist_m=31000;var runnerHeading=186;var runnerSpeed= 200;var chaserSpeed=250;
+    print();
+    if (dist_m == 0 or chaserSpeed == 0) {
+      return nil;
+    }
+    #printf("intercept - bearing=%d dist=%dNM itspeed=%d myspeed=%d",bearing, dist_m*M2NM, runnerSpeed*MPS2KT, chaserSpeed*MPS2KT);
+
+    var trigAngle = 90-bearing;
+    var RunnerPosition = [dist_m*math.cos(trigAngle*D2R), dist_m*math.sin(trigAngle*D2R),0];
+    var ChaserPosition = [0,0,0];
+
+    var VectorFromRunner = vector.Math.minus(ChaserPosition, RunnerPosition);
+    var runner_heading = 90-runnerHeading;
+    var RunnerVelocity = [runnerSpeed*math.cos(runner_heading*D2R), runnerSpeed*math.sin(runner_heading*D2R),0];
+
+    var a = chaserSpeed * chaserSpeed - runnerSpeed * runnerSpeed;
+    var b = 2 * vector.Math.dotProduct(VectorFromRunner, RunnerVelocity);
+    var c = -dist_m * dist_m;
+
+    if ((b*b-4*a*c)<0) {
+      # intercept not possible
+      return nil;
+    }
+    var t1 = (-b+math.sqrt(b*b-4*a*c))/(2*a);
+    var t2 = (-b-math.sqrt(b*b-4*a*c))/(2*a);
+
+    var timeToIntercept = 0;
+
+    if (t1 < 0 and t2 < 0) {
+      # intercept not possible
+      return nil;
+    }
+    if (t1 > 0 and t2 > 0) {
+          timeToIntercept = math.min(t1, t2);
+    } else {
+          timeToIntercept = math.max(t1, t2);
+    }
+    var InterceptPosition = vector.Math.plus(RunnerPosition, vector.Math.product(timeToIntercept, RunnerVelocity));
+
+    var ChaserVelocity = vector.Math.product(1/timeToIntercept, vector.Math.minus(InterceptPosition, ChaserPosition));
+
+    var interceptAngle = vector.Math.angleBetweenVectors([0,1,0], ChaserVelocity);
+    var interceptHeading = geo.normdeg(ChaserVelocity[0]<0?-interceptAngle:interceptAngle);
+    #print("output:");
+    #print("time: " ~ timeToIntercept);
+    #var InterceptVector = vector.Math.minus(InterceptPosition, ChaserPosition);
+    #printf("(%d,%d) %.1f min",InterceptVector[0]*M2NM,InterceptVector[1]*M2NM, timeToIntercept/60);
+    #print((ChaserVelocity[0]<0)~" intercept-heading: " ~ interceptHeading);
+    return [timeToIntercept, interceptHeading];
+}

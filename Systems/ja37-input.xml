@@ -64,76 +64,6 @@
 				<script>ja37.fovZoom(-1);</script>
 			</binding>
 		</key>
-        <!--<key n="1">
-            <name>Shift-Ctrl-A</name>
-            <mod-shift>
-                <desc>Autopilot continue on heading/alt</desc>
-                <binding>
-                    <command>nasal</command>
-                    <script>
-                       auto.apCont();
-                    </script>
-                </binding>
-            </mod-shift>
-        </key>-->
-        <key n="108">
-            <name>l</name>
-            <desc>Toggle arrester hook</desc>
-            <binding>
-                <command>nasal</command>
-                <script>ja37.toggleHook()</script>
-            </binding>
-        </key>
-
-        <!-- map keys for catapult launch -->
-        <key n="67">
-            <name>C</name>
-            <desc>Catapult Launch Command.</desc>
-            <binding>
-                <command>property-assign</command>
-                <property>/fdm/jsbsim/systems/catapult_free/cat-launch-cmd</property>
-                <value>1.0</value>
-            </binding>
-            <binding>
-                <command>nasal</command>
-                <script>ja37.click();
-                  if (getprop("/fdm/jsbsim/ground/carrier-near") == 1) {
-                    ja37.popupTip("Catapult launch");
-                  } else {
-                    ja37.popupTip("Catapult not launching. (not on carrier deck)");
-                  }</script>
-            </binding>
-        </key>
-
-        <!-- map keys for launch-bar -->
-        <key n="76">
-            <name>L</name>
-            <desc>Launch-bar engage.</desc>
-            <binding>
-                <command>nasal</command>
-                <script>ja37.click();
-                  if (getprop("/fdm/jsbsim/ground/carrier-near") == 1) {
-                    setprop("/fdm/jsbsim/systems/launchbar_free/lock-cmd", 1);
-                    setprop("fdm/jsbsim/systems/catapult_free/cat-launch-cmd", 0);
-                    setprop("/fdm/jsbsim/systems/launchbar/store-timer", 1);
-                    setprop("/fdm/jsbsim/systems/launchbar-locked-time-mem", 0);
-                    ja37.popupTip("Launchbar engaging.");
-                  } else {
-                    ja37.popupTip("Launchbar not engaging. (not on carrier deck)");
-                  }</script>
-            </binding>
-            <mod-up>
-                <binding>
-                    <command>property-assign</command>
-                    <property>/fdm/jsbsim/systems/launchbar/store-timer</property>
-                    <value>0</value>
-                </binding>
-                <binding>
-                    <command>nasal</command>
-                    <script>ja37.click()</script>
-                </binding>
-            </mod-up>
-        </key>
 
         <key n="110">
             <name>n</name>
@@ -276,7 +206,7 @@
                 <desc>Select missile 1</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>1</value>
                 </binding>
                 <binding>
@@ -291,7 +221,7 @@
                 <desc>Select missile 2</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>2</value>
                 </binding>
                 <binding>
@@ -306,7 +236,7 @@
                 <desc>Select missile 3</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>3</value>
                 </binding>
                 <binding>
@@ -321,7 +251,7 @@
                 <desc>Select missile 4</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>4</value>
                 </binding>
                 <binding>
@@ -336,7 +266,7 @@
                 <desc>Select missile outer left</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>5</value>
                 </binding>
                 <binding>
@@ -351,7 +281,7 @@
                 <desc>Select missile outer right</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>6</value>
                 </binding>
                 <binding>
@@ -366,7 +296,7 @@
                 <desc>Select missile center</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>7</value>
                 </binding>
                 <binding>
@@ -411,8 +341,12 @@
             <name>Backspace</name>
             <desc>Toggle Reversers</desc>
             <binding>
+                <command>property-toggle</command>
+                <property>/controls/engines/engine[0]/reverser-cmd</property>
+            </binding>
+            <binding>
                 <command>nasal</command>
-                <script>reversethrust.togglereverser();</script>
+                <script>ja37.click();</script>
             </binding>
         </key>
         <!--<key n="127">

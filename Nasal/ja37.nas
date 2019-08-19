@@ -31,8 +31,6 @@ var MISSILE_FLYING = 2;
 ############### Main loop ###############
 
 input = {
-  acInstrVolt:      "systems/electrical/outputs/ac-instr-voltage",
-  acMainVolt:       "systems/electrical/outputs/ac-main-voltage",
   aeroSmoke:        "/ja37/effect/smoke",
   aeroSmokeCmd:     "/ja37/effect/smoke-cmd",
   airspeed:         "velocities/airspeed-kt",
@@ -53,7 +51,6 @@ input = {
   cutoff:           "fdm/jsbsim/propulsion/engine/cutoff-commanded",
   damage:           "environment/damage",
   damageSmoke:      "environment/damage-smoke",
-  dcVolt:           "systems/electrical/outputs/dc-voltage",
   dens:             "fdm/jsbsim/atmosphere/density-altitude",
   dme:              "instrumentation/dme/KDI572-574/nm",
   dmeDist:          "instrumentation/dme/indicated-distance-nm",
@@ -79,9 +76,6 @@ input = {
   generatorOn:      "fdm/jsbsim/systems/electrical/generator-running-norm",
   gravity:          "fdm/jsbsim/accelerations/gravity-ft_sec2",
   headingMagn:      "/orientation/heading-magnetic-deg",
-  hydr1On:          "fdm/jsbsim/systems/hydraulics/system1/pressure",
-  hydr2On:          "fdm/jsbsim/systems/hydraulics/system2/pressure-main",
-  hydrCombined:     "fdm/jsbsim/systems/hydraulics/flight-surface-actuation",
   hz05:             "ja37/blink/five-Hz/state",
   hz10:             "ja37/blink/four-Hz/state",
   hzThird:          "ja37/blink/third-Hz/state",
@@ -95,7 +89,6 @@ input = {
   indAtt:           "/instrumentation/attitude-indicator",
   indJoy:           "/instrumentation/joystick-indicator",
   indRev:           "/instrumentation/reverse-indicator",
-  indTrn:           "/instrumentation/transonic-indicator",
   lampCanopy:       "ja37/avionics/canopyAndSeat",
   lampData:         "ja37/avionics/primaryData",
   lampIgnition:     "ja37/avionics/ignitionSys",
@@ -136,6 +129,7 @@ input = {
   rmBearingRel:     "autopilot/route-manager/wp/bearing-deg-rel",
   rmDist:           "autopilot/route-manager/wp/dist",
   rmDistKm:         "autopilot/route-manager/wp/dist-km",
+  RMWaypointBearing:"autopilot/route-manager/wp/bearing-deg",
   roll:             "/instrumentation/attitude-indicator/indicated-roll-deg",
   sceneRed:         "/rendering/scene/diffuse/red",
   servFire:         "engines/engine[0]/fire/serviceable",
@@ -146,7 +140,6 @@ input = {
   speedWarn:        "ja37/sound/speed-on",
   srvHead:          "instrumentation/heading-indicator/serviceable",
   starter:          "controls/engines/engine[0]/starter-cmd",
-  stationSelect:    "controls/armament/station-select",
   subAmmo2:         "ai/submodels/submodel[2]/count", 
   subAmmo3:         "ai/submodels/submodel[3]/count", 
   sunAngle:         "sim/time/sun-angle-rad",
@@ -181,24 +174,56 @@ input = {
   wow1:             "fdm/jsbsim/gear/unit[1]/WOW",
   wow2:             "fdm/jsbsim/gear/unit[2]/WOW",
   zAccPilot:        "accelerations/pilot/z-accel-fps_sec",
+  terrainOverr:     "instrumentation/terrain-override",
+  fuseGVV:          "ja37/fuses/gvv",
+  cutoffOrig:       "controls/engines/engine[0]/cutoff",
+  cutoffActual:     "fdm/jsbsim/propulsion/engine/cutoff-actual",
+  cutoffJsbsim:     "fdm/jsbsim/propulsion/engine/cutoff-jsbsim",
+  inputFlight:      "ja37/systems/input-controls-flight",
+  terrainWarn:      "instrumentation/terrain-warning",
+  parachuteDeploy:  "payload/armament/es/flags/deploy-id-10",
+  parachuteForce:    "ja37/force",
+  toneTerr: "ja37/sound/tones/terrain-on",
+  toneOut: "ja37/sound/tones/flare-release-out",
+  toneCM: "ja37/sound/tones/flare-release",
+  toneGVV: "ja37/sound/tones/gvv-main",
+  toneVne: "ja37/sound/tones/vne",
+  toneTs: "ja37/sound/tones/transonic",
+  toneFloor: "ja37/sound/tones/floor",
+  tonePreA2: "ja37/sound/tones/alpha-pre-2",
+  tonePreA1: "ja37/sound/tones/alpha-pre-1",
+  tonePreL2: "ja37/sound/tones/load-pre-2",
+  tonePreL1: "ja37/sound/tones/load-pre-1",
 };
+
+
 var msgA = "If you need to repair now, then use Menu-Location-SelectAirport instead.";
 var msgB = "Please land before changing payload or refuel.";
 var Saab37 = {
   new: func {
     var saab37 = {parents: [Saab37]};
+    saab37.oldUnit = -1;
     return saab37;
   },
 
   update_loop: func {
 
     # Stuff that will run even in replay:
-
+    me.currentUnit = getprop("ja37/hud/units-metric");
+    if (me.currentUnit != me.oldUnit) {#since there can be many texture replacements we dont wanna do this every loop:
+      if (me.currentUnit) {
+          setprop("ja37/language/textureRadarPanel", "radar-panel-se.png");
+      } else {
+          setprop("ja37/language/textureRadarPanel", "radar-panel.png");
+      }    
+    }
+    me.oldUnit = me.currentUnit;
     # breath sound volume
     input.breathVol.setDoubleValue(input.viewInternal.getValue() and input.fullInit.getValue());
 
     #augmented flame translucency
     me.red = input.sceneRed.getValue();
+    setprop("rendering/scene/diffuse/red-unbound", me.red);
     # normal effect
     #var angle = input.sunAngle.getValue();# 1.25 - 2.45
     #var newAngle = (1.2 -(angle-1.25))*0.8333;
@@ -261,7 +286,7 @@ var Saab37 = {
     } else {
       input.fuelWarning.setBoolValue(FALSE);
     }
-    if((me.current / total_fuel) < getprop("ja37/systems/fuel-warning-extra-percent")/100) {# warning at 24% as per sources
+    if((me.current / total_fuel) < getprop("ja37/systems/fuel-warning-extra-percent")/100) {# warning at custom as per sources
       setprop("ja37/sound/fuel-low-2-on",TRUE);
     } else {
       setprop("ja37/sound/fuel-low-2-on",FALSE);
@@ -275,10 +300,10 @@ var Saab37 = {
       bingoFuel = TRUE;
     }
 
-    if (input.tank0LvlNorm.getValue() == 0) {
-      # a bug in JSB makes NaN on fuel temp if tank has been empty.
-      input.fuelTemp.setBoolValue(FALSE);
-    }
+    #if (input.tank0LvlNorm.getValue() == 0) {
+      # a bug in JSB makes NaN on fuel temp if tank has been empty. [old bug, long fixed]
+      # input.fuelTemp.setBoolValue(FALSE);
+    #}
 
     #if(getprop("/sim/failure-manager/controls/flight/rudder/serviceable") == 1) {
     #  setprop("fdm/jsbsim/fcs/rudder/serviceable", 1);
@@ -312,25 +337,25 @@ var Saab37 = {
 
     # main electrical turned on
     me.timer = input.elapsed.getValue();
-    me.main = input.dcVolt.getValue();
-    if(me.main > 20 and mainOn == FALSE) {
+    me.main = power.prop.dcMainBool.getValue();
+    if(me.main and mainOn == FALSE) {
       #main has been switched on
       mainTimer = me.timer;
       mainOn = TRUE;
       input.lampData.setBoolValue(TRUE);
       input.insCmd.setBoolValue(TRUE);
-    } elsif (me.main > 20) {
+    } elsif (me.main) {
       if (me.timer > (mainTimer + 20)) {
         input.lampData.setBoolValue(FALSE);
       }
-    } elsif (me.main <= 20) {
+    } elsif (!me.main) {
       mainOn = FALSE;
     }
 
     # exterior lights
-    me.flash = input.dcVolt.getValue() > 20 and input.switchFlash.getValue() == 1;
-    me.beacon = input.dcVolt.getValue() > 20 and input.switchBeacon.getValue() == 1;
-    me.nav = input.dcVolt.getValue() > 20 and input.switchNav.getValue() == 1;
+    me.flash = power.prop.dcBatt2Bool.getValue() and input.switchFlash.getValue() == 1;
+    me.beacon = power.prop.dcSecondBool.getValue() and input.switchBeacon.getValue() == 1;
+    me.nav = power.prop.acSecondBool.getValue() and input.switchNav.getValue() == 1;
     input.MPint9.setIntValue(encode3bits(me.flash, me.beacon, me.nav));
 
     # contrails, damage smoke
@@ -341,7 +366,7 @@ var Saab37 = {
     input.MPint18.setIntValue(encode3bits(me.contrails, me.d_smoke, 0));
 
     # smoke
-    if (input.dcVolt.getValue() > 20) {
+    if (power.prop.dcMainBool.getValue()) {
       input.aeroSmoke.setIntValue(input.aeroSmokeCmd.getValue());
     } else {
       input.aeroSmoke.setIntValue(1);
@@ -382,7 +407,8 @@ var Saab37 = {
     if (getprop("ja37/supported/picking") == TRUE) {
       setprop("ja37/radar/look-through-terrain", FALSE);
     }
-    if (getprop("ja37/supported/picking") == TRUE and (getprop("velocities/speed-east-fps") != 0 or getprop("velocities/speed-north-fps") != 0)) {
+    if (getprop("controls/electric/main") and getprop("ja37/avionics/collision-warning") and getprop("ja37/supported/picking") == TRUE and (getprop("velocities/speed-east-fps") != 0 or getprop("velocities/speed-north-fps") != 0)) {
+      # main elec switch must be on to enable this system, dont run on batt
       me.start = geo.aircraft_position();
 
       me.speed_down_fps  = getprop("velocities/speed-down-fps");
@@ -443,15 +469,17 @@ var Saab37 = {
       setprop("/sim/speed-up", 1);
       setprop("/gui/map/draw-traffic", 0);
       setprop("/sim/gui/dialogs/map-canvas/draw-TFC", 0);
-      setprop("/sim/rendering/als-filters/use-filtering", 1);
     }
+    setprop("/sim/rendering/als-filters/use-filtering", 1);
     #settimer(func me.update_loop(), LOOP_STANDARD_RATE);
+    
+    setprop("ja37/accelerations/pilot-G-max", math.max(getprop("ja37/accelerations/pilot-G-lag"),getprop("ja37/accelerations/pilot-G-max")));
   },
 
   # fast updating loop
   speed_loop: func {
 
-    setprop("controls/engines/engine[0]/cutoff", getprop("fdm/jsbsim/propulsion/engine/cutoff-actual"));
+    input.cutoffOrig.setBoolValue(input.cutoffJsbsim.getValue());
 
     # switch on and off ALS landing lights
     if(input.landLight.getValue() > 0) {    
@@ -516,21 +544,131 @@ var Saab37 = {
     input.rainVol.setDoubleValue(me.rain*0.35*me.vol);
 
     me.theShakeEffect();
+    # The HUD should not shake (relative to the background).
+    # This requires to update the hud translation just after head movements.
+    canvas_HUD.hud_pilot.followHeadPosition();
 
     logTime();
-
-    if (getprop("ja37/systems/input-controls-flight") == FALSE and getprop("/instrumentation/terrain-warning") == TRUE) {
-      setprop("ja37/systems/input-controls-flight", TRUE);
+  
+    if (!input.inputFlight.getValue() and input.terrainWarn.getValue()) {
+      input.inputFlight.setBoolValue(TRUE);
       notice("Terrain warning made you grab the flight controls! Cursor inactive.");
     }
 
-    if (getprop("payload/armament/es/flags/deploy-id-10")!= nil) {
-      setprop("ja37/force", 7-5*getprop("payload/armament/es/flags/deploy-id-10"));
-      } else {
-        setprop("ja37/force", 7);
-      }
-
+    if (input.parachuteDeploy.getValue() != nil) {
+        input.parachuteForce.setDoubleValue(7-5*input.parachuteDeploy.getValue());
+    } else {
+      input.parachuteForce.setDoubleValue(7);
+    }
+    
+    me.aural();
+    me.headingBug();
     #settimer(func me.speed_loop(), LOOP_FAST_RATE);
+  },
+  
+  aural: func {
+    # CK37 issued aural warnings (minus master-warning, as its played seperate)
+    #
+    # at MKV ground collision warning the load-factor warning is force set at 110. (until 10 secs after)
+    me.warnGiven = 0;
+    if (!power.prop.dcMainBool.getValue() or !getprop("ja37/avionics/annunciator/serviceable")) {
+      me.warnGiven = 1;
+    }
+    if (!me.warnGiven and getprop("ja37/sound/terrain-on")) {
+      input.toneTerr.setBoolValue(1);
+      me.warnGiven = 1;
+    } else {
+      input.toneTerr.setBoolValue(0);
+    }
+    if (!me.warnGiven and getprop("ai/submodels/submodel[0]/flare-release-out-snd")) {
+      input.toneOut.setBoolValue(1);
+      me.warnGiven = 1;
+    } else {
+      input.toneOut.setBoolValue(0);
+    }
+    if (!me.warnGiven and getprop("ai/submodels/submodel[0]/flare-release-snd")) {
+      input.toneCM.setBoolValue(1);
+      me.warnGiven = 1;
+    } else {
+      input.toneCM.setBoolValue(0);
+    }
+    if (!me.warnGiven and input.fuseGVV.getValue() and ((input.alpha.getValue()>getprop("fdm/jsbsim/systems/sound/alpha-limit-high") and !input.gearsPos.getValue()) or getprop("ja37/sound/pilot-G-norm")>1 or getprop("ja37/sound/speed-on") or (input.alpha.getValue()>18 and getprop("gear/gear/position-norm") and !getprop("fdm/jsbsim/gear/unit[0]/WOW") and !getprop("fdm/jsbsim/gear/unit[2]/WOW")))) {
+      input.toneGVV.setBoolValue(1);
+      me.warnGiven = 1;
+    } else {
+      input.toneGVV.setBoolValue(0);
+    }
+    if (!me.warnGiven and (input.speedKt.getValue()>getprop("limits/vne") or input.speedMach.getValue()>getprop("limits/vne-mach"))) {
+      input.toneVne.setBoolValue(1);
+      me.warnGiven = 1;
+    } else {
+      input.toneVne.setBoolValue(0);
+    }
+    if (me.tsPlaying) me.warnGiven = 1;
+    if (getprop("fdm/jsbsim/systems/indicators/transonic")) {
+      if (!me.warnGiven and !me.ts) {
+        input.toneTs.setBoolValue(1);
+        settimer(func {me.tsTimed()},2.1);
+        me.warnGiven = 1;
+        me.tsPlaying = 1;
+      }
+      me.ts = 1;
+    } else {
+      me.ts = 0;
+    }
+    if (me.floorPlaying) me.warnGiven = 1;
+    if (input.indAltFt.getValue() < getprop("ja37/sound/floor-ft")) {
+      if (!me.warnGiven and !me.floor) {
+        input.toneFloor.setBoolValue(1);
+        settimer(func {me.floorTimed()},2.1);
+        me.warnGiven = 1;
+        me.floorPlaying = 1;
+        
+      }
+      me.floor = 1;
+    } else {
+      me.floor = 0;
+      #setprop("ja37/sound/tones/floor",0);
+    }
+    if (!me.warnGiven and input.fuseGVV.getValue() and !input.gearsPos.getValue() and input.alpha.getValue() > getprop("fdm/jsbsim/systems/sound/alpha-limit-medium") and input.alpha.getValue() < getprop("fdm/jsbsim/systems/sound/alpha-limit-high")) {
+      input.tonePreA2.setBoolValue(1);
+      me.warnGiven = 1;
+    } else {
+      input.tonePreA2.setBoolValue(0);
+    }
+    if (!me.warnGiven and input.fuseGVV.getValue() and !input.gearsPos.getValue() and input.alpha.getValue() > getprop("fdm/jsbsim/systems/sound/alpha-limit-low") and input.alpha.getValue() < getprop("fdm/jsbsim/systems/sound/alpha-limit-medium")) {
+      input.tonePreA1.setBoolValue(1);
+      me.warnGiven = 1;
+    } else {
+      input.tonePreA1.setBoolValue(0);
+    }
+    if (!me.warnGiven and input.fuseGVV.getValue() and !input.gearsPos.getValue() and getprop("ja37/sound/pilot-G-norm") > 0.92 and getprop("ja37/sound/pilot-G-norm") < 1) {
+      input.tonePreL2.setBoolValue(1);
+      me.warnGiven = 1;
+    } else {
+      input.tonePreL2.setBoolValue(0);
+    }
+    if (!me.warnGiven and input.fuseGVV.getValue() and !input.gearsPos.getValue() and getprop("ja37/sound/pilot-G-norm") > 0.85 and getprop("ja37/sound/pilot-G-norm") < 0.92) {
+      input.tonePreL1.setBoolValue(1);
+      me.warnGiven = 1;
+    } else {
+      input.tonePreL1.setBoolValue(0);
+    }
+  },
+  
+  floorPlaying: 0,
+  floor: 0,
+  ts: 0,
+  tsPlaying: 0,
+  
+  floorTimed: func {
+    input.toneFloor.setBoolValue(0);
+    me.floorPlaying = 0;
+  },
+  
+  tsTimed: func {
+    input.toneTs.setBoolValue(0);
+    me.tsPlaying = 0;
   },
 
   theShakeEffect: func {
@@ -580,7 +718,7 @@ var Saab37 = {
 
   tils: func {
     #TILS (not used anymore)
-    if(input.TILS.getValue() == TRUE and input.acInstrVolt.getValue() > 100) {#  and canvas_HUD != nil and canvas_HUD.mode == canvas_HUD.LANDING
+    if(input.TILS.getValue() == TRUE and power.prop.acMainBool.getValue()) {#  and canvas_HUD != nil and canvas_HUD.mode == canvas_HUD.LANDING
       var icao = getprop("sim/tower/airport-id");
       var runways = airportinfo(icao).runways;
       var closestRunway = -1;
@@ -643,7 +781,7 @@ var Saab37 = {
 
     
 
-    if (getprop("sim/replay/replay-state") == 0 and input.acInstrVolt.getValue() > 100) {
+    if (getprop("sim/replay/replay-state") == 0 and power.prop.dcSecondBool.getValue()) {
       setprop("ja37/avionics/record-on", TRUE);
     } else {
       setprop("ja37/avionics/record-on", FALSE);
@@ -676,7 +814,7 @@ var Saab37 = {
 
     #warning if max rolling speed is exceeded
     me.max = getprop("limits/vroll");
-    if ((input.wow0.getValue() == TRUE or input.wow2.getValue() == TRUE) and me.max != nil and getprop("velocities/groundspeed-kt") > me.max) {
+    if ((input.wow0.getValue() == TRUE or input.wow2.getValue() == TRUE) and me.max != nil and getprop("instrumentation/airspeed-indicator/indicated-speed-kt") > me.max) {
       screen.log.write("Maximum allowed rolling speed exceeded!", 1.0, 0.0, 0.0);
     }
 
@@ -707,9 +845,9 @@ var Saab37 = {
     acPrev = me.acSetting;
     me.tempAC = getprop("controls/ventilation/airconditioning-temperature");
     if (me.acSetting == -1) {
-      me.tempAC = -200;
+      me.tempAC = -4;
     } elsif (me.acSetting == 1) {
-      me.tempAC = 200;
+      me.tempAC = 80;
     }
 
     # Here is calculated how raindrop move over the surface of the glass
@@ -734,40 +872,33 @@ var Saab37 = {
     # The dewpoint inside the cockpit depends on the outside dewpoint and how the AC is working.
     me.tempOutside = getprop("environment/temperature-degc");
     me.ramRise     = (input.speedTrueKt.getValue()*input.speedTrueKt.getValue())/(87*87);#this is called the ram rise formula
-    me.tempOutside    += me.ramRise;
+    me.tempOutside += me.ramRise;
     me.tempInside  = getprop("environment/aircraft-effects/temperature-inside-degC");
     me.tempOutsideDew = getprop("environment/dewpoint-degc");
     me.tempInsideDew = getprop("/environment/aircraft-effects/dewpoint-inside-degC");
     me.tempACDew = 5;# aircondition dew point target. 5 = dry
-    me.ACRunning = input.dcVolt.getValue() > 23 and getprop("controls/ventilation/airconditioning-enabled") == TRUE and testing.ongoing == FALSE;
+    me.ACRunning = power.prop.dcMainBool.getValue() and getprop("controls/ventilation/airconditioning-enabled") == TRUE and testing.ongoing == FALSE;
 
     # calc inside temp
     me.hotAir_deg_min = 2.0;# how fast does the sources heat up cockpit.
-    me.AC_deg_min     = 6.0;
     me.pilot_deg_min  = 0.2;
+    me.glass_deg_min_per_deg_diff  = 0.15;
+    me.AC_deg_min_per_deg_diff     = 0.50;
     me.knob = getprop("controls/ventilation/windshield-hot-air-knob");
-    me.hotAirOnWindshield = input.dcVolt.getValue() > 23?me.knob:0;
+    me.hotAirOnWindshield = power.prop.dcMainBool.getValue()?me.knob:0;
     if (input.canopyPos.getValue() > 0 or input.canopyHinge.getValue() == FALSE) {
-      me.tempInside = me.tempOutside;
+      me.tempInside = getprop("environment/temperature-degc");
     } else {
-      me.tempInside = me.tempInside + me.hotAirOnWindshield * (me.hotAir_deg_min/(60/LOOP_SLOW_RATE)); # having hot air on windshield will also heat cockpit (10 degs/5 mins).
+      me.tempInside += me.hotAirOnWindshield * (me.hotAir_deg_min/(60/LOOP_SLOW_RATE)); # having hot air on windshield will also heat cockpit (10 degs/5 mins).
       if (me.tempInside < 37) {
-        me.tempInside = me.tempInside + (me.pilot_deg_min/(60/LOOP_SLOW_RATE)); # pilot will also heat cockpit with 1 deg per 5 mins
+        me.tempInside += me.pilot_deg_min/(60/LOOP_SLOW_RATE); # pilot will also heat cockpit with 1 deg per 5 mins
       }
-      # outside temp will influence inside temp:
-      me.coolingFactor = clamp(abs(me.tempInside - me.tempOutside)*0.005, 0, 0.10);# 20 degrees difference will cool/warm with 0.10 Deg C every 1.5 second
-      if (me.tempInside < me.tempOutside) {
-        me.tempInside = clamp(me.tempInside+me.coolingFactor, -1000, me.tempOutside);
-      } elsif (me.tempInside > me.tempOutside) {
-        me.tempInside = clamp(me.tempInside-me.coolingFactor, me.tempOutside, 1000);
-      }
-      if (me.ACRunning == TRUE) {
-        # AC is running and will work to adjust to influence the inside temperature
-        if (me.tempInside < me.tempAC) {
-          me.tempInside = clamp(me.tempInside+(me.AC_deg_min/(60/LOOP_SLOW_RATE)), -1000, me.tempAC);
-        } elsif (me.tempInside > me.tempAC) {
-          me.tempInside = clamp(me.tempInside-(me.AC_deg_min/(60/LOOP_SLOW_RATE)), me.tempAC, 1000);
-        }
+      # outside temp ram air temp and static temp will influence inside temp:
+      me.coolingFactor = ((me.tempOutside+getprop("environment/temperature-degc"))*0.5-me.tempInside)*me.glass_deg_min_per_deg_diff/(60/LOOP_SLOW_RATE);# 1 degrees difference will cool/warm with 0.5 DegCelsius/min
+      me.tempInside += me.coolingFactor;
+      if (me.ACRunning) {
+        # AC is running and will work to influence the inside temperature
+        me.tempInside += (me.tempAC-me.tempInside)*me.AC_deg_min_per_deg_diff/(60/LOOP_SLOW_RATE);# (tempAC-tempInside) = degs/mins it should change
       }
     }
 
@@ -841,6 +972,7 @@ var Saab37 = {
     setprop("/environment/aircraft-effects/temperature-glass-degC", me.tempGlass);
     setprop("/environment/aircraft-effects/dewpoint-inside-degC", me.tempInsideDew);
     setprop("/environment/aircraft-effects/temperature-inside-degC", me.tempInside);
+    setprop("/environment/aircraft-effects/temperature-outside-ram-degC", me.tempOutside);
     # effects
     setprop("/environment/aircraft-effects/frost-level", me.frostNorm);
     setprop("/environment/aircraft-effects/fog-level", me.fogNorm);
@@ -852,13 +984,31 @@ var Saab37 = {
         } else {
           screen.log.write("You feel cold, the cockpit is cold", 1.0, 0.5, 0.0);
         }
-      } elsif (me.tempInside > 23) {
-        if (me.tempInside > 26) {
+      } elsif (me.tempInside > 25) {
+        if (me.tempInside > 28) {
           screen.log.write("You are sweating, the cabin is way too hot", 1.0, 0.0, 0.0);
         } else {
           screen.log.write("You feel its too warm in the cabin", 1.0, 0.5, 0.0);
         }
       }
+    }
+  },
+  
+  headingBug: func () {
+    # for the heading indicator
+    me.desired_mag_heading = nil;
+    if (radar_logic.steerOrder == TRUE and radar_logic.selection != nil) {
+        me.desired_mag_heading = radar_logic.selection.getMagInterceptBearing();
+        me.itsHead = radar_logic.selection.get_heading();
+        me.mag_offset = getprop("/orientation/heading-magnetic-deg") - getprop("/orientation/heading-deg");
+        setprop("ja37/avionics/heading-indicator-target", geo.normdeg(input.headingMagn.getValue()-(me.itsHead + me.mag_offset)));
+    } elsif( input.rmActive.getValue() == TRUE) {
+      me.desired_mag_heading = input.RMWaypointBearing.getValue();
+    }
+    if(me.desired_mag_heading != nil) {
+      setprop("ja37/avionics/heading-indicator-bug", geo.normdeg(input.headingMagn.getValue()-me.desired_mag_heading));
+    } else {
+      setprop("ja37/avionics/heading-indicator-bug", input.headingMagn.getValue());
     }
   },
 
@@ -981,10 +1131,10 @@ var Saab37 = {
       # HUD:
       canvas_HUD.hud_pilot = canvas_HUD.HUDnasal.new({"node": "hud", "texture": "hud.png"});
       me.loop_hud = maketimer(0.05, canvas_HUD.hud_pilot, func canvas_HUD.hud_pilot.update());
-      me.loop_ir  = maketimer(1.5, me, func canvas_HUD.IR_loop());
+      #me.loop_ir  = maketimer(1.5, me, func canvas_HUD.IR_loop());
 
       me.loop_hud.start();
-      me.loop_ir.start();
+      #me.loop_ir.start();
 
       if (getprop("ja37/systems/variant") == 0) {
         # data-panel
@@ -1010,6 +1160,137 @@ var Saab37 = {
     me.loop_test  = maketimer(0.25, me, func testing.loop());
     me.loop_test.start();
   },
+  
+  loopSystem2: func {
+    #
+    # start all the loops in aircraft.
+    # Some loops are are not started here though, but most are.
+    # Notice some loop timers are slightly changed to spread out calls,
+    # so that many loops are not called in same frame.
+    #
+    me.loop_beacon   = maketimer(0.07, me, func {timer.timeLoop("beacon",me.beaconLoop,me);});
+    me.loop_slow     = maketimer(1.50, me, func {timer.timeLoop("ja37-slow", me.slow_loop,me);});
+    me.loop_fast     = maketimer(0.06, me, func {timer.timeLoop("ja37-fast", me.speed_loop,me);});
+    me.loop_saab37   = maketimer(0.25, me, func {timer.timeLoop("ja37-medium", me.update_loop,me);});
+    #me.loop_ct       = maketimer(2, me, func code_ct());
+    #me.loop_not      = maketimer(60, me, func not());
+    
+    # displays commons
+    displays.common.loop();
+    displays.common.loopFast();
+    me.loop_common   = maketimer(0.21, displays.common, func {timer.timeLoop("common-slow", displays.common.loop,displays.common);});
+    me.loop_commonF  = maketimer(0.05, displays.common, func {timer.timeLoop("common-fast", displays.common.loopFast,displays.common);});
+    me.loop_common.start();
+    me.loop_commonF.start();
+    
+    # autopilot
+    me.loop_ap       = maketimer(0.20, me, func {timer.timeLoop("Autopilot", auto.apLoop,me);});
+    me.loop_hydrLost = maketimer(0.50, me, func {timer.timeLoop("Autopilot-power", auto.hydr1Lost,me);});
+
+    me.loop_chrono   = maketimer(0.26, me, func {timer.timeLoop("chronometer", ja37.chrono_update,me);});
+    me.loop_land     = maketimer(0.27, land.lander, func {timer.timeLoop("landing-mode", land.lander.loop,land.lander);});
+    me.loop_nav      = maketimer(0.28, me, func {timer.timeLoop("heading-indicator", navigation.heading_indicator,me);});
+
+    # stores
+    armament.main_weapons();
+    me.loop_stores   = maketimer(0.29, me, func {timer.timeLoop("stores", armament.loop_stores,me);});#0.05
+ 
+    me.loop_saab37.start();
+    me.loop_fast.start();
+    me.loop_slow.start();
+    me.loop_beacon.start();
+    #me.loop_ct.start();
+    #me.loop_not.start();
+    me.loop_ap.start();
+    me.loop_hydrLost.start();    
+    me.loop_chrono.start();
+    me.loop_land.start();
+    me.loop_nav.start();
+    me.loop_stores.start();
+
+    if(getprop("ja37/supported/radar") == TRUE) {
+      # radar
+      radar_logic.radarLogic = radar_logic.RadarLogic.new();
+      me.loop_logic  = maketimer(0.24, radar_logic.radarLogic, func {timer.timeLoop("Radar", radar_logic.radarLogic.loop,radar_logic.radarLogic);});
+      #me.loop_logic.start();
+
+      # immatriculation
+      call(func {# issue on some fast linux PCs..
+        callsign.callInit();
+        me.loop_callsign = maketimer(1, me, func {timer.timeLoop("Callsign", callsign.loop_callsign,me);});
+        me.loop_callsign.start();
+      },nil,var err=[]);
+      if(size(err)) {
+        foreach(var i;err) {
+          print(i);
+        }
+      }
+
+      if (getprop("ja37/supported/canvas") == TRUE and getprop("ja37/systems/variant") > 0) {
+        # CI display
+        rdr.scope = rdr.radar.new();
+        me.loop_radar_screen = maketimer(0.10, rdr.scope, func rdr.scope.update());
+        me.loop_radar_screen.start();
+      }
+    }
+
+    # flightplans
+    route.poly_start();
+
+    if (getprop("ja37/supported/canvas") == TRUE) {
+      if (getprop("ja37/systems/variant") == 0) {
+        # TI
+        # must not start looping before route has been init
+        TI.setupCanvas();
+        TI.ti = TI.TI.new();
+        TI.ti.loop();#must be first due to me.rootCenterY
+        me.loop_ti  = maketimer(0.50, TI.ti, func {timer.timeLoop("TI-medium", TI.ti.loop,    TI.ti);});
+        me.loop_tiF = maketimer(0.05, TI.ti, func {timer.timeLoop("TI-fast",   TI.ti.loopFast,TI.ti);});
+        me.loop_tiS = maketimer(180, TI.ti,  func {timer.timeLoop("TI-slow",   TI.ti.loopSlow,TI.ti);});
+        me.loop_ti.start();
+        me.loop_tiF.start();
+        me.loop_tiS.start();
+
+        # MI
+        # must be after TI
+        MI.setupCanvas();
+        MI.mi = MI.MI.new();
+        me.loop_mi  = maketimer(0.15, MI.mi, func {timer.timeLoop("MI", MI.mi.loop,MI.mi);});
+        me.loop_mi.start();
+      }
+
+      # HUD:
+      canvas_HUD.hud_pilot = canvas_HUD.HUDnasal.new({"node": "hud", "texture": "hud.png"});
+      me.loop_hud = maketimer(0.05, canvas_HUD.hud_pilot, func {timer.timeLoop("HUD", canvas_HUD.hud_pilot.update,canvas_HUD.hud_pilot);});
+      #me.loop_ir  = maketimer(1.5, me, func canvas_HUD.IR_loop());
+
+      me.loop_hud.start();
+      #me.loop_ir.start();
+
+      if (getprop("ja37/systems/variant") == 0) {
+        # data-panel
+        dap.callInit();
+        me.loop_dap  = maketimer(1, me, func {timer.timeLoop("DAP", dap.loop_main,me);});
+        me.loop_dap.start();
+        me.loop_plan  = maketimer(0.5, me, func {timer.timeLoop("Plans", route.Polygon.loop,me);});
+        me.loop_plan.start();
+      }
+      
+    }
+    if(getprop("ja37/supported/radar") == TRUE) {
+      # radar (must be called after TI)
+      me.loop_logic.start();
+    }
+
+    if (getprop("ja37/supported/fire") == TRUE) {
+      # fire
+      failureSys.init_fire();
+      me.loop_fire  = maketimer(1, me, func {timer.timeLoop("Failure", failureSys.loop_fire,me);});
+      me.loop_fire.start();
+    }
+    me.loop_test  = maketimer(0.25, me, func {timer.timeLoop("Test", testing.loop,me);});
+    me.loop_test.start();
+  },
 };
 
 var saab37 = Saab37.new();
@@ -1028,7 +1309,9 @@ var saab37 = Saab37.new();
 
 
 
-
+var resetMaxG = func {
+  setprop("ja37/accelerations/pilot-G-max", -4);
+}
 
 
 
@@ -1068,7 +1351,7 @@ var voltage = 0;
 var signalInProgress = FALSE;
 var battery_listener = func {
 
-    if (signalInProgress == FALSE and voltage <= 23 and input.dcVolt.getValue() > 23) {
+    if (signalInProgress == FALSE and !voltage and power.prop.dcMainBool.getValue()) {
       setprop("/systems/electrical/batterysignal", TRUE);
       signalInProgress = TRUE;
       settimer(func {
@@ -1076,7 +1359,7 @@ var battery_listener = func {
         signalInProgress = FALSE;
         }, 6);
     }
-    voltage = input.dcVolt.getValue();
+    voltage = power.prop.dcMainBool.getValue();
     settimer(battery_listener, 0.5);
 }
 
@@ -1347,6 +1630,9 @@ var test_support = func {
 
 
 var main_init = func {
+  
+  power.init();
+  
   setprop("sim/time/elapsed-at-init-sec", getprop("sim/time/elapsed-sec"));
 
   test_support();
@@ -1453,7 +1739,22 @@ var main_init = func {
       auto.mode3();
       settimer(cruise, 1.5);
   }
+  recharge_battery();
+  setup_custom_stick_bindings();
+  settimer(func{setprop("fdm/jsbsim/systems/electrical/generator-takeoff",0);},10);
 }
+
+var setup_custom_stick_bindings = func {
+  call(func {
+      append(joystick.buttonBindings, joystick.NasalHoldButton.new  ("JA37 Cursor Click", 'setprop("ja37/systems/cursor-select",1);', 'setprop("ja37/systems/cursor-select",0);'));
+      append(joystick.axisBindings,   joystick.PropertyScaleAxis.new("JA37 Cursor Vertical", "/ja37/systems/cursor-control-Y"));
+      append(joystick.axisBindings,   joystick.PropertyScaleAxis.new("JA37 Cursor Horizontal", "/ja37/systems/cursor-control-X"));
+  },nil,var err=[]);
+  var dlg = gui.Dialog.new("/sim/gui/dialogs/button-axis-config/dialog", "Aircraft/JA37/gui/dialogs/button-axis-config.xml", "button-axis-config");
+  var dlg = gui.Dialog.new("/sim/gui/dialogs/button-config/dialog", "Aircraft/JA37/gui/dialogs/button-config.xml", "button-config");
+}
+
+
 
 var cruise = func {
   setprop("controls/gear/gear-down", 0);
@@ -1461,13 +1762,14 @@ var cruise = func {
 
 # re init
 var re_init = func {
+  if (getprop("/sim/signals/reinit")==0) {return;}
   print("Re-initializing Saab 37 Viggen systems");
   
   setprop("sim/time/elapsed-at-init-sec", getprop("sim/time/elapsed-sec"));
 
   # init oxygen bottle pressure
   setprop("ja37/systems/oxygen-bottle-pressure", 127);# 127 kp/cm2 as per manual
-
+  #print("Reinit: Oxygen replenished.");
   # asymmetric vortex detachment
   asymVortex();
   repair(FALSE);
@@ -1478,6 +1780,19 @@ var re_init = func {
   setprop("sim/view[0]/enabled",1);
   setprop("/sim/current-view/view-number", 0);
   #test_support();
+  recharge_battery();
+}
+
+var recharge_battery = func {
+  setprop("ja37/systems/battery-reinit",1);
+  setprop("ja37/systems/battery-recharge-rate",10);
+  settimer(recharge_battery2, 2);
+}
+
+var recharge_battery2 = func {
+  setprop("ja37/systems/battery-reinit",0);
+  setprop("ja37/systems/battery-recharge-rate",0.001666);
+  #print("Init: Battery fully recharged.");
 }
 
 var asymVortex = func () {
@@ -1598,7 +1913,7 @@ var startSupply = func {
     setprop("controls/electric/reserve", FALSE);
     notice("Enabling power using external supply.");
     settimer(endSupply, 1.5, 1);
-  } elsif (getprop("fdm/jsbsim/systems/electrical/battery-producing-dc") > 23) {
+  } elsif (getprop("ja37/elec/dc-bus-battery-3-volt") > 20) {
     # using battery
     click();
     setprop("/controls/electric/battery", TRUE);
@@ -1621,7 +1936,7 @@ var endSupply = func {
   setprop("controls/engines/engine/reverser-cmd", FALSE);
   setprop("controls/fuel/auto", TRUE);
   setprop("controls/altimeter-radar", TRUE);
-  if (getprop("systems/electrical/outputs/dc-voltage") > 23) {
+  if (power.prop.dcSecondBool.getValue()) {
     # have power to start
     settimer(autostart, 1.5, 1);
   } else {
@@ -1655,7 +1970,7 @@ var waiting_n1 = func {
   if (start_count > 45) {
     if(bingoFuel == TRUE) {
       notice("Engine start failed. Check fuel.");
-    } elsif (getprop("systems/electrical/outputs/dc-voltage") < 23) {
+    } elsif (!power.prop.dcSecondBool.getValue()) {
       notice("Engine start failed. Check battery.");
     } else {
       notice("Autostart failed. If engine has not reported failure, report bug to aircraft developer.");
@@ -1698,7 +2013,7 @@ var final_engine = func () {
   if (start_count > 70) {
     if(bingoFuel == TRUE) {
       notice("Engine start failed. Check fuel.");
-    } elsif (getprop("systems/electrical/outputs/dc-voltage") < 23) {
+    } elsif (!power.prop.dcSecondBool.getValue()) {
       notice("Engine start failed. Check battery.");
     } else {
       notice("Autostart failed. If engine has not reported failure, report bug to aircraft developer.");
@@ -1764,17 +2079,6 @@ var toggleRollDamper = func {
     notice("Roll damper: ON");
   } else {
     notice("Roll damper: OFF");
-  }
-}
-
-var toggleHook = func {
-  ja37.click();
-  var enabled = getprop("fdm/jsbsim/systems/hook/tailhook-cmd-norm");
-  setprop("fdm/jsbsim/systems/hook/tailhook-cmd-norm", !enabled);
-  if(enabled == FALSE) {
-    notice("Arrester hook: Extended");
-  } else {
-    notice("Arrester hook: Retracted");
   }
 }
 
@@ -1866,21 +2170,21 @@ var _popupTip = func(label, y, delay) {
 }
 
 var repair = func (c = 1) {
-  if (getprop("payload/armament/msg")==1 and !getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
+  if (c==1 and getprop("payload/armament/msg")==1 and !getprop("fdm/jsbsim/gear/unit[0]/WOW")) {
     screen.log.write(msgA);
   } else {
-  var ver = getprop("ja37/supported/crash-system");
-  if (ver == 0) {
-    crash0.repair();
-  } else {
-    crash1.repair();
-    failureSys.armAllTriggers();
+    var ver = getprop("ja37/supported/crash-system");
+    if (ver == 0) {
+      crash0.repair();
+    } else {
+      crash1.repair();
+      failureSys.armAllTriggers();
+    }
+    setprop("environment/damage", FALSE);
+    setprop("ja37/done",0);
+    setprop("sim/view[0]/enabled",1);
+    setprop("/sim/current-view/view-number", 0);
   }
-  setprop("environment/damage", FALSE);
-  setprop("ja37/done",0);
-  setprop("sim/view[0]/enabled",1);
-  setprop("/sim/current-view/view-number", 0);
-}
   if (c == TRUE) {
     #ct("rp");
   }
@@ -2208,13 +2512,23 @@ dynamic_view.register(func {
    });
 
 var convertDoubleToDegree = func (value) {
-        var sign = value < 0 ? -1 : 1;
-        var abs = math.abs(math.round(value * 1000000));
-        var dec = math.fmod(abs,1000000) / 1000000;
-        var deg = math.floor(abs / 1000000) * sign;
-        var min = math.floor(dec * 60);
-        var sec = math.round((dec - min / 60) * 3600);#TODO: unsure of this round()
-        return [deg,min,sec];
+  var sign = value < 0 ? -1 : 1;
+  value = math.abs(value);
+  var deg = math.floor(value);
+  value = math.fmod(value,1) * 60;
+  var min = math.floor(value);
+  value = math.fmod(value,1) * 60;
+  var sec = math.round(value);
+  # Because of the rounding, sec may be 60.
+  if (sec == 60) {
+    sec = 0;
+    min = min + 1;
+    if (min == 60) {
+      min = 0;
+      deg = deg + 1;
+    }
+  }
+  return [sign,deg,min,sec];
 }
 var convertDegreeToStringLat = func (lat) {
   lat = convertDoubleToDegree(lat);
@@ -2222,24 +2536,31 @@ var convertDegreeToStringLat = func (lat) {
   if (lat[0]<0) {
     s = "S";
   }
-  return sprintf("%02d %02d %02d%s",math.abs(lat[0]),lat[1],lat[2],s);
+  return sprintf("%02d %02d %02d%s",lat[1],lat[2],lat[3],s);
 }
 var convertDegreeToStringLon = func (lon) {
   lon = convertDoubleToDegree(lon);
-  var s = "E";
+  var s = getprop("ja37/hud/units-metric")?"\xC3\x96":"E";
   if (lon[0]<0) {
-    s = "W";
+    s = getprop("ja37/hud/units-metric")?"V":"W";
   }
-  return sprintf("%03d %02d %02d%s",math.abs(lon[0]),lon[1],lon[2],s);
+  return sprintf("%03d %02d %02d%s",lon[1],lon[2],lon[3],s);
 }
 var convertDegreeToDispStringLat = func (lat) {
   lat = convertDoubleToDegree(lat);
-
-  return sprintf("%02d%02d%02d",lat[0],lat[1],lat[2]);
+  var s = "";
+  if (lat[0]<0) {
+    s = "-";
+  }
+  return sprintf("%s%02d%02d%02d",s,lat[1],lat[2],lat[3]);
 }
 var convertDegreeToDispStringLon = func (lon) {
   lon = convertDoubleToDegree(lon);
-  return sprintf("%03d%02d%02d",lon[0],lon[1],lon[2]);
+  var s = "";
+  if (lon[0]<0) {
+    s = "-";
+  }
+  return sprintf("%s%03d%02d%02d",s,lon[1],lon[2],lon[3]);
 }
 var convertDegreeToDouble = func (hour, minute, second) {
   var d = hour+minute/60+second/3600;
@@ -2396,3 +2717,14 @@ var action_view_handler = {
 };
 
 view.manager.register("Fly-By View", action_view_handler);
+
+
+var KIAStoGS = func (kt,ft) {
+  return (0.02*(ft*0.001)+1)*kt;
+}
+
+var horiSpeed = func () {
+  var e = getprop("velocities/speed-east-fps");
+  var n = getprop("velocities/speed-north-fps");
+  return math.sqrt(n*n+e*e)*FPS2KT;
+}

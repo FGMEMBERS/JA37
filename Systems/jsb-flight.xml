@@ -597,8 +597,12 @@
 
         <switch name="systems/ins/time-steady">
             <default value="sim-time-sec"/>
+            <test logic="AND" value="sim-time-sec">
+                /ja37/avionics/button-snabbresn == 1
+            </test>
             <test logic="AND" value="systems/ins/time-steady">
-                /systems/electrical/outputs/dc-voltage gt 20
+                /ja37/elec/ac-bus-main-bool == 1
+                /ja37/elec/dc-bus-main-bool == 1
                 /ja37/avionics/ins-cmd == 1
             </test>
             <test logic="AND" value="-1000">
@@ -615,11 +619,11 @@
                 </sum>
             </function>
         </fcs_function>
-
+        
         <switch name="systems/ins/init">
             <default value="0"/>
             <test logic="AND" value="1">
-                /systems/electrical/outputs/dc-voltage gt 20
+                /ja37/elec/dc-bus-main-bool == 1
                 sim-time-sec le systems/ins/time-init
                 /ja37/avionics/ins-cmd == 1
             </test>
@@ -629,7 +633,7 @@
         <switch name="systems/ins/running">
             <default value="0"/>
             <test logic="AND" value="1">
-                /systems/electrical/outputs/dc-voltage gt 20
+                /ja37/elec/dc-bus-main-bool == 1
                 /ja37/avionics/ins-init == 0
                 /ja37/avionics/ins-cmd == 1
                 sim-time-sec gt systems/ins/time-init
@@ -758,7 +762,7 @@
         <switch name="names/instr/epr-direct">
             <default value="propulsion/engine/p7-p2"/>
             <test logic="OR" value="0">
-              /systems/electrical/outputs/dc-voltage lt 23
+              /ja37/elec/ac-bus-main-bool == 0
             </test>
             <output>/engines/engine/epr-direct</output>
         </switch>
@@ -772,7 +776,10 @@
         <switch name="names/instr/fuel-on">
             <default value="/instrumentation/fuel/needleF_rot"/>
             <test logic="OR" value="/instrumentation/fuel/needleF_rot_on">
-              /systems/electrical/outputs/ac-main-voltage lt 150
+              /ja37/elec/ac-bus-main-bool == 0
+            </test>
+            <test logic="OR" value="0">
+              /ja37/elec/dc-bus-main-bool == 0
             </test>
             <output>/instrumentation/fuel/needleF_rot_on</output>
         </switch>
@@ -803,7 +810,7 @@
         <switch name="names/throttle/nozzle-direct">
             <default value="propulsion/engine/zone-instr"/>
             <test logic="OR" value="0">
-              /systems/electrical/outputs/dc-voltage lt 23
+              /ja37/elec/dc-bus-main-bool == 0
             </test>
             <test logic="OR" value="/engines/engine/nozzle-pos-norm">
               propulsion/engine/zone == 0
@@ -822,7 +829,7 @@
         <switch name="names/instr/tachometer-direct">
             <default value="propulsion/engine/n2"/>
             <test logic="OR" value="0">
-              /systems/electrical/outputs/dc-voltage lt 23
+              /ja37/elec/dc-bus-main-bool == 0
             </test>
             <output>propulsion/engine/tachometer-direct</output>
         </switch>
@@ -873,6 +880,35 @@
             </function>
             <output>/ja37/accelerations/pilot-G-norm</output>
         </fcs_function>
+        
+        <switch name="names/sound/max-pos-g">
+            <default value="/ja37/sound/loadfactor-percent"/>
+            <test logic="OR" value="110">
+              /instrumentation/terrain-override == 1
+            </test>
+            <output>/ja37/sound/loadfactor-percent-used</output>
+        </switch>
+        
+        <fcs_function name="names/instruments/max-positive-g-set">
+            <function>
+                    <product>
+                        <v>0.01</v>                        
+                        <p>/ja37/sound/loadfactor-percent-used</p>
+                        <p>/limits/max-positive-g</p>
+                    </product>
+            </function>
+            <output>/limits/max-positive-g-set</output>
+        </fcs_function>
+        
+        <fcs_function name="names/instruments/sound-g-force-norm">
+            <function>
+                    <quotient>
+                        <p>/ja37/accelerations/pilot-G-lag</p>
+                        <p>/limits/max-positive-g-set</p>
+                    </quotient>
+            </function>
+            <output>/ja37/sound/pilot-G-norm</output>
+        </fcs_function>
 
         <!--<washout_filter name="names/instruments/g-force-damped">
           <input> /ja37/accelerations/pilot-G </input>
@@ -907,6 +943,57 @@
                     </product>
             </function>
             <output>/ja37/accelerations/pilot-G-damped</output>
+        </fcs_function>
+        
+        <fcs_function name="systems/sound/alpha-limit-low-ja">
+            <description>When 3hz tone comes</description>
+            <function>
+                <table>
+                    <independentVar lookup="row">/position/altitude-ft</independentVar>
+                    <tableData>
+                        32808  17.00 
+                        41010  14.00
+                    </tableData>
+                </table>
+            </function>
+        </fcs_function>
+        
+        <fcs_function name="systems/sound/alpha-limit-low-aj">
+            <description>When 3hz tone comes, guesses</description>
+            <function>
+                <table>
+                    <independentVar lookup="row">/position/altitude-ft</independentVar>
+                    <tableData>
+                        32808  14.00
+                        41010  11.00
+                    </tableData>
+                </table>
+            </function>
+        </fcs_function>
+        
+        <switch name="systems/sound/alpha-limit-low">
+            <default value="systems/sound/alpha-limit-low-ja"/>
+            <test logic="AND" value="systems/sound/alpha-limit-low-aj">
+                /ja37/systems/variant gt 0
+            </test>
+        </switch>
+        
+        <fcs_function name="systems/sound/alpha-limit-medium">
+            <function>
+                    <sum>
+                        <p>systems/sound/alpha-limit-low</p>
+                        <v>3</v>
+                    </sum>
+            </function>
+        </fcs_function>
+        
+        <fcs_function name="systems/sound/alpha-limit-high">
+            <function>
+                    <sum>
+                        <p>systems/sound/alpha-limit-low</p>
+                        <v>6</v>
+                    </sum>
+            </function>
         </fcs_function>
 
 
@@ -1035,7 +1122,7 @@
                 <product>
                     <property>/ja37/systems/oxygen-bottle-pressure</property>
                     <table>
-                        <independentVar lookup="row">/systems/electrical/outputs/ac-instr-voltage</independentVar>
+                        <independentVar lookup="row">/ja37/elec/ac-bus-main-volt</independentVar>
                         <tableData>
                                  99.0         0.0
                                 100.0         1.0
@@ -1149,7 +1236,7 @@
         <switch name="systems/flight/aoa-indicator-direct">
             <default value="aero/alpha-deg"/>
             <test logic="OR" value="0">
-              /systems/electrical/outputs/dc-voltage lt 23
+              /ja37/elec/dc-bus-main-bool == 0
             </test>
             <test logic="OR" value="/instrumentation/attitude-indicator/indicated-pitch-deg">
                 gear/unit[0]/WOW == 1
@@ -1224,7 +1311,7 @@
         <switch name="systems/flight/tertiary/state-current">
             <default value="systems/flight/tertiary/state"/>
             <test logic="AND" value="systems/flight/tertiary/state-cmd">
-                /systems/electrical/outputs/dc-voltage gt 23
+                /ja37/elec/dc-bus-main-bool == 1
             </test>
         </switch>
 
@@ -1327,7 +1414,7 @@
         <switch name="systems/flight/reverse/state-current">
             <default value="systems/flight/reverse/state"/>
             <test logic="AND" value="systems/flight/reverse/state-cmd">
-                /systems/electrical/outputs/dc-voltage gt 23
+                /ja37/elec/dc-bus-main-bool == 1
                 systems/hydraulics/system1/pressure == 1
                 /controls/engines/engine[0]/reverse-system/serviceable == 1
             </test>
@@ -1474,6 +1561,17 @@
             <test logic="AND" value="0">
                 propulsion/engine/cutoff-commanded == 0
                 systems/flight/oil/pressure-drop-norm lt 0.5625
+            </test>
+        </switch>
+
+        <!-- The fuel valve should be open (cutoff off) before engaging the starter switch.
+             Unfortunately, jsbsim requires cutoff to be on initially for startup.
+             To avoid this, cutoff is always enabled for low engine speed.
+        -->
+        <switch name="propulsion/engine/cutoff-jsbsim">
+            <default value="propulsion/engine/cutoff-actual"/>
+            <test logic="AND" value="1">
+                propulsion/engine/n1 lt 5.2
             </test>
             <!--<output>/controls/engines/engine[0]/cutoff</output>-->
         </switch>

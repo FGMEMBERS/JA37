@@ -1,0 +1,1067 @@
+<?xml version="1.0"?>
+
+<PropertyList>
+    <name>route-manager2</name>
+    <layout>vbox</layout>
+    <resizable>false</resizable>
+
+    <nasal>
+        <open><![CDATA[
+            var dlg = props.globals.getNode("/sim/gui/dialogs/route-manager", 1);
+
+            var load_route1 = func(path) {
+                route.Polygon.load("1",path.getValue());
+            }
+            var save_route1 = func(path) {
+                route.Polygon.save("1",path.getValue());
+            }
+            var load_route2 = func(path) {
+                route.Polygon.load("2",path.getValue());
+            }
+            var save_route2 = func(path) {
+                route.Polygon.save("2",path.getValue());
+            }
+            var load_route3 = func(path) {
+                route.Polygon.load("3",path.getValue());
+            }
+            var save_route3 = func(path) {
+                route.Polygon.save("3",path.getValue());
+            }
+            var load_route4 = func(path) {
+                route.Polygon.load("4",path.getValue());
+            }
+            var save_route4 = func(path) {
+                route.Polygon.save("4",path.getValue());
+            }
+            
+            var load_route1a = func(path) {
+                route.Polygon.load("1A",path.getValue());
+            }
+            var save_route1a = func(path) {
+                route.Polygon.save("1A",path.getValue());
+            }
+            var load_route1b = func(path) {
+                route.Polygon.load("1B",path.getValue());
+            }
+            var save_route1b = func(path) {
+                route.Polygon.save("1B",path.getValue());
+            }
+            
+            var load_route2a = func(path) {
+                route.Polygon.load("2A",path.getValue());
+            }
+            var save_route2a = func(path) {
+                route.Polygon.save("2A",path.getValue());
+            }
+            var load_route2b = func(path) {
+                route.Polygon.load("2B",path.getValue());
+            }
+            var save_route2b = func(path) {
+                route.Polygon.save("2B",path.getValue());
+            }
+            
+            var load_route3a = func(path) {
+                route.Polygon.load("3A",path.getValue());
+            }
+            var save_route3a = func(path) {
+                route.Polygon.save("3A",path.getValue());
+            }
+            var load_route3b = func(path) {
+                route.Polygon.load("3B",path.getValue());
+            }
+            var save_route3b = func(path) {
+                route.Polygon.save("3B",path.getValue());
+            }
+            
+            var load_route4a = func(path) {
+                route.Polygon.load("4A",path.getValue());
+            }
+            var save_route4a = func(path) {
+                route.Polygon.save("4A",path.getValue());
+            }
+            var load_route4b = func(path) {
+                route.Polygon.load("4B",path.getValue());
+            }
+            var save_route4b = func(path) {
+                route.Polygon.save("4B",path.getValue());
+            }
+            
+            var load_routeO1 = func(path) {
+                route.Polygon.load("OP1",path.getValue());
+            }
+            var save_routeO1 = func(path) {
+                route.Polygon.save("OP1",path.getValue());
+            }
+            var load_routeO2 = func(path) {
+                route.Polygon.load("OP2",path.getValue());
+            }
+            var save_routeO2 = func(path) {
+                route.Polygon.save("OP2",path.getValue());
+            }
+            var load_routeO3 = func(path) {
+                route.Polygon.load("OP3",path.getValue());
+            }
+            var save_routeO3 = func(path) {
+                route.Polygon.save("OP3",path.getValue());
+            }
+            var load_routeO4 = func(path) {
+                route.Polygon.load("OP4",path.getValue());
+            }
+            var save_routeO4 = func(path) {
+                route.Polygon.save("OP4",path.getValue());
+            }
+            var load_routeO5 = func(path) {
+                route.Polygon.load("OP5",path.getValue());
+            }
+            var save_routeO5 = func(path) {
+                route.Polygon.save("OP5",path.getValue());
+            }
+            var load_routeO6 = func(path) {
+                route.Polygon.load("OP6",path.getValue());
+            }
+            var save_routeO6 = func(path) {
+                route.Polygon.save("OP6",path.getValue());
+            }
+            
+            var load_routeff = func(path) {
+                dap.loadPoints(path.getValue());
+            }
+            var save_routeff = func(path) {
+                dap.savePoints(path.getValue());
+            }
+            
+            var load_route_all = func(path) {
+                route.Polygon.loadAll(path.getValue());
+            }
+            var save_route_all = func(path) {
+                route.Polygon.saveAll(path.getValue());
+            }
+
+            var defaultDirInFileSelector = getprop("/sim/fg-home") ~ "/Export";
+
+            var file_selector_1 = gui.FileSelector.new(
+              callback: load_route1, title: "Load flight-plan 1", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_1 = gui.FileSelector.new(
+              callback: save_route1, title: "Save flight-plan 1", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-1.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_2 = gui.FileSelector.new(
+              callback: load_route2, title: "Load flight-plan 2", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_2 = gui.FileSelector.new(
+              callback: save_route2, title: "Save flight-plan 2", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-2.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_3 = gui.FileSelector.new(
+              callback: load_route3, title: "Load flight-plan 3", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_3 = gui.FileSelector.new(
+              callback: save_route3, title: "Save flight-plan 3", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-3.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_4 = gui.FileSelector.new(
+              callback: load_route4, title: "Load flight-plan 4", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_4 = gui.FileSelector.new(
+              callback: save_route4, title: "Save flight-plan 4", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-4.fgfp", pattern: ["*.fgfp"]);
+              
+              
+            var file_selector_1a = gui.FileSelector.new(
+              callback: load_route1a, title: "Load flight-plan 1A", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_1a = gui.FileSelector.new(
+              callback: save_route1a, title: "Save flight-plan 1A", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-1a.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_1b = gui.FileSelector.new(
+              callback: load_route1b, title: "Load flight-plan 1B", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_1b = gui.FileSelector.new(
+              callback: save_route1b, title: "Save flight-plan 1B", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-1b.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_2a = gui.FileSelector.new(
+              callback: load_route2a, title: "Load flight-plan 2A", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_2a = gui.FileSelector.new(
+              callback: save_route2a, title: "Save flight-plan 2A", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-2a.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_2b = gui.FileSelector.new(
+              callback: load_route2b, title: "Load flight-plan 2B", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_2b = gui.FileSelector.new(
+              callback: save_route2b, title: "Save flight-plan 2B", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-2b.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_3a = gui.FileSelector.new(
+              callback: load_route3a, title: "Load flight-plan 3A", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_3a = gui.FileSelector.new(
+              callback: save_route3a, title: "Save flight-plan 3A", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-3a.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_3b = gui.FileSelector.new(
+              callback: load_route3b, title: "Load flight-plan 3B", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_3b = gui.FileSelector.new(
+              callback: save_route3b, title: "Save flight-plan 3B", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-3b.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_4a = gui.FileSelector.new(
+              callback: load_route4a, title: "Load flight-plan 4A", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_4a = gui.FileSelector.new(
+              callback: save_route4a, title: "Save flight-plan 4A", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-4a.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_4b = gui.FileSelector.new(
+              callback: load_route4b, title: "Load flight-plan 4B", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_4b = gui.FileSelector.new(
+              callback: save_route4b, title: "Save flight-plan 4B", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-route-4b.fgfp", pattern: ["*.fgfp"]);
+              
+              
+            var file_selector_p1 = gui.FileSelector.new(
+              callback: load_routeO1, title: "Load area 1", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_p1 = gui.FileSelector.new(
+              callback: save_routeO1, title: "Save area 1", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-area-1.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_p2 = gui.FileSelector.new(
+              callback: load_routeO2, title: "Load area 2", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_p2 = gui.FileSelector.new(
+              callback: save_routeO2, title: "Save area 2", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-area-2.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_p3 = gui.FileSelector.new(
+              callback: load_routeO3, title: "Load area 3", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_p3 = gui.FileSelector.new(
+              callback: save_routeO3, title: "Save area 3", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-area-3.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_p4 = gui.FileSelector.new(
+              callback: load_routeO4, title: "Load area 4", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_p4 = gui.FileSelector.new(
+              callback: save_routeO4, title: "Save area 4", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-area-4.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_p5 = gui.FileSelector.new(
+              callback: load_routeO5, title: "Load area 5", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_p5 = gui.FileSelector.new(
+              callback: save_routeO5, title: "Save area 5", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-area-5.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_p6 = gui.FileSelector.new(
+              callback: load_routeO6, title: "Load area 6", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.xml","*.gpx","*.fgfp"]);
+            var save_selector_p6 = gui.FileSelector.new(
+              callback: save_routeO6, title: "Save area 6", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-area-6.fgfp", pattern: ["*.fgfp"]);
+              
+            var file_selector_ff = gui.FileSelector.new(
+              callback: load_routeff, title: "Load data", button: "Load",
+              dir: defaultDirInFileSelector, dotfiles: 1, pattern: ["*.ck37"]);
+            var save_selector_ff = gui.FileSelector.new(
+              callback: save_routeff, title: "Save data", button: "Save",
+              dir: defaultDirInFileSelector, dotfiles: 1, file: "ja37-points.ck37", pattern: ["*.ck37"]);
+              
+            var file_selector_all = gui.FileSelector.new(
+              callback: load_route_all, title: "Load all", button: "Load", show_files: 0,
+              dir: defaultDirInFileSelector, dotfiles: 1);
+            var save_selector_all = gui.FileSelector.new(
+              callback: save_route_all, title: "Save all", button: "Save", show_files: 0,
+              dir: defaultDirInFileSelector, dotfiles: 1);
+
+        ]]></open>
+
+        <close><![CDATA[
+            file_selector_1.del();
+            save_selector_1.del();
+            file_selector_2.del();
+            save_selector_2.del();
+            file_selector_3.del();
+            save_selector_3.del();
+            file_selector_4.del();
+            save_selector_4.del();
+            
+            file_selector_1a.del();
+            save_selector_1a.del();
+            file_selector_1b.del();
+            save_selector_1b.del();
+            
+            file_selector_2a.del();
+            save_selector_2a.del();
+            file_selector_2b.del();
+            save_selector_2b.del();
+            
+            file_selector_3a.del();
+            save_selector_3a.del();
+            file_selector_3b.del();
+            save_selector_3b.del();
+            
+            file_selector_4a.del();
+            save_selector_4a.del();
+            file_selector_4b.del();
+            save_selector_4b.del();
+            
+            file_selector_p1.del();
+            save_selector_p1.del();
+            file_selector_p2.del();
+            save_selector_p2.del();
+            file_selector_p3.del();
+            save_selector_p3.del();
+            file_selector_p4.del();
+            save_selector_p4.del();
+            file_selector_p5.del();
+            save_selector_p5.del();
+            file_selector_p6.del();
+            save_selector_p6.del();
+            
+            file_selector_ff.del();
+            save_selector_ff.del();
+            
+            file_selector_all.del();
+            save_selector_all.del();
+        ]]></close>
+    </nasal>
+
+    <group>
+        <layout>hbox</layout>
+        <empty><stretch>1</stretch></empty>
+
+        <text>
+            <label>Saab JA-37Di Viggen Route Manager System</label>
+        </text>
+
+        <empty><stretch>1</stretch></empty>
+
+        <button>
+            <pref-width>16</pref-width>
+            <pref-height>16</pref-height>
+            <legend></legend>
+            <default>1</default>
+            <keynum>27</keynum>
+            <border>2</border>
+
+            <binding>
+                <command>dialog-close</command>
+            </binding>
+        </button>
+    </group>
+    
+    <hrule/>
+
+    <group>
+        <layout>table</layout>
+        
+        <text>
+            <row>0</row>
+            <col>0</col>
+            <halign>center</halign>
+            <label>MISSION ROUTES</label>
+        </text>
+        
+        <!--<text>
+            <row>1</row>
+            <col>0</col>
+            <halign>left</halign>
+            <label> Take-off base:</label>
+        </text>
+        <input>
+            <row>2</row>
+            <col>0</col>
+            <halign>left</halign>
+            <name>departure-airport</name>
+            <pref-width>70</pref-width>
+            <property>/autopilot/plan-manager/departure/airport</property>
+            <live>true</live>
+            <binding>
+                <command>dialog-apply</command>
+                <object-name>departure-airport</object-name>
+            </binding>
+        </input>-->
+        
+        <group>
+            <row>3</row>
+            <col>0</col>
+            <layout>hbox</layout>
+            <button>
+                <legend>Load 1..</legend>
+                <equal>true</equal>
+                <binding>
+                    <command>nasal</command>
+                    <script>file_selector_1.open()</script>
+                </binding>
+            </button>
+            <button>
+                <legend>Save 1..</legend>
+                <equal>true</equal>
+                <enable>
+                <property>/autopilot/plan-manager/save-1</property>
+                </enable>
+                <binding>
+                    <command>nasal</command>
+                    <script>save_selector_1.open();</script>
+                </binding>
+            </button>
+        </group>
+        
+        <group>
+            <row>4</row>
+            <col>0</col>
+            <layout>hbox</layout>
+            <button>
+                <legend>Load 2...</legend>
+                <equal>true</equal>
+                <binding>
+                    <command>nasal</command>
+                    <script>file_selector_2.open()</script>
+                </binding>
+            </button>
+            <button>
+                <legend>Save 2...</legend>
+                <equal>true</equal>
+                <enable>
+                <property>/autopilot/plan-manager/save-2</property>
+                </enable>
+                <binding>
+                    <command>nasal</command>
+                    <script>save_selector_2.open();</script>
+                </binding>
+            </button>
+        </group>
+        
+        <group>
+            <row>5</row>
+            <col>0</col>
+            <layout>hbox</layout>
+            <button>
+                <legend>Load 3...</legend>
+                <equal>true</equal>
+                <binding>
+                    <command>nasal</command>
+                    <script>file_selector_3.open()</script>
+                </binding>
+            </button>
+            <button>
+                <legend>Save 3...</legend>
+                <equal>true</equal>
+                <enable>
+                <property>/autopilot/plan-manager/save-3</property>
+                </enable>
+                <binding>
+                    <command>nasal</command>
+                    <script>save_selector_3.open();</script>
+                </binding>
+            </button>
+        </group>
+        
+        <group>
+            <row>6</row>
+            <col>0</col>
+            <layout>hbox</layout>
+            <button>
+                <legend>Load 4...</legend>
+                <equal>true</equal>
+                <binding>
+                    <command>nasal</command>
+                    <script>file_selector_4.open()</script>
+                </binding>
+            </button>
+            <button>
+                <legend>Save 4...</legend>
+                <equal>true</equal>
+                <enable>
+                <property>/autopilot/plan-manager/save-4</property>
+                </enable>
+                <binding>
+                    <command>nasal</command>
+                    <script>save_selector_4.open();</script>
+                </binding>
+            </button>
+        </group>
+        
+        <vrule>
+            <row>0</row>
+            <col>1</col>
+            <rowspan>7</rowspan>
+        </vrule>
+        
+        <text>
+            <row>0</row>
+            <col>2</col>
+            <halign>center</halign>
+            <label>LANDING BASES (ICAO)</label>
+        </text>
+        <group>
+            <row>2</row>
+            <col>2</col>
+            <layout>hbox</layout>
+            <text>
+                <row>2</row>
+                <col>2</col>
+                <halign>left</halign>
+                <label>L1</label>
+            </text>
+            <input>
+                <row>2</row>
+                <col>3</col>
+                <halign>left</halign>
+                <name>destination-airport-1</name>
+                <pref-width>70</pref-width>
+                <property>/autopilot/plan-manager/destination/airport-1</property>
+                <live>true</live>
+                <binding>
+                    <command>dialog-apply</command>
+                    <object-name>destination-airport-1</object-name>
+                </binding>
+            </input>
+        </group>
+        
+        
+        <group>
+            <row>3</row>
+            <col>2</col>
+            <layout>hbox</layout>
+            <text>
+                <row>3</row>
+                <col>2</col>
+                <halign>left</halign>
+                <label>L2</label>
+            </text>
+            <input>
+                <row>3</row>
+                <col>3</col>
+                <halign>left</halign>
+                <name>destination-airport-1</name>
+                <pref-width>70</pref-width>
+                <property>/autopilot/plan-manager/destination/airport-2</property>
+                <live>true</live>
+                <binding>
+                    <command>dialog-apply</command>
+                    <object-name>destination-airport-1</object-name>
+                </binding>
+            </input>
+        </group>
+        
+        
+        <group>
+            <row>4</row>
+            <col>2</col>
+            <layout>hbox</layout>
+            <text>
+                <row>4</row>
+                <col>2</col>
+                <halign>left</halign>
+                <label>L3</label>
+            </text>
+            <input>
+                <row>4</row>
+                <col>3</col>
+                <halign>left</halign>
+                <name>destination-airport-1</name>
+                <pref-width>70</pref-width>
+                <property>/autopilot/plan-manager/destination/airport-3</property>
+                <live>true</live>
+                <binding>
+                    <command>dialog-apply</command>
+                    <object-name>destination-airport-1</object-name>
+                </binding>
+            </input>
+        </group>
+        
+        
+        <group>
+            <row>5</row>
+            <col>2</col>
+            <layout>hbox</layout>
+            <text>
+                <row>5</row>
+                <col>2</col>
+                <halign>left</halign>
+                <label>L4</label>
+            </text>
+            <input>
+                <row>5</row>
+                <col>3</col>
+                <halign>left</halign>
+                <name>destination-airport-1</name>
+                <pref-width>70</pref-width>
+                <property>/autopilot/plan-manager/destination/airport-4</property>
+                <live>true</live>
+                <binding>
+                    <command>dialog-apply</command>
+                    <object-name>destination-airport-1</object-name>
+                </binding>
+            </input>
+        </group>
+        
+        <vrule>
+            <row>0</row>
+            <col>3</col>
+            <rowspan>7</rowspan>
+        </vrule>
+        
+        <text>
+            <row>0</row>
+            <col>4</col>
+            <halign>center</halign>
+            <label>POLYGON AREAS</label>
+        </text>
+        
+        <group>
+            <row>1</row>
+            <col>4</col>
+            <layout>hbox</layout>
+            <button>
+                <legend>Load Area1...</legend>
+                <equal>true</equal>
+                <binding>
+                    <command>nasal</command>
+                    <script>file_selector_p1.open()</script>
+                </binding>
+            </button>
+            <button>
+                <legend>Save Area1...</legend>
+                <equal>true</equal>
+                <enable>
+                <property>/autopilot/plan-manager/save-p1</property>
+                </enable>
+                <binding>
+                    <command>nasal</command>
+                    <script>save_selector_p1.open();</script>
+                </binding>
+            </button>
+        </group>
+        
+        <group>
+            <row>2</row>
+            <col>4</col>
+            <layout>hbox</layout>
+            <button>
+                <legend>Load Area2...</legend>
+                <equal>true</equal>
+                <binding>
+                    <command>nasal</command>
+                    <script>file_selector_p2.open()</script>
+                </binding>
+            </button>
+            <button>
+                <legend>Save Area2...</legend>
+                <equal>true</equal>
+                <enable>
+                <property>/autopilot/plan-manager/save-p2</property>
+                </enable>
+                <binding>
+                    <command>nasal</command>
+                    <script>save_selector_p2.open();</script>
+                </binding>
+            </button>
+        </group>
+        
+        <group>
+            <row>3</row>
+            <col>4</col>
+            <layout>hbox</layout>
+            <button>
+                <legend>Load Area3...</legend>
+                <equal>true</equal>
+                <binding>
+                    <command>nasal</command>
+                    <script>file_selector_p3.open()</script>
+                </binding>
+            </button>
+            <button>
+                <legend>Save Area3...</legend>
+                <equal>true</equal>
+                <enable>
+                <property>/autopilot/plan-manager/save-p3</property>
+                </enable>
+                <binding>
+                    <command>nasal</command>
+                    <script>save_selector_p3.open();</script>
+                </binding>
+            </button>
+        </group>
+        
+        <group>
+            <row>4</row>
+            <col>4</col>
+            <layout>hbox</layout>
+            <button>
+                <legend>Load Area4...</legend>
+                <equal>true</equal>
+                <binding>
+                    <command>nasal</command>
+                    <script>file_selector_p4.open()</script>
+                </binding>
+            </button>
+            <button>
+                <legend>Save Area4...</legend>
+                <equal>true</equal>
+                <enable>
+                <property>/autopilot/plan-manager/save-p4</property>
+                </enable>
+                <binding>
+                    <command>nasal</command>
+                    <script>save_selector_p4.open();</script>
+                </binding>
+            </button>
+        </group>
+        
+        <group>
+            <row>5</row>
+            <col>4</col>
+            <layout>hbox</layout>
+            <button>
+                <legend>Load Area5...</legend>
+                <equal>true</equal>
+                <binding>
+                    <command>nasal</command>
+                    <script>file_selector_p5.open()</script>
+                </binding>
+            </button>
+            <button>
+                <legend>Save Area5...</legend>
+                <equal>true</equal>
+                <enable>
+                <property>/autopilot/plan-manager/save-p5</property>
+                </enable>
+                <binding>
+                    <command>nasal</command>
+                    <script>save_selector_p5.open();</script>
+                </binding>
+            </button>
+        </group>
+        
+        <group>
+            <row>6</row>
+            <col>4</col>
+            <layout>hbox</layout>
+            <button>
+                <legend>Load Area6...</legend>
+                <equal>true</equal>
+                <binding>
+                    <command>nasal</command>
+                    <script>file_selector_p6.open()</script>
+                </binding>
+            </button>
+            <button>
+                <legend>Save Area7...</legend>
+                <equal>true</equal>
+                <enable>
+                <property>/autopilot/plan-manager/save-p6</property>
+                </enable>
+                <binding>
+                    <command>nasal</command>
+                    <script>save_selector_p6.open();</script>
+                </binding>
+            </button>
+        </group>
+        
+        <vrule>
+            <row>0</row>
+            <col>5</col>
+            <rowspan>7</rowspan>
+        </vrule>
+        
+        <text>
+            <row>0</row>
+            <col>6</col>
+            <halign>center</halign>
+            <label>INFO</label>
+        </text>
+        
+        <text>
+            <row>1</row>
+            <col>6</col>
+            <halign>left</halign>
+            <label>L1 is usually also the take-off base.</label>
+        </text>
+        
+        <text>
+            <row>2</row>
+            <col>6</col>
+            <halign>left</halign>
+            <label>Interact with the routes and areas on the TI color display and the DAP.</label>
+        </text>
+        
+        <text>
+            <row>3</row>
+            <col>6</col>
+            <halign>left</halign>
+            <label>Only .fgfp (Flightgear xml routes), .ck37 or .gpx files is supported.</label>
+        </text>
+        
+        <text>
+            <row>4</row>
+            <col>6</col>
+            <halign>left</halign>
+            <label>Destinations from loaded RTBs, gets replaced by the base settings.</label>
+        </text>
+        
+        <text>
+            <row>5</row>
+            <col>6</col>
+            <halign>left</halign>
+            <label>The Mission and RTB routes must max have 48 waypoints in each.</label>
+        </text>
+        
+        <text>
+            <row>6</row>
+            <col>6</col>
+            <halign>left</halign>
+            <label>The Polygon areas must max have 8 waypoints in each.</label>
+        </text>
+    </group>
+    
+    <hrule/>
+    
+    
+    
+    <group>
+        <layout>hbox</layout>
+        <text>
+            <halign>center</halign>
+            <label>RETURN TO BASE ROUTES</label>
+        </text>
+        <empty><stretch>1</stretch></empty>
+        <button>
+            <legend>Load 1A...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>file_selector_1a.open()</script>
+            </binding>
+        </button>
+        <button>
+            <legend>Save 1A...</legend>
+            <equal>true</equal>
+            <enable>
+            <property>/autopilot/plan-manager/save-1a</property>
+            </enable>
+            <binding>
+                <command>nasal</command>
+                <script>save_selector_1a.open();</script>
+            </binding>
+        </button>   
+    
+        <button>
+            <legend>Load 1B...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>file_selector_1b.open()</script>
+            </binding>
+        </button>
+        <button>
+            <legend>Save 1B...</legend>
+            <equal>true</equal>
+            <enable>
+            <property>/autopilot/plan-manager/save-1b</property>
+            </enable>
+            <binding>
+                <command>nasal</command>
+                <script>save_selector_1b.open();</script>
+            </binding>
+        </button>
+        
+        <vrule/>
+    
+        <button>
+            <legend>Load 2A...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>file_selector_2a.open()</script>
+            </binding>
+        </button>
+        <button>
+            <legend>Save 2A...</legend>
+            <equal>true</equal>
+            <enable>
+            <property>/autopilot/plan-manager/save-2a</property>
+            </enable>
+            <binding>
+                <command>nasal</command>
+                <script>save_selector_2a.open();</script>
+            </binding>
+        </button>
+    
+        <button>
+            <legend>Load 2B...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>file_selector_2b.open()</script>
+            </binding>
+        </button>
+        <button>
+            <legend>Save 2B...</legend>
+            <equal>true</equal>
+            <enable>
+            <property>/autopilot/plan-manager/save-2b</property>
+            </enable>
+            <binding>
+                <command>nasal</command>
+                <script>save_selector_2b.open();</script>
+            </binding>
+        </button>
+        
+        
+    </group>
+    
+    <group>
+        <layout>hbox</layout>
+
+        <empty><stretch>1</stretch></empty>
+        <button>
+            <legend>Load 3A...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>file_selector_3a.open()</script>
+            </binding>
+        </button>
+        <button>
+            <legend>Save 3A...</legend>
+            <equal>true</equal>
+            <enable>
+            <property>/autopilot/plan-manager/save-3a</property>
+            </enable>
+            <binding>
+                <command>nasal</command>
+                <script>save_selector_3a.open();</script>
+            </binding>
+        </button>   
+    
+        <button>
+            <legend>Load 3B...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>file_selector_3b.open()</script>
+            </binding>
+        </button>
+        <button>
+            <legend>Save 3B...</legend>
+            <equal>true</equal>
+            <enable>
+            <property>/autopilot/plan-manager/save-3b</property>
+            </enable>
+            <binding>
+                <command>nasal</command>
+                <script>save_selector_3b.open();</script>
+            </binding>
+        </button>
+        <vrule/>
+    
+        <button>
+            <legend>Load 4A...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>file_selector_4a.open()</script>
+            </binding>
+        </button>
+        <button>
+            <legend>Save 4A...</legend>
+            <equal>true</equal>
+            <enable>
+            <property>/autopilot/plan-manager/save-4a</property>
+            </enable>
+            <binding>
+                <command>nasal</command>
+                <script>save_selector_4a.open();</script>
+            </binding>
+        </button>
+    
+        <button>
+            <legend>Load 4B...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>file_selector_4b.open()</script>
+            </binding>
+        </button>
+        <button>
+            <legend>Save 4B...</legend>
+            <equal>true</equal>
+            <enable>
+            <property>/autopilot/plan-manager/save-4b</property>
+            </enable>
+            <binding>
+                <command>nasal</command>
+                <script>save_selector_4b.open();</script>
+            </binding>
+        </button>
+    
+    </group>
+    
+    <hrule/>
+    
+    <group>
+        <layout>hbox</layout>
+        <button>
+            <legend>Load Data...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>file_selector_ff.open()</script>
+            </binding>
+        </button>
+        <button>
+            <legend>Save Data...</legend>
+            <equal>true</equal>
+            <!--<enable>
+                <property>autopilot/plan-manager/points/save</property>
+            </enable>-->
+            <binding>
+                <command>nasal</command>
+                <script>save_selector_ff.open();</script>
+            </binding>
+        </button>
+        <text>
+            <halign>left</halign>
+            <label>Pilot-points (FF), bulls-eye, landing bases, anti-aircraft (LV) areas, interoperability and various other settings.</label>
+        </text>
+        <empty><stretch>1</stretch></empty>
+    </group>
+    
+    <hrule/>
+    
+    <group>
+        <layout>hbox</layout>
+        <empty><stretch>1</stretch></empty>
+        <text>
+            <halign>right</halign>
+            <label>Save/load everything to a folder. Recommend saving all only to a empty folder. Loading all will clear all old data and routes.</label>
+        </text>
+        <button>
+            <legend>Load All...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>file_selector_all.open()</script>
+            </binding>
+        </button>
+        <button>
+            <legend>Save All...</legend>
+            <equal>true</equal>
+            <binding>
+                <command>nasal</command>
+                <script>save_selector_all.open();</script>
+            </binding>
+        </button>
+    </group>
+
+</PropertyList>

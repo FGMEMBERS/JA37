@@ -13,6 +13,16 @@
         <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-shader</inherits-from>
         <object-name>Cube</object-name>
     </effect>
+    
+    <animation>
+        <type>select</type>
+        <object-name>off</object-name>
+        <condition>
+            <not>
+                <property>ja37/elec/dc-bus-main-bool</property>
+            </not>
+        </condition>
+    </animation>
 
     <animation>
         <type>pick</type>
@@ -20,10 +30,7 @@
         <object-name>Cube</object-name>
         <object-name>glassAlt1</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/dc-voltage</property>
-                <value>20</value>
-            </greater-than>
+            <property>ja37/elec/dc-bus-main-bool</property>
         </condition>
         <hovered>
             <binding>
@@ -63,6 +70,7 @@
         <object-name>Dig0.1</object-name>
         <object-name>Face</object-name>
         <object-name>knob</object-name>
+        <object-name>off</object-name>
         <emission>
             <red-prop>instrumentation/instrumentation-light/r</red-prop>
             <green-prop>instrumentation/instrumentation-light/g</green-prop>
@@ -75,10 +83,7 @@
         <type>rotate</type>
         <object-name>Hundred_meter_hand</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/ac-instr-voltage</property>
-                <value>100</value>
-            </greater-than>
+            <property>ja37/elec/ac-bus-main-bool</property>
         </condition>
         <property>/instrumentation/altimeter/indicated-altitude-ft</property>
         <factor>0.1098</factor>
@@ -98,10 +103,7 @@
         <type>rotate</type>
         <object-name>km_hand</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/ac-instr-voltage</property>
-                <value>100</value>
-            </greater-than>
+            <property>ja37/elec/ac-bus-main-bool</property>
         </condition>
         <property>/instrumentation/altimeter/indicated-altitude-ft</property>
         <factor>0.01098</factor>

@@ -13,6 +13,13 @@
         <long-description>
           The Saab AJS-37 Viggen is a Swedish all-weather single-engine attack jet from 1993. It has reverse thrust and very large canards.
         </long-description>
+        
+        <rating>
+            <FDM type="int">4</FDM>
+            <systems type="int">4</systems>
+            <cockpit type="int">2</cockpit>
+            <model type="int">4</model>
+        </rating>
 
         <variant-of>JA37-Viggen</variant-of>
 
@@ -63,11 +70,6 @@
                 <type>exterior</type>
                 <splash type="bool">true</splash>
                 <path>gui/newSplashes/ajs3.png</path>
-            </preview>
-            <preview>
-                <type>interior</type>
-                <splash type="bool">false</splash>
-                <path>gui/newSplashes/ajs4.png</path>
             </preview>
             <preview>
                 <type>exterior</type>
@@ -283,6 +285,27 @@
                 </menu>
             </default>
         </menubar>
+
+        <checklists>
+            <group>
+                <name>AJS37 Normal Operations</name>
+                <checklist include="gui/checklists/aj37-before-start.xml"/>
+                <checklist include="gui/checklists/aj37-start.xml"/>
+                <checklist include="gui/checklists/aj37-after-start.xml"/>
+                <checklist include="gui/checklists/aj37-before-taxi.xml"/>
+                <checklist include="gui/checklists/aj37-before-takeoff.xml"/>
+                <checklist include="gui/checklists/takeoff.xml"/>
+                <checklist include="gui/checklists/landing.xml"/>
+                <checklist include="gui/checklists/aj37-after-landing.xml"/>
+                <checklist include="gui/checklists/shutdown.xml"/>
+            </group>
+            <group>
+                <name>Emergency Procedures</name>
+                <checklist include="gui/checklists/aj37-in-air-start.xml"/>
+                <checklist include="gui/checklists/generator-failure.xml"/>
+                <checklist include="gui/checklists/fire.xml"/>
+            </group>
+        </checklists>
     </sim>
     <!--**********************************************************************
 
@@ -293,7 +316,7 @@
 
     <controls>
         <armament>
-            <station-select type="int">1</station-select>            <!-- cannon selected by default -->
+            <station-select-custom type="int">1</station-select-custom>            <!-- cannon selected by default -->
         </armament>
     </controls>
 
@@ -309,47 +332,47 @@
             </opt>
             <opt>
                 <name>RB 04E Attackrobot</name>
-                <lbs>1378</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 15F Attackrobot</name>
-                <lbs>1763.7</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 24 Sidewinder</name>
-                <lbs>160.94</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 75 Maverick</name>
-                <lbs>462</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M55 AKAN</name>
-                <lbs>802.5</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M71 Bomblavett</name>
-                <lbs>1060</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M71 Bomblavett (Retarded)</name>
-                <lbs>1062</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M90 Bombkapsel</name>
-                <lbs>1322.77</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="1">
@@ -363,35 +386,35 @@
             </opt>
             <opt>
                 <name>RB 05A Attackrobot</name>
-                <lbs>672.4</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 24 Sidewinder</name>
-                <lbs>160.94</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 75 Maverick</name>
-                <lbs>462</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M71 Bomblavett</name>
-                <lbs>1060</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M71 Bomblavett (Retarded)</name>
-                <lbs>1062</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="2">
@@ -405,47 +428,47 @@
             </opt>
             <opt>
                 <name>RB 04E Attackrobot</name>
-                <lbs>1378</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 15F Attackrobot</name>
-                <lbs>1763.7</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 24 Sidewinder</name>
-                <lbs>160.94</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 75 Maverick</name>
-                <lbs>462</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M55 AKAN</name>
-                <lbs>802.5</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M71 Bomblavett</name>
-                <lbs>1060</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M71 Bomblavett (Retarded)</name>
-                <lbs>1062</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M90 Bombkapsel</name>
-                <lbs>1322.77</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="3">
@@ -459,35 +482,35 @@
             </opt>
             <opt>
                 <name>RB 05A Attackrobot</name>
-                <lbs>672.4</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 24 Sidewinder</name>
-                <lbs>160.94</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 75 Maverick</name>
-                <lbs>462</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M71 Bomblavett</name>
-                <lbs>1060</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M71 Bomblavett (Retarded)</name>
-                <lbs>1062</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="4">
@@ -500,7 +523,7 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="5">
@@ -513,7 +536,7 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <!--<opt>
                 <name>TEST</name>
@@ -531,19 +554,19 @@
             </opt>
             <opt>
                 <name>Drop tank</name>
-                <lbs>211.64</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 04E Attackrobot</name>
-                <lbs>1378</lbs>
+                <lbs>0</lbs>
             </opt>            
             <opt>
                 <name>RB 05A Attackrobot</name>
-                <lbs>672.4</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 15F Attackrobot</name>
-                <lbs>1763.7</lbs>
+                <lbs>0</lbs>
             </opt>
             <!-- not enough room for this
             <opt>
@@ -552,23 +575,23 @@
             </opt>-->
             <opt>
                 <name>M55 AKAN</name>
-                <lbs>802.5</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M71 Bomblavett</name>
-                <lbs>1060</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M71 Bomblavett (Retarded)</name>
-                <lbs>1062</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M90 Bombkapsel</name>
-                <lbs>1322.77</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="7"><!-- manual states due to ejection system min 54, max 100 Kg -->
@@ -594,9 +617,8 @@
                     <sound-on-off type="bool">false</sound-on-off>
                     <sound-fire-on-off type="bool">false</sound-fire-on-off>
                     <sound-volume type="double">0.0</sound-volume>
-                    <vol-search type="double">0.075</vol-search>
-                    <vol-track type="double">0.25</vol-track>
-                    <vol-track-weak type="double">0.175</vol-track-weak>
+                    <vol-search type="double">0.15</vol-search>
+                    <vol-track type="double">1</vol-track>
                     <guidance type="string">heat</guidance>                       <!-- heat, radar or semi-radar -->
                     <navigation type="string">direct</navigation>
                     <all-aspect type="bool">false</all-aspect>                    <!-- all or rear-only -->
@@ -632,9 +654,8 @@
                     <sound-on-off type="bool">false</sound-on-off>
                     <sound-fire-on-off type="bool">false</sound-fire-on-off>
                     <sound-volume type="double">0.0</sound-volume>
-                    <vol-search type="double">0.075</vol-search>
-                    <vol-track type="double">0.25</vol-track>
-                    <vol-track-weak type="double">0.175</vol-track-weak>
+                    <vol-search type="double">0.15</vol-search>
+                    <vol-track type="double">1</vol-track>
                     <guidance type="string">heat</guidance>                       <!-- heat, radar or semi-radar -->
                     <navigation type="string">PN</navigation>                     <!-- source: AIM-9D and forward had PN, TPN or APN -->
                     <all-aspect type="bool">false</all-aspect>                    <!-- all or rear-only -->
@@ -670,9 +691,8 @@
                     <sound-on-off type="bool">false</sound-on-off>
                     <sound-fire-on-off type="bool">false</sound-fire-on-off>
                     <sound-volume type="double">0.0</sound-volume>
-                    <vol-search type="double">0.075</vol-search>
-                    <vol-track type="double">0.25</vol-track>
-                    <vol-track-weak type="double">0.175</vol-track-weak>
+                    <vol-search type="double">0.15</vol-search>
+                    <vol-track type="double">1</vol-track>
                     <guidance type="string">heat</guidance>                       <!-- heat, radar or semi-radar -->
                     <navigation type="string">APN</navigation>
                     <all-aspect type="bool">true</all-aspect>                     <!-- all or rear-only -->
@@ -1004,13 +1024,14 @@
 
     <limits>
         <vne>729</vne><!-- AJ37 manual -->
+        <vne-mach>2.00</vne-mach>
     </limits>
 
     <fdm>
         <jsbsim>
             <fcs>
-                <max-alpha-deg type="int">18</max-alpha-deg>
-                <max-alpha-default-deg type="int">18</max-alpha-default-deg>
+                <max-alpha-deg type="int">28</max-alpha-deg>
+                <max-alpha-default-deg type="int">28</max-alpha-default-deg>
             </fcs>
         </jsbsim>
     </fdm>

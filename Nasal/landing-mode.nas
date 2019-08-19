@@ -165,7 +165,7 @@ var LA = func {
     } elsif (mode_LA_active == TRUE) {
         printDA("LA: cycle");
         # next steerpoint
-        route.Polygon.primary.cycle();
+        
         mode_LA_active = TRUE;
         mode_B_active = FALSE;
         mode_L_active = FALSE;
@@ -174,6 +174,7 @@ var LA = func {
         mode_OPT_active = FALSE;
         showActiveSteer = TRUE;
         mode = 0;
+        route.Polygon.primary.cycle();#delicate: this call might trigger a listener which will switch to L, so we do this last.
     } else {
         printDA("LA: already activated, setting LA");
         mode_LA_active = TRUE;
@@ -345,24 +346,35 @@ var Landing = {
                 me.wp = route.Polygon.primary.getSteerpoint();
                 #print("current: "~ghosttype(wp[0]));
               	me.name = me.wp[0].id;
-                if (ghosttype(me.wp[0]) == "airport") {
-                    ils = 0;
-                    icao   = me.wp[0].id;
-                    #has_waypoint = 1;
-                }
-                if (ghosttype(me.wp[0]) == "runway") {
-                    ils = 0;
-                    icao   = me.wp[1].id;
-                    runway = me.wp[0].id;
-                    runway_rw = me.wp[0];
-                    if (getprop("ja37/hud/TILS") == TRUE and getprop("ja37/hud/landing-mode")==TRUE and runway_rw.ils != nil) {
-                        ils = runway_rw.ils.frequency/100;
+                if (route.Polygon.primary.type == route.TYPE_RTB or route.Polygon.primary.type == route.TYPE_MIX) {
+                    if (ghosttype(me.wp[0]) == "airport") {
+                        ils = 0;
+                        icao   = me.wp[0].id;
+                        #has_waypoint = 1;
                     }
-                    head = me.wp[0].heading;
-                    has_waypoint = 2;
+                    if (ghosttype(me.wp[0]) == "runway") {
+                        ils = 0;
+                        icao   = me.wp[1].id;
+                        runway = me.wp[0].id;
+                        runway_rw = me.wp[0];
+                        if (!radar_logic.steerOrder) {
+                            me.mag_offset = getprop("/orientation/heading-magnetic-deg") - getprop("/orientation/heading-deg");
+                            setprop("ja37/avionics/heading-indicator-target", geo.normdeg(getprop("orientation/heading-magnetic-deg")-(runway_rw.heading + me.mag_offset)));
+                        }
+                        if (getprop("ja37/hud/TILS") == TRUE and getprop("ja37/hud/landing-mode")==TRUE and runway_rw.ils != nil) {
+                            ils = runway_rw.ils.frequency/100;
+                        }
+                        head = me.wp[0].heading;
+                        has_waypoint = 2;
+                    }
                 }
             } elsif (runway_dist != nil and me.bearing != nil and me.heading != nil) {
                 #print("failed ghost: "~ghosttype(route.Polygon.primary.getSteerpoint()[0]));
+            }
+        }
+        if (has_waypoint != 2) {
+            if (!radar_logic.steerOrder) {
+                setprop("ja37/avionics/heading-indicator-target", getprop("orientation/heading-magnetic-deg"));
             }
         }
         me.alt             = getprop("instrumentation/altimeter/indicated-altitude-ft")*FT2M;
@@ -522,7 +534,11 @@ var Landing = {
                 }
                 if (ils != 0 and getprop("ja37/hud/landing-mode")==TRUE and getprop("ja37/hud/TILS") == TRUE) {
                     setprop("instrumentation/nav[0]/frequencies/selected-mhz", ils);
-                    setprop("ja37/hud/TILS-on", TRUE);
+                    if (mode > 1) {
+                        setprop("ja37/hud/TILS-on", TRUE);
+                    } else {
+                        setprop("ja37/hud/TILS-on", FALSE);
+                    }
                 } else {
                     setprop("ja37/hud/TILS-on", FALSE);
                 }

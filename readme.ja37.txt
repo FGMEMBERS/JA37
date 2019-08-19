@@ -8,18 +8,13 @@
 
 
 This manual describes systems when aircraft is in English/imperial mode.
-The menu items etc. is different in Swedish/metric mode, maybe in future will make manual for that also.
+The menu item names and units etc. is different in Swedish/metric mode, maybe in future will make manual for that also.
 
-
-Some of these features that has to do with multiple flightplans or map-areas, wont work in older than FG 2017.3.1.
 
 
 Flightplans
 ===========
-The aircraft has 6 plans. 4 mission (1-4) and 2 return to base plans (A & B). Additionally it can have 6 map-areas defined.
-When you switch to another plan, entire plan in route manager will be replaced. So don't panic if route-manager clears.
-See also last section in this document: pre-loading plans.
-If your FG is older than 2017.3.1 you will only have 1 plan, that is used for both mission and RTB.
+The aircraft has 12 plans. 4 mission (1-4) and 8 return to base plans (A & B for each landing base). Additionally it can have 6 map-areas defined.
 Notice since clicking key 'Y' is the same as LS on TI display, this will also switch plan if you are already on a mission plan.
 
 
@@ -55,7 +50,7 @@ STA
   STBY - Standby status for missiles. Does not show for cannon.
   RDY  - Ready to be fired status. From the signal is sent to get ready when its selected and master-arm is ON, a small duration will pass before its ready.
 
-The following menu items only show when a sidewinder is selected:
+The following menu items only show when a sidewinder (RB74/RB24) is selected:
 
 CAGE
   AUTO - Automatic uncage of heatseeker head when lock is achieved.
@@ -78,20 +73,21 @@ MODE
 
 SYST
 ----
-S - Mission steerpoint nav. or switch to next. Will also switch of landing mode and switch to mission plan.
-L - Navigate direct for landing base or switch runway. Will switch to RTB plan destination.
-LT - Nav. for touchdown point or short approach. Will switch to RTB plan destination. Notice if this is done on runway, OPT will engage.
-LS - Nav. for approach circle (long approach). Will switch to RTB plan destination. Notice if this is done on runway, OPT will engage.
-OPT - Optical landing mode. Can only be engaged with gears down or in landing mode (LS or LT). Will auto engage at low alt in those modes.
-DL - STRIL data-link  (not implemented)
-LR - Return to base polygon navigation. Or switch to next steerpoint in that.
-MPOL - Mission polygon
-RPOL - RTB polygon
-CC - Steer order from radar on selected radar echo. Only work in air. ('f' key does the same)
-OFF/EP - Turn off EP12 Electronic presentations (MI+TI displays). Only work on ground.
-ACRV - Attack curve (not implemented)
-FGHT - Fighter mode. HUD shows IAS
-ATCK - Attack mode. HUD shows groundspeed (at low alt)
+S      - Mission steerpoint nav. or switch to next. Will also switch of landing mode and switch to mission plan.
+L      - Navigate direct for landing base or switch runway. Will switch to RTB plan landing base.
+LT     - Nav. for touchdown point or short approach. Will switch to RTB plan landing base. Notice if this is done on runway, OPT will engage.
+LS     - Nav. for approach circle (long approach). Will switch to RTB plan landing base. Notice if this is done on runway, OPT will engage.
+OPT    - Optical landing mode. Can only be engaged with gears down or in landing mode (LS or LT). Will auto engage at low alt in those modes.
+DL     - STRIL data-link  (not implemented)
+LR     - Return to base polygon navigation. Or switch to next steerpoint in that.
+MPOL   - Select which mission polygon.
+RPOL   - Select which RTB polygon.
+RR     - Only shown when airborne. Steer order from radar on selected radar echo. This gives intercept vector to selected target. ('f' key does the same)
+         If an intercept course at present speed cannot be computed it will show pure pursuit vector.
+OFF/EP - Option only shown on ground. Turn off EP12 Electronic presentations (MI+TI displays).
+ACRV   - Attack curve (not implemented)
+FGHT   - Fighter mode. HUD shows IAS
+ATCK   - Attack mode. HUD shows groundspeed (at low alt)
 
 TRAP
 ----
@@ -109,8 +105,8 @@ DISP
 ----
 EMAP - Electronic map. NORM/MAX toggles if map places on map. AIRP toggles airports on map (might give some stutter).
 SCAL - Map scale.
-AAA  - Anti aircraft fire zones. FRND/HSTL show friendly/hostile zones.
-TIME - Show ZULU time.
+AAA  - Anti aircraft fire zones (LV). FRND/HSTL show friendly/hostile zones. Green is friendly, red is hostile, yellow is unknown/hostile.
+TIME - Show ZULU time at top of display. (when editing MPOL or RPOL in MSDA menu, time is also shown)
 HORI - Show FPI, artificial horizon and ground symbol. CLR = certain conditions. ON = always. OFF = only at terrain impact warning.
 CURS - Toggle if cursor is on MI or TI. (PEK on MI must be enabled to see/use cursor)
 DAY  - Map contrast for daytime or NGHT for night time.
@@ -124,29 +120,29 @@ EDIT
   POLY  - Edit area polygons. Click with cursor on top field in infobox to control from DAP which area is edited.
   RPOL  - Edit a RTB polygon.
   MPOL  - Edit a mission polygon.
-  S/P   - Move selected point/steerpoint in current edited polygon. Then use cursor.
+  S/P   - Enable dragging of point/steerpoint in current edited polygon.
 INS S/P - Insert selected point/steerpoint in current edited polygon. Then use cursor.
 ADD S/P - Append point/steerpoint to current edited polygon (if it has room for more). Then use cursor.
-DEL S/P - Delete selected point/steerpoint in current edited polygon.
-RPOL    - If RPOL being edited, this is which one.
+          Notice if adding to a RTB plan when its landing base has been defined in route-manager is not possible.
+RPOL    - If RPOL being edited, this is which one. To select one from another landing base, use the landing base selector on nav-panel and press 'L' button.
 MPOL    - If MPOL being edited, this is which one.
 MYPS    - Move own position in chunks up/down the display.
 MMAN    - MapManual movement, and map no longer follows own position. See cursor for more details.
 
 FAIL
 ----
-Is just a log page. FAIL will blink at new unseen failures, when main manu is shown, also a text will display on the MI about unread fails.
+Is just a log page. FAIL will blink at new unseen failures, when main menu is shown, also a text will display on the MI about unread fails.
 
 CONF
 ----
-SIDV     - Sideview menu. See Mi on hwo to activate sideview.
+SIDV     - Sideview menu. See MI section on how to activate sideview.
 GPS      - Activate GPS menu.
-FR28     - Use top or belly radio antennae. Effect not implemented.
-READDATA - Technician data readout. Not implemented.
+FR28     - Use top or belly radio antennae. (Effect not implemented.)
+READDATA - Technician data readout. (Not implemented.)
 
 GPS
 ---
-FIX  - When GPS has started this will make a fix on the TI/MI/HUD. Will stay until PEK switched off or something else selected.
+FIX  - Used for establishing a GPS fix to correct INS drift. (not implemented)
 INIT - Start GPS. (approx 40 seconds to start, including BIT self-test)
 
 SIDV
@@ -169,9 +165,18 @@ Per default the cursor is located on the MI display. See the DISP menu on the TI
 Use trigger to click on something (the click will have to last up till half a second on the TI sometimes).
 On the TI you can click on all side and bottom buttons, except when EDIT, ADD or INS steerpoint/map-area-point. Also when not in any menu.
 Sometimes in menu MSDA a white info box is shown. Some fields can be clicked, and then input on the data-panel. Field will blink when input active.
-When MMAN is enabled, manual map centering can be done by clicking on the map. Notice this can be confusing if MYPS is not set to 3.
+When MMAN is enabled, map will be moved instead of cursor.
 When clicking on a radar echo in MI, it get selected/locked. Same for TI, but on the TI it will also set steer order on that echo.
+In MSDA/UDAT menu LV/FF points can be dragged when no polygon is being edited. To grab them hold trigger on center of symbol.
+When a polygon is being edited and a steerpoint/aera-point has been selected, pressing |X| button on nav panel will delete it. (cannot delete landing bases or take-off base, use route-manager for that)
 
+In Flightgear joystick settings you can bind cursor control to your stick/hotas.
+
+If you are skilled with editing stick/hotas input files, you can manually bind these properties:
+
+ja37/systems/cursor-control-X
+ja37/systems/cursor-control-Y
+ja37/systems/cursor-select
 
 
 
@@ -184,7 +189,7 @@ bottom buttons (hold P3 for help)
 2  - SDV - Toggle sideview on TI
 X1 - BIT - RB99 self tests
 X3 - EVN - Register manual event (can be viewed in TI TRAP menu)
-M2 - ECM - Toggle ECM on TI
+M2 - ECM - Toggle ECM on TI (essentially a RWR)
 X2 - LNK - Toggle RB99 telemetry on TI
 
 left buttons
@@ -193,15 +198,22 @@ PEK - Cursor toggle. If off then radar cannot lock anything, nor can cursor be s
 A - Zoom out on TI
 B - Zoom in on TI
 
+right indicators
+----------------
+TLS - Tactical Instrument Landing System active. Steady=vertical guidance also available. Blink=only lateral guidance.
+TNF - Inertial navigation. Blink=init. Steady=on.
 
 
 
+Concise overview of Datapanel (DAP) and Navpanel 
+================================================
 
-Concise overview of Datapanel (DAP) (on right panel, has keypad and display)
-===================================
+DAP is located on right panel, has keypad and display, Navpanel is next to it
 
-OK button is on nav panel, called BX. (due to the nav. panel is really from the AJ)
-Another buttons used on the nav. panel is L/WP and LS/SKU (for |X|).
+OK button is on nav panel.
+<- (BACKSPACE) on navpanel will go one digit back when inputting.
+|X| (CLEAR FIELD) on navpanel will clear current digits entered in input mode. Or in 237 mode it will clear the value altogether. If on TI a steerpoint is selected in a route being edited, this button will delete the steerpoint.
+Other buttons used on the nav. panel is L and LB for yellow/green antiaircraft areas (LV).
 Nav. panel is located just next to data-panel.
 Notice the two lights with IN/OUT and POS/MSDA, those are buttons also.
 
@@ -219,7 +231,7 @@ OUT
 IN
 - TILS:  
 - CL/DA:  Set date/time. Entering 999999 for either date or time will reset.
-- FUEL:   Set extra fuel warning in percent on display.
+- FUEL:   Set extra fuel warning in percent. (threshold will trigger master warning)
 - LOLA:  
 
 ACDATA:
@@ -233,13 +245,13 @@ REG/STR:
 - IN:  Input 2 digits for address, then either the value you want to set, or switch to OUT.
 - OUT: If 2 first digits entered will show value of address in last 4 digits.
 - ADDRESSES:
-    00xxcd is maximum angle of attack setting. c and d is ignored. Setting 00 reverts to default.
     19xxxx is training floor altitude.
+    52xxxd is loadfactor in percent for aural g-force warning. d is ignored. From 075 to 110.
 
 TI
 note1: the LV, FF and bulls-eye will be shown on TI display. If DAP knob is on TI or TI menu MSDA is active, the address number will also be shown.
 note2: LV stands for airdefense area, and FF for pilot point.
-- IN/MSDA:  Input 3 digits for address, then either switch to out or click OK (for red), L (for yellow) and continue inputting longitude, then latitude. (bulls-eye and FF is always tyrkouise)
+- IN/MSDA:  Input 3 digits for address, then either switch to out or click OK (for red), L (for yellow), LB (for green) and continue inputting longitude, then latitude. (bulls-eye and FF is always tyrkouise)
             To unlock for deletion type the unlock code followed by CLEAR.
             If unlocked can enter a address range like 024123 (24 to 123) to delete a range of addresses.
 - OUT/MSDA: If 3 first digits for address entered will show lon/lat of address, click OK to toggle between them. Hold OK down to see description before the value is shown.
@@ -264,41 +276,33 @@ note2: LV stands for airdefense area, and FF for pilot point.
 When inputting, pay notice to the switch +/-, as that is the sign of what you input. For some inputs its ignored though and hence not shown when you input.
 
 
+Aural warning tones
+===================
+There is different warning tones for the following: (ordered in priority, notice pre-warnings has lowest priority)
+- Master warning (can be played at same time as other tones)
+- Ground collision (volume cannot be changed)
+- Flare/chaff release
+- Flares out
+- Low speed
+- High angle-of-attack (2 pre and 1 main, limits depends on altitude and gears)
+- High G-force (2 pre and 1 main, limits depend on aircraft weight and gears) 
+- Vne speed exceeded.
+- Entering transonic regime
+- Below training floor
+
+Volume can be adjusted on left FR29 radio panel (the smaller knob).
+Ground collision warning (including the displays/HUD arrows) can be switched off on the navpanel.
+G-force (loadfactor) warning threshold can be changed on DAP, REG address 52.
+The GVV circuit breaker can disable g-force, low-speed and AoA warnings.
 
 
+Aural information tones
+=======================
+- Incoming missile (positional)
+- Radar missile lock
+- Sidewinder growl
 
-Pre-load flightplans and/or map areas on startup.
-=================================================
-Use these command lines to pass a plan/area in launcher: (they must be in GPX or FG route format)
-
---prop:string:/xmlPlans/mission1=
---prop:string:/xmlPlans/mission1=
---prop:string:/xmlPlans/mission1=
---prop:string:/xmlPlans/mission1=
---prop:string:/xmlPlans/rtb1A=
---prop:string:/xmlPlans/rtb1B=
---prop:string:/xmlPlans/area1=
---prop:string:/xmlPlans/area1=
---prop:string:/xmlPlans/area1=
---prop:string:/xmlPlans/area1=
---prop:string:/xmlPlans/area1=
---prop:string:/xmlPlans/area1=
-
-Areas should have max 8 waypoints each.
-Missions/RTB should have max 48 waypoints each.
-Pre-loading needs FG 2017.3.1 to work.
-
-Example: --prop:string:/xmlPlans/area3=c:\areas\myNoFlyZone.gpx
-
-If a file cannot get loaded, the console will print a warning.
-
-Bulls-eye can be preloaded with enabling 3 properties.
-
-This example will place a Bulls-eye in Nevada, US:
-
---prop:bool:/ja37/navigation/bulls-eye-defined=true
---prop:double:ja37/navigation/bulls-eye-lat=37.20
---prop:double:ja37/navigation/bulls-eye-lon=-115.60
+Volume can be adjusted on left vertical panel.
 
 Testing
 =======
@@ -371,6 +375,12 @@ Max touchdown pitch: 20.5 deg clearing uncompressed, 16 deg partial compressed a
 Minimum touchdown speed 100 kt (only at 15.5 AoA short landings of course).
 Nosewheel touchdown speed: latest at 160 KM/h (86 kt).
 
+
+
+Check here for more up to date landing info: https://www.youtube.com/watch?v=lL3nb-itZqU&list=PLogi97V-ki0GfCLqimTtIq9RIVcm-GRFE&index=8
+
+NOTICE: The following examples are outdated:
+
 Example 1: Ad-hoc visual landing
 --------------------------------
 In no particular order do these:
@@ -406,3 +416,44 @@ In no particular order do these:
 7: Click the button 15.5 for short runways.
 
 Notice there is now shown altitude lines on HUD and radar, start descending to align to them and aim for hitting tangentially the circle shown on radar Pinto talks about. When you hit the approach circle, you are supposed to be at 550Km/h or 297 Kt and 500m/1640ft above the airport, and you just follow the circle around keeping that speed. The approach circle is always 4.1 Km radius. For short approaches you will then immediately start descending when you hit the approach line, and for long approaches you will follow that line until half (5.4 NM out) and then start descending. The HUD will show the 2.86 deg descent line when you hit that 10 Km mark, which of-course fits, since there is 10000m left to touchdown and you are 500m above it, so a 1:20 slope. Notice though that that same line will start to indicate maximum sink rate (2.8 m/s) below 15m (or 35m if radar altimeter is off), so when that happens be sure to keep the flight path indicator above or on the line when that happens to not risk stress the landing gears, but still below the horizon so you don't overshoot. You will notice when that happens if u keep your eyes peeled on the HUD, the line will do a 'jump' and no longer be fixed, and at the same time if ILS/glideslope is set, it will no longer follow that, so last part is always a non aided (except for sink rate) visual landing. Also notice that the HUD will before descent when in landing mode assist you in hitting the 550Km/h speed, by moving the 'tail' on the flight path indicator. That same tail will during descent help you keep your AoA (9-12 or 15.5 if that button is engaged).
+
+
+
+Pre-load flightplans and/or map areas on startup.
+=================================================
+Use these command lines to pass a plan/area in launcher: (they must be in GPX or FG route format)
+
+--prop:string:/xmlPlans/mission1=
+--prop:string:/xmlPlans/mission1=
+--prop:string:/xmlPlans/mission1=
+--prop:string:/xmlPlans/mission1=
+--prop:string:/xmlPlans/rtb1A=
+--prop:string:/xmlPlans/rtb1B=
+--prop:string:/xmlPlans/rtb2A=
+--prop:string:/xmlPlans/rtb2B=
+--prop:string:/xmlPlans/rtb3A=
+--prop:string:/xmlPlans/rtb3B=
+--prop:string:/xmlPlans/rtb4A=
+--prop:string:/xmlPlans/rtb4B=
+--prop:string:/xmlPlans/area1=
+--prop:string:/xmlPlans/area1=
+--prop:string:/xmlPlans/area1=
+--prop:string:/xmlPlans/area1=
+--prop:string:/xmlPlans/area1=
+--prop:string:/xmlPlans/area1=
+
+Areas should have max 8 waypoints each.
+Missions/RTB should have max 48 waypoints each.
+Pre-loading needs FG 2017.3.1 to work.
+
+Example: --prop:string:/xmlPlans/area3=c:\areas\myNoFlyZone.gpx
+
+If a file cannot get loaded, the console will print a warning.
+
+Bulls-eye can be preloaded with enabling 3 properties.
+
+This example will place a Bulls-eye in Nevada, US:
+
+--prop:bool:/ja37/navigation/bulls-eye-defined=true
+--prop:double:ja37/navigation/bulls-eye-lat=37.20
+--prop:double:ja37/navigation/bulls-eye-lon=-115.60

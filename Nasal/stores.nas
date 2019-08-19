@@ -17,11 +17,8 @@ var ecmLog = events.LogBuffer.new(echo: 0);#compatible with older FG?
 var jettisonAll = FALSE;
 
 input = {
-  acInstrVolt:      "systems/electrical/outputs/ac-instr-voltage",
-  acMainVolt:       "systems/electrical/outputs/ac-main-voltage",
   asymLoad:         "fdm/jsbsim/inertia/asymmetric-wing-load",
   combat:           "/ja37/hud/current-mode",
-  dcVolt:           "systems/electrical/outputs/dc-voltage",
   elapsed:          "sim/time/elapsed-sec",
   elecMain:         "controls/electric/main",
   engineRunning:    "engines/engine/running",
@@ -43,7 +40,7 @@ input = {
   MPint9:           "sim/multiplay/generic/int[9]",
   replay:           "sim/replay/replay-state",
   serviceElec:      "systems/electrical/serviceable",
-  stationSelect:    "controls/armament/station-select",
+  stationSelect:    "controls/armament/station-select-custom",
   subAmmo2:         "ai/submodels/submodel[2]/count", 
   subAmmo3:         "ai/submodels/submodel[3]/count", 
   subAmmo9:         "ai/submodels/submodel[9]/count", 
@@ -346,7 +343,7 @@ var loop_stores = func {
 
     #activate searcher on selected pylon if missile mounted
     var armSelect = input.stationSelect.getValue();
-    if (armSelect == 0) {
+    if (armSelect == 0 or armSelect == -1) {
       setprop("ja37/avionics/vid", FALSE);
     }
     for(i = 0; i <= 6; i += 1) {
@@ -371,7 +368,7 @@ var loop_stores = func {
           #pylon not selected, and not flying set missile on standby
           armament.AIM.active[i].stop();
           #print("not sel "~i);
-        } elsif (input.acMainVolt.getValue() < 150 or input.combat.getValue() != 2
+        } elsif (!power.prop.acMainBool.getValue() or input.combat.getValue() != 2
                   or (armament.AIM.active[i].status != MISSILE_STANDBY
                       and armament.AIM.active[i].status != MISSILE_FLYING
                       and payloadName.getValue() == "none")) {
@@ -565,17 +562,12 @@ var loop_stores = func {
     input.MPint19.setIntValue(ja37.encode3bits(leftRb2474, rightRb2474, wtv));
 
   # Flare/chaff release
-  if (getprop("ai/submodels/submodel[0]/flare-release-snd") == nil) {
-    setprop("ai/submodels/submodel[0]/flare-release-snd", FALSE);
-    setprop("ai/submodels/submodel[0]/flare-release-out-snd", FALSE);
-  }
-  var flareOn = getprop("ai/submodels/submodel[0]/flare-release-cmd");
-  if (flareOn == TRUE and getprop("ai/submodels/submodel[0]/flare-release") == FALSE
-      and getprop("ai/submodels/submodel[0]/flare-release-out-snd") == FALSE
-      and getprop("ai/submodels/submodel[0]/flare-release-snd") == FALSE) {
+  var flareCmd = getprop("ai/submodels/submodel[0]/flare-release-cmd");
+  if (flareCmd and !getprop("ai/submodels/submodel[0]/flare-release")
+               and !getprop("ai/submodels/submodel[0]/flare-release-out-snd")
+               and !getprop("ai/submodels/submodel[0]/flare-release-snd")) {
     flareCount = getprop("ai/submodels/submodel[0]/count");
     flareStart = input.elapsed.getValue();
-    setprop("ai/submodels/submodel[0]/flare-release-cmd", FALSE);
     if (flareCount > 0) {
       # release a flare
       setprop("ai/submodels/submodel[0]/flare-release-snd", TRUE);
@@ -587,13 +579,14 @@ var loop_stores = func {
       setprop("ai/submodels/submodel[0]/flare-release-out-snd", TRUE);
     }
   }
-  if (getprop("ai/submodels/submodel[0]/flare-release-snd") == TRUE and (flareStart + 1) < input.elapsed.getValue()) {
-    setprop("ai/submodels/submodel[0]/flare-release-snd", FALSE);
+  setprop("ai/submodels/submodel[0]/flare-release-cmd", FALSE);
+  if (getprop("ai/submodels/submodel[0]/flare-release-snd") == TRUE and (flareStart + 1.3) < input.elapsed.getValue()) {
+    setprop("ai/submodels/submodel[0]/flare-release-snd", FALSE);# sound sample is 0.7s long
     setprop("rotors/main/blade[3]/flap-deg", 0);
     setprop("rotors/main/blade[3]/position-deg", 0);#MP interpolates between numbers, so nil is better than 0.
   }
-  if (getprop("ai/submodels/submodel[0]/flare-release-out-snd") == TRUE and (flareStart + 1) < input.elapsed.getValue()) {
-    setprop("ai/submodels/submodel[0]/flare-release-out-snd", FALSE);
+  if (getprop("ai/submodels/submodel[0]/flare-release-out-snd") == TRUE and (flareStart + 2) < input.elapsed.getValue()) {
+    setprop("ai/submodels/submodel[0]/flare-release-out-snd", FALSE);#sound sample is 1.4s long
   }
   if (flareCount > getprop("ai/submodels/submodel[0]/count")) {
     # A flare was released in last loop, we stop releasing flares, so user have to press button again to release new.
@@ -650,7 +643,7 @@ var trigger_listener = func {
   var armSelect = input.stationSelect.getValue();
 
   #if masterarm is on and HUD in tactical mode, propagate trigger to station
-  if(input.combat.getValue() == 2 and input.dcVolt.getValue() > 23 and !(armSelect == 0 and input.acInstrVolt.getValue() < 100)) {
+  if(armSelect != -1 and input.combat.getValue() == 2 and power.prop.dcMainBool.getValue() and !(armSelect == 0 and !power.prop.acMainBool.getValue())) {
     setprop("/controls/armament/station["~armSelect~"]/trigger", trigger);
     var str = "payload/weight["~(armSelect-1)~"]/selected";
     if (armSelect != 0 and getprop(str) == "M70 ARAK") {
@@ -694,7 +687,9 @@ var trigger_listener = func {
       }
     }
   } else {
-    setprop("/controls/armament/station["~armSelect~"]/trigger", FALSE);
+    if (armSelect != -1) {
+      setprop("/controls/armament/station["~armSelect~"]/trigger", FALSE);
+    }
     setprop("/controls/armament/station["~1~"]/trigger-m70", FALSE);
     setprop("/controls/armament/station["~2~"]/trigger-m70", FALSE);
     setprop("/controls/armament/station["~3~"]/trigger-m70", FALSE);
@@ -712,7 +707,7 @@ var trigger_listener = func {
     fired = getprop("payload/weight["~ (armSelect-1) ~"]/selected");
   }
 
-  if(armSelect != 0 and getprop("/controls/armament/station["~armSelect~"]/trigger") == TRUE) {
+  if(armSelect > 0 and getprop("/controls/armament/station["~armSelect~"]/trigger") == TRUE) {
     if(getprop("payload/weight["~(armSelect-1)~"]/selected") != "none") { 
       # trigger is pulled, a pylon is selected, the pylon has a missile that is locked on. The gear check is prevent missiles from firing when changing airport location.
       if (armament.AIM.active[armSelect-1] != nil and armament.AIM.active[armSelect-1].status == MISSILE_LOCK and (input.gearsPos.getValue() != 1 or input.dev.getValue()==TRUE)) {
@@ -852,6 +847,8 @@ var warhead_lbs = {
     "AGM-84":              488.00,
     "AGM-88":              146.00,
     "AGM65":               200.00,
+    "AGM-154A":            493.00,
+    "AGM-158":            1000.00,
     "aim-120":              44.00,
     "AIM-120":              44.00,
     "AIM-54":              135.00,
@@ -866,17 +863,19 @@ var warhead_lbs = {
     "AM39-Exocet":         364.00, 
     "AS-37-Martel":        330.00, 
     "AS30L":               529.00,
+    "CBU-87":              128.00,
     "Exocet":              364.00,
     "FAB-100":              92.59,
     "FAB-250":             202.85,
     "FAB-500":             564.38,
     "GBU-12":              190.00,
+    "GBU-24":              945.00,
     "GBU-31":              945.00,
     "GBU12":               190.00,
     "GBU16":               450.00,
     "HVAR":                  7.50,#P51
     "KAB-500":             564.38,
-    "KH-25MP":             197.53,
+    "Kh-25MP":             197.53,
     "Kh-66":               244.71,
     "KN-06":               315.00,
     "LAU-68":               10.00,
@@ -1313,8 +1312,9 @@ var count99 = func () {
 
 var ammoCount = func (station) {
   var ammo = -1;
-
-  if (station == 0) {
+  if (station == -1) {
+    ammo == -1;
+  } elsif (station == 0) {
     ammo = getprop("ai/submodels/submodel[3]/count");
   } else {
     var type = getprop("payload/weight["~(station-1)~"]/selected");
@@ -1426,12 +1426,13 @@ var ammoCount = func (station) {
 
 var selectCannon = func {
   if(getprop("ja37/systems/variant") == 0) {
-    setprop("controls/armament/station-select", 0);
+    setprop("controls/armament/station-select-custom", 0);
     ja37.click();
   }
 }
 
 var cycle_weapons = func {
+  # station -1= none selected
   # station 0 = cannon
   # station 1 = inner left wing
   # station 2 = left fuselage
@@ -1441,8 +1442,8 @@ var cycle_weapons = func {
   # station 6 = outer right wing
   # station 7 = center pylon
 
-  var sel = getprop("controls/armament/station-select");
-  var type = sel==0?"KCA":getprop("payload/weight["~(sel-1)~"]/selected");
+  var sel = getprop("controls/armament/station-select-custom");
+  var type = sel==-1?"none":(sel==0?"KCA":getprop("payload/weight["~(sel-1)~"]/selected"));
   var newType = "none";
 
   var loopRan = FALSE;
@@ -1589,7 +1590,65 @@ var cycle_weapons = func {
   }
 
   ja37.click();
-  setprop("controls/armament/station-select", sel)
+  setprop("controls/armament/station-select-custom", sel);
+}
+
+var buttonIRRB = func {
+  # station 0 = cannon
+  # station 1 = inner left wing
+  # station 2 = left fuselage
+  # station 3 = inner right wing
+  # station 4 = right fuselage
+  # station 5 = outer left wing
+  # station 6 = outer right wing
+  # station 7 = center pylon
+
+  var sel = getprop("controls/armament/station-select-custom");
+  var type = sel==-1?"none":(sel==0?"KCA":getprop("payload/weight["~(sel-1)~"]/selected"));
+  var newType = "none";
+
+  var loopRan = FALSE;
+
+  while(newType == "none") {
+    if (type == "none" or (type != "RB 74 Sidewinder" and type != "RB 24J Sidewinder" and type != "RB 24 Sidewinder")) {
+        sel = selectType("RB 74 Sidewinder");
+        if (sel != -1) {
+          newType = "RB 74 Sidewinder";
+        } else {
+          type = "RB 74 Sidewinder";
+        }
+    } elsif (type == "RB 74 Sidewinder") {
+      sel = selectType("RB 24 Sidewinder");
+      if (sel != -1) {
+        newType = "RB 24 Sidewinder";
+      } else {
+        type = "RB 24 Sidewinder";
+      }
+    } elsif (type == "RB 24 Sidewinder") {
+      sel = selectType("RB 24J Sidewinder");
+      if (sel != -1) {
+        newType = "RB 24J Sidewinder";
+      } else {
+        type = "RB 24J Sidewinder";
+      }
+    } elsif (type == "RB 24J Sidewinder") {
+      sel = selectType("RB 74 Sidewinder");
+      if (sel != -1) {
+        newType = "RB 74 Sidewinder";
+      } else {
+        type = "RB 74 Sidewinder";
+        if (loopRan == FALSE) {
+          loopRan = TRUE;
+        } else {
+          # we have been here once before, so to prevent infinite loop, we just select nothing
+          sel = -1;
+          type = "none";
+          newType = "empty";
+        }
+      }
+    }
+  }
+  setprop("controls/armament/station-select-custom", sel);
 }
 
 ############ reload #####################
@@ -1941,7 +2000,7 @@ var drop = func {
        screen.log.write("Can not eject drop tank while on ground!", 0.0, 1.0, 0.0);
        return;
     }
-    if (getprop("systems/electrical/outputs/dc-voltage") < 23) {
+    if (!power.prop.dcMainBool.getValue()) {
        screen.log.write("Too little DC power to eject drop tank!", 0.0, 1.0, 0.0);
        return;
     }
@@ -1955,7 +2014,7 @@ var drop = func {
        screen.log.write("Can not jettison stores while on ground!", 0.0, 1.0, 0.0);
        return;
     }
-    if (getprop("systems/electrical/outputs/dc-voltage") < 23) {
+    if (!power.prop.dcMainBool.getValue()) {
        screen.log.write("Too little DC power to jettison!", 0.0, 1.0, 0.0);
        return;
     }

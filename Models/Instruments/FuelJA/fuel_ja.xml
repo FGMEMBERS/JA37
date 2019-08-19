@@ -61,10 +61,7 @@
         <object-name>FuelGlass</object-name>
         <object-name>Gauge</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/ac-main-voltage</property>
-                <value>150</value>
-            </greater-than>
+            <property>ja37/elec/ac-bus-main-bool</property>
         </condition>
         <hovered>
             <binding>
@@ -94,10 +91,7 @@
         <type>rotate</type>
         <object-name>Needle_B</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/ac-main-voltage</property>
-                <value>150</value>
-            </greater-than>
+            <property>ja37/elec/ac-bus-main-bool</property>
         </condition>
         <property>/instrumentation/fuel/needleB_rot</property>
         <max>325</max>
@@ -114,12 +108,6 @@
     <animation>
         <type>rotate</type>
         <object-name>Needle_F</object-name>
-        <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/ac-main-voltage</property>
-                <value>150</value>
-            </greater-than>
-        </condition>
         <property>/instrumentation/fuel/needleF_rot_final</property>
         <factor>1</factor>
         <offset-deg>-1</offset-deg>

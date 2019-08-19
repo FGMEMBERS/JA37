@@ -51,13 +51,15 @@ var max_width = (450/1024)*canvasWidth;
 # HUD z is 0.63 - 0.77. Height of HUD is 0.14m
 # Therefore each pixel is 0.14 / 1024 = 0.00013671875m or each meter is 7314.2857142857142857142857142857 pixels.
 var pixelPerMeter = canvasWidth / HUDHeight;
-var centerOffset = -1 * (canvasWidth/2 - ((HUDTop - getprop("sim/view[0]/config/y-offset-m"))*pixelPerMeter));#pilot eye position up from vertical center of HUD. (in line from pilots eyes)
+var defaultHeadHeight = getprop("sim/view[0]/config/y-offset-m");
+var centerOffset = -1 * (canvasWidth/2 - ((HUDTop - defaultHeadHeight)*pixelPerMeter));#pilot eye position up from vertical center of HUD. (in line from pilots eyes)
 # View is 0.71m so 0.77-0.71 = 0.06m down from top of HUD, since Y in HUD increases downwards we get pixels from top:
 # 512 - (0.06 / 0.00013671875) = 73.142857142857142857142857142857 pixels up from center. Since -y is upward, result is -73.1. (Per default)
 
-
+# Default head-HUD distance (positive is backward)
+var defaultHeadDistance = getprop("sim/view[0]/config/z-offset-m") - HUDHoriz;
 # Since the HUD is not curved, we have to choose an avarage degree where degree per pixel is calculated from. 7.5 is chosen.
-var pixelPerDegreeY = pixelPerMeter*(((getprop("sim/view[0]/config/z-offset-m") - HUDHoriz) * math.tan(7.5*D2R))/7.5); 
+var pixelPerDegreeY = pixelPerMeter*((defaultHeadDistance * math.tan(7.5*D2R))/7.5);
 var pixelPerDegreeX = pixelPerDegreeY; #horizontal axis
 #printf("HUD total field of view %.1f degs (the real is 17 degs)", 512/pixelPerDegreeY);#17.3 degs in last test
 #printf("HUD optical center %.1f degs below aircraft axis. (the real is 7.3 degs, so adjust %0.2f meter up)", -centerOffset/pixelPerDegreeY, (7.3+centerOffset/pixelPerDegreeY)*pixelPerDegreeY/pixelPerMeter);
@@ -67,6 +69,10 @@ var sidewindPosition = centerOffset+(10*pixelPerDegreeY); #should be 10 degrees 
 var sidewindPerKnot = max_width/30; # Max sidewind displayed is set at 30 kts. 450pixels is maximum is can move to the side.
 var headScalePlace = 2.5*pixelPerDegreeY; # vert placement of heading scale, remember to change clip also.
 var headScaleTickSpacing = (65/1024)*canvasWidth;# horizontal spacing between ticks. Remember to adjust bounding box when changing.
+
+# Maximal angle from the hud optical center: nothing beyond that is displayed
+var HUD_max_angle = 14;
+var HUD_max_pixel = math.tan(HUD_max_angle * D2R) * defaultHeadDistance * pixelPerMeter;
 
 var reticle_factor = 1.15;# size of flight path indicator, aiming reticle, and out of ammo reticle
 var sidewind_factor = 1.0;# size of sidewind indicator
@@ -139,12 +145,30 @@ var HUDnasal = {
     me.canvas.addPlacement(me.place);
     #me.canvas.setColorBackground(0.36, g, 0.3, 0.025);
     me.canvas.setColorBackground(r, g, b, 0.0);
+
+    # The hud can not display anything at angles beyond 14 degrees from the optical centerline
+    # (the optical center line joins the head resting position and the hud center).
+    # This is simulated by clipping the display to a disk which moves together with the rest of the hud content.
+    #
+    # Clip the display to a square as first approximation.
+    me.root_clip_rect = sprintf("rect(%.1fpx, %.1fpx, %.1fpx, %.1fpx)", -HUD_max_pixel, HUD_max_pixel, HUD_max_pixel, -HUD_max_pixel);
     me.root = me.canvas.createGroup()
-                .set("font", "LiberationFonts/LiberationMono-Regular.ttf");# If using default font, horizontal alignment is not accurate (bug #1054), also prettier char spacing. 
-    
-    #me.root.setScale(math.sin(slant*D2R), 1);
-    me.root.setTranslation(canvasWidth/2, canvasWidth/2)
-    .set("z-order", 0);
+      .set("font", "LiberationFonts/LiberationMono-Regular.ttf") # If using default font, horizontal alignment is not accurate (bug #1054), also prettier char spacing.
+      .set("clip-frame", canvas.Element.LOCAL)
+      .set("clip", me.root_clip_rect)
+      .setTranslation(canvasWidth/2, canvasWidth/2)
+      .set("z-order", 0);
+
+    # Use blending to obtain the final circular clipping area.
+    me.root_clip_disk = me.root.createChild("image")
+      .setTranslation(-HUD_max_pixel,-HUD_max_pixel)
+      .setScale(HUD_max_pixel/128)
+      .set("z-index",50)
+      .set("blend-source-rgb","zero")
+      .set("blend-source-alpha","zero")
+      .set("blend-destination-rgb","one")
+      .set("blend-destination-alpha","one-minus-src-alpha")
+      .set("src", "Aircraft/JA37/gui/canvas-blend-mask/hud-global-mask.png");
 
     # groups for horizon and FPI
     me.fpi_group = me.root.createChild("group")
@@ -435,7 +459,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
     me.alt.setColor(r,g,b, a);
     me.alt.setAlignment("center-center");
     me.alt.setTranslation(-(375/1024)*canvasWidth, dig_alt_position);
-    me.alt.setFontSize((80/1024)*canvasWidth*fs, ar);
+    me.alt.setFontSize((70/1024)*canvasWidth*fs, ar);
 
     
     # Collision warning arrow
@@ -1023,15 +1047,12 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
         beta:             "orientation/side-slip-deg",
         callsign:         "ja37/hud/callsign",
         cannonAmmo:       "ai/submodels/submodel[3]/count",
-        carrierNear:      "fdm/jsbsim/ground/carrier-near",
         combat:           "ja37/hud/combat",
         ctrlRadar:        "controls/altimeter-radar",
         currentMode:      "ja37/hud/current-mode",
         dme:              "instrumentation/dme/KDI572-574/nm",
         dmeDist:          "instrumentation/dme/indicated-distance-nm",
         elapsedSec:       "sim/time/elapsed-sec",
-        elecAC:           "systems/electrical/outputs/ac-instr-voltage",
-        elecDC:           "systems/electrical/outputs/dc-voltage",
         fdpitch:          "autopilot/settings/fd-pitch-deg",
         fdroll:           "autopilot/settings/fd-roll-deg",
         fdspeed:          "autopilot/settings/target-speed-kt",
@@ -1066,7 +1087,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
         speed_d:          "velocities/speed-down-fps",
         speed_e:          "velocities/speed-east-fps",
         speed_n:          "velocities/speed-north-fps",
-        station:          "controls/armament/station-select",
+        station:          "controls/armament/station-select-custom",
         tenHz:            "ja37/blink/four-Hz/state",
         twoHz:            "ja37/blink/two-Hz/state",
         terrainOn:        "ja37/sound/terrain-on",
@@ -1077,7 +1098,9 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
         tracks_enabled:   "ja37/hud/tracks-enabled",
         units:            "ja37/hud/units-metric",
         viewNumber:       "sim/current-view/view-number",
-        viewZ:            "sim/current-view/y-offset-m",
+        viewX:            "sim/current-view/x-offset-m",
+        viewY:            "sim/current-view/y-offset-m",
+        viewZ:            "sim/current-view/z-offset-m",
         vs:               "velocities/vertical-speed-fps",
         windHeading:      "environment/wind-from-heading-deg",
         windSpeed:        "environment/wind-speed-kt",        
@@ -1090,7 +1113,16 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
         gs:               "velocities/groundspeed-kt",
         terrainWarn:      "/instrumentation/terrain-warning",
         qfeActive:        "ja37/displays/qfe-active",
-        qfeShown:     "ja37/displays/qfe-shown",
+        qfeShown:         "ja37/displays/qfe-shown",
+        fpiHorz:          "ja37/displays/fpi-horz-deg",
+        fpiVert:          "ja37/displays/fpi-vert-deg",
+        hudBright:        "ja37/hud/brightness",
+        hudBrightSI:      "ja37/hud/brightness-si",
+        hudBrightRES:     "ja37/hud/brightness-res",
+        als:              "sim/rendering/shaders/skydome",
+        alsFilter:        "sim/rendering/als-filters/use-filtering",
+        alsIR:            "sim/rendering/als-filters/use-IR-vision",
+        stroke:           "ja37/hud/stroke-linewidth",
       };
    
       foreach(var name; keys(HUDnasal.main.input)) {
@@ -1102,20 +1134,20 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
     return HUDnasal.main;
     
   },
-
+  lastPower: 0,
       ############################################################################
       #############             main loop                         ################
       ############################################################################
   update: func() {
     #setprop("instrumentation/airspeed-indicator/indicated-speed-kmh", getprop("instrumentation/airspeed-indicator/indicated-speed-kt")*KT2KMH);
     me.has_power = TRUE;
-    if (me.input.elecAC.getValue() < 100) {
+    if (!power.prop.acSecondBool.getValue()) {
       # primary power is off
-      if (me.input.elecDC.getValue() > 23) {
+      if (power.prop.dcMainBool.getValue()) {
         # on backup
         if (on_backup_power == FALSE) {
           # change the colour to amber
-          reinit(TRUE);
+          #reinit();
         }
         on_backup_power = TRUE;
       } else {
@@ -1124,14 +1156,13 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
       }
     } elsif (on_backup_power == TRUE) {
       # was on backup, now is on primary
-      reinit(FALSE);
+      #reinit();
       on_backup_power = FALSE;
     }
-    
-    # in case the user has adjusted the Z view position, we calculate the Y point in the HUD in line with pilots eyes.
-    me.fromTop = HUDTop - me.input.viewZ.getValue();
-    centerOffset = -1 * ((512/1024)*canvasWidth - (me.fromTop * pixelPerMeter));
-    sidewindPosition = centerOffset+(10*pixelPerDegreeY);
+    if (me.lastPower != power.prop.dcMain.getValue()+power.prop.acSecond.getValue()) {
+      reinit();
+    }
+    me.lastPower = power.prop.dcMain.getValue()+power.prop.acSecond.getValue();
 
     mode = me.input.currentMode.getValue();
     me.station = me.input.station.getValue();
@@ -1159,7 +1190,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
       #}
 
       me.cannon = me.station == 0;
-      me.cannon = me.cannon or getprop("payload/weight["~ (me.station-1) ~"]/selected") == "M55 AKAN";
+      me.cannon = me.cannon or (me.station != -1 and getprop("payload/weight["~ (me.station-1) ~"]/selected") == "M55 AKAN");
       me.cannon = mode == COMBAT and me.cannon;
       me.out_of_ammo = FALSE;
       #if (me.input.station.getValue() != 0 and getprop("payload/weight["~ (me.input.station.getValue()-1) ~"]/selected") == "none") {
@@ -1350,7 +1381,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
     #  me.desired_mag_heading = me.input.APnav0HeadingErr.getValue()+me.input.hdg.getValue();
     #} els
     if (radar_logic.steerOrder == TRUE and radar_logic.selection != nil) {
-        me.desired_mag_heading = radar_logic.selection.getMagBearing();
+        me.desired_mag_heading = radar_logic.selection.getMagInterceptBearing();
     } elsif( me.input.RMActive.getValue() == TRUE) {
       me.desired_mag_heading = me.input.RMWaypointBearing.getValue();
 #    } elsif (me.input.nav0InRange.getValue() == TRUE) {
@@ -1989,7 +2020,12 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
         } else {
           me.qfe.setText("TILS");
         }
-        me.qfe.show();
+        if (getprop("instrumentation/TLS-light")) {
+          me.qfe.show();
+        } else {
+          # blinking
+          me.qfe.hide();
+        }
       } elsif (land.has_waypoint < 1) {
         if (me.DME == TRUE) {
           me.qfe.setText("ILS/DME");
@@ -2037,6 +2073,15 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
       air2ground = FALSE;
       return me.showFlightPathVector(out_of_ammo, out_of_ammo, mode);
     } elsif (mode == COMBAT and cannon == FALSE) {
+      if (me.station == -1) {
+        air2air = FALSE;
+        air2ground = FALSE;
+        me.showSidewind(FALSE);
+        me.reticle_cannon.hide();
+        me.reticle_missile.hide();
+        me.reticle_c_missile.hide();
+        return;
+      }
       me.armament = getprop("payload/weight["~ (me.station-1) ~"]/selected");
       if(me.armament == "M70 ARAK") {
         air2air = FALSE;
@@ -2233,11 +2278,11 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
     me.dir_y  = math.atan2(round0(me.vel_bz), math.max(me.vel_bx, 0.001)) * R2D;
     me.dir_x  = math.atan2(round0(me.vel_by), math.max(me.vel_bx, 0.001)) * R2D;
     
-    setprop("ja37/displays/fpi-horz-deg", me.dir_x);#used in MI display
-    setprop("ja37/displays/fpi-vert-deg", me.dir_y);
+    me.input.fpiHorz.setDoubleValue(me.dir_x);#used in MI display
+    me.input.fpiVert.setDoubleValue(me.dir_y);
 
     me.pos_x = clamp(me.dir_x * pixelPerDegreeX, -max_width, max_width);
-    me.pos_y = clamp((me.dir_y * pixelPerDegreeY)+centerOffset, -max_width, (430/1024)*canvasWidth);
+    me.pos_y = clamp((me.dir_y * pixelPerDegreeY)+centerOffset, -max_width, (800/1024)*canvasWidth);
 
     me.fpi_group.setTranslation(me.pos_x, me.pos_y);
     if(show == TRUE) {
@@ -2549,7 +2594,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
           } else {
             me.tower_symbol_dist.setText(sprintf("%02d", me.tower_dist/1000));
           }          
-          me.tower_symbol_icao.setText(me.hud_pos.get_Callsign());
+          me.tower_symbol_icao.setText("");#me.hud_pos.get_Callsign());  disabled for realism
           me.tower_symbol.show();
           me.tower_symbol.update();
         } else {
@@ -2567,7 +2612,7 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
     if(mode == COMBAT) {
 
       me.armSelect = me.station;
-      if(me.armSelect != 0 and (getprop("payload/weight["~ (me.armSelect-1) ~"]/selected") == "M71 Bomblavett" or getprop("payload/weight["~ (me.armSelect-1) ~"]/selected") == "M71 Bomblavett (Retarded)")) {
+      if(me.armSelect > 0 and (getprop("payload/weight["~ (me.armSelect-1) ~"]/selected") == "M71 Bomblavett" or getprop("payload/weight["~ (me.armSelect-1) ~"]/selected") == "M71 Bomblavett (Retarded)")) {
 
         me.bomb = nil;
         if(armament.AIM.active[me.armSelect-1] != nil) {
@@ -3022,6 +3067,22 @@ me.clipAltScale = me.alt_scale_clip_grp.createChild("image")
       }
     }
   },
+
+  # Translate HUD to follow head movements
+  followHeadPosition: func () {
+    var head_x_offset = me.input.viewX.getValue() * pixelPerMeter;
+    # This one is inverted, because y+ is up in the view coord. system, and down in the HUD coord. system.
+    var head_y_offset = (defaultHeadHeight - me.input.viewY.getValue()) * pixelPerMeter;
+    var head_z_distance = me.input.viewZ.getValue() - HUDHoriz;
+    var scaling_factor = head_z_distance / defaultHeadDistance;
+    # On the y axis, scaling is centered on the HUD center,
+    # whereas we need it to be centered on the pilot eyes position.
+    # This additional vertical offset corrects the error.
+    var corrected_y_offset = head_y_offset + (1 - scaling_factor) * centerOffset;
+
+    me.root.setTranslation(canvasWidth/2 + head_x_offset, canvasWidth/2 + corrected_y_offset);
+    me.root.setScale(scaling_factor);
+  },
 };#end of HUDnasal
 
 
@@ -3037,8 +3098,7 @@ var init = func() {
     
     #print("HUD initialized.");
     hud_pilot.update();
-    IR_loop();
-    setlistener("sim/rendering/shaders/skydome", func {reinit(on_backup_power);});
+    #IR_loop();
   }
 };
 
@@ -3049,31 +3109,25 @@ var init2 = setlistener("/sim/signals/reinit", func() {
 #setprop("/systems/electrical/battery", 0);
 #id = setlistener("ja37/supported/initialized", init, 0, 0);
 
-var IR_loop = func {
-  reinit(on_backup_power);
-  #settimer(IR_loop, 1.5);
-};
-
-
-
-var reinit = func(backup = FALSE) {#mostly called to change HUD color
+var reinit = func() {#mostly called to change HUD color
    #reinitHUD = 1;
-
+   
    if (getprop("sim/rendering/shaders/skydome") == TRUE) {
-     r = 0;
-     b = 0;
+     r = 0.75;
+     b = 0.75;
    } else {
      r = 0.6;
      b = 0.6;
    }
-
+   var backup = on_backup_power;
    # if on backup power then amber will be the colour
    var red = backup == FALSE?r:1;
    var green = backup == FALSE?g:0.5;
    var blue = backup == FALSE?b:0;
-   var alpha = backup == FALSE?a:clamp(a_res,0,0.85);
-
-   var IR = getprop("sim/rendering/shaders/skydome") == TRUE and getprop("sim/rendering/als-filters/use-filtering") == TRUE and getprop("sim/rendering/als-filters/use-IR-vision") == TRUE;
+   var alpha = backup == FALSE?hud_pilot.input.hudBrightSI.getValue():hud_pilot.input.hudBrightRES.getValue();
+   hud_pilot.input.hudBright.setDoubleValue(alpha);
+   #printf("alpha=%.7f",alpha);
+   var IR = hud_pilot.input.als.getValue() and hud_pilot.input.alsFilter.getValue() and hud_pilot.input.alsIR.getValue();
 
    if (1==2 and IR) {
       # IR vision enabled, lets not have a green HUD:
@@ -3083,12 +3137,12 @@ var reinit = func(backup = FALSE) {#mostly called to change HUD color
 
    foreach(var item; artifacts0) {
     item.setColor(red, green, blue, alpha);
-    item.setStrokeLineWidth((getprop("ja37/hud/stroke-linewidth")/1024)*canvasWidth);
+    item.setStrokeLineWidth((hud_pilot.input.stroke.getValue()/1024)*canvasWidth);
    }
 
    foreach(var item; artifacts1) {
     item.setColor(red, green, blue, alpha);
-    item.setStrokeLineWidth((getprop("ja37/hud/stroke-linewidth")/1024)*canvasWidth);
+    item.setStrokeLineWidth((hud_pilot.input.stroke.getValue()/1024)*canvasWidth);
    }
 
    foreach(var item; artifactsText0) {
@@ -3110,18 +3164,23 @@ var reinit = func(backup = FALSE) {#mostly called to change HUD color
   #print("HUD being reinitialized.");
 };
 
+setlistener("ja37/hud/brightness-si", reinit,0,0);
+setlistener("ja37/hud/brightness-res", reinit,0,0);
+setlistener("sim/rendering/shaders/skydome", reinit,0,0);
+setlistener("sim/rendering/als-filters/use-filtering", reinit,0,0);
+setlistener("sim/rendering/als-filters/use-IR-vision", reinit,0,0);
+
 var cycle_brightness = func () {
   if(getprop("ja37/hud/mode") > 0) {
     #var br = getprop("ja37/hud/brightness");
     a += 0.05;
-    if(a > 1.0) {
+    if(a > 1.04) {
       #reset
       a = 0.55;
     }
     setprop("ja37/hud/brightness-si", a);
     #setprop("ja37/hud/brightness", br);
     reinit(on_backup_power);
-    ja37.click();
   } else {
     aircraft.HUD.cycle_brightness();
   }
