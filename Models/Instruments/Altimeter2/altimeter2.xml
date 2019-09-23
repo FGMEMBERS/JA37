@@ -16,15 +16,22 @@
         <object-name>knob</object-name>
         <object-name>mount</object-name>
     </effect>
+    
+    <animation>
+        <type>select</type>
+        <object-name>off</object-name>
+        <condition>
+            <not>
+                <property>ja37/elec/ac-bus-main-bool</property>
+            </not>
+        </condition>
+    </animation>
 
     <animation>
         <type>rotate</type>
         <object-name>needle</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/ac-instr-voltage</property>
-                <value>100</value>
-            </greater-than>
+            <property>ja37/elec/ac-bus-main-bool</property>
         </condition>
         <property>instrumentation/altimeter/indicated-altitude-meter</property>
         <factor>0.36</factor>
@@ -40,10 +47,7 @@
         <type>textranslate</type>
         <object-name>drum-1</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/ac-instr-voltage</property>
-                <value>100</value>
-            </greater-than>
+            <property>ja37/elec/ac-bus-main-bool</property>
         </condition>
         <property>instrumentation/altimeter/indicated-altitude-meter</property>
         <factor>0.001</factor>
@@ -62,10 +66,7 @@
         <type>textranslate</type>
         <object-name>drum-2</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/ac-instr-voltage</property>
-                <value>100</value>
-            </greater-than>
+            <property>ja37/elec/ac-bus-main-bool</property>
         </condition>
         <property>instrumentation/altimeter/indicated-altitude-meter</property>
         <factor>0.0001</factor>
@@ -84,10 +85,7 @@
         <type>textranslate</type>
         <object-name>drum-3</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/ac-instr-voltage</property>
-                <value>100</value>
-            </greater-than>
+            <property>ja37/elec/ac-bus-main-bool</property>
         </condition>
         <property>instrumentation/altimeter/indicated-altitude-meter</property>
         <factor>0.00001</factor>
@@ -311,10 +309,7 @@
         <object-name>drums</object-name>
         <object-name>needle-w</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/dc-voltage</property>
-                <value>20</value>
-            </greater-than>
+            <property>ja37/elec/ac-bus-main-bool</property>
         </condition>
         <hovered>
             <binding>
@@ -334,6 +329,7 @@
         <object-name>face</object-name>
         <object-name>drums</object-name>
         <object-name>needle-w</object-name>
+        <object-name>off</object-name>
         <type>material</type>
         <emission>
             <red-prop>instrumentation/instrumentation-light/r</red-prop>

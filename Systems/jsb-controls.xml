@@ -39,7 +39,7 @@
     </channel>
 
     <!--
-                   Elevator -25 to +20  (page 131, figure 108b) 
+                   Elevator -25 to +20  (page 131, figure 108b)
                    Elevator -25 to +20  (page 133, figure 110a)
                    Elevator -25 to +20  (page  79, figure  62a)
                    Pretty sure I saw something about max +10 for elevator, but no longer know where.
@@ -51,9 +51,50 @@
                    Flaps           +30  (page  87)
                    Flaps     -4 to +30  (page  78,  figure 60 )
                    Flaps     -7 to +30  (page  76) -7 can be selected by pilot in AJ-37 not JA-37, -4 default
-                   Flaps     -7 to +30  (page  46) 
+                   Flaps     -7 to +30  (page  46)
 
 -->
+
+
+
+
+
+
+
+
+    <channel execrate="1" name="input">
+
+        <switch name="fcs/elevator/input">
+            <description>If flight input is used to control CI/TI/MI cursor, flight controls are frozen.</description>
+            <default value="fcs/elevator-cmd-norm"/>
+            <test logic="AND" value="fcs/elevator/input">
+                /ja37/systems/input-controls-flight == 0
+            </test>
+        </switch>
+
+        <switch name="fcs/aileron/input">
+            <description>If flight input is used to control CI/TI/MI cursor, flight controls are frozen.</description>
+            <default value="fcs/aileron-cmd-norm"/>
+            <test logic="AND" value="fcs/aileron/input">
+                /ja37/systems/input-controls-flight == 0
+            </test>
+        </switch>
+
+        <switch name="fcs/rudder/input">
+            <description>If flight input is used to control CI/TI/MI cursor, flight controls are frozen.</description>
+            <default value="fcs/rudder-cmd-norm"/>
+            <test logic="AND" value="fcs/rudder/input">
+                /ja37/systems/input-controls-flight == 0
+            </test>
+        </switch>
+
+    </channel>
+
+
+
+
+
+
 
 
 
@@ -67,25 +108,23 @@
 
         <fcs_function name="fcs/elevator/cmd-g">
             <function>
-                <product>
-                    <table>
-                        <independentVar lookup="row">fcs/elevator-cmd-norm</independentVar>
-                        <tableData>
-                            -1.00  7.00
-                            -0.20  0.50
-                            -0.05  0.00
-                             0.00  0.00
-                             0.05  0.00
-                             0.20 -0.50
-                             1.00 -4.00
-                        </tableData>
-                    </table>
-                </product>
+                <table>
+                    <independentVar lookup="row">fcs/elevator/input</independentVar>
+                    <tableData>
+                        -1.00  7.00
+                        -0.20  0.50
+                        -0.05  0.00
+                        0.00  0.00
+                        0.05  0.00
+                        0.20 -0.50
+                        1.00 -4.00
+                    </tableData>
+                </table>
             </function>
             <output>/controls/flight/elevator-cmd-ap</output>
         </fcs_function>
 
-        <aerosurface_scale name="fcs/elevator/cmd-g-trim">
+        <!--<aerosurface_scale name="fcs/elevator/cmd-g-trim">
             <input>fcs/pitch-trim-cmd-norm</input>
             <zero_centered> true </zero_centered>
             <domain>
@@ -93,28 +132,32 @@
                 <max>  1.0 </max>
             </domain>
             <range>
-                <min> -2.0 </min>
-                <max>  2.0 </max>
+                <min> -1.0 </min>
+                <max>  1.0 </max>
             </range>
-        </aerosurface_scale>
+        </aerosurface_scale>-->
+
+        <pure_gain name="fcs/elevator/cmd-g-trim">
+            <input>fcs/pitch-trim-cmd-norm</input>
+            <gain> -1 </gain>
+        </pure_gain>
 
         <fcs_function name="fcs/elevator/cmg-limit-pos-weight">
+            <description>Just some random guesses..almost</description>
             <function>
-                <product>
-                    <table>
-                        <independentVar lookup="row">inertia/weight-lbs</independentVar>
-                        <tableData>
-                                0.00  7.00
-                            30864.72  7.00
-                            40340.00  5.00
-                        </tableData>
-                    </table>
-                </product>
+                <table>
+                    <independentVar lookup="row">inertia/weight-lbs</independentVar>
+                    <tableData>
+                        0.00  8.00 
+                        30864.72  8.00
+                        40340.00  5.00
+                    </tableData>
+                </table>
             </function>
         </fcs_function>
 
         <switch name="fcs/elevator/cmg-limit-pos">
-            <description>As per manual with gears out no more than 3G allowed.</description>
+            <description>As per my guessing with gears out no more than 3G allowed.</description>
             <default value="fcs/elevator/cmg-limit-pos-weight"/>
             <test logic="AND" value="3">
                 gear/gear-pos-norm ne 0
@@ -195,19 +238,23 @@
             </test>
         </switch>
 
-        <switch name="fcs/pitch-damper/active">
+		<switch name="fcs/pitch-damper/active">
             <default value="0"/>
+            <test logic="AND" value="0">
+                /ja37/avionics/temp-halt-ap-pitch == 1
+                /ja37/avionics/auto-altitude-on == 1
+            </test>
             <test logic="AND" value="1">
                 gear/unit[0]/WOW ne 1
                 aero/spin-norm == 0
                 fcs/pitch-damper/enable ne 0.0
                 fcs/pitch-damper/serviceable == 1
-                /systems/electrical/outputs/ac-main-voltage gt 150
+                /ja37/elec/ac-bus-main-bool == 1
             </test>
         </switch>
 
         <pure_gain name="velocities/q-aero-deg_sec">
-            <input>velocities/q-aero-rad_sec</input>
+            <input>velocities/q-rad_sec</input>
             <gain> 57.2957795 </gain>
         </pure_gain>
 
@@ -222,8 +269,8 @@
         </washout_filter>
 
         <switch name="fcs/elevator/q-gain-value">
-            <default value="0.334"/>
-            <test logic="OR" value="0.668">
+            <default value="fcs/elevator/gains/damp-q"/>
+            <test logic="OR" value="fcs/elevator/gains/damp-q-wow">
                 gear/unit[1]/WOW eq 1
                 gear/unit[2]/WOW eq 1
             </test>
@@ -255,18 +302,18 @@
             </test>
         </switch>
 
-        <switch name="fcs/elevator/alpha-max">
+        <!--<switch name="fcs/fcs/alpha-max">
             <default value="23"/>
             <test logic="AND" value="18">
                 /ja37/systems/variant gt 0
             </test>
-        </switch>
+        </switch>-->
 
         <summer name="fcs/elevator/alpha-clamp">
             <input>aero/alpha-deg</input><!-- should really be indicated -->
             <clipto>
                 <min>-5</min>
-                <max>fcs/elevator/alpha-max</max>
+                <max>fcs/max-alpha-deg</max>
             </clipto>
         </summer>
 
@@ -295,7 +342,7 @@
                 <difference>
                     <property> fcs/elevator/alpha-lag </property>
                     <difference>
-                        <p> fcs/elevator/alpha-max </p>
+                        <p> fcs/max-alpha-deg </p>
                         <v> 7 </v>
                     </difference>
                 </difference>
@@ -323,7 +370,7 @@
 
         <pure_gain name="fcs/elevator/delta">
             <input>fcs/elevator/raw-delta</input>
-            <gain> 0.09 </gain>
+            <gain> fcs/elevator/gains/delta </gain>
         </pure_gain>
 
         <pure_gain name="fcs/elevator/delta-schedule">
@@ -331,37 +378,14 @@
             <gain> 1 </gain>
         </pure_gain>
 
-        <fcs_function name="fcs/elevator/integrator-feedback-deadzone-neg">
-            <function>
-                <difference>
-                    <property> fcs/elevator/output </property>
-                    <v> -1 </v>
-                </difference>
-            </function>
-        </fcs_function>
-
-        <fcs_function name="fcs/elevator/integrator-feedback-deadzone-pos">
-            <function>
-                <difference>
-                    <property> fcs/elevator/output </property>
-                    <v> 1 </v>
-                </difference>
-            </function>
-        </fcs_function>
-
-        <switch name="fcs/elevator/integrator-feedback-deadzone">
-            <default value="0"/>
-            <test logic="AND" value="fcs/elevator/integrator-feedback-deadzone-pos">
-                fcs/elevator/output gt  1
-            </test>
-            <test logic="AND" value="fcs/elevator/integrator-feedback-deadzone-neg">
-                fcs/elevator/output lt  -1
-            </test>
-        </switch>
+        <deadband name="fcs/elevator/integrator-feedback-deadzone">
+            <width>2</width>
+            <input> fcs/elevator/output </input>
+        </deadband>
 
         <pure_gain name="fcs/elevator/integrator-feedback">
             <input>fcs/elevator/integrator-feedback-deadzone</input>
-            <gain> 5 </gain>
+            <gain> fcs/elevator/gains/int-feedback </gain>
         </pure_gain>
 
         <summer name="fcs/elevator/integrator-input">
@@ -372,11 +396,11 @@
 
         <integrator name="fcs/elevator/integrator">
             <input> fcs/elevator/integrator-input </input>
-            <c1> 5 </c1>
-            <clipto>
+            <c1> fcs/elevator/gains/int </c1>
+            <!--<clipto>
                 <min> -1 </min>
                 <max>  1 </max>
-            </clipto>
+            </clipto>-->
         </integrator>
 
         <switch name="fcs/elevator/integrator-feedback-ground">
@@ -389,7 +413,7 @@
 
         <pure_gain name="fcs/elevator/integrator-feedback-calm">
             <input>fcs/elevator/integrator</input>
-            <gain> -0.5 </gain>
+            <gain> fcs/elevator/gains/int-calm </gain>
         </pure_gain>
 
         <summer name="fcs/elevator/output">
@@ -405,13 +429,13 @@
                         <independentVar lookup="column">atmosphere/density-altitude</independentVar>
                         <tableData>
                                    0.0  6562  13123 19685 26247 29527 36089
-                            0.32  -22    -22   -22    -22   -22  -22    -22  
-                            0.70  -8.7   -10   -13    -16   -18.5 -20   -22   
-                            0.95  -8.7   -8.7  -10    -15   -20   -20   -22      
-                            1.05  -11.8  -11.8 -13.5  -16.5 -21  -22    -22      
-                            1.20  -11.8  -11.8 -15    -18.5 -22  -22    -22      
+                            0.32  -22    -22   -22    -22   -22  -22    -22
+                            0.70  -8.7   -10   -13    -16   -18.5 -20   -22
+                            0.95  -8.7   -8.7  -10    -15   -20   -20   -22
+                            1.05  -11.8  -11.8 -13.5  -16.5 -21  -22    -22
+                            1.20  -11.8  -11.8 -15    -18.5 -22  -22    -22
                             1.40  -11.8  -14   -16    -20   -22  -22    -22
-                            1.50  -11.8  -15   -17    -21   -22  -22    -22      
+                            1.50  -11.8  -15   -17    -21   -22  -22    -22
                         </tableData>
                     </table>
                     <v>-1</v>
@@ -427,7 +451,7 @@
                 <max>  22.0 </max>
             </domain>
             <range>
-                <min>-1</min>                
+                <min>-1</min>
                 <max>1</max>
             </range>
         </aerosurface_scale>
@@ -462,7 +486,7 @@
                 <max>  22.0 </max>
             </domain>
             <range>
-                <min>-1</min>                
+                <min>-1</min>
                 <max>1</max>
             </range>
         </aerosurface_scale>
@@ -511,10 +535,10 @@
             </traverse>
             <clipto>
                 <min>
-                    <property>-systems/hydraulics/flight-surface-actuation</property>
+                    -systems/hydraulics/flight-surface-actuation
                 </min>
                 <max>
-                    <property>systems/hydraulics/flight-surface-actuation</property>
+                    systems/hydraulics/flight-surface-actuation
                 </max>
             </clipto>
             <output>fcs/elevator/pos-norm</output>
@@ -537,12 +561,29 @@
     </channel>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <channel execrate="1" name="Ailerons">
 
         <fcs_function name="fcs/aileron/stick-geared">
             <function>
                 <table>
-                    <independentVar lookup="row">fcs/aileron-cmd-norm</independentVar>
+                    <independentVar lookup="row">fcs/aileron/input</independentVar>
                     <tableData>
                         -1.00  -1.00
                         -0.86  -0.74
@@ -577,13 +618,13 @@
                 aero/spin-norm == 0
                 fcs/roll-limiter/enable ne 0.0
                 fcs/roll-limiter/serviceable == 1
-                /systems/electrical/outputs/ac-main-voltage gt 150
+                /ja37/elec/ac-bus-main-bool == 1
             </test>
             <output>fcs/roll-limiter/active</output>
         </switch>
 
         <scheduled_gain name="names/roll-limiter/rate-unfiltered">
-            <input>velocities/p-aero-rad_sec</input>
+            <input>velocities/p-rad_sec</input>
             <table>
                 <independentVar lookup="row">velocities/ve-kts</independentVar>
                 <tableData>
@@ -625,11 +666,9 @@
             <function>
                 <difference>
                     <value>1</value>
-                    <product>
-                        <abs>
-                            <property>fcs/aileron/stick-geared</property>
-                        </abs>
-                    </product>
+                    <abs>
+                        <property>fcs/aileron/stick-geared</property>
+                    </abs>
                 </difference>
             </function>
         </fcs_function>
@@ -645,13 +684,13 @@
                     aero/spin-norm == 0
                     fcs/roll-damper/enable ne 0.0
                     fcs/roll-damper/serviceable == 1
-                    /systems/electrical/outputs/ac-main-voltage gt 150
+                    /ja37/elec/ac-bus-main-bool == 1
             </test>
             <output>fcs/roll-damper/active</output>
         </switch>
 
         <scheduled_gain name="names/roll-damper/rate-unfiltered">
-            <input>velocities/p-aero-rad_sec</input>
+            <input>velocities/p-rad_sec</input>
             <table>
                 <independentVar lookup="row">velocities/ve-kts</independentVar>
                 <tableData>
@@ -683,7 +722,7 @@
             <function>
                 <difference>
                     <property> fcs/aileron/stick-geared </property>
-                    <value> -0.15 </value>
+                    <value> -0.05 </value>
                 </difference>
             </function>
         </fcs_function>
@@ -692,7 +731,7 @@
             <function>
                 <difference>
                     <property> fcs/aileron/stick-geared </property>
-                    <value> 0.15 </value>
+                    <value> 0.05 </value>
                 </difference>
             </function>
         </fcs_function>
@@ -700,10 +739,10 @@
         <switch name="fcs/aileron/stick-css-deadzone">
             <default value="0"/>
             <test logic="AND" value="fcs/aileron/stick-css-pos">
-                fcs/aileron/stick-geared gt  0.15
+                fcs/aileron/stick-geared gt  0.05
             </test>
             <test logic="AND" value="fcs/aileron/stick-css-neg">
-                fcs/aileron/stick-geared lt  -0.15
+                fcs/aileron/stick-geared lt  -0.05
             </test>
             <output>/controls/flight/aileron-cmd-ap</output>
         </switch>
@@ -724,10 +763,12 @@
             <!--<output>/controls/flight/aileron-ap</output>-->
         </switch>
 
-        <pure_gain name="fcs/aileron/stick-geared-switched">
-            <input>fcs/aileron/stick-geared</input>
-            <gain>/ja37/avionics/temp-halt-ap-roll2</gain>
-        </pure_gain>
+        <switch name="fcs/aileron/stick-geared-switched">
+            <default value="fcs/aileron/stick-geared"/>
+            <test logic="AND" value="0">
+                /ja37/avionics/auto-attitude-on == 1
+            </test>
+        </switch>
 
         <summer name="names/aileron/cmd-sum">
             <input>fcs/aileron/stick-geared-switched</input>
@@ -752,7 +793,7 @@
                 <tableData>
                                   0.0         60000.0
                       0.0         1.00           1.0
-                      0.1         0.45           1.0   
+                      0.1         0.45           1.0
                       0.5         0.35           0.75  <!-- roll rate 125 - 150 degrees/sec with roll damper on -->
                       0.75        0.65           0.60
                       1.0         0.30           0.45  <!-- roll rate 200 - 225 degrees/sec with roll damper on -->
@@ -781,10 +822,10 @@
             </traverse>
             <clipto>
                 <min>
-                    <property>-systems/hydraulics/flight-surface-actuation</property>
+                    -systems/hydraulics/flight-surface-actuation
                 </min>
                 <max>
-                    <property>systems/hydraulics/flight-surface-actuation</property>
+                    systems/hydraulics/flight-surface-actuation
                 </max>
             </clipto>
             <output>fcs/aileron/pos-norm</output>
@@ -837,7 +878,17 @@
             <output>fcs/left-aileron-pos-deg</output>
         </pure_gain>
 
-    </channel>    
+    </channel>
+
+
+
+
+
+
+
+
+
+
 
     <channel execrate="1" name="Elevons">
 
@@ -907,13 +958,24 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
     <channel execrate="1" name="Yaw">
         <!-- Rudder can move 25 degrees to each side -->
 
         <fcs_function name="fcs/rudder/stick-geared">
             <function>
                 <table>
-                    <independentVar lookup="row">fcs/rudder-cmd-norm</independentVar>
+                    <independentVar lookup="row">fcs/rudder/input</independentVar>
                     <tableData>
                         -1.00  -1.00
                         -0.86  -0.74
@@ -943,13 +1005,13 @@
                 aero/spin-norm == 0
                 fcs/yaw-damper/enable ne 0.0
                 fcs/yaw-damper/serviceable == 1
-                /systems/electrical/outputs/ac-main-voltage gt 150
+                /ja37/elec/ac-bus-main-bool == 1
             </test>
             <output>fcs/yaw-damper/active</output>
         </switch>
 
         <scheduled_gain name="names/yaw-damper/roll-rate-unfiltered">
-            <input>velocities/p-aero-rad_sec</input>
+            <input>velocities/p-rad_sec</input>
             <table>
                 <independentVar lookup="row">velocities/ve-kts</independentVar>
                 <tableData>
@@ -979,7 +1041,7 @@
         </scheduled_gain>
 
         <scheduled_gain name="names/yaw-damper/yaw-rate-unfiltered">
-            <input>velocities/r-aero-rad_sec</input>
+            <input>velocities/r-rad_sec</input>
             <table>
                 <independentVar lookup="row">velocities/ve-kts</independentVar>
                 <tableData>
@@ -1036,10 +1098,10 @@
                 <tableData>
                           0.0         70000.0
               0.0         1.00           1.00
-              0.1         0.60           1.00
-              0.5         0.22           0.40
-              1.0         0.15           0.25
-              2.2         0.07           0.10              
+              0.1         0.65           1.00
+              0.5         0.25           0.50
+              1.0         0.17           0.30
+              2.2         0.05           0.10
           </tableData>
             </table>
             <output>fcs/rudder/cmd-sum-geared</output>
@@ -1059,10 +1121,10 @@
             </traverse>
             <clipto>
                 <min>
-                    <property>-systems/hydraulics/flight-surface-actuation</property>
+                    -systems/hydraulics/flight-surface-actuation
                 </min>
                 <max>
-                    <property>systems/hydraulics/flight-surface-actuation</property>
+                    systems/hydraulics/flight-surface-actuation
                 </max>
             </clipto>
             <output>fcs/rudder-pos-norm</output>
@@ -1111,35 +1173,110 @@
 
 
 
+
+
+
+
+
+
+
+
+
     <channel execrate="1" name="Landing Gear">
 
-        <switch name="names/gear-target-norm">
+        <switch name="names/gear-lever-electro-mech-lock">
+            <default value="0"/>
+            <test logic="AND" value="1">
+                  gear/gear-lever-norm == 0
+                  /instrumentation/airspeed-indicator/indicated-speed-kt gt 334.77
+                  gear/bypass-lever lt 1
+                  /ja37/elec/dc-bus-main-bool == 1
+            </test>
+            <test logic="AND" value="1">
+                  gear/gear-lever-norm == 0
+                  /instrumentation/airspeed-indicator/indicated-mach gt 0.65
+                  gear/bypass-lever lt 1
+                  /ja37/elec/dc-bus-main-bool == 1
+            </test>
+            <output>gear/gear-lever-lock-electro</output>
+        </switch>
+
+        <switch name="names/gear-lever-mech-lock">
+            <default value="0"/>
+            <test logic="AND" value="1">
+                  gear/gear-lever-norm == 1
+                  fcs/throttle-pos-deg lt 36 <!-- approx. 82% N2 -->
+            </test>
+            <output>gear/gear-lever-lock-mech</output>
+        </switch>
+
+        <switch name="names/gear-lever-lock">
+            <default value="0"/>
+            <test logic="OR" value="1">
+                  gear/gear-lever-lock-mech == 1
+                  gear/gear-lever-lock-electro == 1
+            </test>
+            <output>gear/gear-lever-lock</output>
+        </switch>
+
+        <switch name="names/gear-lever-cmd-norm">
             <default value="gear/gear-cmd-norm"/>
+            <test logic="AND" value="1">
+                  gear/gear-lever-lock-mech == 1
+            </test>
+            <test logic="AND" value="0">
+                  gear/gear-lever-lock-electro == 1
+            </test>
+            <clipto>
+                <min>  0 </min>
+                <max>  1 </max>
+            </clipto>
+            <output>gear/gear-lever-cmd-norm</output>
+        </switch>
+
+        <kinematic name="names/gear-lever-norm">
+            <input>gear/gear-lever-cmd-norm</input>
+            <traverse>
+                <setting>
+                    <position>0.0</position>
+                    <time>0.0</time>
+                </setting>
+                <setting>
+                    <position>1.0</position>
+                    <time>0.35</time>
+                </setting>
+            </traverse>
+            <output>gear/gear-lever-norm</output>
+        </kinematic>
+
+        <switch name="names/gear-lever-latch">
+            <default value="0"/>
+            <test logic="AND" value="1">
+                  gear/gear-lever-norm gt 0
+                  gear/gear-lever-norm lt 1
+            </test>
+            <output>gear/gear-lever-latch</output>
+        </switch>
+
+        <switch name="names/gear-target-norm">
+            <default value="gear/gear-lever-norm"/>
             <test logic="OR" value="1">
                   gear/unit[0]/WOW == 1
                   gear/unit[1]/WOW == 1
                   gear/unit[2]/WOW == 1
             </test>
-            <test logic="AND" value="0">
-                  gear/gear-pos-norm == 0
-                  velocities/vc-kts gt 334.77
-            </test>
-            <test logic="AND" value="0">
-                  gear/gear-pos-norm == 0
-                  velocities/mach gt 0.65
-            </test>
             <!-- at loss of hydr-1 the gears can go down (if positive gravity), but not up: -->
             <test logic="AND" value="gear/gear-pos-norm">
-                  gear/gear-cmd-norm == 0
+                  gear/gear-lever-norm == 0
                   systems/hydraulics/system1/pressure == 0
             </test>
-            <test logic="AND" value="gear/gear-cmd-norm">
-                  gear/gear-cmd-norm == 1
+            <test logic="AND" value="gear/gear-lever-norm">
+                  gear/gear-lever-norm == 1
                   systems/hydraulics/system1/pressure == 0
                   accelerations/Nz gt 0.5
             </test>
             <test logic="AND" value="gear/gear-pos-norm">
-                  gear/gear-cmd-norm == 1
+                  gear/gear-lever-norm == 1
                   systems/hydraulics/system1/pressure == 0
             </test>
             <clipto>
@@ -1230,7 +1367,7 @@
         <switch name="names/flaps/cmd-active">
             <default value="0"/>
             <test logic="OR" value="1">
-                /systems/electrical/outputs/dc-voltage gt 23
+                /ja37/elec/dc-bus-main-bool == 1
             </test>
             <output>fcs/flaps/pos-cmd</output>
         </switch>
@@ -1328,8 +1465,22 @@
 
         -->
 
-        <aerosurface_scale name="names/throttle/pos-norm-deg">
+        <kinematic name="fcs/throttle-pos-slowed">
             <input>/controls/engines/engine/throttle</input>
+            <traverse>
+                <setting>
+                    <position>0</position>
+                    <time>0</time>
+                </setting>
+                <setting>
+                    <position>1</position>
+                    <time>0.5</time>
+                </setting>
+            </traverse>
+        </kinematic>
+
+        <aerosurface_scale name="names/throttle/pos-norm-deg">
+            <input>fcs/throttle-pos-slowed</input>
             <zero_centered> false </zero_centered>
             <domain>
                 <min>  0.00 </min>
@@ -1537,24 +1688,6 @@
     </channel>
 
 
-
-    <!--<channel name="Hook">
-        <kinematic name="names/carrier/hook-pos-norm">
-            <input>fcs/carrier/hook-engage</input>
-            <traverse>
-                <setting>
-                    <position>0</position>
-                    <time>0</time>
-                </setting>
-                <setting>
-                    <position>1</position>
-                    <time>2.5</time>
-                </setting>
-            </traverse>
-            <output>fcs/carrier/hook-pos-norm</output>
-        </kinematic>
-    </channel>-->
-
     <!--<channel name="View">
       <summer name="position/h-sl-pilot-ft">
         <input>position/h-sl-ft</input>
@@ -1578,5 +1711,57 @@
             </range>
             <output>structural/wings/normal-factor</output>
         </aerosurface_scale>
+    </channel>
+
+    <channel execrate="4" name="Cursor">
+      <switch name="fcs/cursor/cursor-X-from-flight-controls">
+        <description>Cursor control component from flight controls</description>
+        <default value="0"/>
+        <test value="fcs/aileron-cmd-norm">
+            /ja37/systems/input-controls-flight == 0
+        </test>
+      </switch>
+      <switch name="fcs/cursor/cursor-Y-from-flight-controls">
+        <description>Cursor control component from flight controls</description>
+        <default value="0"/>
+        <test value="fcs/elevator-cmd-norm">
+            /ja37/systems/input-controls-flight == 0
+        </test>
+      </switch>
+      <switch name="fcs/cursor/cursor-trigger-from-flight-controls">
+        <description>Cursor control component from flight controls</description>
+        <default value="0"/>
+        <test value="/controls/armament/trigger">
+            /ja37/systems/input-controls-flight == 0
+        </test>
+      </switch>
+
+      <summer name="fcs/cursor/cursor-control-X">
+        <description>Combined cursor control</description>
+        <input>fcs/cursor/cursor-X-from-flight-controls</input>
+        <input>/ja37/systems/cursor-control-X</input>
+        <clipto>
+          <min>-1.0</min>
+          <max>1.0</max>
+        </clipto>
+      </summer>
+      <summer name="fcs/cursor/cursor-control-Y">
+        <description>Combined cursor control</description>
+        <input>fcs/cursor/cursor-Y-from-flight-controls</input>
+        <input>/ja37/systems/cursor-control-Y</input>
+        <clipto>
+          <min>-1.0</min>
+          <max>1.0</max>
+        </clipto>
+      </summer>
+      <switch name="names/fcs/cursor/cursor-select">
+        <description>Combined cursor control</description>
+        <default value="0"/>
+        <test logic="OR" value="1">
+          fcs/cursor/cursor-trigger-from-flight-controls == 1
+          /ja37/systems/cursor-select == 1
+        </test>
+        <output>fcs/cursor/cursor-select</output><!-- to prevent property from becoming double -->
+      </switch>
     </channel>
 </flight_control>

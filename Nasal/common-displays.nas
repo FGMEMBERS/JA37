@@ -1,5 +1,5 @@
 #
-# Methods that is used across multiple displays (HUD, radarscreen, MI, TI)
+# Methods that is used across multiple displays (HUD, CI, MI, TI)
 #
 var TAKEOFF = 0;
 var NAV = 1;
@@ -11,6 +11,9 @@ var TRUE = 1;
 
 var METRIC = 1;
 var IMPERIAL = 0;
+
+var MI = 0;
+var TI = 1;
 
 var clamp = func(v, min, max) { v < min ? min : v > max ? max : v }
 
@@ -46,21 +49,21 @@ var Common = {
 	        landingMode:      "ja37/hud/landing-mode",
 	        currentMode:      "ja37/hud/current-mode",
 	        elapsedSec:       "sim/time/elapsed-sec",
-
+	        nav0InRange:      "instrumentation/nav[0]/in-range",
 	        qfeActive:        "ja37/displays/qfe-active",
 	        qfeShown:		  "ja37/displays/qfe-shown",
 	        altCalibrated:    "ja37/avionics/altimeters-calibrated",
 	        alt_ft:           "instrumentation/altimeter/indicated-altitude-ft",
 	        ctrlRadar:        "controls/altimeter-radar",
 	        units:            "ja37/hud/units-metric",
-	        fiveHz:           "ja37/blink/five-Hz/state",
+	        fiveHz:           "ja37/blink/two-Hz/state",
 	        rad_alt:          "position/altitude-agl-ft",
 	        dme:              "instrumentation/dme/KDI572-574/nm",
         dmeDist:          "instrumentation/dme/indicated-distance-nm",
         RMActive:         "autopilot/route-manager/active",
         rmDist:           "autopilot/route-manager/wp/dist",
 units:                "ja37/hud/units-metric",
-	        station:          "controls/armament/station-select",
+	        station:          "controls/armament/station-select-custom",
       	};
    
       	foreach(var name; keys(co.input)) {
@@ -70,11 +73,18 @@ units:                "ja37/hud/units-metric",
       	co.mode = TAKEOFF;
       	co.modeTimeTakeoff = -1;
       	co.currArmName = "None";
+      	co.currArmNameMedium = "";
       	co.currArmNameSh = "--";
       	co.distance_m = -1;
       	co.distance_name = "";
 		co.distance_model = "";
       	co.error = FALSE;
+      	co.cursor = MI;
+
+      	co.wowPrev = 0;
+      	co.timeGround = 0;
+      	co.timeLand = 0;
+      	co.ftime = 0;
 
       	return co;
 	},
@@ -83,15 +93,36 @@ units:                "ja37/hud/units-metric",
 		me.displayMode();
 		me.armName();
 		me.armNameShort();
+		me.armNameMedium();
 		me.distance();
 		me.errors();
-		me.rate = getprop("sim/frame-rate-worst");
-		settimer(func me.loop(), me.rate!=nil?clamp(2.15/(me.rate+0.001), 0.05, 0.5):0.5);#0.001 is to prevent divide by zero
+		me.flighttime();
+		#me.rate = getprop("sim/frame-rate-worst");
+		#settimer(func me.loop(), me.rate!=nil?clamp(2.15/(me.rate+0.001), 0.05, 0.5):0.5);#0.001 is to prevent divide by zero
 	},
 
 	loopFast: func {
 		me.QFE();
-		settimer(func me.loopFast(), 0.05);
+		#settimer(func me.loopFast(), 0.05);
+	},
+
+	flighttime: func {
+		# works as JA manual says
+		me.elapsed = getprop("sim/time/elapsed-sec");
+		me.wow     = me.input.wow1.getValue();
+		
+		if (me.wow) {
+			me.timeGround = me.elapsed;
+			if (!me.wowPrev) {
+				me.timeLand = me.elapsed;
+			}
+			if (me.timeGround - me.timeLand > 3*60) {
+				me.ftime = 0;
+			}
+		} else {
+			me.ftime = me.elapsed - me.timeGround + 30;
+		}
+		me.wowPrev = me.wow;
 	},
 
 	errors: func {
@@ -99,7 +130,13 @@ units:                "ja37/hud/units-metric",
 		var mode_list = keys(failure_modes);
 
 		foreach(var failure_mode_id; mode_list) {
-			if (FailureMgr.get_failure_level(failure_mode_id)) {
+			var lvl = nil;
+			if (getprop("ja37/supported/failEvents") == TRUE) {
+				lvl = FailureMgr.get_failure_level(failure_mode_id);
+			} else {
+				lvl = getprop(FailureMgr.proproot ~ failure_mode_id ~ "/failure-level");
+			}
+			if (lvl) {
 				me.error = TRUE;
 				return;
 			}
@@ -108,28 +145,23 @@ units:                "ja37/hud/units-metric",
 	},
 
 	distance: func {
-		var steers = TRUE;
-		call(func {steers = TI.ti.showSteers;}, nil, var err = []);# to make it work on AJ and older FG
-		if (me.mode == COMBAT and radar_logic.selection != nil and (containsVector(radar_logic.tracks, radar_logic.selection) or radar_logic.selection.parents[0] == radar_logic.ContactGPS)) {
-			# in tactical mode, selection has highest priority
+		if (radar_logic.steerOrder == TRUE and radar_logic.selection != nil and (containsVector(radar_logic.tracks, radar_logic.selection) or radar_logic.selection.parents[0] == radar_logic.ContactGPS)) {
+			# radar steer order
 			me.distance_m = radar_logic.selection.get_range()*NM2M;
+	    } elsif (me.input.RMActive.getValue() == TRUE and me.input.rmDist.getValue() != nil and getprop("autopilot/route-manager/current-wp") != -1) {
+	    	# next steerpoint
+	    	me.distance_m = me.input.rmDist.getValue()*NM2M;
+		} else {
+	  		# nothing
+	  		me.distance_m = -1;
+	  	}
+	  	
+	  	if (radar_logic.selection != nil and (containsVector(radar_logic.tracks, radar_logic.selection) or radar_logic.selection.parents[0] == radar_logic.ContactGPS)) {
+			# IFF
 			me.distance_name = radar_logic.selection.get_Callsign();
 			me.distance_model = radar_logic.selection.get_model();
-		} elsif (me.input.dme.getValue() != "---" and me.input.dme.getValue() != "" and me.input.dmeDist.getValue() != nil and me.input.dmeDist.getValue() != 0) {
-	    	me.distance_m = me.input.dmeDist.getValue()*NM2M;
-	    	me.distance_name = "";
-			me.distance_model = "DME";
-	    } elsif (me.input.RMActive.getValue() == TRUE and me.input.rmDist.getValue() != nil and getprop("autopilot/route-manager/current-wp") != -1 and (steers or land.mode > 0)) {
-	    	me.distance_m = me.input.rmDist.getValue()*NM2M;
-	    	me.theID = getprop("autopilot/route-manager/route/wp["~getprop("autopilot/route-manager/current-wp")~"]/id");
-	    	me.distance_name = me.theID!=nil?me.theID:"";
-			me.distance_model = me.input.units.getValue() == displays.METRIC?"Brytpunkt":"Steerpoint";
-	    } elsif (radar_logic.selection != nil and (containsVector(radar_logic.tracks, radar_logic.selection) or radar_logic.selection.parents[0] == radar_logic.ContactGPS)) {
-	    	me.distance_m = radar_logic.selection.get_range()*NM2M;
-	    	me.distance_name = radar_logic.selection.get_Callsign();
-			me.distance_model = radar_logic.selection.get_model();
-	  	} else {
-	  		me.distance_m = -1;
+	    } else {
+	  		# nothing
 	  		me.distance_name = "";
 			me.distance_model = "";
 	  	}
@@ -137,6 +169,10 @@ units:                "ja37/hud/units-metric",
 
 	armName: func {
 		  me.armSelect = me.input.station.getValue();
+		  if (me.armSelect == -1) {
+		  	me.currArmName = getprop("ja37/hud/units-metric")==1?"RENS":"CLR";
+		  	return;
+		  }
 	      if (me.armSelect > 0) {
 	        me.armament = getprop("payload/weight["~ (me.armSelect-1) ~"]/selected");
 	      } else {
@@ -175,12 +211,83 @@ units:                "ja37/hud/units-metric",
 	      } elsif(me.armament == "TEST") {
 	        me.currArmName = "TEST";	        
 	      } else {
-	        me.currArmName = "None";	        
+	        me.currArmName = getprop("ja37/hud/units-metric")==1?"TOM":"NONE";
 	      }
+	},
+
+	armNameMedium: func {
+		  me.armSelect = me.input.station.getValue();
+		  if (me.armSelect == -1) {
+		  	me.currArmNameMedium = getprop("ja37/hud/units-metric")==1?"RENS":"CLR";
+		  	return;
+		  }
+	      if (me.armSelect > 0) {
+	        me.armament = getprop("payload/weight["~ (me.armSelect-1) ~"]/selected");
+	      } else {
+	        me.armament = "";
+	      }
+	      if(me.armSelect == 0) {
+	        me.currArmNameMedium = "AK";	        
+	      } elsif(me.armament == "RB 24 Sidewinder") {
+	        me.currArmNameMedium = "24";	        
+	      } elsif(me.armament == "RB 24J Sidewinder") {
+	        me.currArmNameMedium = "24J";	        
+	      } elsif(me.armament == "RB 74 Sidewinder") {
+	        me.currArmNameMedium = "74";	        
+	      } elsif(me.armament == "M70 ARAK") {
+	        me.currArmNameMedium = "70";	        
+	      } elsif(me.armament == "RB 71 Skyflash") {
+	        me.currArmNameMedium = "71";	        
+	      } elsif(me.armament == "RB 99 Amraam") {
+	        me.currArmNameMedium = "99";	        
+	      } elsif(me.armament == "RB 15F Attackrobot") {
+	        me.currArmNameMedium = "15";	        
+	      } elsif(me.armament == "RB 04E Attackrobot") {
+	        me.currArmNameMedium = "04";	        
+	      } elsif(me.armament == "RB 05A Attackrobot") {
+	        me.currArmNameMedium = "05";	        
+	      } elsif(me.armament == "RB 75 Maverick") {
+	        me.currArmNameMedium = "75";	        
+	      } elsif(me.armament == "M71 Bomblavett") {
+	        me.currArmNameMedium = "71";	        
+	      } elsif(me.armament == "M71 Bomblavett (Retarded)") {
+	        me.currArmNameMedium = "71R";	        
+	      } elsif(me.armament == "M90 Bombkapsel") {
+	        me.currArmNameMedium = "90";	        
+	      } elsif(me.armament == "M55 AKAN") {
+	        me.currArmNameMedium = "55";	        
+	      } elsif(me.armament == "TEST") {
+	        me.currArmNameMedium = "TEST";	        
+	      } else {
+	        me.currArmNameMedium = getprop("ja37/hud/units-metric")==1?"TOM":"NONE";
+	      }
+	},
+
+	armActive: func {
+		me.armSelect = me.input.station.getValue();
+	    if (me.armSelect > 0) {
+	        me.aim = armament.AIM.active[me.armSelect-1];
+	        return me.aim;
+	    }
+	    return nil;
+	},
+
+	sidewinders: func {
+		me.snakes = [];
+		for(var x=0; x<7; x+=1) {
+			if (armament.AIM.active[x] != nil and armament.AIM.active[x].guidance=="heat") {
+				append(me.snakes, armament.AIM.active[x]);
+			}
+		}
+		return me.snakes;
 	},
 
 	armNameShort: func {
 		  me.armSelect = me.input.station.getValue();
+		  if (me.armSelect == -1) {
+		  	me.currArmNameSh = "";
+		  	return;
+		  }
 	      if (me.armSelect > 0) {
 	        me.armament = getprop("payload/weight["~ (me.armSelect-1) ~"]/selected");
 	      } else {
@@ -200,6 +307,8 @@ units:                "ja37/hud/units-metric",
 	        me.currArmNameSh = "99";	        
 	      } elsif(me.armament == "TEST") {
 	        me.currArmNameSh = "TS";	        
+	      } elsif(me.armament == "") {
+	        me.currArmNameSh = "";
 	      } else {
 	        me.currArmNameSh = "--";	        
 	      }
@@ -232,6 +341,12 @@ units:                "ja37/hud/units-metric",
 	},
 
 	displayMode: func {
+		# from manual:
+		#
+		# STARTMOD: always at wow0. Switch to other mode when FPI >3degs or gear retract or mach>0.35 (earliest 4s after wow0==0).
+		# NAVMOD: Press B or L, or auto switch after STARTMOD.
+		# LANDMOD: Press LT or LS on TI. (key 'Y' is same as LS)
+		#
 		if (me.input.mach.getValue() != nil) {
 		    me.hasRotated = FALSE;
 		    if (me.input.mach.getValue() > 0.1) {
@@ -240,42 +355,40 @@ units:                "ja37/hud/units-metric",
 		      me.vel_gv = -me.input.speed_d.getValue();
 		      me.hasRotated = math.atan2(me.vel_gv, me.vel_gh)*R2D > 3;
 		    }
-		    me.takeoffForbidden = me.hasRotated or me.input.mach.getValue() > 0.35 or me.input.gearsPos.getValue() != 1;
+		    me.takeoffForbidden = me.hasRotated or me.input.gearsPos.getValue() != 1;# takeoff no longer allowed
+		    me.takeoffForbidden2 = me.input.mach.getValue() > 0.35 and me.modeTimeTakeoff != -1 and me.input.elapsedSec.getValue() - me.modeTimeTakeoff > 4;
+		    me.takeoffForbidden = me.takeoffForbidden or me.takeoffForbidden2;
 		    if(me.mode!= TAKEOFF and !me.takeoffForbidden and me.input.wow0.getValue() == TRUE and me.input.dev.getValue() != TRUE) {
 		      # nosewheel touch runway, so we switch to TAKEOFF
 		      me.mode= TAKEOFF;
+		      me.input.landingMode.setValue(0);
 		      me.modeTimeTakeoff = -1;
 		    } elsif (me.input.dev.getValue() == TRUE and me.input.combat.getValue() == 1) {
-		      # developer me.modeis active with tactical request, so we switch to COMBAT
+		      # developer mode is active with tactical request, so we switch to COMBAT
 		      me.mode= COMBAT;
 		      me.modeTimeTakeoff = -1;
 		    } elsif (me.mode== TAKEOFF and me.modeTimeTakeoff == -1 and me.input.wow0.getValue() == FALSE) {
 		      # Nosewheel lifted off, so we start the 4 second counter
 		      me.modeTimeTakeoff = me.input.elapsedSec.getValue();
-		    } elsif (me.modeTimeTakeoff != -1 and me.input.elapsedSec.getValue() - me.modeTimeTakeoff > 4) {
-		      if (me.takeoffForbidden == TRUE) {
+		    } elsif (me.mode== TAKEOFF and me.takeoffForbidden == TRUE) {
 		        # time to switch away from TAKEOFF mode.
-		        if (me.input.gearsPos.getValue() == 1 or me.input.landingMode.getValue() == TRUE) {
-		          me.mode= LANDING;
+		        if (me.input.landingMode.getValue() == TRUE) {
+		          me.mode = LANDING;
 		        } else {
-		          me.mode= me.input.combat.getValue() == 1 ? COMBAT : NAV;
+		          me.mode = (me.input.combat.getValue() == 1 and me.input.gearsPos.getValue() == 0)? COMBAT : NAV;
 		        }
 		        me.modeTimeTakeoff = -1;
-		      } else {
-		        # 4 second has passed since frontgear touched runway, but conditions to switch from TAKEOFF has still not been met.
-		        me.mode= TAKEOFF;
-		      }
-		    } elsif ((me.mode== COMBAT or me.mode== NAV) and (me.input.gearsPos.getValue() == 1 or me.input.landingMode.getValue() == TRUE)) {
+		    } elsif ((me.mode== COMBAT or me.mode== NAV) and (me.input.landingMode.getValue() == TRUE)) {
 		      # Switch to LANDING
 		      me.mode= LANDING;
 		      me.modeTimeTakeoff = -1;
 		    } elsif (me.mode== COMBAT or me.mode== NAV) {
 		      # determine if we should have COMBAT or NAV
-		      me.mode= me.input.combat.getValue() == 1 ? COMBAT : NAV;
+		      me.mode= (me.input.combat.getValue() == 1 and me.input.gearsPos.getValue() == 0)? COMBAT : NAV;
 		      me.modeTimeTakeoff = -1;
-		    } elsif (me.mode== LANDING and me.input.gearsPos.getValue() == 0 and me.input.landingMode.getValue() == FALSE) {
+		    } elsif (me.mode== LANDING and me.input.landingMode.getValue() == FALSE) {
 		      # switch from LANDING to COMBAT/NAV
-		      me.mode= me.input.combat.getValue() == 1 ? COMBAT : NAV;
+		      me.mode= (me.input.combat.getValue() == 1 and me.input.gearsPos.getValue() == 0) ? COMBAT : NAV;
 		      me.modeTimeTakeoff = -1;
 		    }
 		    me.input.currentMode.setIntValue(me.mode);
@@ -378,4 +491,4 @@ var init = func {
 	common.loopFast();
 }	
 
-idl = setlistener("ja37/supported/initialized", init, 0, 0);
+#idl = setlistener("ja37/supported/initialized", init, 0, 0);

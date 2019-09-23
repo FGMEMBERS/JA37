@@ -4,146 +4,226 @@ TODO for Flightgear Saab 37 Viggen
 
 Features and improvements:
 --------------------------
-GUI: Option to turn off verbose popups.
-GUI: Improve Checklists.
-GUI: Option to switch off hitting stuff above ground. (switched off now, might confuse users)
-GUI: AT some point switch to new thumbnails format.
-Aero: Make recoil not assume that FDM rate is 120 Hz.
-Aero: Tune speedbrake better.
+Aero: Adjust wave drag so max speed is M1.85 in ISA atmosphere and M2.03 in ISA-15.
 Aero: Make cannon ammo have pointweight.
-Control: Disable failure system from freezing surfaces (remove failure mode bug in 3.2- prevents)
-Control: Make bigger factor in pitch normal comparison. (beware of oscillations)
-Control: Limit elevator deflection due to servo-moment being smaller than moment of air-pressure. Page 19-20 in AK III.
-Model: Make minimal polygon model for multiplayer LOD.
-Model: Make liveries that is not 59, able to not have to use base texture.
-Model: Ext. power truck more mil style textures.
-Model: Put in more working instruments and controls.
-Model: Put in not-working instruments and controls for immersion.
-Model: Some control textures should be aligned so they can be better viewed from current pilot point of view.
-Model: Radar range control should be only 3 digits. (and be another place in the cockpit if should be accurate)
-Model: Make the tooltips fail when gauges fail.
-Model: The reserve generator. (ram air turbine)
-Model: Proper floor in the cockpit.
-Model: Fix z-fighting on HUD brightness-knob, M71-rail and M90. (strange, might not be z-fighting, but sure looks like it)
-Model: A/P control in cockpit: A/T on throttle, A/P disengage on stick.
-Model: Review all indicator lights. For example the A/T light should blink by malfunctions or disengagements.
-Model: Model speedbrakes.
-Model: Fuze panel. Right side.
-Model: Radar panel. Left side.
-Model: Radio panel. Left side.
-Model: Airspeed indicator should have mach number also.
-Model: Stores jettisoned indicator on top right of front panel?
-Model: Switch ALT CISI, altitude source. (Only in AJ variants)
-Model: The KURS gauge in the JA was more complex, needs making.
-Model: The mount for the 3 autopilot buttons on frontpanel was different in the JA, needs making.
-Model: In the JA there was 2 knobs under the hudRestPlaque to control HUD brightness, needs making.
+Aero: Make recoil not assume that FDM rate is 120 Hz.
+Aero: Remove speedbrake in JA and AJS. Only AJ should have it. Welded shut in the others.
+Aero: Tune speedbrake better.
+Animation: Main attitude indicator lazy and jumps from 180 to -180.
+Animation: Make jettison drop-tank actually fall down like other stores do.
+Animation: Make more use of knob animation: Radio, Altimeters, MI brightness.
 Animation: Make rear boogie rotate at takeoff/landing rotation.
-Animation: Make jettison drop-tank/rocket pod actually fall down like other stores do.
-Engine: Switch aug. type in engine?
-Engine: Model compressor surge/stall including bang sound.
-Sim: Improve autopilot further.
-Sim: Make autopilot depend fully on instrument properties not true properties. (95% done)
-Sim: Implement ejection seat. (with parachute?)
-Sim: Reset controls after A/P let go of them.
-Sim: Stop using integers in xml where floating point is expected? (is silly, not needed, rely on typecasting instead)
-Sim: Make verbose property to be used in all nasal scripts. (possible include in options)
-Sim: Make replay show the guided missiles flying.
-Sim: Improve terrain warning system.
-Sim: Replace all generic setValue in nasal with specific types.
-Sim: Make droptank do collision detection. (use retractable)
-Sim: Missiles should lock onto flares from other mil plane types.
-Sim: Lock warning when another plane get radar lock. (ja37, m2000-5, f-14b, f-15)
-Sim: Complete hydraulic dependencies: Brakes.
-Sim: Hydraulic drain.
-Sim: Electric drain.
-Sim: Shift-m should be a key without shift instead for convenience.
-Sim: Specific damage to gears in crash code, speed of impact and vertical speed separate. (terrain type?)
-Sim: Make the weapon mode dial operational: simulated mode, operational mode and reduced mode.
-Sim: Make data-link between Viggens.
-Sim: Replace MP hit and fire messages with something else, so can leave civilian traffic in peace.
-Sim: Implement maximum speed reactions - Vne.
-Sim: Engine fire improvement: reduced thrust, stuck throttle.
-Sim: Stop auto-selecting when in tactical mode. (semi-done)
-Sim: RB99 will be rail launched if sitting on a rail instead of always dropped.
-Sim: Be able to notch the rb71 again.
-Sim: Make speed, roll, Nz and altitude limits on firing missiles.
-Sim: Make boolean hasVectorThrust for missiles. If it has then reduce drastic the bleeding of speed during high G turns.
-Sim: Find the exact spot the center M70 fires from (submodels).
-Sim: A/P does auto trim of roll.
-Sim: Review A/P working property use. Also in jsb for stick control.
-Sim: Make weapons hit all nearby targets.
-Sim: Make m71 bombs not require a target.
-Sim: Make schedule for max climb rate with A/P at slow speed different when gears is down (or A/T AoA hold).
-Sim: Review all replay signals.
-Sim: Only send properties over MP when they change, will save up property space.
-Sim: Set 4 M71 to fire in ripple at each trigger press.
-Sim: Make data and nav panel functional.
-Sim: After exiting transonic the altitude hold is recomputed. 
-Sim: To disengage A/P to mode 0 press switch on stick or pull fuse (will also disengage A/T).
-Sim: OPT FIX button pressed will make the current destination selected moved to right under the aircraft at push time. (datapanel rensa will set it back to what was programmed)
-Sim: Select L on systems panel to select preprogrammed landing base. LB then for long approach, LF for short.
-Sim: Pitot depend on AC power.
-Sim: Some systems should get DC power directly from batt., some only when main power switch is on. Check diagram.
-Sim: The A/P for glideslope is not very reliable, fix.
-Sim: Fix that when changing airport location, battery gets drained, and therefore gives master warning for a while after startup.
-Effect: Rembrandt landing lightcone.
-Effect: Make pilot G-loc/die due to G-forces.
-Effect: Make tires burst if too high speed with parking brakes.
-Effect: Replace beacon, landing and strobe lights with procedural lights in ALS.
-Sound: More annunciater warnings and other sounds. (transonic)
-Sound: Adjust the volume of the explosion of nearby missile, depending on distance.
-Sound: Rework how missile buzz and growl works.
-Sound: Sound from wind hitting the gears when extended.
-Radar: Make database of RCS of common aircrafts.
-Radar: Make rb71 notchable again, by introducing 3 diff painted properties instead of one.
-HUD: Alt scale follow pitch lines at more than 1 degree roll from level flight. (swedish pilots seems able to read upside down, not sure I will make this)
-HUD: All track semi circles and semi box should have a line in them. (might degrade performance)
-HUD: Fix that HUD selects diamond_node, not radar logic, so HUD can be turned off in external view.
-HUD: When DME are enabled at the same time as ILS with glideslope, the distance scale make the ILS view confusing.
-HUD: Make crossing out of hud when armament not ready to fire and trigger is pressed.
-HUD: Slave-SI centers the landing guide. And hides the attitude ind. ILS needles. (only AJ variants)
-HUD: Altitude scale should only be shown when engine is running due to it need AC power.
-TI: Show lat/lon grid in menu UDAT.
-TI: Move cursor between TI and MI.
-TI: Slew cursor.
-TI: Edit route.
-TI: Change runway symbol.
-TI: Show/edit bullseye.
-TI: Show fligthtime by using controls UD-UT.
-TI: Select self.
-TI: When inertial navigation is not ready and GPS is off, dont show moving map.
-TI: Make radar limit on SVY.
-TI: Add missiles to SVY.
-TI: Waypoint info should show ETA to next waypoint.
-TI: Make route info with overall ETA.
-TI: Terrain arrow should stay on for 3 seconds after pull up.
-MI: Slew cursor.
-MI: Implement radar sweep.
-MI: Improve mark event [X3]
-MI: Improve BIT test. [X1]
-MI: Make TNF to stop/start inertial nav.
-MI: NEZ indicator.
+Animation: Review all indicator lights. For example the A/T light should blink by malfunctions or disengagements.
+Animation: The bypass handle should not stay up for long.
+Arms: Auto LOAL RB99. Lock on after launch.
+Arms: Be able to notch the rb71 again.
+Arms: Home on jam for missiles.
+Arms: IR lock before launch should also check terrain occlusion.
+Arms: Make m71 bombs not require a target.
+Arms: Make the weapon mode dial operational: simulated mode, operational mode and reduced mode. In DAP, burst number for OP can be entered.
+Arms: Narrow scan pattern for dogfighting. (narrow yaw, mid to high pitch.)
+Arms: Pickle delay.
+Arms: RB99 will be rail launched if sitting on a rail instead of always dropped.
+Arms: Set 4 M71 to fire in ripple at each trigger press.
+Arms: Should seeker position be shown in MI and HUD for non IR? (lean towards no)
+Arms: The auto pattern scan should not jump from bottom to top.
+Arms: When electrical power is off, the RB24J should not be able to cool.
 CI: Memory button, for freezing image.
 CI: Slew cursor.
+Control: A/P does auto trim of roll.
+Control: After exiting transonic the altitude hold should be recomputed. 
+Control: Disable failure system from freezing surfaces (remove failure mode bug in 3.2- prevents)
+Control: Limit elevator deflection due to servo-moment being smaller than moment of air-pressure. Page 19-20 in AK III.
+Control: Make bigger factor in pitch normal comparison. (beware of oscillations)
+Control: overhaul rudder trim.
+DAP: Can enter K time (attack-time) for steerpoints. When that is done, it also becomes target steerpoint?
+DAP: entering training floor should be tens of meters.
+DAP: In pos/out showing info on next steerpoint, for steerpoints greater than 09, show hex. 11-15 = landing bases.
+DAP: Input TACAN with REG/STR?
+DAP: Minneslista JA37 has some DAP addresses. Make.
+DAP: Output of not defined addresses should just be 0000?
+DAP: Possible to enter date and revision number of LV/FF 001-189. But how?
+DAP: Show sign of input at leftmost char always.
+DAP: With L selector in LDL (auto-mode) L1 is asumed to be start base and L2 landing base. Hmm, need to know more..
+Doc: Thorsten Renk suggested to make a PDF manual. ETA. before 2020.
+Effect: Ambient occlusion map need to be baked again, many parts are too occluded.
+Effect: Fix that with engine off, the wind can drive the fan which will produce smoke.
+Effect: Make pilot G-loc/die due to G-forces.
+Effect: Make tires burst if too high speed with parking brakes.
+Effect: Rembrandt landing lightcone.
+Effect: Replace beacon, landing and strobe lights with procedural lights in ALS.
+Elec: Double check that everything is on the right bus.
+Elec: Flying above 1170Km/h with RAT might damage it.
+Elec: Gun, radar and IR missiles was on seperate buses, fix.
+Elec: Make logic for secondary DC bus G. It depends on BRAGG.
+Engine: Model compressor surge/stall including bang sound.
+Engine: Switch aug. type in engine?
+GUI: Checklists needs to be seperate for JA and AJ(S), since some controls no longer is shared.
+GUI: Conditions on tooltips stopped working in 2018.1.1, if it does not get fixed, remove em all.
+GUI: Convert options dialog to xml.
+GUI: Improve Checklists.
+GUI: Stop perf. monitor from running when dialog is off.
+HUD/TI: FPI fin touches circle when estimated that will arrive at steerpoint in correct time.
+HUD: All track semi circles and semi box should have a line in them. (might degrade performance)
+HUD: Altitude scale should only be shown when engine is running due to it need AC power. (pitot-static needs AC?)
+HUD: Do not show rb99 seeker diamond. (not sure if I haven't fixed)
+HUD: Fix that HUD selects diamond_node, not radar logic, so HUD can be turned off in external view.
+HUD: In OPT mode, the sink rate is only at low altitudes, before that its 1:20.
+HUD: Make crossing out of hud when armament not ready to fire and trigger is pressed.
+HUD: Radar alt in alt scale, can move outside clip bounds. fix?
+HUD: Slave-SI centers the landing guide. And hides the attitude ind. ILS needles. (only AJ variants)
+HUD: When DME are enabled at the same time as ILS with glideslope, the distance scale make the ILS view confusing.
+HUD: When should distance scale line not be shown, but distance still?
+MI: DLZ indicator.
+MI: Implement radar sweep.
+MI: Improve BIT test. [X1]
+MI: Improve mark event [X3]
+MI: Make TNF to stop/start inertial nav. (unsure about how this work and how the light react to it)
+Model: A/P control in cockpit: A/T on throttle, A/P disengage on stick.
+Model: Airspeed indicator should have mach number also.
+Model: AJ radar range control should be only 3 digits. (and be another place in the cockpit if should be accurate)
+Model: Chair specific to Viggen.
+Model: Ext. power truck more mil style textures.
+Model: Fix z-fighting on HUD brightness-knob, datapanel knob, M71-rail and M90. (strange, might not be z-fighting, but sure looks like it)
+Model: Flightstick specific to Viggen.
+Model: Improve texturing of gears handle housing, it had some details on it.
+Model: In JA the 2 gauges on right panel sat in a panel.
+Model: JA version of radar control stick.
+Model: Make liveries that is not 59, able to not have to use base texture.
+Model: Make stick from throttle to gears handle housing. The throttle is too wide and the sidepanel is not aligned with X axis, that prevents it.
+Model: Make the tooltips fail when gauges fail.
+Model: Model speedbrakes.
+Model: Proper floor in the cockpit.
+Model: Put in more working instruments and controls.
+Model: Put in not-working instruments and controls for immersion.
+Model: Side position lights.
+Model: Some control textures should be aligned so they can be better viewed from current pilot point of view.
+Model: Stores jettisoned indicator on top right of front panel. (AJ)
+Model: Switch ALT CISI, altitude source. (Only in AJ variants)
+Model: The 2 altimeters is wrong models.
+Model: The A/P pushbuttons light can still be hard to see. It need textranslate and white middle.
+Model: The frontpanel tap is misaligned.
+Model: The fuel gauge had a second needle.
+Model: The JA has a small chronometer right of fuel gauge.
+Model: The nosegear well, has gap between it and fuselage.
+Model: The reserve generator RAT. (ram air turbine on left side just behind and under canard)
+Model: Transponder panel more like the real, right panel.
+Radar: Make ECM jamming.
+Radar: Make rb71 notchable again, by introducing 3 diff painted properties instead of one.
+Radar: Openradar has no roll and heading. Fix radar to handle that.
+Sim: Check terrain warning for when gears is down/landing mode in manual. (its now set to gears down detect)
+Sim: Complete hydraulic dependencies: Brakes.
+Sim: Engine fire improvement: reduced thrust, stuck throttle.
+Sim: Find the exact spot the center M70 fires from (submodels).
+Sim: Hydraulic drain.
+Sim: I likely have confused alpha limit warning setting in DAP with setting the control limit itself. Fix.
+Sim: Implement maximum speed reactions - Vne.
+Sim: Improve autopilot further.
+Sim: Improve terrain warning system.
+Sim: Inertial navigation system.
+Sim: Lock warning when another plane get radar lock. (ja37, m2000-5, f-14b, f-15, mig21)
+Sim: Make AJ nav panel functional.
+Sim: Make autopilot depend fully on instrument properties not true properties. (95% done)
+Sim: Make data-link between Viggens.
+Sim: Make droptank do collision detection. (use retractable)
+Sim: Make replay show the guided missiles flying.
+Sim: Make schedule for max climb rate with A/P at slow speed different when gears is down (or A/T AoA hold).
+Sim: Make so that flares cannot be used after aircraft has crashed.
+Sim: Make speed, roll, Nz and altitude limits on firing missiles.
+Sim: Make verbose property to be used in all nasal scripts. (possible include in options)
+Sim: Only send properties over MP when they change, will save up property space.
+Sim: OPT FIX button pressed will make the current destination selected moved to right under the aircraft at push time. (datapanel rensa will set it back to what was programmed)
+Sim: Pilot sometimes complains of lack of oxygen after relocation. [Probably fixed]
+Sim: Pitot depend on AC power.
+Sim: Reinit dont repair (sometimes).
+Sim: Replace all generic setValue in nasal with specific types.
+Sim: Replace MP hit and fire messages with something else, so can leave civilian traffic in peace.
+Sim: Reset controls after A/P let go of them.
+Sim: Review A/P working property use. Also in jsb for stick control.
+Sim: Review all replay signals.
+Sim: Shift-m should be a key without shift instead for convenience.
+Sim: Specific damage to gears in crash code, speed of impact and vertical speed separate. (terrain type?)
+Sim: Startup with engines on, should have inertial navigation ready. (maybe altimeter should be preset too)
+Sim: Stop auto-selecting when in tactical mode. (semi-done)
+Sim: Strange slowdown of FPS after flying for a while and fighting with aim9.
+Sim: To disengage A/P to mode 0 press switch on stick or pull fuse (will also disengage A/T).
+Sound: Adjust the volume of the explosion of nearby missile, depending on distance.
+Sound: I think I broke the AJ stall warn switch, fix.
+Sound: Knobs for pylon and master-arm has no sound, fix.
+Sound: Replace the "incoming" annunciator warnings with radar lock radio noise. (not sure it worked like that, seems Apparat63 had 2 tones, hmm)
+Sound: Rework how missile buzz and growl works.
+Sound: Should limit pre warnings be lower volume?
+Sound: Sound from wind hitting the gears when extended.
+Test: Engine starter should be hold in for 30 secs before quiting test, not instantly.
+Test: Individual tests with test knob.
+Test: Red and green lights should also lit up when pressing 'test indicator lights button'.
+Test: Shut down also some indicators during testing.
+Test: Testing from TI.
+TI: Add rb-99 to SVY?
+TI: Auto switching to next steerpoint happens when less than 3Km from current, and distance increasing.
+TI: Be able to set steerorder to LV or FF points. (I cannot see in manual where that should be possible, so is on hold)
+TI: Convert moving map to MapStructure. Slippy, airports, grid, traffic, FF, LV, routes, areas, runway, landingCircle/Line, missiles, bullseye, AAA.
+TI: Has almost 100 getprop calls, convert to getValue.
+TI: In menu SYST place cursor over steerpoint to see ETA (passagetid?). Most likely time planned to pass.
+TI: In menu SYST, button 'LB'/'LS'. Steer order first to tangent point.
+TI: In menu WEAP between the two middle edge buttons at bottom, its should say AK 120. For 120 ammo left.
+TI: Make long route legs be curved.
+TI: Make radar limit on SVY. (first radar should be changed to scan and beam be more vertically narrow)
+TI: Make route info with overall ETA.
+TI: Menu CONF-READDATA should show a static page.
+TI: MPOL should only be able to hold 24 legs, and RPOL only 8. 48 + B0 + BDL in total.
+TI: MSDA map should be north oriented (at least when MMAN is on).
+TI: MSDA menu should only show polygon legs for the primary plan. (but still steerpoints for all)
+TI: Navigation mode RR probably was intercept vector.
+TI: Prioritize showing only 10 FF/LV points.
+TI: RB99 telemetry should show IDLE, SCAN or LOCK when not fired.
+TI: Run different through plans when drawing them on canvas. (what did I mean by this?)
+TI: Select self and then show in lower right corner infobox on own flight.
+TI: Some steerpoint can be forceringsbrytpunkt. Whatever that means.
+TI: Steerpoint B0 is start pos. Its shown as current till take-off. When route is started being flown it is set at current position. Should not be saved with plans. Confusing, must know more.
+TI: The runway approach line, for some reason do not get updated fast, so when turning sharply, it disconnects from approach circle.(or more likely opposite)
+TI: Waypoint info should show ETA to next waypoint. And seperate infobox for full ETA.
+TI: When cursor not active on TI, a shadow cursor is shown following the target cursor.
+TI: When display is not showing image, backup menu is in effect, with hard-coded functions for the buttons.
+TI: When flying RTB or MISS routes and small field in lower right corner should show deltatime, altitude and recommended mach. Whats delta time?
+TI: When inertial navigation is not ready and GPS is off, don't show moving map?
+Arms: Missiles have a time deficiency when time is slowed down more than 1/4. The JSB slowdown might not be accurate.
+
+
+
+
+
+
+
+
+
+List of un-authentic systems, most scheduled for removal/change at some point
+-----------------------------------------------------------------------------
+Automatic landing mode selection in AJ was really selected manual like in the JA.
+Speedbrake on JA-37Di and AJS-37 were welded shut. Was only working on AJ-37 of these variants.
+Distance to selected radar echo was next to distance scale where ammo is now, not next to the echo. (was ammo count even in HUD?) If line is there, the number is line length.
+Electronic map should not work, before inertial navigation has finished initializing, or GPS is on.
+The FPI in HUD was really limited to +- 7.5 degs lateral.
+In the orig plane the HUD/TI/MI decimal delimiter is ',' not '.'.
+VOR, ADF radio navigation, the real did not have this.
+Aerobatic smoke, the real probably didn't have.
+TI: Append or insert steerpoint should really be controlled from R1 switch, not be part of TI menu.
+TI: OPT should really be a button on the flightstick, not be part of TI menu.
+The real Viggen displays had 2 cursors; lock-cursor and TIM-cursor. The flightgear Viggen has combined it into 1 cursor.
+
 
 
 
 Bugs:
 --------------
-Control: {Pinto} Pitch damper does fast violent oscillations at 36000ft M2.25+ without droptank.
 GUI: The performance monitor can duplicate itself when selecting airport. [reproduced]
 HUD: In landing mode, commanded altitude lines can be confused with ILS guidance.
 HUD: When autostarting is in progress, the HUD will switch off for a fraction of a second sometimes when loading stores. (due to stores mass moving the aircraft a bit and external power then gets disconnected.).
-HUD: When the altitude difference to a track is much larger than the horizontal distance, the track positions are off.
-HUD: {JazzTp} When FG HUD is in 2nd or 3rd mode, it does not go away when switching to custom. [reproduced]
-Model: CTRL-X in HUD view will not zoom to correct level.
 Model: AJ Droptank indicator should really be a steerpoint indicator.
-Model: In FG 2.12 radar screen does not work as it should. (no canvas replacement)
 Model: All shader use of <use> does not work over MP.
 Sim: Find out why cannon and sidewinder fire randomly after instant replay.
 Sim: If HoT (/sim/multiplay/hot) is enabled, geo reports wrong ground elevation at a AI/MP aircraft location.
-Sim: Missiles do not show when using FG 3.0, in FG 3.1+ they work fine. [reproduced]
-Sim: Sometimes when exploding, the sim freezes, typically at redout. [was bug in jsbsim, fixed in 2016.1]
+Sim: Sometimes when exploding, the sim freezes, typically at redout. [was bug in jsbsim, semi-fixed in 2016.1]
 Sim: The auto-pilot can be bank unstable when auto-coordination is turned on.
 Sim: When Bombable 4.5 is installed redout and blackout might not work properly. [related to certain Bombable settings I think]
 Sim: When relocating or pausing, autostart might fail. [reproduced]
@@ -177,12 +257,13 @@ Model: Improve the 01     eastern livery.
 Model: Improve the 79-F21 ferris
 Model: Improve the 01-F21 viking livery.
 Model: Improve the 31-F17 grey livery.
-Model: Improve the 32-F17 Blå Petter livery. (Blue Peter)
+Model: Improve the 32-F16 grey livery.
+Model: Improve the 32-F16 Blå Petter livery. (Blue Peter)
 Model: Improve the 59-F16 grey livery.
 Model: Improve the 61-F18 strike camo livery.
 Model: Improve the 61-F18 desert camo livery.
 Model: Improve the 61-F18 nevada camo livery.
-Model: Improve the 57-F21 red 'ghost' livery.
+Model: Improve the 57-F21 red 'ghost' livery. (sure its not F10?)
 Model: Improve the 46-F04 unknown export livery - Great lake monster.
 Model: Improve the 02-F21 swedish sun livery.
 Model: Improve the Flightgear livery.

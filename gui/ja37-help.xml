@@ -30,11 +30,11 @@
         <desc>Fire selected weapon</desc>
     </key>
     <key>
-        <name>CTRL-5</name>
+        <name>Ctrl-5</name>
         <desc>Select cannon</desc>
     </key>
     <key>
-        <name>CTRL-1..4 and CTRL-6..8</name>
+        <name>Ctrl-1..4 and Ctrl-6..8</name>
         <desc>Select pylon</desc>
     </key>
 	<key>
@@ -89,16 +89,16 @@
         <name>M</name>
         <desc>Toggle nose wheel steering</desc>
     </key>
-	<key>
-        <name>Y</name>
-        <desc>Landing HUD mode on/off</desc>
-    </key>
-	<key>
+    <key>
         <name>y</name>
-        <desc>TILS on/off</desc>
+        <desc>Toggle cursor/flight control</desc>
+    </key>
+	  <key>
+        <name>Y</name>
+        <desc>Landing mode LS</desc>
     </key>
     <key>
-        <name>CTRL-y</name>
+        <name>Ctrl-y</name>
         <desc>Ask tower for QFE setting.</desc>
     </key>
     <key>
@@ -107,19 +107,19 @@
     </key>
     <key>
         <name>f</name>
-        <desc>Set autopilot to follow current selection</desc>
+        <desc>Toggle radar steer order on current selection</desc>
     </key>
-    <key>
+    <!--<key>
         <name>F</name>
         <desc>Set autopilot to stop follow</desc>
-    </key>
+    </key>-->
     <key>
         <name>S</name>
         <desc>Cycle smoke. Off, Yellow or Blue</desc>
     </key>
     <key>
         <name>i</name>
-        <desc>Toggle HUD to show type or callsign on radar tracks</desc>
+        <desc>Toggle MI to show type or callsign for radar selection</desc>
     </key>
     <key>
         <name>n</name>
@@ -130,7 +130,7 @@
         <desc>Select radar track center most in HUD</desc>
     </key>
     <key>
-        <name>ctrl n</name>
+        <name>Ctrl-n</name>
         <desc>Target next route-manager waypoint</desc>
     </key>
     <!--<key>
@@ -142,37 +142,34 @@
         <desc>Reset view</desc>
     </key>
     <key>
-        <name>CTRL-q</name>
+        <name>Ctrl-q</name>
         <desc>View displays</desc>
     </key>
     <key>
-        <name>CTRL Left/Right</name>
+        <name>Ctrl-Shift-q</name>
+        <desc>View HUD</desc>
+    </key>
+    <key>
+        <name>Ctrl-Left/Right</name>
         <desc>Yaw trim or A/P heading/roll adjust</desc>
     </key>
     <key>
-        <name>CTRL Up/Down</name>
+        <name>Ctrl-Up/Down</name>
         <desc>A/T speed adjust</desc>
     </key>
     <key>
-        <name>Shift PageUp</name>
+        <name>Shift-PageUp</name>
         <desc>Adjust seat up</desc>
     </key>
     <key>
-        <name>Shift PageDown</name>
+        <name>Shift-PageDown</name>
         <desc>Adjust seat down</desc>
     </key>
-    <!--<key>  as the real Viggen does not have carrier capacity, these functions are not officially documented. It works though.
-      <name>L</name>
-      <desc>Carrier launch-bar engage (hold for 10 seconds)</desc>
-     </key>
-     <key>
-      <name>C</name>
-      <desc>Carrier catapult launch</desc>
-     </key>
-     <key>
-      <name>l</name>
-      <desc>Toggle arrester hook</desc>
-     </key>
+    <key>
+        <name>F6</name>
+        <desc>Eject</desc>
+    </key>
+    <!--
      <key>
       <name>Shift-backspace</name>
       <desc>Reload A/P</desc>
@@ -307,8 +304,8 @@
       & - mhz / khz
       + - volume up
       = - volume down
-      CTRL-. - next waypoint
-      CTRL-, - previous waypoint
+      Ctrl-. - next waypoint
+      Ctrl-, - previous waypoint
       \ - DME
 
       Trivia

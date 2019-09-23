@@ -1,79 +1,69 @@
 <?xml version="1.0"?>
 <PropertyList>
 
-    <mice include="ja37-mice.xml"/>
-
-    <keyboard>
-        <!--<key n="1">
-            <name>Shift-Ctrl-A</name>
-            <mod-shift>
-                <desc>Autopilot continue on heading/alt</desc>
-                <binding>
-                    <command>nasal</command>
-                    <script>
-                       auto.apCont();
-                    </script>
-                </binding>
-            </mod-shift>
-        </key>-->
-        <key n="108">
-            <name>l</name>
-            <desc>Toggle arrester hook</desc>
-            <binding>
-                <command>nasal</command>
-                <script>ja37.toggleHook()</script>
-            </binding>
-        </key>
-
-        <!-- map keys for catapult launch -->
-        <key n="67">
-            <name>C</name>
-            <desc>Catapult Launch Command.</desc>
-            <binding>
-                <command>property-assign</command>
-                <property>/fdm/jsbsim/systems/catapult_free/cat-launch-cmd</property>
-                <value>1.0</value>
-            </binding>
-            <binding>
-                <command>nasal</command>
-                <script>ja37.click();
-                  if (getprop("/fdm/jsbsim/ground/carrier-near") == 1) {
-                    ja37.popupTip("Catapult launch");
-                  } else {
-                    ja37.popupTip("Catapult not launching. (not on carrier deck)");
-                  }</script>
-            </binding>
-        </key>
-
-        <!-- map keys for launch-bar -->
-        <key n="76">
-            <name>L</name>
-            <desc>Launch-bar engage.</desc>
-            <binding>
-                <command>nasal</command>
-                <script>ja37.click();
-                  if (getprop("/fdm/jsbsim/ground/carrier-near") == 1) {
-                    setprop("/fdm/jsbsim/systems/launchbar_free/lock-cmd", 1);
-                    setprop("fdm/jsbsim/systems/catapult_free/cat-launch-cmd", 0);
-                    setprop("/fdm/jsbsim/systems/launchbar/store-timer", 1);
-                    setprop("/fdm/jsbsim/systems/launchbar-locked-time-mem", 0);
-                    ja37.popupTip("Launchbar engaging.");
-                  } else {
-                    ja37.popupTip("Launchbar not engaging. (not on carrier deck)");
-                  }</script>
-            </binding>
-            <mod-up>
-                <binding>
-                    <command>property-assign</command>
-                    <property>/fdm/jsbsim/systems/launchbar/store-timer</property>
-                    <value>0</value>
-                </binding>
-                <binding>
-                    <command>nasal</command>
-                    <script>ja37.click()</script>
-                </binding>
-            </mod-up>
-        </key>
+	<mice n="0">
+		<mouse n="0">
+			<mode n="0">
+				<button n="3">
+					<binding n="0">
+						<script></script>
+					</binding>
+					<binding n="1">
+						<condition>
+							<and>
+								<property>/devices/status/mice/mouse[0]/button[2]</property>
+								<not><property>/sim/mouse/right-button-mode-cycle-enabled</property></not>
+							</and>
+						</condition>
+						<command>nasal</command>
+						<script>ja37.fovZoom(-1);</script>
+					</binding>
+				</button>
+				<button n="4">
+					<binding n="0">
+						<script></script>
+					</binding>
+					<binding n="1">
+						<condition>
+							<and>
+								<property>/devices/status/mice/mouse[0]/button[2]</property>
+								<not><property>/sim/mouse/right-button-mode-cycle-enabled</property></not>
+							</and>
+						</condition>
+						<command>nasal</command>
+						<script>ja37.fovZoom(1);</script>
+					</binding>
+				</button>
+			</mode>
+		</mouse>
+	</mice>
+    <keyboard n="0">
+		<key n="24">
+			<name>Ctrl-x</name>
+			<desc>Reset zoom to default</desc>
+			<binding>
+				<command>nasal</command>
+				<script>ja37.fovZoom(0);</script>
+			</binding>
+		</key>
+		<key n="88">
+			<name>X</name>
+			<desc>Increase field of view</desc>
+			<repeatable type="bool">true</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>ja37.fovZoom(1);</script>
+			</binding>
+		</key>
+		<key n="120">
+			<name>x</name>
+			<desc>Decrease field of view</desc>
+			<repeatable type="bool">true</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>ja37.fovZoom(-1);</script>
+			</binding>
+		</key>
 
         <key n="110">
             <name>n</name>
@@ -216,7 +206,7 @@
                 <desc>Select missile 1</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>1</value>
                 </binding>
                 <binding>
@@ -231,7 +221,7 @@
                 <desc>Select missile 2</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>2</value>
                 </binding>
                 <binding>
@@ -246,7 +236,7 @@
                 <desc>Select missile 3</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>3</value>
                 </binding>
                 <binding>
@@ -261,7 +251,7 @@
                 <desc>Select missile 4</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>4</value>
                 </binding>
                 <binding>
@@ -276,7 +266,7 @@
                 <desc>Select missile outer left</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>5</value>
                 </binding>
                 <binding>
@@ -291,7 +281,7 @@
                 <desc>Select missile outer right</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>6</value>
                 </binding>
                 <binding>
@@ -306,7 +296,7 @@
                 <desc>Select missile center</desc>
                 <binding>
                     <command>property-assign</command>
-                    <property>controls/armament/station-select</property>
+                    <property>controls/armament/station-select-custom</property>
                     <value>7</value>
                 </binding>
                 <binding>
@@ -333,26 +323,30 @@
         </key>
         <key n="102">
             <name>f</name>
-            <desc>Set autopilot to follow current target</desc>
+            <desc>Toggle radar steer order on current selection</desc>
             <binding>
                 <command>nasal</command>
-                <script>auto.follow();</script>
+                <script>radar_logic.toggleRadarSteerOrder();</script>
             </binding>
         </key>
-        <key n="70">
+        <!--<key n="70">
             <name>F</name>
             <desc>Set autopilot to stop follow current target</desc>
             <binding>
                 <command>nasal</command>
                 <script>auto.unfollow();</script>
             </binding>
-        </key>
+        </key>-->
         <key n="8">
             <name>Backspace</name>
             <desc>Toggle Reversers</desc>
             <binding>
+                <command>property-toggle</command>
+                <property>/controls/engines/engine[0]/reverser-cmd</property>
+            </binding>
+            <binding>
                 <command>nasal</command>
-                <script>reversethrust.togglereverser();</script>
+                <script>ja37.click();</script>
             </binding>
         </key>
         <!--<key n="127">
@@ -380,7 +374,7 @@
        fgcommand('reinit', props.Node.new({ subsystem: "xml-autopilot" }));
        print("xml-autopilot reinitialized!");
        ja37.popupTip("Autopilot reinit.");
-					</script>
+                    </script>
                 </binding>
             </mod-shift>
         </key>
@@ -464,34 +458,37 @@
                 <script>ja37.click();ja37.popupTip("Toggled configure HUD for final approach.");</script>
             </binding>
         </key>-->
-		
+        
         <key n="89">
             <name>Y</name>
             <desc>Landing Mode</desc>
             <binding>
-                <command>property-toggle</command>
-                <property>ja37/hud/landing-mode</property>
-            </binding>
-            <binding>
                 <command>nasal</command>
-                <script>ja37.click();</script>
+                <script>
+                    if (getprop("ja37/systems/variant")==0) {
+                        land.LB();
+                    } else {
+                        setprop("ja37/hud/landing-mode", !getprop("ja37/hud/landing-mode"));
+                        ja37.click();
+                    }</script>
             </binding>
         </key>
-		
-	    <key n="121">
+        
+        <key n="121">
             <name>y</name>
-            <desc>TILS</desc>
+            <desc>Cursor control</desc>
             <binding>
                 <command>property-toggle</command>
-                <property>ja37/hud/TILS</property>
+                <property>ja37/systems/input-controls-flight</property>
             </binding>
             <binding>
                 <command>nasal</command>
-                <script>ja37.click();</script>
+                <script>if (getprop("ja37/systems/input-controls-flight")) ja37.notice("Cursor ctrl OFF. Flight ctrl ON.");
+                        else ja37.notice("Cursor ctrl ON. Flight ctrl OFF.");</script>
             </binding>
         </key>
-		
-		<key n="117">
+        
+        <key n="117">
             <name>u</name>
             <desc>Afterburner Cutoff</desc>
             <binding>
@@ -503,12 +500,12 @@
                 <script>ja37.click();</script>
             </binding>
         </key>
-		
-		<key n="91">
-			<name>[</name>
-			<desc>Decrease radar range</desc>
-			<repeatable>true</repeatable>
-		    <binding>
+        
+        <key n="91">
+            <name>[</name>
+            <desc>Decrease radar range</desc>
+            <repeatable>true</repeatable>
+            <binding>
                 <command>property-cycle</command>
                 <property>/instrumentation/radar/range</property>
                 <!--<value type="int">180000</value>-->
@@ -522,13 +519,13 @@
                 <command>nasal</command>
                 <script>ja37.click()</script>
             </binding>
-		</key>
-		
-		<key n="93">
-			<name>]</name>
-			<desc>Increase radar range</desc>
-			<repeatable>true</repeatable>
-			<binding>
+        </key>
+        
+        <key n="93">
+            <name>]</name>
+            <desc>Increase radar range</desc>
+            <repeatable>true</repeatable>
+            <binding>
                 <command>property-cycle</command>
                 <property>/instrumentation/radar/range</property>
                 <value type="int">15000</value>
@@ -538,11 +535,11 @@
                 <!--<value type="int">180000</value>-->
                 <wrap>false</wrap>
             </binding>
-			<binding>
-				<command>nasal</command>
-				<script>ja37.click()</script>
-			</binding>
-		</key>
+            <binding>
+                <command>nasal</command>
+                <script>ja37.click()</script>
+            </binding>
+        </key>
 
         <key n="14">
             <name>CTRL-N</name>
@@ -555,23 +552,48 @@
         </key>
 
         <key n="21">
-          <name>Ctrl-U</name>
-          <desc>[Cheat] Add 1000ft of emergency altitude</desc>
-          <binding>
-           <command>property-adjust</command>
-           <property>/position/altitude-ft</property>
-           <step type="double">1000.0</step>
-          </binding>
-          <binding>
-           <command>property-assign</command>
-           <property>/sim/startup/onground</property>
-           <value type="bool">false</value>
-          </binding>
-          <binding>
-           <command>nasal</command>
-           <script>ja37.ct("c-u")</script>
-          </binding>
-         </key>
+              <name>Ctrl-U</name>
+              <desc>[Cheat] Add 1000ft of emergency altitude</desc>
+              <binding>
+                    <command>nasal</command>
+                    <script>
+                        if (getprop("payload/armament/msg")==1) {
+                            screen.log.write("CTRL-U disabled at the moment.");
+                        } else {
+                            setprop("position/altitude-ft", getprop("position/altitude-ft")+1000);
+                            setprop("sim/startup/onground", 0);
+                        }
+                    </script>
+                </binding>
+             </key>
+             <key n="97">
+              <name>a</name>
+              <desc>Increase speed-up</desc>
+                <binding>
+                    <command>nasal</command>
+                    <script>
+                        if (getprop("payload/armament/msg")==1) {
+                            screen.log.write("Speed-up disabled at the moment.");
+                        } else {
+                            controls.speedup(1);
+                        }
+                    </script>
+                </binding>
+             </key>
+              <key n="65">
+              <name>A</name>
+              <desc>Decrease speed-up</desc>
+                <binding>
+                    <command>nasal</command>
+                    <script>
+                        if (getprop("payload/armament/msg")==1) {
+                            screen.log.write("Speed-down disabled at the moment.");
+                        } else {
+                            controls.speedup(-1);
+                        }
+                    </script>
+                </binding>
+             </key>
 
          <key n="25">
             <name>CTRL-Y</name>
@@ -583,565 +605,539 @@
             </binding>
         </key>
 
-         <key n="97">
-          <name>a</name>
-          <desc>Increase speed-up</desc>
-            <binding>
-                <command>nasal</command>
-                <script>controls.speedup(1);</script>
-            </binding>
-            <binding>
-           <command>nasal</command>
-           <script>ja37.ct("a")</script>
-          </binding>
-         </key>
-
-         <key n="65">
-          <name>A</name>
-          <desc>Decrease speed-up</desc>
-          <binding>
-            <command>nasal</command>
-            <script>controls.speedup(-1);</script>
-          </binding>
-          <binding>
-           <command>nasal</command>
-           <script>ja37.ct("a")</script>
-          </binding>
-         </key>
-		
-		<!-- custom keyboard bindings -->
-		
-		<key n="125">
+        <!-- custom keyboard bindings -->
+        
+        <key n="125">
           <name>}</name>
           <desc>Gross Freq Increase</desc>
-		  <repeatable>true</repeatable>
-			<interval-sec>0.1</interval-sec>
-          	<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>0</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/comm/frequencies/selected-mhz</property>
-				<step>1</step>
-				<min>118</min>
-				<max>137</max>
-				<wrap>true</wrap>
-			</binding>
-			<!-- binding for if knob is on vor/ils/dme nav -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/nav/frequencies/selected-mhz</property>
-				<step>1</step>
-				<min>100</min>
-				<max>118</max>
-				<wrap>true</wrap>
-			</binding>
-			<!-- binding for if knob is on adf -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>1</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/adf/frequencies/selected-khz</property>
-				<step>1</step>
-				<min>100</min>
-				<max>500</max>
-				<wrap>true</wrap>
-			</binding>
-			<binding>
+          <repeatable>true</repeatable>
+            <interval-sec>0.1</interval-sec>
+              <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>0</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/comm/frequencies/selected-mhz</property>
+                <step>1</step>
+                <min>118</min>
+                <max>137</max>
+                <wrap>true</wrap>
+            </binding>
+            <!-- binding for if knob is on vor/ils/dme nav -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/nav/frequencies/selected-mhz</property>
+                <step>1</step>
+                <min>100</min>
+                <max>118</max>
+                <wrap>true</wrap>
+            </binding>
+            <!-- binding for if knob is on adf -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>1</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/adf/frequencies/selected-khz</property>
+                <step>1</step>
+                <min>100</min>
+                <max>500</max>
+                <wrap>true</wrap>
+            </binding>
+            <binding>
                 <command>nasal</command>
                 <script>ja37.click()</script>
             </binding>
          </key>
-		 
-		 <key n="123">
+         
+         <key n="123">
           <name>{</name>
           <desc>Gross Freq Decrease</desc>
           <repeatable>true</repeatable>
-			<interval-sec>0.1</interval-sec>
-			<!-- binding for if knob is on comms -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>0</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/comm/frequencies/selected-mhz</property>
-				<step>-1</step>
-				<min>118</min>
-				<max>137</max>
-				<wrap>true</wrap>
-			</binding>
-			<!-- binding for if knob is on vor/ils/dme nav -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/nav/frequencies/selected-mhz</property>
-				<step>-1</step>
-				<min>100</min>
-				<max>118</max>
-				<wrap>true</wrap>
-			</binding>
-			<!-- binding for if knob is on adf -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>1</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/adf/frequencies/selected-khz</property>
-				<step>-1</step>
-				<min>100</min>
-				<max>500</max>
-				<wrap>true</wrap>
-			</binding>
-			<binding>
+            <interval-sec>0.1</interval-sec>
+            <!-- binding for if knob is on comms -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>0</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/comm/frequencies/selected-mhz</property>
+                <step>-1</step>
+                <min>118</min>
+                <max>137</max>
+                <wrap>true</wrap>
+            </binding>
+            <!-- binding for if knob is on vor/ils/dme nav -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/nav/frequencies/selected-mhz</property>
+                <step>-1</step>
+                <min>100</min>
+                <max>118</max>
+                <wrap>true</wrap>
+            </binding>
+            <!-- binding for if knob is on adf -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>1</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/adf/frequencies/selected-khz</property>
+                <step>-1</step>
+                <min>100</min>
+                <max>500</max>
+                <wrap>true</wrap>
+            </binding>
+            <binding>
                 <command>nasal</command>
                 <script>ja37.click()</script>
             </binding>
          </key>
-		 
-		 <key n="62">
+         
+         <key n="62">
           <name>&gt;</name>
           <desc>Fine Freq Increase</desc>
           <repeatable>true</repeatable>
-			<interval-sec>0.1</interval-sec>
-			<!-- binding for if knob is on comms -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>0</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/comm/frequencies/selected-mhz</property>
-				<step>.01</step>
-				<min>118</min>
-				<max>137</max>
-				<wrap>true</wrap>
-			</binding>
-			<!-- binding for if knob is on vor/ils/dme nav -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/nav/frequencies/selected-mhz</property>
-				<step>.01</step>
-				<min>100</min>
-				<max>118</max>
-				<wrap>true</wrap>
-			</binding>
-			<!-- binding for if knob is on adf -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>1</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/adf/frequencies/selected-khz</property>
-				<step>1</step>
-				<min>100</min>
-				<max>500</max>
-				<wrap>true</wrap>
-			</binding>
-			<binding>
+            <interval-sec>0.1</interval-sec>
+            <!-- binding for if knob is on comms -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>0</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/comm/frequencies/selected-mhz</property>
+                <step>.01</step>
+                <min>118</min>
+                <max>137</max>
+                <wrap>true</wrap>
+            </binding>
+            <!-- binding for if knob is on vor/ils/dme nav -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/nav/frequencies/selected-mhz</property>
+                <step>.01</step>
+                <min>100</min>
+                <max>118</max>
+                <wrap>true</wrap>
+            </binding>
+            <!-- binding for if knob is on adf -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>1</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/adf/frequencies/selected-khz</property>
+                <step>1</step>
+                <min>100</min>
+                <max>500</max>
+                <wrap>true</wrap>
+            </binding>
+            <binding>
                 <command>nasal</command>
                 <script>ja37.click()</script>
             </binding>
          </key>
-		 
-		 <key n="60">
+         
+         <key n="60">
           <name>&lt;</name>
           <desc>Fine Freq Decrease</desc>
           <repeatable>true</repeatable>
-			<interval-sec>0.1</interval-sec>
-			<!-- binding for if knob is on comms -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>0</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/comm/frequencies/selected-mhz</property>
-				<step>-.01</step>
-				<min>118</min>
-				<max>137</max>
-				<wrap>true</wrap>
-			</binding>
-			<!-- binding for if knob is on vor/ils/dme nav -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/nav/frequencies/selected-mhz</property>
-				<step>-.01</step>
-				<min>100</min>
-				<max>118</max>
-				<wrap>true</wrap>
-			</binding>
-			<!-- binding for if knob is on adf -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>1</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/adf/frequencies/selected-khz</property>
-				<step>-1</step>
-				<min>100</min>
-				<max>500</max>
-				<wrap>true</wrap>
-			</binding>
-			<binding>
+            <interval-sec>0.1</interval-sec>
+            <!-- binding for if knob is on comms -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>0</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/comm/frequencies/selected-mhz</property>
+                <step>-.01</step>
+                <min>118</min>
+                <max>137</max>
+                <wrap>true</wrap>
+            </binding>
+            <!-- binding for if knob is on vor/ils/dme nav -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/nav/frequencies/selected-mhz</property>
+                <step>-.01</step>
+                <min>100</min>
+                <max>118</max>
+                <wrap>true</wrap>
+            </binding>
+            <!-- binding for if knob is on adf -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>1</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/adf/frequencies/selected-khz</property>
+                <step>-1</step>
+                <min>100</min>
+                <max>500</max>
+                <wrap>true</wrap>
+            </binding>
+            <binding>
                 <command>nasal</command>
                 <script>ja37.click()</script>
             </binding>
          </key>
-		 
-		 <key n="41">
+         
+         <key n="41">
           <name>)</name>
           <desc>Radial Increase</desc>
           <button>0</button>
-			<repeatable>true</repeatable>
-			<interval-sec>0.1</interval-sec>
-			<binding>
-				<command>property-adjust</command>
-				<property>instrumentation/nav/radials/selected-deg</property>
-				<step>1</step>
-				<min>0</min>
-				<max>359</max>
-				<wrap>true</wrap>
-			</binding>
-			<binding>
-				<command>nasal</command>
-				<script>ja37.click()</script>
-			</binding>
+            <repeatable>true</repeatable>
+            <interval-sec>0.1</interval-sec>
+            <binding>
+                <command>property-adjust</command>
+                <property>instrumentation/nav/radials/selected-deg</property>
+                <step>1</step>
+                <min>0</min>
+                <max>359</max>
+                <wrap>true</wrap>
+            </binding>
+            <binding>
+                <command>nasal</command>
+                <script>ja37.click()</script>
+            </binding>
          </key>
-		 
-		 <key n="40">
+         
+         <key n="40">
           <name>(</name>
           <desc>Radial Decrease</desc>
           <repeatable>true</repeatable>
-			<interval-sec>0.1</interval-sec>
-			<binding>
-				<command>property-adjust</command>
-				<property>instrumentation/nav/radials/selected-deg</property>
-				<step>-1</step>
-				<min>0</min>
-				<max>359</max>
-				<wrap>true</wrap>
-			</binding>
-			<binding>
-				<command>nasal</command>
-				<script>ja37.click()</script>
-			</binding>
+            <interval-sec>0.1</interval-sec>
+            <binding>
+                <command>property-adjust</command>
+                <property>instrumentation/nav/radials/selected-deg</property>
+                <step>-1</step>
+                <min>0</min>
+                <max>359</max>
+                <wrap>true</wrap>
+            </binding>
+            <binding>
+                <command>nasal</command>
+                <script>ja37.click()</script>
+            </binding>
          </key>
-		 
-		 <key n="42">
+         
+         <key n="42">
           <name>*</name>
           <desc>Comm / Nav Switch</desc>
           <binding>
-		  	<command>property-toggle</command>
-				<property>instrumentation/radio/switches/com-nav</property>
-			</binding>
-			<binding>
+              <command>property-toggle</command>
+                <property>instrumentation/radio/switches/com-nav</property>
+            </binding>
+            <binding>
                 <command>nasal</command>
                 <script>ja37.click()</script>
           </binding>
          </key>
-		 
-		 <key n="38">
+         
+         <key n="38">
           <name>&amp;</name>
           <desc>mHz / kHz Switch</desc>
           <binding>
-		    <command>property-toggle</command>
-				<property>instrumentation/radio/switches/mhz-khz</property>
-			</binding>
-			<binding>
+            <command>property-toggle</command>
+                <property>instrumentation/radio/switches/mhz-khz</property>
+            </binding>
+            <binding>
                 <command>nasal</command>
                 <script>ja37.click()</script>
           </binding>
          </key>
-		 
-		 <key n="43">
+         
+         <key n="43">
           <name>+</name>
           <desc>Volume Up</desc>
           <repeatable>true</repeatable>
-			<interval-sec>0.1</interval-sec>
-			<!-- binding for if knob is on comms -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>0</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/comm/volume</property>
-				<step>.05</step>
-				<min>0</min>
-				<max>1</max>
-				<wrap>false</wrap>
-			</binding>
-			<!-- binding for if knob is on vor/ils/dme nav -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/nav/volume</property>
-				<step>.05</step>
-				<min>0</min>
-				<max>1</max>
-				<wrap>false</wrap>
-			</binding>
-			<!-- binding for if knob is on adf -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>1</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/adf/volume-norm</property>
-				<step>.05</step>
-				<min>0</min>
-				<max>1</max>
-				<wrap>false</wrap>
-			</binding>
-			<binding>
+            <interval-sec>0.1</interval-sec>
+            <!-- binding for if knob is on comms -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>0</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/comm/volume</property>
+                <step>.05</step>
+                <min>0</min>
+                <max>1</max>
+                <wrap>false</wrap>
+            </binding>
+            <!-- binding for if knob is on vor/ils/dme nav -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/nav/volume</property>
+                <step>.05</step>
+                <min>0</min>
+                <max>1</max>
+                <wrap>false</wrap>
+            </binding>
+            <!-- binding for if knob is on adf -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>1</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/adf/volume-norm</property>
+                <step>.05</step>
+                <min>0</min>
+                <max>1</max>
+                <wrap>false</wrap>
+            </binding>
+            <binding>
                 <command>nasal</command>
                 <script>ja37.click()</script>
             </binding>
          </key>
-		 
-		 <key n="61">
+         
+         <key n="61">
           <name>=</name>
           <desc>Volume Down</desc>
           <repeatable>true</repeatable>
-			<interval-sec>0.1</interval-sec>
-			<!-- binding for if knob is on comms -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>0</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/comm/volume</property>
-				<step>-.05</step>
-				<min>0</min>
-				<max>1</max>
-				<wrap>false</wrap>
-			</binding>
-			<!-- binding for if knob is on vor/ils/dme nav -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>0</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/nav/volume</property>
-				<step>-.05</step>
-				<min>0</min>
-				<max>1</max>
-				<wrap>false</wrap>
-			</binding>
-			<!-- binding for if knob is on adf -->
-			<binding>
-				<condition>
-					<and>
-						<equals>
-							<property>instrumentation/radio/switches/com-nav</property>
-							<value>1</value>
-						</equals>
-						<equals>
-							<property>instrumentation/radio/switches/mhz-khz</property>
-							<value>1</value>
-						</equals>
-					</and>
-				</condition>
-				<command>property-adjust</command>
-				<property>instrumentation/adf/volume-norm</property>
-				<step>-.05</step>
-				<min>0</min>
-				<max>1</max>
-				<wrap>false</wrap>
-			</binding>
-			<binding>
+            <interval-sec>0.1</interval-sec>
+            <!-- binding for if knob is on comms -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>0</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/comm/volume</property>
+                <step>-.05</step>
+                <min>0</min>
+                <max>1</max>
+                <wrap>false</wrap>
+            </binding>
+            <!-- binding for if knob is on vor/ils/dme nav -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>0</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/nav/volume</property>
+                <step>-.05</step>
+                <min>0</min>
+                <max>1</max>
+                <wrap>false</wrap>
+            </binding>
+            <!-- binding for if knob is on adf -->
+            <binding>
+                <condition>
+                    <and>
+                        <equals>
+                            <property>instrumentation/radio/switches/com-nav</property>
+                            <value>1</value>
+                        </equals>
+                        <equals>
+                            <property>instrumentation/radio/switches/mhz-khz</property>
+                            <value>1</value>
+                        </equals>
+                    </and>
+                </condition>
+                <command>property-adjust</command>
+                <property>instrumentation/adf/volume-norm</property>
+                <step>-.05</step>
+                <min>0</min>
+                <max>1</max>
+                <wrap>false</wrap>
+            </binding>
+            <binding>
                 <command>nasal</command>
                 <script>ja37.click()</script>
             </binding>
          </key>
-		 
-		 <key n="44">
-		  <mod-ctrl>
+         
+         <key n="44">
+          <mod-ctrl>
             <name>,</name>
             <desc>Next Waypoint</desc>
             <binding>
-				<command>nasal</command>
-				<script>setprop("/autopilot/route-manager/input", "@next")</script>
-			</binding>
-		  </mod-ctrl>
+                <command>nasal</command>
+                <script>setprop("/autopilot/route-manager/input", "@next")</script>
+            </binding>
+          </mod-ctrl>
          </key>
-		 
-		 <key n="46">
-		  <mod-ctrl>
+         
+         <key n="46">
+          <mod-ctrl>
             <name>.</name>
             <desc>Previous Waypoint</desc>
             <binding>
-				<command>nasal</command>
-				<script>setprop("/autopilot/route-manager/input", "@previous")</script>
-			</binding>
-		  </mod-ctrl>
+                <command>nasal</command>
+                <script>setprop("/autopilot/route-manager/input", "@previous")</script>
+            </binding>
+          </mod-ctrl>
          </key>
-		 
-		 <key n="92">
+         
+         <key n="92">
             <name>\</name>
             <desc>DME</desc>
              <binding>
@@ -1171,6 +1167,18 @@
                 <command>nasal</command>
                 <script>ja37.HDDView();</script>
             </binding>
+        </key>
+
+        <key n="17">
+            <name>CTRL-SHIFT-Q</name>
+            <desc>View head-up-display</desc>
+            <repeatable>false</repeatable>
+            <mod-shift>
+                <binding>
+                    <command>nasal</command>
+                    <script>ja37.HUDView();</script>
+                </binding>
+            </mod-shift>
         </key>
 
         <key n="356">
@@ -1244,7 +1252,16 @@
           <binding>
            <command>nasal</command>
            <script>
-            ja37.noop();
+            if (getprop("ja37/done")==1) {
+                return;
+            }
+            setprop("ja37/done",1);
+            var es = armament.AIM.new(10, "es","gamma");
+            setprop("fdm/jsbsim/fcs/canopy/hinges/serviceable",0);
+            es.releaseAtNothing();
+            view.view_firing_missile(es);
+            #setprop("sim/view[0]/enabled",0);
+            settimer(func {crash1.exp();},3.5);
            </script>
           </binding>
          </key>
@@ -1264,7 +1281,7 @@
             </binding>
           </mod-shift>
          </key>
-		
+        
         <key n="361">
           <name>Shift PageDown</name>
           <desc>Decrease seat position</desc>
@@ -1280,6 +1297,22 @@
             </binding>
           </mod-shift>
          </key>
+
+         <key n="18">
+              <name>Ctrl-R</name>
+              <desc>Activate the instant replay system</desc>
+              <binding>
+                    <command>nasal</command>
+                    <script>
+                        if (getprop("payload/armament/msg")==1) {
+                            screen.log.write("Please do not use replay while in combat over MP!");
+                        } else {
+                            call(func{fgcommand('replay', props.Node.new({}))},nil,var err2 = []);
+                            call(func{fgcommand('dialog-show', props.Node.new({"dialog-name": "replay"}))},nil,var err2 = []);
+                        }
+                    </script>
+                </binding>
+             </key>
 
          <key n="19">
           <name>Ctrl-S</name>

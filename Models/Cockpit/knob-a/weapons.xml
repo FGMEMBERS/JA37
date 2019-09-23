@@ -26,45 +26,11 @@
     </animation>
 
     <animation>
-        <type>pick</type>
-        <object-name>A2_pickDecrement</object-name>
-        <action>
-            <button>0</button>
-            <repeatable>true</repeatable>
-            <binding>
-                <command>property-adjust</command>
-                <property>controls/armament/station-select</property>
-                <step>-1</step>
-                <min>0</min>
-                <max>6</max>
-                <wrap>false</wrap>
-            </binding>
-        </action>
-    </animation>
-
-    <animation>
-        <type>pick</type>
-        <object-name>A2_pickIncrement</object-name>
-        <action>
-            <button>0</button>
-            <repeatable>true</repeatable>
-            <binding>
-                <command>property-adjust</command>
-                <property>controls/armament/station-select</property>
-                <step>1</step>
-                <min>0</min>
-                <max>6</max>
-                <wrap>false</wrap>
-            </binding>
-        </action>
-    </animation>
-
-    <animation>
-        <type>rotate</type>
+        <type>knob</type>
         <object-name>A2_disc_UV_mapped_WEAPONS</object-name>
         <object-name>A2_handle</object-name>  
         <object-name>A2_screw</object-name>
-        <property>controls/armament/station-select</property>
+        <property>controls/armament/station-select-custom</property>
         <interpolation>
             <entry><ind>0</ind><dep>-85.7</dep></entry>
             <entry><ind>1</ind><dep>0</dep></entry>
@@ -84,6 +50,28 @@
             <y> 0.0 </y>
             <z> -1.0 </z>
         </axis>
+        <increase>
+            <binding>
+                <command>property-adjust</command>
+                <property>controls/armament/station-select-custom</property>
+                <factor>1</factor>
+                <step>1.00</step>
+                <min>-1</min>
+                <max>6</max>             
+                <wrap>false</wrap>
+           </binding>
+        </increase>
+        <decrease>
+            <binding>
+                <command>property-adjust</command>
+                <property>controls/armament/station-select-custom</property>
+                <factor>1</factor>
+                <step>-1.00</step>
+                <min>-1</min>
+                <max>6</max>              
+                <wrap>false</wrap>
+            </binding>
+        </decrease>
     </animation>
 
     <animation>

@@ -1,0 +1,260 @@
+<?xml version="1.0"?>
+
+<PropertyList>
+
+    <path>p152.ac</path>
+
+    <effect>
+        <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-shader</inherits-from>
+        <object-name>knob1</object-name>
+        <object-name>knob2</object-name>
+        <object-name>knob3</object-name>
+        <object-name>knob4</object-name>
+        <object-name>knob5</object-name>
+        <object-name>panel</object-name>
+        <object-name>button</object-name>
+    </effect>
+
+    <animation>
+        <type>pick</type>
+        <object-name>panel</object-name>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>p152</tooltip-id>
+                <label>P152 Electronic warfare panel</label>
+            </binding>
+        </hovered>
+    </animation>
+
+    <animation>
+        <type>knob</type>
+        <object-name>knob1</object-name>
+        <property>ja37/p152/knob-1</property>
+        <factor>360</factor>
+        <offset-deg>0</offset-deg>
+        <center>
+            <x-m>  0.02087 </x-m>
+            <y-m>  -0.03931 </y-m>
+            <z-m>  0 </z-m>
+        </center>
+        <axis>
+            <x>0</x>
+            <y>0</y>
+            <z>-1</z>
+        </axis>        
+        <increase>
+            <binding>
+                <command>property-adjust</command>
+                <property>ja37/p152/knob-1</property>
+                <factor>1</factor>
+                <step>0.05</step>
+                <min>0</min>
+                <max>1</max>                
+                <wrap>false</wrap>
+           </binding>
+        </increase>
+        <decrease>
+            <binding>
+                <command>property-adjust</command>
+                <property>ja37/p152/knob-1</property>
+                <factor>1</factor>
+                <step>-0.05</step>
+                <min>0</min>
+                <max>1</max>                
+                <wrap>false</wrap>
+            </binding>
+        </decrease>
+    </animation>
+
+    <animation>
+        <type>knob</type>
+        <object-name>knob2</object-name>
+        <property>ja37/p152/knob-2</property>
+        <factor>-180</factor>
+        <offset-deg>0</offset-deg>
+        <center>
+            <x-m>  0.0207 </x-m>
+            <y-m>  0.04019 </y-m>
+            <z-m>  0 </z-m>
+        </center>
+        <axis>
+            <x>0</x>
+            <y>0</y>
+            <z>-1</z>
+        </axis>        
+        <increase>
+            <binding>
+                <command>property-adjust</command>
+                <property>ja37/p152/knob-2</property>
+                <factor>1</factor>
+                <step>0.05</step>
+                <min>0</min>
+                <max>1</max>                
+                <wrap>false</wrap>
+           </binding>
+        </increase>
+        <decrease>
+            <binding>
+                <command>property-adjust</command>
+                <property>ja37/p152/knob-2</property>
+                <factor>1</factor>
+                <step>-0.05</step>
+                <min>0</min>
+                <max>1</max>                
+                <wrap>false</wrap>
+            </binding>
+        </decrease>
+    </animation>
+
+    <animation>
+        <type>knob</type>
+        <object-name>knob3</object-name>
+        <property>ja37/p152/knob-3</property>
+        <factor>60</factor>
+        <offset-deg>110</offset-deg>
+        <center>
+            <x-m>  0.00781 </x-m>
+            <y-m>  0.00027 </y-m>
+            <z-m>  0 </z-m>
+        </center>
+        <axis>
+            <x>0</x>
+            <y>0</y>
+            <z>-1</z>
+        </axis>        
+        <increase>
+            <binding>
+                <command>property-adjust</command>
+                <property>ja37/p152/knob-3</property>
+                <factor>1</factor>
+                <step>1</step>
+                <min>0</min>
+                <max>6</max>                
+                <wrap>true</wrap>
+           </binding>
+        </increase>
+        <decrease>
+            <binding>
+                <command>property-adjust</command>
+                <property>ja37/p152/knob-3</property>
+                <factor>1</factor>
+                <step>-1</step>
+                <min>0</min>
+                <max>6</max>                
+                <wrap>true</wrap>
+            </binding>
+        </decrease>
+    </animation>
+
+    <animation>
+        <type>knob</type>
+        <object-name>knob4</object-name>
+        <property>ja37/p152/knob-4</property>
+        <factor>90</factor>
+        <offset-deg>0</offset-deg>
+        <center>
+            <x-m>  -0.03642 </x-m>
+            <y-m>  -0.02782 </y-m>
+            <z-m>  0 </z-m>
+        </center>
+        <axis>
+            <x>0</x>
+            <y>0</y>
+            <z>-1</z>
+        </axis>        
+        <increase>
+            <binding>
+                <command>property-adjust</command>
+                <property>ja37/p152/knob-4</property>
+                <factor>1</factor>
+                <step>1</step>
+                <min>0</min>
+                <max>4</max>                
+                <wrap>true</wrap>
+           </binding>
+        </increase>
+        <decrease>
+            <binding>
+                <command>property-adjust</command>
+                <property>ja37/p152/knob-4</property>
+                <factor>1</factor>
+                <step>-1</step>
+                <min>0</min>
+                <max>4</max>                
+                <wrap>true</wrap>
+            </binding>
+        </decrease>
+    </animation>
+
+    <animation>
+        <type>knob</type>
+        <object-name>knob5</object-name>
+        <property>ja37/p152/knob-5</property>
+        <factor>1</factor>
+        <offset-deg>100</offset-deg>
+        <center>
+            <x-m>  -0.03366 </x-m>
+            <y-m>  0.03971 </y-m>
+            <z-m>  0 </z-m>
+        </center>
+        <axis>
+            <x>0</x>
+            <y>0</y>
+            <z>-1</z>
+        </axis>        
+        <increase>
+            <binding>
+                <command>property-cycle</command>
+                <property>ja37/p152/knob-5</property>
+                <value>0</value>
+                <value>60</value>
+                <value>120</value>
+                <wrap>false</wrap>
+           </binding>
+        </increase>
+        <decrease>
+            <binding>
+                <command>property-cycle</command>
+                <property>ja37/p152/knob-5</property>
+                <value>120</value>
+                <value>60</value>
+                <value>0</value>
+                <wrap>false</wrap>
+            </binding>
+        </decrease>
+    </animation>
+
+    <animation>
+        <type>pick</type>
+        <object-name>button</object-name>
+        <action>
+            <button>0</button>
+            <binding>
+                <command>property-toggle</command>
+                <property>/ai/submodels/submodel[0]/flare-release-cmd</property>
+                <value type="bool">true</value>
+            </binding>
+        </action>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>p152-bt</tooltip-id>
+                <label>Release chaff and flare</label>
+            </binding>
+        </hovered>
+    </animation>
+
+    <animation>
+        <type>translate</type>
+        <object-name>button</object-name>
+        <property>/ai/submodels/submodel[0]/flare-release</property>
+        <factor>-0.0015</factor>
+        <axis>
+            <x> 0.0 </x>
+            <y> 0.0 </y>
+            <z> 1.0 </z>
+        </axis>
+    </animation>
+
+</PropertyList>

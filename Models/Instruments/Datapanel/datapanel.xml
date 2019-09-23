@@ -22,12 +22,29 @@
         <object-name>posNegSwitch</object-name>
         <object-name>rensaCoverHardware</object-name>
         <object-name>mount</object-name>
+        <object-name>mountMinor</object-name>
+        <object-name>mountMajor</object-name>
+        <object-name>mountDisplay</object-name>
+        <object-name>reset</object-name>
+        <object-name>posNegBT</object-name>
     </effect>
 	
 	<effect>
         <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-transparent-shader</inherits-from>
 		<object>rensaCover</object>
     </effect>
+
+    <animation>
+        <type>pick</type>
+        <object-name>mount</object-name>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>dp</tooltip-id>
+                <label>Data panel</label>
+            </binding>
+        </hovered>
+    </animation>
 	
 	<!--
 	**********************************
@@ -44,10 +61,37 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(0);</script>
+				<script>dap.keyPress(0);</script>
 			</binding>
+			<binding>
+                <command>property-assign</command>
+                <property>ja37/dap/b0</property>
+                <value>1</value>
+            </binding>
+            <mod-up>
+                <binding>
+                    <command>property-assign</command>
+                    <property>ja37/dap/b0</property>
+                    <value>0</value>
+                </binding>
+            </mod-up>
 		</action>
 	</animation>
+	<animation>
+       <type>translate</type>
+       <object-name>numpad0</object-name>
+       <property>ja37/dap/b0</property>
+       <factor>0.005</factor>
+       <offset-m>0</offset-m>
+       <axis>
+         <z>-1</z>
+       </axis>
+       <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+    </animation>
 
 	<animation>
 		<type>pick</type>
@@ -57,12 +101,39 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(1);</script>
+				<script>dap.keyPress(1);</script>
 			</binding>
+			<binding>
+                <command>property-assign</command>
+                <property>ja37/dap/b1</property>
+                <value>1</value>
+            </binding>
+            <mod-up>
+                <binding>
+                    <command>property-assign</command>
+                    <property>ja37/dap/b1</property>
+                    <value>0</value>
+                </binding>
+            </mod-up>
 		</action>
 	</animation>
-	
 	<animation>
+       <type>translate</type>
+       <object-name>numpad1</object-name>
+       <property>ja37/dap/b1</property>
+       <factor>0.005</factor>
+       <offset-m>0</offset-m>
+       <axis>
+         <z>-1</z>
+       </axis>
+       <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+    </animation>
+
+    <animation>
 		<type>pick</type>
 		<object-name>numpad2</object-name>
 		<action>
@@ -70,12 +141,39 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(2);</script>
+				<script>dap.keyPress(2);</script>
 			</binding>
+			<binding>
+                <command>property-assign</command>
+                <property>ja37/dap/b2</property>
+                <value>1</value>
+            </binding>
+            <mod-up>
+                <binding>
+                    <command>property-assign</command>
+                    <property>ja37/dap/b2</property>
+                    <value>0</value>
+                </binding>
+            </mod-up>
 		</action>
 	</animation>
-	
 	<animation>
+       <type>translate</type>
+       <object-name>numpad2</object-name>
+       <property>ja37/dap/b2</property>
+       <factor>0.005</factor>
+       <offset-m>0</offset-m>
+       <axis>
+         <z>-1</z>
+       </axis>
+       <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+    </animation>
+
+    <animation>
 		<type>pick</type>
 		<object-name>numpad3</object-name>
 		<action>
@@ -83,12 +181,39 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(3);</script>
+				<script>dap.keyPress(3);</script>
 			</binding>
+			<binding>
+                <command>property-assign</command>
+                <property>ja37/dap/b3</property>
+                <value>1</value>
+            </binding>
+            <mod-up>
+                <binding>
+                    <command>property-assign</command>
+                    <property>ja37/dap/b3</property>
+                    <value>0</value>
+                </binding>
+            </mod-up>
 		</action>
 	</animation>
-	
 	<animation>
+       <type>translate</type>
+       <object-name>numpad3</object-name>
+       <property>ja37/dap/b3</property>
+       <factor>0.005</factor>
+       <offset-m>0</offset-m>
+       <axis>
+         <z>-1</z>
+       </axis>
+       <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+    </animation>
+
+    <animation>
 		<type>pick</type>
 		<object-name>numpad4</object-name>
 		<action>
@@ -96,12 +221,39 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(4);</script>
+				<script>dap.keyPress(4);</script>
 			</binding>
+			<binding>
+                <command>property-assign</command>
+                <property>ja37/dap/b4</property>
+                <value>1</value>
+            </binding>
+            <mod-up>
+                <binding>
+                    <command>property-assign</command>
+                    <property>ja37/dap/b4</property>
+                    <value>0</value>
+                </binding>
+            </mod-up>
 		</action>
 	</animation>
-	
 	<animation>
+       <type>translate</type>
+       <object-name>numpad4</object-name>
+       <property>ja37/dap/b4</property>
+       <factor>0.005</factor>
+       <offset-m>0</offset-m>
+       <axis>
+         <z>-1</z>
+       </axis>
+       <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+    </animation>
+
+    <animation>
 		<type>pick</type>
 		<object-name>numpad5</object-name>
 		<action>
@@ -109,12 +261,39 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(5);</script>
+				<script>dap.keyPress(5);</script>
 			</binding>
+			<binding>
+                <command>property-assign</command>
+                <property>ja37/dap/b5</property>
+                <value>1</value>
+            </binding>
+            <mod-up>
+                <binding>
+                    <command>property-assign</command>
+                    <property>ja37/dap/b5</property>
+                    <value>0</value>
+                </binding>
+            </mod-up>
 		</action>
 	</animation>
-	
 	<animation>
+       <type>translate</type>
+       <object-name>numpad5</object-name>
+       <property>ja37/dap/b5</property>
+       <factor>0.005</factor>
+       <offset-m>0</offset-m>
+       <axis>
+         <z>-1</z>
+       </axis>
+       <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+    </animation>
+
+    <animation>
 		<type>pick</type>
 		<object-name>numpad6</object-name>
 		<action>
@@ -122,12 +301,39 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(6);</script>
+				<script>dap.keyPress(6);</script>
 			</binding>
+			<binding>
+                <command>property-assign</command>
+                <property>ja37/dap/b6</property>
+                <value>1</value>
+            </binding>
+            <mod-up>
+                <binding>
+                    <command>property-assign</command>
+                    <property>ja37/dap/b6</property>
+                    <value>0</value>
+                </binding>
+            </mod-up>
 		</action>
 	</animation>
-	
 	<animation>
+       <type>translate</type>
+       <object-name>numpad6</object-name>
+       <property>ja37/dap/b6</property>
+       <factor>0.005</factor>
+       <offset-m>0</offset-m>
+       <axis>
+         <z>-1</z>
+       </axis>
+       <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+    </animation>
+
+    <animation>
 		<type>pick</type>
 		<object-name>numpad7</object-name>
 		<action>
@@ -135,12 +341,39 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(7);</script>
+				<script>dap.keyPress(7);</script>
 			</binding>
+			<binding>
+                <command>property-assign</command>
+                <property>ja37/dap/b7</property>
+                <value>1</value>
+            </binding>
+            <mod-up>
+                <binding>
+                    <command>property-assign</command>
+                    <property>ja37/dap/b7</property>
+                    <value>0</value>
+                </binding>
+            </mod-up>
 		</action>
 	</animation>
-	
 	<animation>
+       <type>translate</type>
+       <object-name>numpad7</object-name>
+       <property>ja37/dap/b7</property>
+       <factor>0.005</factor>
+       <offset-m>0</offset-m>
+       <axis>
+         <z>-1</z>
+       </axis>
+       <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+    </animation>
+
+    <animation>
 		<type>pick</type>
 		<object-name>numpad8</object-name>
 		<action>
@@ -148,12 +381,39 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(8);</script>
+				<script>dap.keyPress(8);</script>
 			</binding>
+			<binding>
+                <command>property-assign</command>
+                <property>ja37/dap/b8</property>
+                <value>1</value>
+            </binding>
+            <mod-up>
+                <binding>
+                    <command>property-assign</command>
+                    <property>ja37/dap/b8</property>
+                    <value>0</value>
+                </binding>
+            </mod-up>
 		</action>
 	</animation>
-	
 	<animation>
+       <type>translate</type>
+       <object-name>numpad8</object-name>
+       <property>ja37/dap/b8</property>
+       <factor>0.005</factor>
+       <offset-m>0</offset-m>
+       <axis>
+         <z>-1</z>
+       </axis>
+       <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+    </animation>
+
+    <animation>
 		<type>pick</type>
 		<object-name>numpad9</object-name>
 		<action>
@@ -161,10 +421,37 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(9);</script>
+				<script>dap.keyPress(9);</script>
 			</binding>
+			<binding>
+                <command>property-assign</command>
+                <property>ja37/dap/b9</property>
+                <value>1</value>
+            </binding>
+            <mod-up>
+                <binding>
+                    <command>property-assign</command>
+                    <property>ja37/dap/b9</property>
+                    <value>0</value>
+                </binding>
+            </mod-up>
 		</action>
 	</animation>
+	<animation>
+       <type>translate</type>
+       <object-name>numpad9</object-name>
+       <property>ja37/dap/b9</property>
+       <factor>0.005</factor>
+       <offset-m>0</offset-m>
+       <axis>
+         <z>-1</z>
+       </axis>
+       <center>
+            <x-m>0</x-m>
+            <y-m>0</y-m>
+            <z-m>0</z-m>
+        </center>
+    </animation>
 	
 	<animation>
 		<type>pick</type>
@@ -174,7 +461,7 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>nasal</command>
-				<script>navigation.data_display(-1);</script>
+				<script>dap.keyPress(-1);</script>
 			</binding>
 		</action>
 	</animation>
@@ -194,6 +481,7 @@
 		<object-name>5Data</object-name>
 		<object-name>6Data</object-name>
 		<object-name>7Data</object-name>
+		<object-name>DataCanvas</object-name>
         <emission>
             <red>1</red>
             <green>1</green>
@@ -205,7 +493,7 @@
 	<animation>
 		<type>textranslate</type>
 		<object-name>1Data</object-name>
-		<property>/sim/ja37/navigation/dp-display[0]</property>
+		<property>ja37/navigation/dp-display[0]</property>
 		<bias>1.0001</bias>
 		<factor>0.0909</factor>
 		<step>1</step>
@@ -218,7 +506,7 @@
 	<animation>
 		<type>textranslate</type>
 		<object-name>2Data</object-name>
-		<property>/sim/ja37/navigation/dp-display[1]</property>
+		<property>ja37/navigation/dp-display[1]</property>
 		<bias>1.0001</bias>
 		<factor>0.0909</factor>
 		<step>1</step>
@@ -231,7 +519,7 @@
 	<animation>
 		<type>textranslate</type>
 		<object-name>3Data</object-name>
-		<property>/sim/ja37/navigation/dp-display[2]</property>
+		<property>ja37/navigation/dp-display[2]</property>
 		<bias>1.0001</bias>
 		<factor>0.0909</factor>
 		<step>1</step>
@@ -244,7 +532,7 @@
 	<animation>
 		<type>textranslate</type>
 		<object-name>4Data</object-name>
-		<property>/sim/ja37/navigation/dp-display[3]</property>
+		<property>ja37/navigation/dp-display[3]</property>
 		<bias>1.0001</bias>
 		<factor>0.0909</factor>
 		<step>1</step>
@@ -257,7 +545,7 @@
 	<animation>
 		<type>textranslate</type>
 		<object-name>5Data</object-name>
-		<property>/sim/ja37/navigation/dp-display[4]</property>
+		<property>ja37/navigation/dp-display[4]</property>
 		<bias>1.0001</bias>
 		<factor>0.0909</factor>
 		<step>1</step>
@@ -270,7 +558,7 @@
 	<animation>
 		<type>textranslate</type>
 		<object-name>6Data</object-name>
-		<property>/sim/ja37/navigation/dp-display[5]</property>
+		<property>ja37/navigation/dp-display[5]</property>
 		<bias>1.0001</bias>
 		<factor>0.0909</factor>
 		<step>1</step>
@@ -283,7 +571,7 @@
 	<animation>
 		<type>textranslate</type>
 		<object-name>7Data</object-name>
-		<property>/sim/ja37/navigation/dp-display[6]</property>
+		<property>ja37/navigation/dp-display[6]</property>
 		<bias>1.0001</bias>
 		<factor>0.0909</factor>
 		<step>1</step>
@@ -300,43 +588,13 @@
 	-->
 	<!-- rotate by 32* -->
 	<animation>
-		<type>pick</type>
-		<object-name>modeSelectKnob</object-name>
-		<action>
-			<button>0</button>
-			<repeatable>false</repeatable>
-			<binding>
-				<command>property-adjust</command>
-				<property>/sim/ja37/navigation/dp-mode</property>
-				<step>1</step>
-				<min>0</min>
-				<max>7</max>
-				<wrap>true</wrap>
-			</binding>
-		</action>
-		<action>
-			<button>1</button>
-			<repeatable>false</repeatable>
-			<binding>
-				<command>property-adjust</command>
-				<property>/sim/ja37/navigation/dp-mode</property>
-				<step>-1</step>
-				<min>0</min>
-				<max>7</max>
-				<wrap>true</wrap>
-			</binding>
-		</action>
-	</animation>
-	
-	
-	<animation>
-		<type>rotate</type>
-		<object-name>modeSelectKnob</object-name>
-		<property>/sim/ja37/navigation/dp-mode</property>
+        <type>knob</type>
+        <object-name>modeSelectKnob</object-name>
+		<property>ja37/navigation/dp-mode</property>
 		<factor>30</factor>
 		<center>
-			<x-m>  0.01125 </x-m>
-			<y-m> -0.02300 </y-m>
+			<x-m>  0.01251 </x-m>
+			<y-m> -0.02351 </y-m>
 			<z-m>  0.00000 </z-m>
 		</center>
 		<axis>
@@ -344,7 +602,30 @@
 			<y>0</y>
 			<z>1</z>
 		</axis>
-	</animation>
+        <increase>
+            <binding>
+                <command>property-adjust</command>
+                <property>ja37/navigation/dp-mode</property>
+                <factor>1</factor>
+                <step>1</step>
+                <min>0</min>
+                <max>6</max>           
+                <wrap>false</wrap>
+           </binding>
+        </increase>
+        <decrease>
+            <binding>
+                <command>property-adjust</command>
+                <property>ja37/navigation/dp-mode</property>
+                <factor>1</factor>
+                <step>-1</step>
+                <min>0</min>
+                <max>6</max>
+                <wrap>false</wrap>
+            </binding>
+        </decrease>
+    </animation>
+	
 	<!--
 	**********************************
 	Clear Button Cover
@@ -359,7 +640,7 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>property-toggle</command>
-				<property>/sim/ja37/navigation/rensa-cover</property>
+				<property>ja37/navigation/rensa-cover</property>
 			</binding>
 		</action>
 	</animation>
@@ -367,12 +648,12 @@
 	<animation>
 		<type>rotate</type>
 		<object-name>rensaCover</object-name>
-		<property>/sim/ja37/navigation/rensa-cover</property>
+		<property>ja37/navigation/rensa-cover</property>
 		<factor>135</factor>
 		<center>
 			<x-m> 0   </x-m>
-			<y-m> -.0051   </y-m>
-			<z-m> 0.0066</z-m>
+			<y-m> -0.00248   </y-m>
+			<z-m> 0.00824 </z-m>
 		</center>
 		<axis>
 			<x>1</x>
@@ -395,7 +676,11 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>property-toggle</command>
-				<property>/sim/ja37/navigation/ispos</property>
+				<property>ja37/navigation/ispos</property>
+			</binding>
+			<binding>
+				<command>nasal</command>
+				<script>ja37.click();</script>
 			</binding>
 		</action>
 	</animation>
@@ -403,11 +688,11 @@
 	<animation>
 		<type>rotate</type>
 		<object-name>posNegSwitch</object-name>
-		<property>/sim/ja37/navigation/ispos</property>
+		<property>ja37/navigation/ispos</property>
 		<factor>60</factor>
 		<center>
-			<x-m> -.03860   </x-m>
-			<y-m> 0   </y-m>
+			<x-m> -0.04833   </x-m>
+			<y-m> -0.05826   </y-m>
 			<z-m> .00463   </z-m>
 		</center>
 		<axis>
@@ -419,7 +704,7 @@
 	
 	<!--
 	**********************************
-	PosNeg Switch
+	InOut Switch
 	**********************************
 	-->
 	
@@ -431,7 +716,11 @@
 			<repeatable>false</repeatable>
 			<binding>
 				<command>property-toggle</command>
-				<property>/sim/ja37/navigation/inout</property>
+				<property>ja37/navigation/inout</property>
+			</binding>
+			<binding>
+				<command>nasal</command>
+				<script>ja37.click();</script>
 			</binding>
 		</action>
 	</animation>
@@ -439,11 +728,11 @@
 	<animation>
 		<type>rotate</type>
 		<object-name>inOutSwitch</object-name>
-		<property>/sim/ja37/navigation/inout</property>
+		<property>ja37/navigation/inout</property>
 		<factor>60</factor>
 		<center>
-			<x-m> 0   </x-m>
-			<y-m> 0.01861   </y-m>
+			<x-m> -0.02012   </x-m>
+			<y-m> 0.02769   </y-m>
 			<z-m> 0.00464   </z-m>
 		</center>
 		<axis>
@@ -453,5 +742,183 @@
 		</axis>
 	</animation>
 	
+	<animation>
+        <type>material</type>
+        <condition>
+	       <equals>
+	        <property>ja37/systems/variant</property>
+	        <value>0</value>
+	       </equals>
+	     </condition>
+        <object-name>mount</object-name>
+        <property-base>ja37/texture</property-base>
+        <texture-prop>data-panel</texture-prop>
+        <texture>datapanelenJA.png</texture>
+    </animation>
+
+    <animation>
+		<type>pick</type>
+		<object-name>dIn</object-name>
+        <object-name>dOut</object-name>
+		<action>
+			<button>0</button>
+			<repeatable>false</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>dap.toggleInOut();</script>
+			</binding>
+		</action>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>io</tooltip-id>
+                <label>Button: IN or OUT</label>
+            </binding>
+        </hovered>
+	</animation>
+
+	<animation>
+		<type>pick</type>
+		<object-name>dM</object-name>
+        <object-name>dPos</object-name>
+		<action>
+			<button>0</button>
+			<repeatable>false</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>dap.togglePosMsda();</script>
+			</binding>
+		</action>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>mp</tooltip-id>
+                <label>Button: POSITION or MISSIONDATA</label>
+            </binding>
+        </hovered>
+	</animation>
+
+	<animation>
+		<type>pick</type>
+		<object-name>reset</object-name>
+		<action>
+			<button>0</button>
+			<repeatable>false</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>dap.test();</script>
+			</binding>
+		</action>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>rs</tooltip-id>
+                <label>Button: TEST</label>
+            </binding>
+        </hovered>
+	</animation>
+
+	<animation>
+		<type>pick</type>
+		<object-name>posNegBT</object-name>
+		<action>
+			<button>0</button>
+			<repeatable>false</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>dap.togglePN();</script>
+			</binding>
+		</action>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>pn</tooltip-id>
+                <label>Button: POSITIVE or NEGATIVE</label>
+            </binding>
+        </hovered>
+	</animation>
+
+	<animation>
+        <type>material</type>
+        <object-name>dPos</object-name>
+        <emission>
+            <red-prop>controls/lighting/instruments-norm</red-prop>
+            <green-prop>controls/lighting/instruments-norm</green-prop>
+            <blue-prop>controls/lighting/instruments-norm</blue-prop>
+            <factor-prop>ja37/dap/pos</factor-prop>
+        </emission>
+    </animation>
+
+    <animation>
+        <type>material</type>
+        <object-name>dM</object-name>
+        <emission>
+            <red-prop>controls/lighting/instruments-norm</red-prop>
+            <green-prop>controls/lighting/instruments-norm</green-prop>
+            <blue-prop>controls/lighting/instruments-norm</blue-prop>
+            <factor-prop>ja37/dap/msda</factor-prop>
+        </emission>
+    </animation>
+
+    <animation>
+        <type>material</type>
+        <object-name>dIn</object-name>
+        <emission>
+            <red-prop>controls/lighting/instruments-norm</red-prop>
+            <green-prop>controls/lighting/instruments-norm</green-prop>
+            <blue-prop>controls/lighting/instruments-norm</blue-prop>
+            <factor-prop>ja37/dap/in</factor-prop>
+        </emission>
+    </animation>
+
+    <animation>
+        <type>material</type>
+        <object-name>dOut</object-name>
+        <emission>
+            <red-prop>controls/lighting/instruments-norm</red-prop>
+            <green-prop>controls/lighting/instruments-norm</green-prop>
+            <blue-prop>controls/lighting/instruments-norm</blue-prop>
+            <factor-prop>ja37/dap/out</factor-prop>
+        </emission>
+    </animation>
+
+    <animation>
+        <type>select</type>
+        <condition>
+	       <equals>
+	        <property>ja37/systems/variant</property>
+	        <value>0</value>
+	       </equals>
+	     </condition>
+        <object-name>DataCanvas</object-name>
+        <object-name>mountMinor</object-name>
+        <object-name>mountMajor</object-name>
+        <object-name>mountDisplay</object-name>
+        <object-name>dIn</object-name>
+        <object-name>dOut</object-name>
+        <object-name>dM</object-name>
+        <object-name>dPos</object-name>
+        <object-name>reset</object-name>
+        <object-name>posNegBT</object-name>
+    </animation>
+
+    <animation>
+        <type>select</type>
+        <condition>
+	       <greater-than>
+	        <property>ja37/systems/variant</property>
+	        <value>0</value>
+	       </greater-than>
+	     </condition>
+        <object-name>1Data</object-name>
+        <object-name>2Data</object-name>
+        <object-name>3Data</object-name>
+        <object-name>4Data</object-name>
+        <object-name>5Data</object-name>
+        <object-name>6Data</object-name>
+        <object-name>7Data</object-name>
+        <object-name>inOutSwitch</object-name>
+        <object-name>posNegSwitch</object-name>
+    </animation>
 	
 </PropertyList>

@@ -2,7 +2,7 @@
 
 <PropertyList>
 
-    <path>../gauge.ac</path>
+    <path>airspeed.ac</path>
 
     <effect>
         <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-transparent-shader</inherits-from>
@@ -21,15 +21,22 @@
         <texture-prop>gauge-airspeed</texture-prop>
         <texture>airspeed-face.png</texture>
     </animation>
+    
+    <animation>
+        <type>select</type>
+        <object-name>off</object-name>
+        <condition>
+            <not>
+                <property>ja37/elec/ac-bus-main-bool</property>
+            </not>
+        </condition>
+    </animation>
 
     <animation>
         <type>rotate</type>
         <object-name>needle</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/ac-instr-voltage</property>
-                <value>100</value>
-            </greater-than>
+            <property>ja37/elec/ac-bus-main-bool</property>
         </condition>
         <property>instrumentation/airspeed-indicator/indicated-speed-kt</property>
         <interpolation>
@@ -58,15 +65,12 @@
         <object-name>glass</object-name>
         <object-name>mount</object-name>
         <condition>
-            <greater-than>
-                <property>systems/electrical/outputs/dc-voltage</property>
-                <value>20</value>
-            </greater-than>
+            <property>ja37/elec/dc-bus-main-bool</property>
         </condition>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
-                <tooltip-id>airspeed</tooltip-id>
+                <tooltip-id>airspeedKT</tooltip-id>
                 <label>Airspeed: %4d kt</label>
                 <property>instrumentation/airspeed-indicator/indicated-speed-kt</property>
                 <!-- /instrumentation/airspeed-indicator/indicated-mach -->
@@ -78,6 +82,7 @@
     <animation>
         <object-name>needle</object-name>
         <object-name>dial</object-name>
+        <object-name>off</object-name>
         <type>material</type>
         <emission>
             <red-prop>instrumentation/instrumentation-light/r</red-prop>

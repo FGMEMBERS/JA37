@@ -48,8 +48,54 @@
         <object-name>b18</object-name>
         <object-name>b19</object-name>
         <object-name>b20</object-name>
-        <!--<object-name>ti_screen</object-name>-->
     </effect>
+
+    <!-- for Rembrandt to render illuminated canvas texture correct -->
+    <!--<effect>
+     <inherits-from>Effects/model-transparent</inherits-from>
+     <object-name>ti_screen</object-name>
+     <condition>
+        <equals>
+          <property>/sim/rendering/rembrandt/enabled</property>
+          <value>1</value>
+        </equals>
+    </condition>
+    </effect>-->
+
+    <effect>
+        <inherits-from>Aircraft/JA37/Models/Effects/displays/lcd</inherits-from>
+        <parameters>
+            <inner-angle type="float">45</inner-angle><!-- 0-90, use 90 for LED or plasma display-->
+            <outer-angle type="float">60</outer-angle><!-- 0-90, but greater than inner -->
+            <black-angle type="float">80</black-angle><!-- 0-90, but greater than outer -->
+            <contrast type="float"><use>ja37/displays/ti-contrast</use></contrast>
+        </parameters>
+        <object-name>ti_screen</object-name>
+    </effect>
+
+    <!--  -->
+    <!--<effect>
+     <inherits-from>Effects/model-deferred</inherits-from>
+     <object-name>ti_screen</object-name>
+     <condition>
+        <equals>
+          <property>/sim/rendering/rembrandt/enabled</property>
+          <value>0</value>
+        </equals>
+    </condition>
+    </effect>-->
+
+    <animation>
+        <type>pick</type>
+        <object-name>backplate</object-name>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>ti-display</tooltip-id>
+                <label>TI237 display</label>
+            </binding>
+        </hovered>
+    </animation>
 
   	<!--
 
@@ -59,16 +105,35 @@
 
   	-->
 
-  	<animation>
-	    <type>material</type>
-	    <object-name>ti_screen</object-name>
-	    <emission>
-	        <red>1.0</red>
-	        <green>1.0</green>
-	        <blue>1.0</blue>
-	        <factor-prop>ja37/avionics/brightness-ti</factor-prop>
-	    </emission>
-  	</animation>
+
+    <animation>
+        <type>material</type>
+        <object-name>ti_screen</object-name>
+        <!--<condition>
+            <equals>
+              <property>/sim/rendering/rembrandt/enabled</property>
+              <value>1</value>
+            </equals>
+        </condition>
+        <ambient>
+            <red>1.0</red>
+            <green>1.0</green>
+            <blue>1.0</blue>
+            <factor-prop>ja37/avionics/brightness-ti</factor-prop>
+        </ambient>
+        <diffuse>
+            <red>1.0</red>
+            <green>1.0</green>
+            <blue>1.0</blue>
+            <factor-prop>ja37/avionics/brightness-ti</factor-prop>
+        </diffuse>-->
+        <emission>
+            <red>1.0</red>
+            <green>1.0</green>
+            <blue>1.0</blue>
+            <factor-prop>ja37/avionics/brightness-ti</factor-prop>
+        </emission>
+    </animation>
 
   	<!--
 
@@ -77,6 +142,20 @@
 
 
   	-->
+
+    <animation>
+        <type>pick</type>
+        <object-name>light_green_left</object-name>
+        <object-name>light_green_right</object-name>
+        <visible>true</visible>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>sensors</tooltip-id>
+                <label>Light sensor</label>
+            </binding>
+        </hovered>
+    </animation>
 
   	<animation>
         <type>pick</type>
@@ -127,25 +206,19 @@
         <object-name>button_position_plus</object-name>
         <visible>true</visible>
         <action>
-            <name>position</name>
+            <name>contrastP</name>
             <button>0</button>
             <repeatable>true</repeatable>
             <binding>
                 <command>nasal</command>
-                <script>
-                    if (TI.ti.active == 0) return;
-                    TI.ti.ownPosition += 0.01;
-                    if (TI.ti.ownPosition > 1) {
-                        TI.ti.ownPosition = 1;
-                    }
-                </script>
+                <script>TI.contrastP();</script>
             </binding>
         </action>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
                 <tooltip-id>flipperCP</tooltip-id>
-                <label>TI: Position</label>
+                <label>TI: Contrast</label>
             </binding>
         </hovered>
     </animation>
@@ -155,26 +228,19 @@
         <object-name>button_position_minus</object-name>
         <visible>true</visible>
         <action>
-            <name>position</name>
+            <name>contrastM</name>
             <button>0</button>
             <repeatable>true</repeatable>
             <binding>
                 <command>nasal</command>
-                <script><![CDATA[
-                    if (TI.ti.active == 0) return;
-                    TI.ti.ownPosition -= 0.01;
-                    if (TI.ti.ownPosition < 0) {
-                        TI.ti.ownPosition = 0;
-                    }
-                    ]]>
-                </script>
+                <script>TI.contrastM();</script>
             </binding>
         </action>
         <hovered>
             <binding>
                 <command>set-tooltip</command>
                 <tooltip-id>flipperC</tooltip-id>
-                <label>TI: Position</label>
+                <label>TI: Contrast</label>
             </binding>
         </hovered>
     </animation>
@@ -501,35 +567,245 @@
 
     <animation>
       <type>material</type> 
-      <object-name>b1</object-name>
-      <object-name>b2</object-name>
-      <object-name>b3</object-name>
-      <object-name>b4</object-name>
-      <object-name>b5</object-name>
-      <object-name>b6</object-name>
-      <object-name>b7</object-name>
-      <object-name>b8</object-name>
-      <object-name>b9</object-name>
-      <object-name>b10</object-name>
-      <object-name>b11</object-name>
-      <object-name>b12</object-name>
-      <object-name>b13</object-name>
-      <object-name>b14</object-name>
-      <object-name>b15</object-name>
-      <object-name>b16</object-name>
-      <object-name>b17</object-name>
-      <object-name>b18</object-name>
-      <object-name>b19</object-name>
-      <object-name>b20</object-name>
       <object-name>button_brightness_plus</object-name>
       <object-name>button_brightness_minus</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti21</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
       <object-name>button_position_plus</object-name>
       <object-name>button_position_minus</object-name>
       <emission>
        <red>1.0</red> 
        <green>1.0</green> 
        <blue>1.0</blue>
-       <factor-prop>controls/lighting/instruments-norm</factor-prop>
+       <factor-prop>ja37/light/ti0</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b1</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti1</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b2</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti2</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b3</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti3</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b4</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti4</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b5</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti5</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b6</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti6</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b7</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti7</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b8</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti8</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b9</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti9</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b10</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti10</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b11</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti11</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b12</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti12</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b13</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti13</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b14</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti14</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b15</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti15</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b16</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti16</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b17</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti17</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b18</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti18</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b19</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti19</factor-prop>
+      </emission>
+    </animation>
+
+    <animation>
+      <type>material</type> 
+      <object-name>b20</object-name>
+      <emission>
+       <red>1.0</red> 
+       <green>1.0</green> 
+       <blue>1.0</blue>
+       <factor-prop>ja37/light/ti20</factor-prop>
       </emission>
     </animation>
 

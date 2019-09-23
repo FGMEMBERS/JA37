@@ -9,11 +9,17 @@
 <PropertyList include="Viggen-set-base.xml">
     <sim>
         <description>Saab JA-37Di Viggen</description>
-        <author>Anders Lejczak (3D Model and Textures), Justin Nicholson (Misc), Nicola B. Bernardelli (Cockpit), Isaac Protiva (cockpit), Nikolai V. Chr. (rest)</author>
         <status>Early production</status>
         <long-description>
-          The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has reverse thrust and very large canards. The JA-37Di is the midlife upgrade from 1993.
+          The Saab JA-37 Viggen is a Swedish all-weather single-engine fighter jet from 1979. It has glass-cockpit, reverse thrust and very large canards. The JA-37Di is the midlife upgrade from 1993.
         </long-description>
+        
+        <rating>
+            <FDM type="int">4</FDM>
+            <systems type="int">5</systems>
+            <cockpit type="int">4</cockpit>
+            <model type="int">4</model>
+        </rating>
 
         <exclude-from-gui type="bool">false</exclude-from-gui>
 
@@ -56,20 +62,82 @@
             </style>
         </gui>
 
-        <!--<preview>
-            <type>panel</type>
-            <path>gui/thumbnail-panel.jpg</path>
-        </preview>
+        <state include="states/ready-for-takeoff.xml" n="0"/>
+        <state include="states/cold-and-dark-se.xml" n="1"/>
+        <state include="states/ready-for-takeoff-se.xml" n="2"/>
+        <state include="states/ready-for-long-range-combat-se.xml" n="3"/>        
+        <state include="states/ready-for-long-range-combat.xml" n="4"/>
+        <state include="states/cold-and-dark.xml" n="5"/>
+        <!--<state include="states/cruise.xml" n="5"/>-->
 
-        <preview>
-            <type>exterior</type>
-            <path>gui/thumbnail-exterior.jpg</path>
-        </preview>-->
-
-        <!--<thumbnail>
-          <type>interior</type>
-          <name>gui/thumbnail-interior.jpg</name>
-        </thumbnail>-->
+        <previews>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja1.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja4.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja5.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja6.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja10.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja11.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja13.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja14.png</path>
+            </preview>
+            
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja15.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja16.png</path>
+            </preview>
+            <preview>
+                <type>exterior</type>
+                <splash type="bool">true</splash>
+                <path>gui/newSplashes/ja17.png</path>
+            </preview>
+            <preview>
+                <type>panel</type>
+                <splash type="bool">false</splash>
+                <path>gui/newSplashes/ja-interior-1.png</path>
+            </preview>
+            <preview>
+                <type>panel</type>
+                <splash type="bool">false</splash>
+                <path>gui/newSplashes/ja-interior-2.png</path>
+            </preview>
+        </previews>
 
         <model>
             <path>Aircraft/JA37/Models/JA37Di-Viggen.xml</path>
@@ -249,9 +317,45 @@
                             </script>
                         </binding>
                     </item>
+                    <item>
+                        <label>MP Options</label>
+                        <name>j37config</name>
+                        <binding>
+                          <command>dialog-show</command>
+                          <dialog-name>j37config</dialog-name>
+                        </binding>
+                    </item>
+                    <!--<item>
+                        <label>Tune Light</label>
+                        <binding>
+                            <command>dialog-show</command>
+                            <dialog-name>tune_light</dialog-name>
+                        </binding>
+                    </item>-->
                 </menu>
             </default>
         </menubar>
+
+        <checklists>
+            <group>
+                <name>JA37 Normal Operations</name>
+                <checklist include="gui/checklists/ja37-before-start.xml"/>
+                <checklist include="gui/checklists/ja37-start.xml"/>
+                <checklist include="gui/checklists/ja37-after-start.xml"/>
+                <checklist include="gui/checklists/ja37-before-taxi.xml"/>
+                <checklist include="gui/checklists/ja37-before-takeoff.xml"/>
+                <checklist include="gui/checklists/takeoff.xml"/>
+                <checklist include="gui/checklists/landing.xml"/>
+                <checklist include="gui/checklists/ja37-after-landing.xml"/>
+                <checklist include="gui/checklists/shutdown.xml"/>
+            </group>
+            <group>
+                <name>Emergency Procedures</name>
+                <checklist include="gui/checklists/ja37-in-air-start.xml"/>
+                <checklist include="gui/checklists/generator-failure.xml"/>
+                <checklist include="gui/checklists/fire.xml"/>
+            </group>
+        </checklists>
     </sim>
     <!--**********************************************************************
 
@@ -262,7 +366,7 @@
 
     <controls>
         <armament>
-            <station-select type="int">0</station-select>            <!-- cannon selected by default -->
+            <station-select-custom type="int">0</station-select-custom>            <!-- cannon selected by default -->
         </armament>
     </controls>
 
@@ -277,23 +381,23 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 71 Skyflash</name>
-                <lbs>425</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 99 Amraam</name>
-                <lbs>291</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="1">
@@ -306,19 +410,19 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 99 Amraam</name>
-                <lbs>291</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="2">
@@ -331,23 +435,23 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 71 Skyflash</name>
-                <lbs>425</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 99 Amraam</name>
-                <lbs>291</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="3">
@@ -360,19 +464,19 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 99 Amraam</name>
-                <lbs>291</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="4">
@@ -385,11 +489,11 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
         </weight>
         <weight n="5">
@@ -402,11 +506,11 @@
             </opt>
             <opt>
                 <name>RB 24J Sidewinder</name>
-                <lbs>179</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>RB 74 Sidewinder</name>
-                <lbs>188</lbs>
+                <lbs>0</lbs>
             </opt>
             <!--<opt>
                 <name>TEST</name>
@@ -423,11 +527,11 @@
             </opt>
             <opt>
                 <name>Drop tank</name>
-                <lbs>211.64</lbs>
+                <lbs>0</lbs>
             </opt>
             <opt>
                 <name>M70 ARAK</name>
-                <lbs>794</lbs>
+                <lbs>0</lbs>
             </opt>
             <!--  there is no room for these:
             <opt>
@@ -458,17 +562,13 @@
                 <station-name type="string">station</station-name>
                 <msg type="bool">false</msg>
                 <damage type="bool">false</damage>
-                <rb-24j>                    <!-- RB-24J (Swedish version of aim-9j sidewinder) mach 2 relative -->
-                    <sound-on-off type="bool">false</sound-on-off>
-                    <sound-fire-on-off type="bool">false</sound-fire-on-off>
-                    <sound-volume type="double">0.0</sound-volume>
-                    <vol-search type="double">0.075</vol-search>
-                    <vol-track type="double">0.25</vol-track>
-                    <vol-track-weak type="double">0.175</vol-track-weak>
+                <rb-24j>                    <!-- RB-24J (Swedish version of aim-9j sidewinder) -->
+                    <vol-search type="double">0.15</vol-search>
+                    <vol-track type="double">1.00</vol-track>
                     <guidance type="string">heat</guidance>                       <!-- heat, radar or semi-radar -->
                     <all-aspect type="bool">false</all-aspect>                    <!-- all or rear-only -->
                     <max-fire-range-nm type="double">7.83</max-fire-range-nm> <!-- source -->
-                    <FCS-field-deg type="int">25</FCS-field-deg>                              <!-- total aircraft angle -->
+                    <FCS-field-deg type="int">50</FCS-field-deg>                              <!-- total aircraft angle -->
                     <seeker-field-deg type="int">62</seeker-field-deg>                 <!-- guesstimate: 30 deg gyro + 1 deg searcher-beam-width -->
                     <max-g type="int">22</max-g>                                  <!-- source -->
                     <max-launch-g type="int">7</max-launch-g>                     <!-- authentic -->
@@ -480,12 +580,12 @@
                     <weight-warhead-lbs type="double">20.8</weight-warhead-lbs>   <!-- authentic -->
                     <weight-fuel-lbm type="double">42.02</weight-fuel-lbm>           <!-- source -->
                     <drag-coeff type="double">0.9</drag-coeff>                   <!-- guesstimate -->
-                    <drag-area type="double">0.143</drag-area><!-- sq ft (0.2133 ft radius) authentic -->
+                    <cross-section-sqft type="double">0.143</cross-section-sqft><!-- authentic -->
                     <searcher-beam-width type="double">2.0</searcher-beam-width>  <!-- authentic -->
                     <arming-time-sec type="double">1.4</arming-time-sec>          <!-- authentic -->
                     <min-speed-for-guiding-mach type="double">0.8</min-speed-for-guiding-mach><!-- authentic -->
                     <self-destruct-time-sec type="double">43</self-destruct-time-sec>         <!-- authentic -->
-                    <seeker-angular-speed-dps type="double">14</seeker-angular-speed-dps><!-- deg/sec authentic-->
+                    <seeker-angular-speed-dps type="double">14</seeker-angular-speed-dps><!-- authentic-->
                     <lock-on-sun-deg type="double">5</lock-on-sun-deg>          <!-- source -->
                     <loft-altitude type="int">0</loft-altitude>
                     <min-fire-range-nm type="double">0.2</min-fire-range-nm>
@@ -494,50 +594,64 @@
                     <rail-point-forward type="bool">true</rail-point-forward>
                     <max-report-distance type="double">65</max-report-distance>
                     <navigation type="string">APN</navigation>
+                    <DLZ type="bool">true</DLZ>
+                    <DLZ-optimal-alt-feet type="double">25000</DLZ-optimal-alt-feet>
+                    <DLZ-optimal-closing-mach type="double">2.0</DLZ-optimal-closing-mach>
                     <class type="string">A</class>
                     <fire-msg type="string">Fox 2</fire-msg>
+                    <coolable type="bool">true</coolable><!-- electrical -->
+                    <cool-time type="double">5</cool-time>
+                    <cool-duration type="int">360000</cool-duration><!-- electrical, is why the number is so high -->
+                    <warm-detect-range-nm type="double">6.5</warm-detect-range-nm>
+                    <detect-range-nm type="double">7.83</detect-range-nm>
+                    <seeker-beam-width-deg type="double">2</seeker-beam-width-deg>
+                    <ready-time type="double">1.5</ready-time>
                 </rb-24j>
-                <rb-74>             <!-- RB-74 (Swedish version of aim-9L sidewinder) mach 3 relative -->
-                    <sound-on-off type="bool">false</sound-on-off>
-                    <sound-fire-on-off type="bool">false</sound-fire-on-off>
-                    <sound-volume type="double">0.0</sound-volume>
-                    <vol-search type="double">0.075</vol-search>
-                    <vol-track type="double">0.25</vol-track>
-                    <vol-track-weak type="double">0.175</vol-track-weak>
-                    <guidance type="string">heat</guidance>                       <!-- heat, radar or semi-radar -->
-                    <all-aspect type="bool">true</all-aspect>                     <!-- all or rear-only -->
-                    <max-fire-range-nm type="double">9.7</max-fire-range-nm> <!-- source -->
-                    <FCS-field-deg type="int">27</FCS-field-deg>                              <!-- source -->
-                    <seeker-field-deg type="int">82</seeker-field-deg>                 <!-- source: 40 deg gyro + 1 deg searcher-beam-width -->
-                    <max-g type="int">32</max-g>                                  <!-- source -->
-                    <thrust-lbf-stage-1 type="double">2660</thrust-lbf-stage-1><!-- authentic -->
-                    <thrust-lbf-stage-2 type="double">0.0</thrust-lbf-stage-2>    <!-- authentic -->
-                    <stage-1-duration-sec type="double">5.23</stage-1-duration-sec><!-- authentic -->
-                    <stage-2-duration-sec type="double">0.0</stage-2-duration-sec><!-- authentic -->
-                    <weight-launch-lbs type="double">188</weight-launch-lbs>      <!-- authentic -->
-                    <weight-warhead-lbs type="double">20.8</weight-warhead-lbs>   <!-- authentic -->
-                    <weight-fuel-lbm type="double">60.4</weight-fuel-lbm>           <!-- aim9l: 60.4 -->
-                    <drag-coeff type="double">0.5</drag-coeff>                   <!-- guesstimate -->
-                    <drag-area type="double">0.143</drag-area>                    <!-- sq ft -->
-                    <arming-time-sec type="double">1.4</arming-time-sec>          <!-- guess -->
-                    <min-speed-for-guiding-mach type="double">0.8</min-speed-for-guiding-mach><!-- guess -->
-                    <self-destruct-time-sec type="double">50</self-destruct-time-sec>         <!-- guess -->
-                    <seeker-angular-speed-dps type="double">30</seeker-angular-speed-dps><!-- deg/sec guess-->
-                    <lock-on-sun-deg type="double">5</lock-on-sun-deg>
+                <rb-74>             <!-- RB-74 (Swedish version of aim-9L sidewinder) -->
+                    <vol-search type="double">0.15</vol-search>
+                    <vol-track type="double">1</vol-track>
+                    <guidance type="string">heat</guidance>                                   <!-- authentic -->
+                    <all-aspect type="bool">true</all-aspect>                                 <!-- authentic -->
+                    <max-fire-range-nm type="double">9.7</max-fire-range-nm>                  <!-- source -->
+                    <FCS-field-deg type="int">55</FCS-field-deg>                              <!-- sources 27.5 * 2 -->
+                    <seeker-field-deg type="int">82</seeker-field-deg>                        <!-- source: 40 deg gyro + 1 deg searcher-beam-width -->
+                    <max-g type="int">32</max-g>                                              <!-- source -->
+                    <thrust-lbf-stage-1 type="double">2660</thrust-lbf-stage-1>               <!-- authentic -->
+                    <thrust-lbf-stage-2 type="double">0.0</thrust-lbf-stage-2>                <!-- authentic -->
+                    <stage-1-duration-sec type="double">5.23</stage-1-duration-sec>           <!-- authentic -->
+                    <stage-2-duration-sec type="double">0.0</stage-2-duration-sec>            <!-- authentic -->
+                    <weight-launch-lbs type="double">186.2</weight-launch-lbs>                <!-- authentic for aim-9l -->
+                    <weight-warhead-lbs type="double">20.8</weight-warhead-lbs>               <!-- authentic -->
+                    <weight-fuel-lbm type="double">60.4</weight-fuel-lbm>                     <!-- authentic -->
+                    <drag-coeff type="double">0.55</drag-coeff>                               <!-- guesstimate -->
+                    <cross-section-sqft type="double">0.143</cross-section-sqft>              <!-- authentic -->
+                    <arming-time-sec type="double">1.4</arming-time-sec>                      <!-- same as aim-9j -->
+                    <min-speed-for-guiding-mach type="double">0.8</min-speed-for-guiding-mach><!-- same as aim-9j -->
+                    <self-destruct-time-sec type="double">43</self-destruct-time-sec>         <!-- same as aim-9j -->
+                    <seeker-angular-speed-dps type="double">30</seeker-angular-speed-dps>     <!-- guess -->
+                    <lock-on-sun-deg type="double">5</lock-on-sun-deg>                        <!-- source -->
                     <loft-altitude type="int">0</loft-altitude>
                     <min-fire-range-nm type="double">0.2</min-fire-range-nm>
+                    <flare-resistance type="double">0.95</flare-resistance>
                     <rail type="bool">true</rail>
                     <rail-length-m type="double">2.667</rail-length-m><!-- 16S210 AIM-9 Missile Launcher -->
                     <rail-point-forward type="bool">true</rail-point-forward>
                     <max-report-distance type="double">65</max-report-distance>
                     <navigation type="string">APN</navigation>
+                    <DLZ type="bool">true</DLZ>
+                    <DLZ-optimal-alt-feet type="double">25000</DLZ-optimal-alt-feet>
+                    <DLZ-optimal-closing-mach type="double">2.0</DLZ-optimal-closing-mach>
                     <class type="string">A</class>
                     <fire-msg type="string">Fox 2</fire-msg>
+                    <coolable type="bool">true</coolable>
+                    <cool-time type="double">5</cool-time>
+                    <cool-duration type="int">3600</cool-duration>
+                    <warm-detect-range-nm type="double">6.5</warm-detect-range-nm>
+                    <detect-range-nm type="double">9.7</detect-range-nm>
+                    <seeker-beam-width-deg type="double">4</seeker-beam-width-deg>
+                    <ready-time type="double">1.5</ready-time>
                 </rb-74>
-                <rb-71>          <!-- RB-71 specs (Swedish version of Skyflash (aim-7f Sparrow)) mach 2.9 relative -->
-                    <sound-on-off type="bool">false</sound-on-off>
-                    <sound-fire-on-off type="bool">false</sound-fire-on-off>
-                    <sound-volume type="double">0.0</sound-volume>
+                <rb-71>          <!-- RB-71 specs (Swedish version of Skyflash (aim-7f Sparrow)) -->
                     <vol-search type="double">0.00</vol-search>
                     <vol-track type="double">0.15</vol-track>
                     <vol-track-weak type="double">0.1</vol-track-weak>
@@ -555,7 +669,7 @@
                     <weight-warhead-lbs type="double">88</weight-warhead-lbs>      <!-- authentic -->
                     <weight-fuel-lbm type="double">135</weight-fuel-lbm>           <!-- authentic -->
                     <drag-coeff type="double">0.25</drag-coeff>
-                    <drag-area type="double">0.3382</drag-area>                    <!-- authentic -->
+                    <cross-section-sqft type="double">0.3382</cross-section-sqft>                    <!-- authentic -->
                     <arming-time-sec type="double">2.5</arming-time-sec>           <!-- authentic -->
                     <min-speed-for-guiding-mach type="double">0.7</min-speed-for-guiding-mach> <!-- guess -->
                     <self-destruct-time-sec type="double">75</self-destruct-time-sec><!-- authentic -->
@@ -563,17 +677,18 @@
                     <min-fire-range-nm type="double">0.16</min-fire-range-nm>      <!-- authentic -->
                     <max-report-distance type="double">65</max-report-distance>
                     <navigation type="string">APN</navigation>
+                    <chaff-resistance type="double">0.95</chaff-resistance>
+                    <DLZ type="bool">true</DLZ>
+                    <DLZ-optimal-alt-feet type="double">30000</DLZ-optimal-alt-feet>
+                    <DLZ-optimal-closing-mach type="double">2.0</DLZ-optimal-closing-mach>
                     <rail type="bool">false</rail>
                     <class type="string">A</class>
                     <fire-msg type="string">Fox 1</fire-msg>
+                    <ready-time type="double">2.5</ready-time>
                 </rb-71>
-                <rb-99>         <!-- RB-99 specs (Swedish version of AIM-120B Amraam) mach 4 relative -->
-                    <sound-on-off type="bool">false</sound-on-off>
-                    <sound-fire-on-off type="bool">false</sound-fire-on-off>
-                    <sound-volume type="double">0.0</sound-volume>
+                <rb-99>         <!-- RB-99 specs (Swedish version of AIM-120B Amraam) -->
                     <vol-search type="double">0.00</vol-search>
-                    <vol-track type="double">0.15</vol-track>
-                    <vol-track-weak type="double">0.1</vol-track-weak>
+                    <vol-track type="double">1.00</vol-track>
                     <guidance type="string">radar</guidance>
                     <all-aspect type="bool">true</all-aspect>
                     <max-fire-range-nm type="int">38.8</max-fire-range-nm>
@@ -588,7 +703,7 @@
                     <weight-warhead-lbs type="double">44</weight-warhead-lbs>
                     <weight-fuel-lbm type="double">130</weight-fuel-lbm>
                     <drag-coeff type="double">0.2</drag-coeff>
-                    <drag-area type="double">0.2739</drag-area><!-- sq ft (0.2953 ft radius) authentic -->
+                    <cross-section-sqft type="double">0.2739</cross-section-sqft><!-- sq ft (0.2953 ft radius) authentic -->
                     <arming-time-sec type="double">1.6</arming-time-sec>                       <!-- guess -->
                     <min-speed-for-guiding-mach type="double">0.7</min-speed-for-guiding-mach> <!-- guess -->
                     <self-destruct-time-sec type="double">110</self-destruct-time-sec>         <!-- guess -->
@@ -596,12 +711,18 @@
                     <min-fire-range-nm type="double">0.35</min-fire-range-nm>
                     <max-report-distance type="double">65</max-report-distance>
                     <navigation type="string">APN</navigation>
+                    <chaff-resistance type="double">0.95</chaff-resistance>
                     <rail type="bool">false</rail>
                     <telemetry type="bool">true</telemetry>
+                    <DLZ type="bool">true</DLZ>
+                    <DLZ-optimal-alt-feet type="double">30000</DLZ-optimal-alt-feet>
+                    <DLZ-optimal-closing-mach type="double">2.0</DLZ-optimal-closing-mach>
                     <class type="string">A</class>
                     <fire-msg type="string">Fox 3</fire-msg>
+                    <ready-time type="double">3.5</ready-time>
                 </rb-99>
-                <test>             <!-- GBU 16 -->
+                <!-- GBU 16 -->
+                <!--<test>             
                     <fire-msg                   type="string">Bombs away</fire-msg>
                     <class                      type="string">GM</class>
                     <max-fire-range-nm          type="double"> 14 </max-fire-range-nm>
@@ -621,7 +742,7 @@
                     <weight-warhead-lbs         type="double"> 450 </weight-warhead-lbs>   
                     <weight-fuel-lbm            type="double"> 0 </weight-fuel-lbm>          
                     <drag-coeff                 type="double"> 0.1 </drag-coeff>                   
-                    <drag-area                  type="double"> 0.195 </drag-area>                   
+                    <cross-section-sqft         type="double"> 0.195 </cross-section-sqft>                   
                     <arming-time-sec            type="double"> 3 </arming-time-sec>         
                     <min-speed-for-guiding-mach type="double"> 0 </min-speed-for-guiding-mach>
                     <self-destruct-time-sec     type="double"> 10000 </self-destruct-time-sec>        
@@ -633,18 +754,12 @@
                     <rail-point-forward           type="bool">true</rail-point-forward>
                     <rail-pitch-deg             type="double"> 0 </rail-pitch-deg>
                     <max-report-distance        type="double"> 40 </max-report-distance>
-                    <sound-on-off                 type="bool">false</sound-on-off>
-                    <sound-fire-on-off            type="bool">false</sound-fire-on-off>
-                    <sound-volume               type="double"> 0.0 </sound-volume>
                     <vol-search                 type="double"> 0.075 </vol-search>
                     <vol-track                  type="double"> 0.25 </vol-track>
                     <vol-track-weak             type="double"> 0.175 </vol-track-weak>
-                </test>
+                </test>-->
                 <!-- test: SAM S-300-->
                 <!--<test> 
-                    <sound-on-off type="bool">false</sound-on-off>
-                    <sound-fire-on-off type="bool">false</sound-fire-on-off>
-                    <sound-volume type="double">0.0</sound-volume>
                     <vol-search type="double">0.00</vol-search>
                     <vol-track type="double">0.15</vol-track>
                     <vol-track-weak type="double">0.1</vol-track-weak>
@@ -661,7 +776,7 @@
                     <weight-launch-lbs>3920</weight-launch-lbs>
                     <weight-warhead-lbs>315</weight-warhead-lbs>
                     <drag-coeff type="double">0.15</drag-coeff>
-                    <drag-area type="double">2.11349</drag-area>
+                    <cross-section-sqft type="double">2.11349</cross-section-sqft>
                     <arming-time-sec type="double">2</arming-time-sec> 
                     <min-speed-for-guiding-mach type="double">0.25</min-speed-for-guiding-mach> 
                     <self-destruct-time-sec type="double">160</self-destruct-time-sec> 
@@ -677,8 +792,6 @@
                     <fire-msg type="string">Grumble</fire-msg>
                 </test>-->
                 <!--<test>        
-                    <sound-on-off type="bool">false</sound-on-off>
-                    <sound-volume type="double">0.0</sound-volume>
                     <vol-search type="double">0.00</vol-search>
                     <vol-track type="double">0.15</vol-track>
                     <vol-track-weak type="double">0.1</vol-track-weak>
@@ -695,7 +808,7 @@
                     <weight-launch-lbs>291</weight-launch-lbs>
                     <weight-warhead-lbs>44</weight-warhead-lbs>
                     <drag-coeff type="double">0.5</drag-coeff>
-                    <drag-area type="double">0.2739</drag-area>
+                    <cross-section-sqft type="double">0.2739</cross-section-sqft>
                     <searcher-beam-width type="double">3.0</searcher-beam-width>               
                     <arming-time-sec type="double">1.6</arming-time-sec>                       
                     <min-speed-for-guiding-mach type="double">0.9</min-speed-for-guiding-mach> 
@@ -710,8 +823,6 @@
                     <fire-msg>Fox 3</fire-msg>
                 </test>-->
                 <!--<test>
-                    <sound-on-off type="bool">false</sound-on-off>
-                    <sound-volume type="double">0.0</sound-volume>
                     <vol-search type="double">0.03</vol-search>
                     <guidance type="string">radar</guidance> 
                     <all-aspect type="bool">true</all-aspect>
@@ -727,7 +838,7 @@
                     <weight-launch-lbs type="double">179</weight-launch-lbs>      
                     <weight-warhead-lbs type="double">20.8</weight-warhead-lbs>   
                     <drag-coeff type="double">0.5</drag-coeff>                   
-                    <drag-area type="double">0.143</drag-area>
+                    <cross-section-sqft type="double">0.143</cross-section-sqft>
                     <searcher-beam-width type="double">2.0</searcher-beam-width>  
                     <arming-time-sec type="double">1.4</arming-time-sec>          
                     <min-speed-for-guiding-mach type="double">0.4</min-speed-for-guiding-mach>
@@ -740,8 +851,6 @@
                 </test>-->
                 <!-- Phoenix AIM-54C -->
                 <!--<test>
-                    <sound-on-off type="bool">false</sound-on-off>
-                    <sound-volume type="double">0.0</sound-volume>
                     <vol-search type="double">0.0</vol-search>
                     <vol-track type="double">0.20</vol-track>
                     <vol-track-weak type="double">0.10</vol-track-weak>
@@ -759,7 +868,7 @@
                     <weight-warhead-lbs source="source" type="double">135</weight-warhead-lbs>
                     <weight-fuel-lbm source="authentic" type="double">364</weight-fuel-lbm>
                     <drag-coeff type="double">0.18</drag-coeff>
-                    <drag-area source="authentic" type="double">1.227</drag-area>
+                    <cross-section-sqft source="authentic" type="double">1.227</cross-section-sqft>
                     <arming-time-sec type="double">3</arming-time-sec>          
                     <min-speed-for-guiding-mach type="double">0.80</min-speed-for-guiding-mach>
                     <self-destruct-time-sec type="double">180</self-destruct-time-sec>         
@@ -771,6 +880,50 @@
                     <class type="string">A</class>
                     <fire-msg>FOX3</fire-msg>
                 </test>-->
+                <es>                    <!-- Ejection seat -->
+                    <vol-search type="double">0.075</vol-search>
+                    <vol-track type="double">0.25</vol-track>
+                    <vol-track-weak type="double">0.175</vol-track-weak>
+                    <guidance type="string">unguided</guidance>
+                    <navigation type="string">direct</navigation>
+                    <all-aspect type="bool">false</all-aspect> 
+                    <max-fire-range-nm type="double">6.9</max-fire-range-nm>
+                    <FCS-field-deg type="int">50</FCS-field-deg>            
+                    <seeker-field-deg type="int">54</seeker-field-deg>      
+                    <max-g type="int">10</max-g>                            
+                    <max-launch-g type="int">9</max-launch-g>      
+                    <thrust-lbf-stage-1 type="double">1500</thrust-lbf-stage-1>
+                    <thrust-lbf-stage-2 type="double">0.0</thrust-lbf-stage-2>  
+                    <stage-1-duration-sec type="double">1</stage-1-duration-sec>
+                    <stage-2-duration-sec type="double">0.0</stage-2-duration-sec>
+                    <weight-launch-lbs type="double">300</weight-launch-lbs>
+                    <weight-warhead-lbs type="double">0.0</weight-warhead-lbs>  
+                    <weight-fuel-lbm type="double">5.0</weight-fuel-lbm>        
+                    <drag-coeff type="double">1.35</drag-coeff>                 
+                    <delta-drag-coeff-deploy type="double">75.00</delta-drag-coeff-deploy>
+                    <cross-section-sqft type="double">2</cross-section-sqft>
+                    <arming-time-sec type="double">0</arming-time-sec>    
+                    <min-speed-for-guiding-mach type="double">0.8</min-speed-for-guiding-mach>
+                    <self-destruct-time-sec type="double">5000</self-destruct-time-sec>       
+                    <seeker-angular-speed-dps type="double">10.0</seeker-angular-speed-dps>
+                    <lock-on-sun-deg type="double">20</lock-on-sun-deg>       
+                    <loft-altitude type="int">0</loft-altitude>
+                    <min-fire-range-nm type="double">0.0</min-fire-range-nm>
+                    <rail type="bool">true</rail>
+                    <rail-length-m type="double">1.5</rail-length-m>
+                    <rail-point-forward type="bool">false</rail-point-forward>
+                    <rail-pitch-deg type="double">90</rail-pitch-deg>
+                    <drop-time type="double">0</drop-time>
+                    <deploy-time type="double">3.5</deploy-time>                            
+                    <inert type="bool">true</inert>                            
+                    <lateral-dps type="int">2</lateral-dps>                            
+                    <max-report-distance type="double">65</max-report-distance>
+                    <class type="string">A</class>
+                    <fire-msg type="string">weeeeee</fire-msg>
+                    <long-name type="string">Project Gamma</long-name>
+                    <short-name type="string">gamma</short-name>
+                    <pitch-animation-disabled type="bool">true</pitch-animation-disabled>
+                </es>
             </armament>
     </payload>
 
@@ -780,12 +933,26 @@
         </systems>
         <texture>
             <KV1 type="string">channel-selector-ja.png</KV1>
-        </texture>        
+        </texture>
+        <effect>
+            <g-suit userarchive="y" type="int">2</g-suit><!-- 1:71 2:79 3:97 -->       
+        </effect>
     </ja37>
 
     <limits>
         <vne>789</vne>
+        <vne-mach>2.03</vne-mach>
     </limits>
+
+    <fdm>
+        <jsbsim>
+            <fcs>
+                <max-alpha-deg type="int">34</max-alpha-deg>
+                <max-alpha-default-deg type="int">34</max-alpha-default-deg>
+            </fcs>
+        </jsbsim>
+    </fdm>
+
 
     <nasal>
         <MI>

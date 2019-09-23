@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<PropertyList>
+
+    <name type="string" n="0">parked</name>
+
+    <overlay>
+        <ja37>
+            <hud>
+                <units-metric type="bool">false</units-metric>
+            </hud>
+        </ja37>
+    </overlay>
+
+</PropertyList>

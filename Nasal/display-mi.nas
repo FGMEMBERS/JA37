@@ -8,7 +8,7 @@ var (width,height) = (512,512);#341
 #  print("Cleaning up window:","MI","\n");
   #update_timer.stop();
 #  gone = TRUE;
-# 
+#
 #  call(canvas.Window.del, [], me);
 #};
 #var root = window.getCanvas(1).createGroup();
@@ -19,11 +19,11 @@ var mycanvas = nil;
 var root = nil;
 var setupCanvas = func {
 	mycanvas = canvas.new({
-	  "name": "MI",  
-	  "size": [width, height], 
-	  "view": [width, height],  
-	                        
-	  "mipmapping": 1       
+	  "name": "MI",
+	  "size": [width, height],
+	  "view": [width, height],
+
+	  "mipmapping": 1
 	});
 	root = mycanvas.createGroup();
 	mycanvas.setColorBackground(0, 0, 0, 1.0);
@@ -113,6 +113,12 @@ var bright = 0;
 
 var cursor = func {
 	cursorOn = !cursorOn;
+	if (!cursorOn) {
+		if (!getprop("ja37/systems/input-controls-flight")) {
+			ja37.notice("Cursor OFF. Flight ctrl ON.");
+		}
+		setprop("/ja37/systems/input-controls-flight", 1);
+	}
 }
 
 var cursorOn = TRUE;
@@ -131,9 +137,7 @@ var MI = {
 			rad_alt:              "position/altitude-agl-ft",
 			radarEnabled:         "ja37/hud/tracks-enabled",
 			radarRange:           "instrumentation/radar/range",
-			radarScreenVoltage:   "systems/electrical/outputs/dc-voltage",
 			radarServ:            "instrumentation/radar/serviceable",
-			radarVoltage:         "systems/electrical/outputs/ac-main-voltage",
 			rmActive:             "autopilot/route-manager/active",
 			rmDist:               "autopilot/route-manager/wp/dist",
 			rmId:                 "autopilot/route-manager/wp/id",
@@ -146,24 +150,22 @@ var MI = {
 			headTrue:             "orientation/heading-deg",
 			headMagn:             "orientation/heading-magnetic-deg",
 			twoHz:                "ja37/blink/two-Hz/state",
-			station:          	  "controls/armament/station-select",
+			station:          	  "controls/armament/station-select-custom",
 			roll:             	  "orientation/roll-deg",
 			units:                "ja37/hud/units-metric",
 			callsign:             "ja37/hud/callsign",
 			hdgReal:              "orientation/heading-deg",
 			tracks_enabled:   	  "ja37/hud/tracks-enabled",
 			radar_serv:       	  "instrumentation/radar/serviceable",
-			tenHz:            	  "ja37/blink/ten-Hz/state",
+			tenHz:            	  "ja37/blink/four-Hz/state",
 			qfeActive:        	  "ja37/displays/qfe-active",
 	        qfeShown:		  	  "ja37/displays/qfe-shown",
-	        station:          	  "controls/armament/station-select",
 	        currentMode:          "ja37/hud/current-mode",
 	        ctrlRadar:        "controls/altimeter-radar",
 	        alphaJSB:         "fdm/jsbsim/aero/alpha-deg",
 	        mach:             "instrumentation/airspeed-indicator/indicated-mach",
-	        acInstrVolt:      "systems/electrical/outputs/ac-instr-voltage",
       	};
-   
+
       	foreach(var name; keys(mi.input)) {
         	mi.input[name] = props.globals.getNode(mi.input[name], 1);
       	}
@@ -174,6 +176,12 @@ var MI = {
       	mi.brightness = 1;
       	mi.off = FALSE;
       	mi.helpTime = 0;
+      	mi.cursorPosX = 0;
+      	mi.cursorPosY = 0;
+      	mi.cursorTriggerPrev = FALSE;
+      	mi.cursorManuallyLocked = FALSE;
+      	mi.selection_updated = FALSE;
+      	mi.preventRelock = FALSE;
 
       	return mi;
 	},
@@ -207,10 +215,31 @@ var MI = {
 		      .setStrokeLineWidth(w)
 		      .setColor(r,g,b, a);
 
-		
+		me.reticle_missile =
+      me.a2a_circle = me.rootCenter.createChild("path")
+      .setColor(r,g,b, a)
+      .moveTo( 45*texel_per_degree, 0)
+      .arcSmallCCW(45*texel_per_degree,45*texel_per_degree, 0, -45*texel_per_degree,-45*texel_per_degree)
+      .moveTo( -45*texel_per_degree, 0)
+      .arcSmallCCW(45*texel_per_degree,45*texel_per_degree, 0,  90*texel_per_degree, 0)
+      .setStrokeLineWidth(w);
+      me.a2a_circle_arc = me.rootCenter.createChild("path")
+      .setColor(r,g,b, a)
+      .moveTo(-45*texel_per_degree, 0)
+      .arcSmallCW(45*texel_per_degree,45*texel_per_degree, 0,  45*texel_per_degree,-45*texel_per_degree)
+      .setStrokeLineWidth(w);
+      me.a2a_cross = me.rootCenter.createChild("path")
+		      .moveTo(-40*texel_per_degree, 40*texel_per_degree)
+		      .lineTo(40*texel_per_degree, -40*texel_per_degree)
+		      .moveTo(40*texel_per_degree, 40*texel_per_degree)
+		      .lineTo(-40*texel_per_degree, 40*texel_per_degree)
+		      .setStrokeLineWidth(w)
+		      .setColor(r,g,b, a);
+
+
 		me.horizon_group = me.rootCenter.createChild("group");
-		me.horz_rot = me.horizon_group.createTransform();
 		me.horizon_group2 = me.horizon_group.createChild("group");
+		me.horz_rot = me.horizon_group.createTransform();
 		me.horizon_line = me.horizon_group2.createChild("path")
 		                     .moveTo(-height*0.75, -w*1.5)
 		                     .horiz(height*1.5)
@@ -228,13 +257,13 @@ var MI = {
 		for(var i = 0; i <= 20; i += 1) # alt scale (right side)
 		      me.rootCenter.createChild("path")
 		         .moveTo(sidePositionOfSideScales, -i * halfHeightOfSideScales / 10 + halfHeightOfSideScales)
-		         .horiz(ticksMed)         
+		         .horiz(ticksMed)
 		         .setStrokeLineWidth(w)
 		         .setColor(r,g,b, a);
 		for(var i = 0; i <= 4; i += 1) # alt scale large ticks (right side)
 		      me.rootCenter.createChild("path")
 		         .moveTo(sidePositionOfSideScales, -i * halfHeightOfSideScales / 2 + halfHeightOfSideScales)
-		         .horiz(ticksLong)         
+		         .horiz(ticksLong)
 		         .setStrokeLineWidth(w)
 		         .setColor(r,g,b, a);
 		me.altScaleTexts = [];
@@ -276,7 +305,19 @@ var MI = {
 				.setTranslation(0,halfHeightOfSideScales)
 		        .setColor(r,g,b, a);
 
-		me.cursor_lock = me.rootCenter.createChild("path")
+		me.diamond_small = me.rootCenter.createChild("path")
+				.moveTo(-6,-6)
+				.lineTo(6,6)
+				.moveTo(6,-6)
+				.lineTo(-6,6)
+				.setStrokeLineWidth(w)
+				.setTranslation(0,halfHeightOfSideScales)
+		        .setColor(r,g,b, a);
+
+		me.cursor_grp = me.rootCenter.createChild("group");
+		me.cursor_grp_trans = me.cursor_grp.createTransform();
+		me.cursor_grp2 = me.cursor_grp.createChild("group");
+		me.cursor_lock = me.cursor_grp2.createChild("path")
 				.moveTo(-ticksShort, 0)
 	            .arcSmallCW(ticksShort, ticksShort, 0,  ticksShort*2, 0)
 	            .arcSmallCW(ticksShort, ticksShort, 0, -ticksShort*2, 0)
@@ -330,7 +371,7 @@ var MI = {
 		me.arr_90 = 9;
 		me.arr_120 = 12;
 
-		me.arrow_group = me.rootCenter.createChild("group");  
+		me.arrow_group = me.rootCenter.createChild("group");
 		me.arrow_trans = me.arrow_group.createTransform();
 		me.arrow =
 		      me.arrow_group.createChild("path")
@@ -399,6 +440,13 @@ var MI = {
 		    .lineTo(ticksMed, -me.headScalePlace+ticksMed)
 		    .setColor(r,g,b, a)
 		    .setStrokeLineWidth(w);
+
+		me.head_scale_tgt_indicator = me.rootCenter.createChild("path")
+				.moveTo(-ticksShort, -me.headScalePlace)
+	            .arcSmallCW(ticksShort, ticksShort, 0,  ticksShort*2, 0)
+	            .arcSmallCW(ticksShort, ticksShort, 0, -ticksShort*2, 0)
+				.setStrokeLineWidth(w)
+		        .setColor(r,g,b, a);
 
 		    # Heading middle number
 		me.hdgM = me.head_scale_grp.createChild("text")
@@ -476,20 +524,11 @@ var MI = {
 		    .setTranslation(0, texel_per_degree*20+halfHeightOfSideScales)
 		    .setFontSize(15, 1);
 
-
-	    me.vel_vec_trans_group = me.radar_group.createChild("group");
-	    me.vel_vec_rot_group = me.vel_vec_trans_group.createChild("group");
-	    #me.vel_vec_rot = me.vel_vec_rot_group.createTransform();
-	    me.vel_vec = me.vel_vec_rot_group.createChild("path")
-	                                  .moveTo(0, 0)
-	                                  .lineTo(0,-1)
-	                                  .setStrokeLineWidth(w)
-	                                  .setColor(r,g,b, a);
-
 	    me.echoes  = [];
 	    me.echo_group = me.radar_group.createChild("group");
-	    for(var i = 0; i < maxTracks; i += 1) {      
-	      me.target_echoes = me.radar_group.createChild("path")
+	    me.echo_group_trans = me.radar_group.createTransform();
+	    for(var i = 0; i < maxTracks; i += 1) {
+	      me.target_echoes = me.echo_group.createChild("path")
 	                           .moveTo(-texel_per_degree*1, 0)
 	                           .arcLargeCW(texel_per_degree*1, texel_per_degree*1, 0,  texel_per_degree*2, 0)
 	                           .arcLargeCW(texel_per_degree*1, texel_per_degree*1, 0, -texel_per_degree*2, 0)
@@ -503,13 +542,13 @@ var MI = {
 	    # tgt scale (left side)
       	me.rootCenter.createChild("path")
 			.moveTo(-sidePositionOfSideScales, halfHeightOfSideScales)
-			.vert(-2*halfHeightOfSideScales)         
+			.vert(-2*halfHeightOfSideScales)
 			.setStrokeLineWidth(w)
 			.setColor(r,g,b, a);
 		for(var i = 0; i <= 6; i += 1) # tgt scale ticks (left side)
 		      me.rootCenter.createChild("path")
 		         .moveTo(-sidePositionOfSideScales, -i * halfHeightOfSideScales / 3 + halfHeightOfSideScales)
-		         .horiz(-ticksLong)         
+		         .horiz(-ticksLong)
 		         .setStrokeLineWidth(w)
 		         .setColor(r,g,b, a);
 		me.tgtTexts = [];
@@ -521,13 +560,12 @@ var MI = {
 		         .setTranslation(i!=3?-ticksShort-sidePositionOfSideScales:-sidePositionOfSideScales+ticksLong, -i * halfHeightOfSideScales / 1.5 + halfHeightOfSideScales-w)
 		         .setColor(r,g,b, a));
 		}
-		me.dist_cursor = me.rootCenter.createChild("path")
-			.moveTo(0,0)
-			.lineTo(ticksMed,ticksMed)
-			.moveTo(0,0)
-			.lineTo(ticksMed,-ticksMed)
-			.setStrokeLineWidth(w)
-	        .setColor(r,g,b, a);
+	    me.dist_cursor = me.rootCenter.createChild("path")
+				.moveTo(0, 0)
+	            .arcSmallCW(ticksShort, ticksShort, 0,  ticksShort*2, 0)
+	            .arcSmallCW(ticksShort, ticksShort, 0, -ticksShort*2, 0)
+				.setStrokeLineWidth(w)
+		        .setColor(r,g,b, a);
 
 		me.qfe = me.rootCenter.createChild("text")
     		.setText("QFE")
@@ -605,16 +643,16 @@ var MI = {
 				me.brightness = 1;
 			}
 		}
-		
-		
+
+
 		if (cursorOn == FALSE) {
-			radar_logic.selection = nil;
+			radar_logic.setSelection(nil);
 		}
 
-		if (me.input.acInstrVolt.getValue() < 100 or me.off == TRUE) {
+		if (!power.prop.acSecondBool.getValue() or me.off == TRUE) {
 			setprop("ja37/avionics/brightness-mi", 0);
 			setprop("ja37/avionics/cursor-on", FALSE);
-			settimer(func me.loop(), 0.05);
+			#settimer(func me.loop(), 0.05);
 			return;
 		} else {
 			setprop("ja37/avionics/brightness-mi", me.brightness);
@@ -622,24 +660,27 @@ var MI = {
 		}
 
 		me.interoperability = me.input.units.getValue();
-		
+
 		me.displayFPI();
-		me.displayHorizon();
-		me.displayHeadingScale();
+		me.displayHorizon();#must be after displayFPI
 		me.displayGround();
 		me.displayGroundCollisionArrow();
 		me.showAltLines();
-		me.displayRadarTracks();
+		me.displaySeeker();
+		me.showCursor();#must be before radar tracks, but after displayFPI
+		me.displayRadarTracks();#must be after displayFPI
+		me.displayHeadingScale();#must be after radar tracks
 		me.altScale();
 		me.targetScale();
 		me.showTgtName();
 		me.showqfe();
 		me.showArm();
+		me.showArmCircle();
 		me.radarIndex();
 		me.showTopInfo();
 		me.showBottomInfo();
 		me.rate = getprop("sim/frame-rate-worst");
-		settimer(func me.loop(), me.rate!=nil?clamp(2.05/(me.rate+0.001), 0.05, 0.5):0.5);#0.001 is to prevent divide by zero
+		#settimer(func me.loop(), me.rate!=nil?clamp(2.05/(me.rate+0.001), 0.05, 0.5):0.5);#0.001 is to prevent divide by zero
 	},
 
 	displayFPI: func {
@@ -651,11 +692,13 @@ var MI = {
 		}
 		me.fpi_x = me.fpi_x_deg*texel_per_degree;
 		me.fpi_y = me.fpi_y_deg*texel_per_degree;
-		me.fpi.setTranslation(me.fpi_x, me.fpi_y);
+		#me.fpi.setTranslation(me.fpi_x, me.fpi_y);
+		me.fpi.setTranslation(0, 0);
 	},
 
 	displayHorizon: func {
 		me.rot = -getprop("orientation/roll-deg") * D2R;
+		me.horizon_group.setTranslation(-me.fpi_x, -me.fpi_y);
 		me.horz_rot.setRotation(me.rot);
 		me.horizon_group2.setTranslation(0, texel_per_degree * getprop("orientation/pitch-deg"));
 	},
@@ -674,7 +717,8 @@ var MI = {
 		if (me.time != nil and me.time >= 0 and me.time < 40) {
 			me.time = clamp(me.time - 10,0,30);
 			me.dist = me.time/30 * halfHeightOfSideScales;
-			me.ground_grp.setTranslation(me.fpi_x, me.fpi_y);
+			#me.ground_grp.setTranslation(me.fpi_x, me.fpi_y);
+			me.ground_grp.setTranslation(0, 0);
 			me.ground_grp_trans.setRotation(-getprop("orientation/roll-deg") * D2R);
 			me.groundCurve.setTranslation(0, me.dist);
 			me.ground_grp.show();
@@ -720,6 +764,12 @@ var MI = {
 	    me.hdgR3.setText(sprintf("%02d", me.rightText3));
 	    me.head_scale_grp.show();
 	    me.head_scale_indicator.show();
+	    if (me.tgt_bug != nil and math.abs(me.tgt_bug) < 60) {
+			me.head_scale_tgt_indicator.setTranslation(me.tgt_bug*texel_per_degree, 0);
+			me.head_scale_tgt_indicator.show();
+		} else {
+			me.head_scale_tgt_indicator.hide();
+		}
 	},
 
 	showArm: func {
@@ -735,6 +785,67 @@ var MI = {
       	} else {
       		me.arm.hide();
       	}
+	},
+
+	showArmCircle: func {
+		if (me.input.currentMode.getValue() == displays.COMBAT) {
+			me.armActive = displays.common.armActive();
+			if (me.armActive != nil) {
+				me.dlz = me.armActive.getDLZ();
+				if (me.dlz != nil and size(me.dlz) > 0) {
+					me.dlz_scale = 1;
+					me.dlz_full = FALSE;
+					me.dlz_circle = FALSE;
+					me.dlz_cross  = FALSE;
+					if (me.dlz[4] < me.dlz[3]) {
+						# MIN
+						me.dlz_circle = FALSE;
+						me.dlz_cross  = TRUE;
+					} elsif (me.dlz[4] < me.dlz[2]) {
+						# NEZ
+						me.dlz_full   = TRUE;
+						me.dlz_scale  = 1;
+						me.dlz_circle = TRUE;
+					} elsif (me.dlz[4] < me.dlz[1]) {
+						# OPT
+						me.dlz_full   = FALSE;
+						me.dlz_scale  = 1;
+						me.dlz_circle = TRUE;
+					} elsif (me.dlz[4] < me.dlz[0]) {
+						# MISS
+						me.dlz_full   = FALSE;
+						me.dlz_circle = TRUE;
+						me.dlz_scale  = extrapolate(me.dlz[4],me.dlz[1],me.dlz[0],1,0.01);
+					} else {
+						me.dlz_circle = FALSE;
+						me.dlz_cross  = FALSE;
+					}
+					me.a2a_circle.setScale(me.dlz_scale);
+					me.a2a_circle.setStrokeLineWidth(w/me.dlz_scale);
+					if (me.dlz_circle == TRUE) {
+      					me.a2a_circle.show();
+      					if (me.dlz_full == TRUE) {
+							me.a2a_circle_arc.show();
+      					} else {
+      						me.a2a_circle_arc.hide();
+      					}
+      				} else {
+      					me.a2a_circle.hide();
+      					me.a2a_circle_arc.hide();
+      				}
+      				if (me.dlz_cross == TRUE) {
+      					# for now this wont happen, as the missile wont have lock below min dist and therefore wont return dlz info.
+      					me.a2a_cross.show();
+      				} else {
+      					me.a2a_cross.hide();
+      				}
+      				return;
+      			}
+			}
+      	}
+      	me.a2a_circle.hide();
+      	me.a2a_circle_arc.hide();
+      	me.a2a_cross.hide();
 	},
 
 	showqfe: func {
@@ -763,6 +874,97 @@ var MI = {
 		}
 	},
 
+	displaySeeker: func {
+		me.missileCurr = displays.common.armActive();
+	    if (me.missileCurr != nil and displays.common.mode == displays.COMBAT) {
+	      me.ds = me.missileCurr.getSeekerInfo();
+	      if (me.ds == nil) {
+	          me.diamond_small.hide();
+	      } else {
+	          me.diamond_small.setTranslation(me.ds[0]*texel_per_degree, -me.ds[1]*texel_per_degree);
+	          if (me.missileCurr.status != armament.MISSILE_LOCK or me.input.twoHz.getValue()) {
+	            me.diamond_small.show();
+	          } else {
+	            me.diamond_small.hide();
+	          }
+	          me.diamond_small.update();
+	      }
+	    } else {
+	      me.diamond_small.hide();
+	    }
+	},
+
+	rotate: func (angle_deg, x, y) {
+		# mimic a canvas rotation
+		me.sin = math.sin(angle_deg * D2R);
+		me.cos = math.cos(angle_deg * D2R);
+
+		return [x * me.cos + y * me.sin,-(x * me.sin - y * me.cos)];
+	},
+
+	showCursor: func {
+		if (cursorOn == TRUE and displays.common.cursor == displays.MI) {
+    		me.cursorTrigger = getprop("fdm/jsbsim/fcs/cursor/cursor-select");
+
+    		if (me.selection_updated == FALSE) {
+    			# we are free to move cursor
+				me.cursorSpeedY = getprop("fdm/jsbsim/fcs/cursor/cursor-control-Y");
+				me.cursorSpeedX = getprop("fdm/jsbsim/fcs/cursor/cursor-control-X");
+				me.cursorMoveY  = 100 * 0.15 * me.cursorSpeedY;
+				me.cursorMoveX  = 100 * 0.15 * me.cursorSpeedX;#0.15 is the update speed set in ja37
+				me.cursorPosX  += me.cursorMoveX;
+				me.cursorPosY  += me.cursorMoveY;
+				me.cursorPosX   = clamp(me.cursorPosX, -60*texel_per_degree,  60*texel_per_degree);
+				me.cursorPosY   = clamp(me.cursorPosY, -60*texel_per_degree,  60*texel_per_degree);
+				me.cursor.setTranslation(me.cursorPosX, me.cursorPosY);
+				#me.cursorTPosY  = me.cursorPosY - texel_per_degree * getprop("orientation/pitch-deg");
+				#me.rot = getprop("orientation/roll-deg") * D2R;
+				#rotate me.cursorOPos with me.rot
+				#me.sin = -math.sin(-me.rot);
+				#me.cos = math.cos(-me.rot);
+
+				var rot = me.rotate(-getprop("orientation/roll-deg"), me.cursorPosX + me.fpi_x, me.cursorPosY + me.fpi_y);
+
+				me.cursorOPosX = rot[0];
+				me.cursorOPosY = rot[1] - texel_per_degree * getprop("orientation/pitch-deg");
+
+				#printf("(%d,%d) %d", me.fpi_x, me.fpi_y, texel_per_degree * getprop("orientation/pitch-deg"));
+
+				#me.echoes[maxTracks-1].setColor(1,0,0);
+				#me.echoes[maxTracks-1].setTranslation(me.cursorOPosX,me.cursorOPosY);
+				#me.echoes[maxTracks-1].show();
+				#me.echoes[maxTracks-1].update();
+
+				me.aim9 = displays.common.armActive();
+				if (me.aim9 != nil and me.aim9.isSlave() and me.aim9.status != armament.MISSILE_LOCK) {
+					me.aim9.commandDir(me.cursorPosX/texel_per_degree, -me.cursorPosY/texel_per_degree);
+				} elsif (me.aim9 != nil and me.aim9.status != armament.MISSILE_LOCK) {
+					me.aim9.commandRadar();
+				}
+				me.cursor.show();
+			} else {
+				me.cursor.hide();# the lock cursor is shown instead
+				me.preventRelock = TRUE;
+				if (me.cursorTrigger and !me.cursorManuallyLocked) {
+					# cursor click but did not select anything, so we deselect
+					#if (radar_logic.selection != nil) print("deselect");#TODO: Should cursor move to where the lock cursor was?
+					radar_logic.setSelection(nil);
+				}
+			}
+
+			#printf(" %d %d !%d", me.cursorTrigger, me.cursorTriggerPrev, me.cursorManuallyLocked);
+			if (!me.cursorTrigger and !me.cursorTriggerPrev) {
+				#print("stop cursorManuallyLocked");
+				me.cursorManuallyLocked = FALSE;
+				me.preventRelock = FALSE;
+			}
+        } else {
+        	me.cursorManuallyLocked = FALSE;
+        	me.cursorTrigger = FALSE;
+        	me.cursor.hide();
+        }
+	},
+
 	displayRadarTracks: func () {
 
 		var mode = canvas_HUD.mode;
@@ -773,12 +975,19 @@ var MI = {
 	    me.tgt_callsign = "";
 	    me.tele = [];
 
-	    if(me.input.tracks_enabled.getValue() == TRUE and me.input.radar_serv.getValue() > 0) {
+
+
+	    if(me.input.tracks_enabled.getValue() == TRUE and me.input.radar_serv.getValue() > 0 and getprop("ja37/radar/active") == TRUE) {
 	      me.radar_group.show();
+
+	      me.rot = -getprop("orientation/roll-deg") * D2R;
+		  me.radar_group.setTranslation(-me.fpi_x, -me.fpi_y);
+		  me.echo_group_trans.setRotation(me.rot);
+		  me.echo_group.setTranslation(0, texel_per_degree * getprop("orientation/pitch-deg"));
 
 	      me.selection = radar_logic.selection;
 
-	      if (me.selection != nil and me.selection.parents[0] == radar_logic.ContactGPS) {
+	      if (me.selection != nil and (me.selection.parents[0] == radar_logic.ContactGPS or me.selection.parents[0] == radar_logic.ContactGhost)) {
 	      	# this is not part of track vector, so we process it seperately
 	        me.displayRadarTrack(me.selection);
 	      }
@@ -795,17 +1004,20 @@ var MI = {
 	      }
 	      if(me.selection_updated == FALSE) {
 	        me.echoes[0].hide();
-	        if (cursorOn == TRUE) {
-	        	me.cursor.show();
-	        }
-	      }
-	      
+	      } else {
+        	me.aim9 = displays.common.armActive();
+        	if (me.aim9 != nil and me.aim9.status != armament.MISSILE_LOCK) {
+				me.aim9.commandRadar();
+			}
+          }
+
 	      # draw selection
 	      if(me.selection != nil and me.selection.isValid() == TRUE and me.selection_updated == TRUE) {
 	        # selection is currently in forward looking radar view
 
 	          me.tgt_dist = me.selection.get_range()*NM2M;
 	          me.tgt_alt  = me.selection.get_altitude()*FT2M;
+	          me.tgt_bug  = me.selection.get_deviation(getprop("orientation/heading-deg"), geo.aircraft_position());
 	          if (me.input.callsign.getValue() == TRUE) {
 	            me.tgt_callsign = me.selection.get_Callsign();
 	          } else {
@@ -818,6 +1030,7 @@ var MI = {
 	        # or nothing selected
 	        me.tgt_alt  = nil;
 	      	me.tgt_dist = nil;
+	      	me.tgt_bug  = nil;
 	      	me.cursor_lock.hide();
 	      	if (cursorOn == FALSE) {
 	      		me.cursor.hide();
@@ -827,13 +1040,17 @@ var MI = {
 	      # radar tracks not shown at all
 	      me.tgt_alt  = nil;
 	      me.tgt_dist = nil;
+	      me.tgt_bug  = nil;
 	      me.radar_group.hide();
 	    }
+	    radar_logic.jump2Execute();
+	    me.cursorTriggerPrev = me.cursorTrigger;
 	},
 
 	displayRadarTrack: func (hud_pos) {
-		me.pos_xx = hud_pos.get_polar()[2]*R2D;
-		me.pos_yy = -hud_pos.get_polar()[3]*R2D;
+		me.polarEcho = hud_pos.get_polar();
+		me.pos_xx = me.polarEcho[2]*R2D;
+		me.pos_yy = -me.polarEcho[4]*R2D;
 
 		me.currentIndexT = me.track_index;
 
@@ -841,7 +1058,7 @@ var MI = {
 			me.selection_updated = TRUE;
 			me.selection_index = 0;
 			me.currentIndexT = 0;
-			if (me.selection.parents[0] == radar_logic.ContactGPS) {
+			if (me.selection.parents[0] == radar_logic.ContactGPS or me.selection.parents[0] == radar_logic.ContactGhost) {
 				me.currentIndexT = -1;
 				me.echoes[0].hide();
 			}
@@ -852,6 +1069,18 @@ var MI = {
 
 		if(me.currentIndexT > -1) {
 			me.echoes[me.currentIndexT].setTranslation(me.pos_xx*texel_per_degree, me.pos_yy*texel_per_degree);
+			if (me.cursorTrigger and !me.cursorTriggerPrev and !me.preventRelock) {
+				me.cursorDistX = me.cursorOPosX-me.pos_xx*texel_per_degree;
+				me.cursorDistY = me.cursorOPosY-me.pos_yy*texel_per_degree;
+				me.cursorDist = math.sqrt(me.cursorDistX*me.cursorDistX+me.cursorDistY*me.cursorDistY);
+				#printf("testing %d",me.cursorDist);
+				if (me.cursorDist < 12) {#
+					#print("less than 20");
+					radar_logic.jump2To(hud_pos);
+					me.cursorManuallyLocked = TRUE;
+					#me.cursorTriggerPrev = TRUE;#a hack. It CAN happen that a contact gets selected through infobox, in that case lets make sure infobox is not activated. bad UI fix. :(
+				}
+			}
 			me.echoes[me.currentIndexT].show();
 			me.echoes[me.currentIndexT].update();
 			if (hud_pos.get_type() == radar_logic.ORDNANCE) {
@@ -869,9 +1098,16 @@ var MI = {
 			}
 		}
 		if (me.lock == TRUE) {
-			me.cursor_lock.setTranslation(me.pos_xx*texel_per_degree, me.pos_yy*texel_per_degree);
-			me.cursor_lock.show();
-			me.cursor_lock.update();
+			if (displays.common.cursor == displays.MI) {
+				me.rot = -getprop("orientation/roll-deg") * D2R;
+				me.cursor_grp.setTranslation(-me.fpi_x, -me.fpi_y);
+				me.cursor_grp_trans.setRotation(me.rot);
+				me.cursor_grp2.setTranslation(0, texel_per_degree * getprop("orientation/pitch-deg"));
+				me.cursor_lock.setTranslation(me.pos_xx*texel_per_degree, me.pos_yy*texel_per_degree);
+				me.cursor_lock.setRotation(-me.rot);
+				me.cursor_lock.show();
+				me.cursor_lock.update();
+			}
 			me.cursor.hide();
 		}
 	},
@@ -879,6 +1115,8 @@ var MI = {
     showTgtName: func {
     	if (TI.ti.newFails == TRUE) {
     		me.diamond_name.setText(me.interoperability == displays.METRIC?"FÖ":"Failure");
+  	  	} elsif (TI.ti.mreg == TRUE) {
+    		me.diamond_name.setText("MREG");
   	  	} elsif (me.input.tracks_enabled.getValue() == TRUE) {
   			me.diamond_name.setText(me.tgt_callsign);
   		} else {
@@ -889,7 +1127,7 @@ var MI = {
 
     showTopInfo: func {
     	# this is info about the target.
-    	
+
   		if (me.tgt_dist != nil) {
   			# distance
   			if (me.interoperability == displays.METRIC) {
@@ -910,7 +1148,7 @@ var MI = {
   			me.distT2.setText("");
   			me.tgt_dist_last = nil;
   		}
-  		
+
   		if (me.tgt_alt != nil) {
   			# altitude
   			me.alt = me.tgt_alt*M2FT;
@@ -1143,8 +1381,10 @@ var init = func {
 	if (getprop("ja37/supported/canvas") == TRUE) {
 		setupCanvas();
 		mi = MI.new();
-		mi.loop();
+		settimer(func {
+			mi.loop();
+		},0.5);# this will prevent it from starting before TI has been initialized.
 	}
 }
 
-idl = setlistener("ja37/supported/initialized", init, 0, 0);
+#idl = setlistener("ja37/supported/initialized", init, 0, 0);

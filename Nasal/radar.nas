@@ -398,13 +398,10 @@ var radar = {
       APTgtAgl:             "autopilot/settings/target-agl-ft",
       APTgtAlt:             "autopilot/settings/target-altitude-ft",
       heading:              "instrumentation/heading-indicator/indicated-heading-deg",
-      hydrPressure:         "fdm/jsbsim/systems/hydraulics/system1/pressure",
       rad_alt:              "position/altitude-agl-ft",
       radarEnabled:         "ja37/hud/tracks-enabled",
       radarRange:           "instrumentation/radar/range",
-      radarScreenVoltage:   "systems/electrical/outputs/dc-voltage",
       radarServ:            "instrumentation/radar/serviceable",
-      radarVoltage:         "systems/electrical/outputs/ac-main-voltage",
       rmActive:             "autopilot/route-manager/active",
       rmDist:               "autopilot/route-manager/wp/dist",
       rmId:                 "autopilot/route-manager/wp/id",
@@ -430,9 +427,9 @@ var radar = {
 
   update: func()
   {
-    if ((me.input.viewNumber.getValue() == 0 or me.input.viewNumber.getValue() == 13) and me.input.radarVoltage.getValue() != nil
-        and me.input.radarScreenVoltage.getValue() > 23 and me.input.radarVoltage.getValue() > 170
-        and me.input.radarServ.getValue() > 0 and me.input.screenEnabled.getValue() == 1 and me.input.radarEnabled.getValue() == 1) {
+    if ((me.input.viewNumber.getValue() == 0 or me.input.viewNumber.getValue() == 13) and power.prop.acSecond.getValue()
+        and me.input.radarServ.getValue() > 0 and me.input.screenEnabled.getValue() == 1 and me.input.radarEnabled.getValue() == 1 and testing.ongoing == FALSE
+        and getprop("ja37/radar/active") == TRUE) {
       g.show();
       me.radarRange = me.input.radarRange.getValue();
       me.rangeText.setText(sprintf("%3d",me.radarRange/1000));
@@ -443,7 +440,7 @@ var radar = {
         me.dt = 5;
       }            
       # compute new stroke angle if has hydr pressure
-      if(me.input.hydrPressure.getValue() == 1) {
+      if(power.prop.hyd1Bool.getValue()) {
         # AJ37 manual: 110 degrees per second: 1.0733775 x 1radian= 123 degrees. 123deg = 2.14675498 rad for full scan.
         me.stroke_angle = math.sin(me.dt*2.14675498)*1.0733775;
         forindex (i; me.stroke) me.stroke[i].show();
@@ -606,14 +603,14 @@ var radar = {
 
 
 
-      settimer(
+      #settimer(
         #func debug.benchmark("rad loop", 
-          func me.update()
+      #    func me.update()
        #   )
-        , 0.05);
+      #  , 0.05);
     } else {
       g.hide();
-      settimer(func me.update(), 1);
+      #settimer(func me.update(), 1);
     }
   },
   
@@ -685,10 +682,10 @@ var radar = {
 #  return diff;
 #}
 var scope = nil;
-var theinit = setlistener("ja37/supported/initialized", func {
-  if(getprop("ja37/supported/radar") == 1) {
-    removelistener(theinit);
-    scope = radar.new();
-    scope.update();
-  }
-}, 1, 0);
+#var theinit = setlistener("ja37/supported/initialized", func {
+#  if(getprop("ja37/supported/radar") == 1) {
+#    removelistener(theinit);
+#    scope = radar.new();
+#    scope.update();
+#  }
+#}, 1, 0);

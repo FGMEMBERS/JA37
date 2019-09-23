@@ -1,0 +1,216 @@
+<?xml version="1.0"?>
+
+<PropertyList>
+
+    <path>fusePanel.ac</path>
+
+    <effect>
+        <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-shader</inherits-from><!--<inherits-from>Aircraft/JA37/Models/Effects/ja37-metal</inherits-from>-->
+        <object-name>panel</object-name>
+        <object-name>bolt1</object-name>
+        <object-name>fuse1</object-name>
+        <object-name>bolt2</object-name>
+        <object-name>fuse2</object-name>
+        <object-name>bolt3</object-name>
+        <object-name>fuse3</object-name>
+        <object-name>bolt4</object-name>
+        <object-name>fuse4</object-name>
+        <object-name>bolt5</object-name>
+        <object-name>fuse5</object-name>
+        <object-name>Switch</object-name>
+    </effect>
+
+    <animation>
+        <type>scale</type>
+        <object-name>panel</object-name>
+        <object-name>bolt1</object-name>
+        <object-name>fuse1</object-name>
+        <object-name>bolt2</object-name>
+        <object-name>fuse2</object-name>
+        <object-name>bolt3</object-name>
+        <object-name>fuse3</object-name>
+        <object-name>bolt4</object-name>
+        <object-name>fuse4</object-name>
+        <object-name>bolt5</object-name>
+        <object-name>fuse5</object-name>
+        <object-name>Switch</object-name>
+        <x-offset>1.5</x-offset>
+        <y-offset>1.5</y-offset>
+        <z-offset>1.5</z-offset>
+    </animation>
+
+    <animation>
+        <type>pick</type>
+        <object-name>panel</object-name>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>fusePanel</tooltip-id>
+                <label>Circuit breaker panel (not functional yet)</label>
+            </binding>
+        </hovered>
+    </animation>
+
+    <animation>
+        <type>pick</type>
+        <object-name>Switch</object-name>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>fuse0</tooltip-id>
+                <label>Switch for certain electronic circuits</label>
+            </binding>
+        </hovered>
+    </animation>
+
+    <animation>
+        <type>pick</type>
+        <object-name>fuse1</object-name>
+        <action>
+            <button>0</button>
+            <binding>
+                <command>property-toggle</command>
+                <property>ja37/fuses/krets</property>
+            </binding>
+        </action>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>fuse1</tooltip-id>
+                <label>Breaker for Canopy jettison circuit</label>
+            </binding>
+        </hovered>
+    </animation>
+    
+    <animation>
+       <type>translate</type>
+       <object-name>fuse1</object-name>
+       <property>ja37/fuses/krets</property>
+       <factor>-0.005</factor>
+       <offset-m>0.000</offset-m>
+       <axis>
+         <z>1</z>
+       </axis>
+    </animation>
+
+    <animation>
+        <type>pick</type>
+        <object-name>fuse2</object-name>
+        <action>
+            <button>0</button>
+            <binding>
+                <command>property-toggle</command>
+                <property>ja37/fuses/sa</property>
+            </binding>
+        </action>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>fuse2</tooltip-id>
+                <label>Circuit breaker for autopilot DC</label>
+            </binding>
+        </hovered>
+    </animation>
+    
+    <animation>
+       <type>translate</type>
+       <object-name>fuse2</object-name>
+       <property>ja37/fuses/sa</property>
+       <factor>-0.005</factor>
+       <offset-m>0.000</offset-m>
+       <axis>
+         <z>1</z>
+       </axis>
+    </animation>
+
+    <animation>
+        <type>pick</type>
+        <object-name>fuse3</object-name>
+        <action>
+            <button>0</button>
+            <binding>
+                <command>property-toggle</command>
+                <property>ja37/fuses/trim</property>
+            </binding>
+        </action>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>fuse3</tooltip-id>
+                <label>Circuit breaker for trim and flight control system DC</label>
+            </binding>
+        </hovered>
+    </animation>
+    
+    <animation>
+       <type>translate</type>
+       <object-name>fuse3</object-name>
+       <property>ja37/fuses/trim</property>
+       <factor>-0.005</factor>
+       <offset-m>0.000</offset-m>
+       <axis>
+         <z>1</z>
+       </axis>
+    </animation>
+
+    <animation>
+        <type>pick</type>
+        <object-name>fuse4</object-name>
+        <action>
+            <button>0</button>
+            <binding>
+                <command>property-toggle</command>
+                <property>ja37/fuses/gvv</property>
+            </binding>
+        </action>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>fuse</tooltip-id>
+                <label>Circuit breaker for limit warning system</label>
+            </binding>
+        </hovered>
+    </animation>
+    
+    <animation>
+       <type>translate</type>
+       <object-name>fuse4</object-name>
+       <property>ja37/fuses/gvv</property>
+       <factor>-0.005</factor>
+       <offset-m>0.000</offset-m>
+       <axis>
+         <z>1</z>
+       </axis>
+    </animation>
+
+    <animation>
+        <type>pick</type>
+        <object-name>fuse5</object-name>
+        <action>
+            <button>0</button>
+            <binding>
+                <command>property-toggle</command>
+                <property>ja37/fuses/motor</property>
+            </binding>
+        </action>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>fuse</tooltip-id>
+                <label>Circuit breaker for engine starting system</label>
+            </binding>
+        </hovered>
+    </animation>
+    
+    <animation>
+       <type>translate</type>
+       <object-name>fuse5</object-name>
+       <property>ja37/fuses/motor</property>
+       <factor>-0.005</factor>
+       <offset-m>0.000</offset-m>
+       <axis>
+         <z>1</z>
+       </axis>
+    </animation>
+
+</PropertyList>

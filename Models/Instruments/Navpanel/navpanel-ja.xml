@@ -1,0 +1,356 @@
+<?xml version="1.0"?>
+
+<PropertyList>
+
+    <path>navpanel-ja.ac</path>
+
+    <effect>
+        <inherits-from>Aircraft/JA37/Models/Effects/ja37-cockpit-shader</inherits-from>
+		<object-name>divider</object-name>
+		<object-name>knobDisc</object-name>
+		<object-name>knobScrew</object-name>
+		<object-name>knobHandle</object-name>
+		<object-name>altw</object-name>
+		<object-name>rhm</object-name>
+		<object-name>land</object-name>
+		<object-name>BX</object-name>
+		<object-name>LB</object-name>
+		<object-name>LF</object-name>
+		<object-name>L</object-name>
+		<object-name>backspace</object-name>
+		<object-name>clear</object-name>
+		<object-name>enter</object-name>
+		<object-name>ok</object-name>
+		<object-name>mount</object-name>
+    </effect>
+
+    <animation>
+        <type>pick</type>
+        <object-name>mount</object-name>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>np</tooltip-id>
+                <label>Nav panel</label>
+            </binding>
+        </hovered>
+    </animation>
+    
+    <!--
+	**********************************
+	Switches
+	**********************************
+	-->
+    
+    <animation>
+        <type>pick</type>
+        <object-name>rhm</object-name>
+        <action>
+            <button>0</button>
+            <binding>
+                <command>property-toggle</command>
+                <property>controls/altimeter-radar</property>
+            </binding>
+            <binding>
+                <command>nasal</command>
+                <script>ja37.click();</script>
+            </binding>
+        </action>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>rhm</tooltip-id>
+                <label>Radar altimeter</label>
+            </binding>
+        </hovered>
+    </animation>
+
+    <animation>
+        <type>rotate</type>
+        <object-name>rhm</object-name>
+        <property>controls/altimeter-radar</property>
+        <factor>50</factor>
+        <offset-deg>-25</offset-deg>
+        <center>
+            <x-m>  0.070395 </x-m>
+            <y-m>  0.004681 </y-m>
+            <z-m>  0.003231 </z-m>
+        </center>
+        <axis>
+            <x> 0.0 </x>
+            <y>-1.0 </y>
+            <z> 0.0 </z>
+        </axis>
+    </animation>
+    
+    <animation>
+        <type>pick</type>
+        <object-name>altw</object-name>
+        <action>
+            <button>0</button>
+            <binding>
+                <command>property-toggle</command>
+                <property>ja37/avionics/collision-warning</property><!-- ground collision warning switch. not implemented yet. maybe only for audio? -->
+            </binding>
+            <binding>
+                <command>nasal</command>
+                <script>ja37.click();</script>
+            </binding>
+        </action>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>altw</tooltip-id>
+                <label>Ground collision warning</label>
+            </binding>
+        </hovered>
+    </animation>
+
+    <animation>
+        <type>rotate</type>
+        <object-name>altw</object-name>
+        <property>ja37/avionics/collision-warning</property>
+        <factor>50</factor>
+        <offset-deg>-25</offset-deg>
+        <center>
+            <x-m> 0.100703  </x-m>
+            <y-m>-0.009177 </y-m>
+            <z-m> 0.003231 </z-m>
+        </center>
+        <axis>
+            <x>-1.0 </x>
+            <y> 0.0 </y>
+            <z> 0.0 </z>
+        </axis>
+    </animation>
+
+	<!--
+	**********************************
+	Buttons
+	**********************************
+	-->
+	
+	<animation>
+		<type>pick</type>
+		<object-name>land</object-name>
+		<action>
+			<button>0</button>
+			<repeatable>false</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>route.Polygon.basePress();</script>
+			</binding>
+			<!--<mod-up>
+				<binding>
+					<command>nasal</command>
+					<script>dap.baseRelease();</script>
+				</binding>
+			</mod-up>-->
+		</action>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>lBase</tooltip-id>
+                <label>LANDING BASE</label>
+                <property></property>
+            </binding>
+        </hovered>
+	</animation>
+	
+	<animation>
+		<type>pick</type>
+		<object-name>ok</object-name>
+		<action>
+			<button>0</button>
+			<repeatable>false</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>dap.okPress();</script>
+			</binding>
+			<mod-up>
+				<binding>
+					<command>nasal</command>
+					<script>dap.okRelease();</script>
+				</binding>
+			</mod-up>
+		</action>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>OK</tooltip-id>
+                <label>OK</label>
+                <property></property>
+            </binding>
+        </hovered>
+	</animation>
+	
+	<animation>
+		<type>pick</type>
+		<object-name>backspace</object-name>
+		<action>
+			<button>0</button>
+			<repeatable>false</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>dap.backPress();</script>
+			</binding>
+		</action>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>BACKSPACE</tooltip-id>
+                <label>BACKSPACE</label>
+                <property></property>
+            </binding>
+        </hovered>
+	</animation>
+
+	<animation>
+		<type>pick</type>
+		<object-name>clear</object-name>
+		<action>
+			<button>0</button>
+			<repeatable>false</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>dap.xPress();</script>
+			</binding>
+			<mod-up>
+				<binding>
+					<command>nasal</command>
+					<script>dap.xRelease();</script>
+				</binding>
+			</mod-up>
+		</action>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>X</tooltip-id>
+                <label>CLEAR FIELD</label>
+                <property></property>
+            </binding>
+        </hovered>
+	</animation>
+	
+	<animation>
+		<type>pick</type>
+		<object-name>L</object-name>
+		<action>
+			<button>0</button>
+			<repeatable>false</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>dap.lPress();</script>
+			</binding>
+			<mod-up>
+				<binding>
+					<command>nasal</command>
+					<script>dap.lRelease();</script>
+				</binding>
+			</mod-up>
+		</action>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>OK2</tooltip-id>
+                <label>L (yellow airdefense (LV) points input)</label>
+                <property></property>
+            </binding>
+        </hovered>
+	</animation>
+	
+	<animation>
+		<type>pick</type>
+		<object-name>LB</object-name>
+		<action>
+			<button>0</button>
+			<repeatable>false</repeatable>
+			<binding>
+				<command>nasal</command>
+				<script>dap.gPress();</script>
+			</binding>
+			<mod-up>
+				<binding>
+					<command>nasal</command>
+					<script>dap.gRelease();</script>
+				</binding>
+			</mod-up>
+		</action>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>OK3</tooltip-id>
+                <label>LB (green airdefense (LV) points input)</label>
+                <property></property>
+            </binding>
+        </hovered>
+	</animation>
+	
+	<!--
+	**********************************
+	Knob
+	**********************************
+	-->
+
+	<animation>
+        <type>knob</type>
+        <object-name>knobDisc</object-name>
+		<object-name>knobHandle</object-name>
+		<object-name>knobScrew</object-name>
+		<property>autopilot/plan-manager/landing-base</property>
+		<factor>-30</factor>
+		<offset-deg>30</offset-deg>
+		<center>
+			<x-m>  0.024369 </x-m>
+			<y-m>  -0.016342 </y-m>
+			<z-m>  0.010179 </z-m>
+		</center>
+		<axis>
+			<x>0</x>
+			<y>0</y>
+			<z>-1</z>
+		</axis>
+        <increase>
+            <binding>
+                <command>property-adjust</command>
+                <property>autopilot/plan-manager/landing-base</property>
+				<step>1</step>
+				<min>1</min>
+				<max>4</max>        
+                <wrap>false</wrap>
+           </binding>
+        </increase>
+        <decrease>
+            <binding>
+                <command>property-adjust</command>
+                <property>autopilot/plan-manager/landing-base</property>
+				<step>-1</step>
+				<min>1</min>
+				<max>4</max>
+                <wrap>false</wrap>
+            </binding>
+        </decrease>
+        <hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>basesel</tooltip-id>
+                <label>LANDING BASE SELECTOR</label>
+            </binding>
+        </hovered>
+    </animation>
+    
+    <animation>
+		<type>pick</type>
+		<object-name>knobDisc</object-name>
+		<object-name>knobHandle</object-name>
+		<object-name>knobScrew</object-name>
+		<hovered>
+            <binding>
+                <command>set-tooltip</command>
+                <tooltip-id>basesel</tooltip-id>
+                <label>LANDING BASE SELECTOR</label>
+            </binding>
+        </hovered>
+	</animation>
+	
+</PropertyList>
